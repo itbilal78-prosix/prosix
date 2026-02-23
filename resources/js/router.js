@@ -42,38 +42,38 @@ const routes = [
   {
     path: '/menu/:slug',
     name: 'MenuCategories',
-    component: () => import('@/pages/MenuCategories.vue')
+component: () => import('@/Pages/MenuCategories.vue')
   },
 
   {
     path: '/category/:id/products',
     name: 'CategoryProducts',
-    component: () => import('@/pages/CategoryProducts.vue')
+component: () => import('@/Pages/CategoryProducts.vue')
   },
   {
     path: '/category/:id/subcategories',
     name: 'Subcategories',
-    component: () => import('@/pages/Subcategories.vue')
+    component: () => import('@/Pages/Subcategories.vue')
   },
   {
     path: '/product/:id',
     name: 'ProductDetails',
-    component: () => import('@/pages/ProductDetails.vue')
+    component: () => import('@/Pages/ProductDetails.vue')
   },
   {
     path: '/blog/:slug',
     name: 'BlogDetail',
-    component: () => import('@/pages/BlogDetail.vue')
+    component: () => import('@/Pages/BlogDetail.vue')
   },
   {
     path: '/membership',
     name: 'Membership',
-    component: () => import('@/pages/MembershipForm.vue')
+    component: () => import('@/Pages/MembershipForm.vue')
   },
   {
     path: '/artwork',
     name: 'Artworkform',
-    component: () => import('@/pages/Artworkform.vue')
+    component: () => import('@/pages@/Pages/Artworkform.vue')
   },
 
 
