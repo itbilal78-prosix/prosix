@@ -1,0 +1,1409 @@
+(function(){
+'use strict';
+
+// =================== PATTERN LIBRARY ===================
+
+window.openPatternLibrary = function() {
+    document.getElementById('patternLibraryModal').style.display = 'flex';
+    loadPatternsFromDB();
+};
+
+window.closePatternLibrary = function() {
+    document.getElementById('patternLibraryModal').style.display = 'none';
+};
+
+function loadPatternsFromDB() {
+    fetch('/api/patterns')
+        .then(res => res.json())
+        .then(patterns => {
+            const container = document.getElementById('patternList');
+            container.innerHTML = '';
+
+
+
+
+// ===== BLANK TILE (ALWAYS FIRST) =====
+const blank = document.createElement('div');
+blank.style.border = '2px dashed #999';
+blank.style.borderRadius = '8px';
+blank.style.padding = '10px';
+blank.style.cursor = 'pointer';
+blank.style.textAlign = 'center';
+blank.style.background = '#fafafa';
+
+blank.innerHTML = `
+    <div style="height:120px;display:flex;align-items:center;justify-content:center;font-weight:700;">
+        BLANK
+    </div>
+`;
+
+blank.onclick = () => {
+    clearPatternForSelectedPart();
+    closePatternLibrary();
+};
+
+container.appendChild(blank);
+// ===================================
+
+
+            patterns.forEach(pattern => {
+                const div = document.createElement('div');
+                div.style.border = '2px solid #ddd';
+                div.style.borderRadius = '8px';
+                div.style.padding = '10px';
+                div.style.cursor = 'pointer';
+                div.style.textAlign = 'center';
+                div.style.background = '#fff';
+                div.style.transition = 'all 0.3s';
+
+                div.innerHTML = `
+                    <div style="height:120px; display:flex; align-items:center; justify-content:center;">
+                        <img src="${pattern.svg_url}" style="max-width:100%; max-height:100%;">
+                    </div>
+                    <p style="margin-top:8px; font-weight:600;">${pattern.name}</p>
+                `;
+
+                div.onmouseover = () => div.style.borderColor = '#007bff';
+                div.onmouseout = () => div.style.borderColor = '#ddd';
+                div.onclick = () => applyDBPattern(pattern.svg_url);
+
+                container.appendChild(div);
+            });
+        })
+        .catch(err => {
+            console.error('Error loading patterns:', err);
+            document.getElementById('patternList').innerHTML =
+                '<p style="color:#999; text-align:center; padding:20px;">Error loading patterns</p>';
+        });
+}
+
+
+
+window.clearPatternForSelectedPart = function() {
+
+    if (!window.selectedSvgElement) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const mainSvg = window.getMainSvg();
+
+    // overlay remove
+    mainSvg.querySelector(`#pattern-overlay-${partId}`)?.remove();
+
+    // defs remove
+    mainSvg.querySelector(`#pattern-${partId}-${view}`)?.remove();
+    mainSvg.querySelector(`#clip-${partId}-${view}`)?.remove();
+
+    // state clear
+    if(window.patternsApplied?.[view]?.[partId]){
+        delete window.patternsApplied[view][partId];
+    }
+
+    delete window.selectedSvgElement.dataset.hasPattern;
+    delete window.selectedSvgElement.dataset.patternId;
+
+    // UI reset
+    document.getElementById('patternControls').style.display = 'none';
+    document.getElementById('patternPreviewBox').innerHTML =
+        '<span style="color:#999;">No pattern applied</span>';
+
+    window.uploadedSvgContent = null;
+
+    if(window.saveCustomizations) window.saveCustomizations();
+
+    console.log("✅ BLANK clicked → SVG cleaned");
+};
+
+
+
+window.applyDBPattern = function(svgUrl) {
+    if (!window.selectedSvgElement) {
+        alert("Please select a part first!");
+        return;
+    }
+
+    fetch(svgUrl)
+        .then(res => res.text())
+        .then(svgContent => {
+            window.uploadedSvgContent = svgContent;
+            applyUploadedPattern();
+            closePatternLibrary();
+        })
+        .catch(err => {
+            console.error('Error loading pattern:', err);
+            alert('Failed to load pattern');
+        });
+};
+
+// =================== APPLY PATTERN (ULTRA SAFE VERSION) ===================
+
+window.applyUploadedPattern = function () {
+
+    if (!window.selectedSvgElement) {
+        alert("Please select a part first!");
+        return;
+    }
+
+    if (!window.uploadedSvgContent) {
+        alert("Please select a pattern first!");
+        return;
+    }
+
+    // CRITICAL: Store the EXACT element reference
+    const targetPart = window.selectedSvgElement;
+    const partId = targetPart.id;
+    const view = window.currentView;
+
+    console.log('🎯 APPLYING PATTERN');
+    console.log('Target Part ID:', partId);
+    console.log('Target Part Element:', targetPart);
+    console.log('Current View:', view);
+
+    // Double check we have the right element
+    if (!partId) {
+        alert("Selected part has no ID!");
+        return;
+    }
+
+    if (window.saveToHistory) window.saveToHistory();
+
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) {
+        console.error('Main SVG not found');
+        return;
+    }
+
+    /* ================= STEP 1: CLEAN OLD PATTERN FOR THIS SPECIFIC PART ONLY ================= */
+
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
+
+    // Remove ONLY this specific part's old pattern/clip
+    const oldPatternId = `pattern-${partId}-${view}`;
+    const oldClipId = `clip-${partId}-${view}`;
+
+    const oldPattern = defs.querySelector(`#${oldPatternId}`);
+    if (oldPattern) {
+        console.log(`Removing old pattern: ${oldPatternId}`);
+        oldPattern.remove();
+    }
+
+    const oldClip = defs.querySelector(`#${oldClipId}`);
+    if (oldClip) {
+        console.log(`Removing old clip: ${oldClipId}`);
+        oldClip.remove();
+    }
+
+    // Remove ONLY this specific part's overlay
+    const oldOverlayId = `pattern-overlay-${partId}`;
+    const overlayGroup = mainSvg.querySelector('#pattern-overlay-group');
+    if (overlayGroup) {
+        const oldOverlay = overlayGroup.querySelector(`#${oldOverlayId}`);
+        if (oldOverlay) {
+            console.log(`Removing old overlay: ${oldOverlayId}`);
+            oldOverlay.remove();
+        }
+    }
+
+    /* ================= STEP 2: PARSE PATTERN SVG ================= */
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(window.uploadedSvgContent, 'image/svg+xml');
+    let patternSvg = doc.documentElement;
+
+    if (!patternSvg || patternSvg.nodeName !== 'svg') {
+        alert("Pattern SVG load failed");
+        return;
+    }
+
+    patternSvg = patternSvg.cloneNode(true);
+
+    if (!patternSvg.hasAttribute('viewBox')) {
+        patternSvg.setAttribute('viewBox', '0 0 100 100');
+    }
+
+    /* ================= STEP 3: CREATE CLIP PATH FOR THIS SPECIFIC PART ================= */
+
+    const clipId = `clip-${partId}-${view}`;
+    const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+    clipPath.setAttribute('id', clipId);
+
+    // Clone the TARGET part specifically
+    const clonedPart = targetPart.cloneNode(true);
+    clonedPart.removeAttribute('id');
+    clipPath.appendChild(clonedPart);
+    defs.appendChild(clipPath);
+
+    console.log(`✅ Created clip path: ${clipId}`);
+
+    /* ================= STEP 4: CREATE PATTERN FOR THIS SPECIFIC PART ================= */
+
+    const bbox = targetPart.getBBox();
+    const patternId = `pattern-${partId}-${view}`;
+
+    const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+    pattern.setAttribute('id', patternId);
+    pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+    pattern.setAttribute('x', bbox.x);
+    pattern.setAttribute('y', bbox.y);
+    pattern.setAttribute('width', bbox.width);
+    pattern.setAttribute('height', bbox.height);
+
+    patternSvg.setAttribute('width', bbox.width);
+    patternSvg.setAttribute('height', bbox.height);
+    patternSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+    pattern.appendChild(patternSvg);
+    defs.appendChild(pattern);
+
+    console.log(`✅ Created pattern: ${patternId}`);
+
+    /* ================= STEP 5: CREATE OVERLAY FOR THIS SPECIFIC PART ONLY ================= */
+
+    let og = mainSvg.querySelector('#pattern-overlay-group');
+    if (!og) {
+        og = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        og.setAttribute('id', 'pattern-overlay-group');
+        mainSvg.appendChild(og);
+    }
+
+    // Create overlay specifically from the target part
+    const overlay = targetPart.cloneNode(true);
+    overlay.setAttribute('id', `pattern-overlay-${partId}`);
+    overlay.setAttribute('fill', `url(#${patternId})`);
+    overlay.setAttribute('clip-path', `url(#${clipId})`);
+    overlay.style.pointerEvents = 'none';
+
+    og.appendChild(overlay);
+
+    console.log(`✅ Created overlay: pattern-overlay-${partId}`);
+
+    /* ================= STEP 6: SAVE STATE FOR THIS SPECIFIC PART ================= */
+
+    if (!window.patternsApplied) window.patternsApplied = {};
+    if (!window.patternsApplied[view]) window.patternsApplied[view] = {};
+
+    window.patternsApplied[view][partId] = {
+        patternId,
+        svgContent: window.uploadedSvgContent,
+        bbox,
+        size: 50,
+        opacity: 100,
+        angle: 0,
+        replacements: {}
+    };
+
+    // Set attributes on the TARGET part only
+    targetPart.dataset.hasPattern = 'true';
+    targetPart.dataset.patternId = patternId;
+    targetPart.dataset.patternView = view;
+
+    console.log(`✅ Pattern applied successfully to ${partId}`);
+    console.log('Saved patterns:', window.patternsApplied);
+
+    if (window.saveCustomizations) window.saveCustomizations();
+
+    document.getElementById('patternControls').style.display = 'block';
+
+    if (window.updatePatternPreview) window.updatePatternPreview();
+    if (window.updatePatternColorPalette) window.updatePatternColorPalette();
+    if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
+
+
+};
+
+
+// =================== PATTERN COLOR PALETTE ===================
+
+window.updatePatternColorPalette = function() {
+    const container = document.getElementById('patternColorPalette');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (!window.selectedSvgElement?.dataset.hasPattern) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const patternData = window.patternsApplied[view]?.[partId];
+
+    if (!patternData || !patternData.svgContent) {
+        console.warn(`No pattern data found for ${partId} in ${view}`);
+        return;
+    }
+
+    const patternColors = getPatternUniqueColors(patternData.svgContent);
+    const userColors = window.selectedColors?.length > 0 ? [...window.selectedColors] : ['#000000'];
+
+    patternColors.forEach((patternColor) => {
+        const row = document.createElement('div');
+        row.className = 'pattern-color-row';
+
+        const originalBox = document.createElement('div');
+        originalBox.className = 'original-color-box';
+        originalBox.style.backgroundColor = patternColor;
+
+        const arrow = document.createElement('div');
+        arrow.className = 'color-arrow';
+        arrow.textContent = '→';
+
+        const choicesContainer = document.createElement('div');
+        choicesContainer.className = 'color-choices';
+
+        userColors.forEach((userColor) => {
+            const box = document.createElement('div');
+            box.className = 'user-color-box';
+            box.style.backgroundColor = userColor;
+            box.dataset.userColor = userColor;
+            box.dataset.patternColor = patternColor;
+
+            const check = document.createElement('div');
+            check.className = 'color-checkmark';
+            check.textContent = '✓';
+            box.appendChild(check);
+
+            box.onclick = function() {
+                this.parentElement.querySelectorAll('.user-color-box').forEach(b => {
+                    b.classList.remove('selected');
+                });
+
+                this.classList.add('selected');
+
+                if (!window.patternsApplied[view][partId].replacements) {
+                    window.patternsApplied[view][partId].replacements = {};
+                }
+                window.patternsApplied[view][partId].replacements[patternColor.toUpperCase()] = userColor;
+
+                recreatePatternAndOverlayWithNewColors();
+            };
+
+            const currentReplacements = patternData.replacements || {};
+            if (currentReplacements[patternColor.toUpperCase()] === userColor) {
+                box.classList.add('selected');
+            }
+
+            choicesContainer.appendChild(box);
+        });
+
+        row.appendChild(originalBox);
+        row.appendChild(arrow);
+        row.appendChild(choicesContainer);
+        container.appendChild(row);
+    });
+
+    container.style.display = 'flex';
+}
+
+window.getPatternUniqueColors = function(svgContent) {
+    if (!svgContent) return ['#000000'];
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+    const elements = doc.querySelectorAll('[fill], [stroke]');
+
+    const uniqueColors = new Set();
+
+    elements.forEach(el => {
+        const fill = el.getAttribute('fill');
+        if (fill && fill !== 'none' && !fill.startsWith('url')) {
+            uniqueColors.add(fill.toUpperCase());
+        }
+        const stroke = el.getAttribute('stroke');
+        if (stroke && stroke !== 'none' && !stroke.startsWith('url')) {
+            uniqueColors.add(stroke.toUpperCase());
+        }
+    });
+
+    return Array.from(uniqueColors);
+}
+
+window.recreatePatternAndOverlayWithNewColors = function() {
+    if (!window.selectedSvgElement?.dataset.hasPattern) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const patternData = window.patternsApplied[view]?.[partId];
+
+    if (!patternData || !patternData.svgContent) {
+        console.warn(`No pattern data for ${partId} in ${view}`);
+        return;
+    }
+
+    const mainSvg = window.getMainSvg();
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
+
+    const patternId = patternData.patternId;
+
+    const oldPattern = defs.querySelector(`#${patternId}`);
+    if (oldPattern) oldPattern.remove();
+
+    const bbox = patternData.bbox || window.selectedSvgElement.getBBox();
+
+    const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    pattern.setAttribute("id", patternId);
+    pattern.setAttribute("patternUnits", "userSpaceOnUse");
+    pattern.setAttribute("x", bbox.x);
+    pattern.setAttribute("y", bbox.y);
+    pattern.setAttribute("width", bbox.width);
+    pattern.setAttribute("height", bbox.height);
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(patternData.svgContent, "image/svg+xml");
+    const patternSvg = doc.querySelector("svg");
+
+    if (patternSvg) {
+        const replacements = patternData.replacements || {};
+
+        Object.entries(replacements).forEach(([oldColor, newColor]) => {
+            patternSvg.querySelectorAll("[fill]").forEach(el => {
+                if (el.getAttribute("fill")?.toUpperCase() === oldColor.toUpperCase()) {
+                    el.setAttribute("fill", newColor);
+                }
+            });
+            patternSvg.querySelectorAll("[stroke]").forEach(el => {
+                if (el.getAttribute("stroke")?.toUpperCase() === oldColor.toUpperCase()) {
+                    el.setAttribute("stroke", newColor);
+                }
+            });
+        });
+
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const content = patternSvg.cloneNode(true);
+        const scale = (patternData.size || 50) / 50;
+        const angle = patternData.angle || 0;
+        const opacity = (patternData.opacity || 100) / 100;
+
+        g.setAttribute("transform", `scale(${scale}) rotate(${angle})`);
+        g.setAttribute("opacity", opacity);
+
+        content.setAttribute("width", bbox.width);
+        content.setAttribute("height", bbox.height);
+        content.setAttribute("preserveAspectRatio", "xMidYMid slice");
+
+        g.appendChild(content);
+        pattern.appendChild(g);
+    }
+
+    defs.appendChild(pattern);
+
+    let overlayGroup = mainSvg.querySelector("#pattern-overlay-group");
+    if (!overlayGroup) {
+        overlayGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        overlayGroup.setAttribute("id", "pattern-overlay-group");
+        mainSvg.appendChild(overlayGroup);
+    }
+
+    const oldOverlay = overlayGroup.querySelector(`#pattern-overlay-${partId}`);
+    if (oldOverlay) oldOverlay.remove();
+
+    const clipId = `clip-${partId}-${view}`;
+    const newOverlay = window.selectedSvgElement.cloneNode(true);
+    newOverlay.setAttribute("id", `pattern-overlay-${partId}`);
+    newOverlay.setAttribute("fill", `url(#${patternId})`);
+    newOverlay.setAttribute("clip-path", `url(#${clipId})`);
+    newOverlay.setAttribute("opacity", (patternData.opacity || 100) / 100);
+    newOverlay.style.pointerEvents = "none";
+
+    overlayGroup.appendChild(newOverlay);
+
+    if (window.saveCustomizations) window.saveCustomizations();
+
+    console.log(`✅ Pattern colors updated for ${partId}`);
+}
+
+// =================== PATTERN CONTROLS ===================
+
+window.updatePatternSize = function(value) {
+    if (!window.selectedSvgElement?.dataset.patternId) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const patternData = window.patternsApplied[view]?.[partId];
+
+    if (!patternData) return;
+
+    const pid = window.selectedSvgElement.dataset.patternId;
+    const pattern = document.querySelector(`#${pid}`);
+    if (!pattern) return;
+
+    let g = pattern.querySelector('g');
+    if (!g) {
+        g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        while (pattern.firstChild) {
+            g.appendChild(pattern.firstChild);
+        }
+        pattern.appendChild(g);
+    }
+
+    const minSize = 50;
+    const safeValue = Math.max(value, minSize);
+    const scale = safeValue / 50;
+
+    const angle = patternData.angle || 0;
+    const opacity = (patternData.opacity || 100) / 100;
+
+    g.setAttribute("transform", `scale(${scale}) rotate(${angle})`);
+    g.setAttribute("opacity", opacity);
+
+    window.patternsApplied[view][partId].size = safeValue;
+    if (window.saveCustomizations) window.saveCustomizations();
+
+    const slider = document.getElementById('patternSize');
+    if (slider) slider.value = safeValue;
+    const sizeValue = document.getElementById('sizeValue');
+    if (sizeValue) sizeValue.textContent = safeValue;
+
+    console.log(`Pattern size updated: ${safeValue}`);
+};
+
+window.updatePatternOpacity = function(value) {
+    const opacity = value / 100;
+    const opacityValue = document.getElementById('opacityValue');
+    if (opacityValue) opacityValue.textContent = value + '%';
+
+    if (!window.selectedSvgElement?.dataset.patternId) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const pid = window.selectedSvgElement.dataset.patternId;
+
+    const pattern = document.querySelector(`#${pid}`);
+    if (pattern) {
+        const g = pattern.querySelector('g');
+        if (g) {
+            g.setAttribute('opacity', opacity);
+        }
+    }
+
+    const overlay = document.querySelector(`#pattern-overlay-${partId}`);
+    if (overlay) {
+        overlay.setAttribute('opacity', opacity);
+    }
+
+    if (window.patternsApplied[view]?.[partId]) {
+        window.patternsApplied[view][partId].opacity = parseInt(value);
+        if (window.saveCustomizations) window.saveCustomizations();
+    }
+};
+
+window.updatePatternPreview = function() {
+    const previewBox = document.getElementById('patternPreviewBox');
+    if (!previewBox) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement?.id;
+
+    if (window.selectedSvgElement?.dataset.hasPattern && partId) {
+        const patternData = window.patternsApplied[view]?.[partId];
+
+        if (patternData && patternData.svgContent) {
+            previewBox.innerHTML = patternData.svgContent;
+
+            const svg = previewBox.querySelector('svg');
+            if (svg) {
+                svg.style.maxWidth = '80px';
+                svg.style.maxHeight = '80px';
+                svg.style.display = 'block';
+            }
+        } else {
+            previewBox.innerHTML = '<span style="color:#999;">No pattern data</span>';
+        }
+    } else {
+        previewBox.innerHTML = '<span style="color:#999;">No pattern applied</span>';
+    }
+}
+
+window.removePatternFromPart = function() {
+    if (!window.selectedSvgElement) {
+        alert("Please select a part first!");
+        return;
+    }
+
+    if (window.saveToHistory) window.saveToHistory();
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+
+    const originalColor = window.originalColors?.[view]?.[partId] || '#ffffff';
+    window.selectedSvgElement.setAttribute('fill', originalColor);
+    window.selectedSvgElement.style.opacity = '1';
+
+    const mainSvg = window.getMainSvg();
+    const overlayGroup = mainSvg.querySelector('#pattern-overlay-group');
+    if (overlayGroup) {
+        const overlay = overlayGroup.querySelector(`#pattern-overlay-${partId}`);
+        if (overlay) overlay.remove();
+    }
+
+    const defs = mainSvg.querySelector('defs');
+    if (defs) {
+        const pattern = defs.querySelector(`#pattern-${partId}-${view}`);
+        if (pattern) pattern.remove();
+
+        const clip = defs.querySelector(`#clip-${partId}-${view}`);
+        if (clip) clip.remove();
+    }
+
+    delete window.selectedSvgElement.dataset.hasPattern;
+    delete window.selectedSvgElement.dataset.patternId;
+    delete window.selectedSvgElement.dataset.patternSize;
+    delete window.selectedSvgElement.dataset.patternOpacity;
+    delete window.selectedSvgElement.dataset.patternAngle;
+    delete window.selectedSvgElement.dataset.patternView;
+
+    if (window.patternsApplied?.[view]?.[partId]) {
+        delete window.patternsApplied[view][partId];
+        if (window.saveCustomizations) window.saveCustomizations();
+    }
+
+    document.getElementById('patternControls').style.display = 'none';
+    window.uploadedSvgContent = null;
+
+    alert("Pattern removed!");
+    if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
+};
+
+// =================== APPLY PATTERNS TO SVG (FOR SAVE/PREVIEW) ===================
+
+window.applyPatternsToSvg = function(svg, view, isPreview = false) {
+    if (!window.patternsApplied?.[view] || Object.keys(window.patternsApplied[view]).length === 0) {
+        console.log(`No patterns to apply for ${view}`);
+        return;
+    }
+if (window.applyMascotsToSvg) {
+    window.applyMascotsToSvg(svg, view);
+}
+
+    console.log(`🎨 Applying ${Object.keys(window.patternsApplied[view]).length} patterns to ${view} view (preview: ${isPreview})`);
+
+    let defs = svg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svg.insertBefore(defs, svg.firstChild);
+    }
+
+    const groupId = isPreview ? 'overlay-preview' : 'pattern-overlay-group';
+    let group = svg.querySelector(`#${groupId}`);
+    if (!group) {
+        group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('id', groupId);
+        svg.appendChild(group);
+    }
+
+    Object.entries(window.patternsApplied[view]).forEach(([partId, data]) => {
+        const base = svg.querySelector(`#${partId}`);
+        if (!base) {
+            console.warn(`⚠️ Part not found: ${partId}`);
+            return;
+        }
+
+        const pid = data.patternId + (isPreview ? '-preview' : '');
+        const clipId = `clip-${partId}-${view}` + (isPreview ? '-preview' : '');
+
+        const oldPattern = defs.querySelector(`#${pid}`);
+        if (oldPattern) oldPattern.remove();
+
+        const oldClip = defs.querySelector(`#${clipId}`);
+        if (oldClip) oldClip.remove();
+
+        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clipPath.setAttribute('id', clipId);
+        const clonedBase = base.cloneNode(true);
+        clonedBase.removeAttribute('id');
+        clipPath.appendChild(clonedBase);
+        defs.appendChild(clipPath);
+
+        const bbox = data.bbox || base.getBBox();
+
+        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+        pattern.setAttribute('id', pid);
+        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+        pattern.setAttribute('x', bbox.x);
+        pattern.setAttribute('y', bbox.y);
+        pattern.setAttribute('width', bbox.width);
+        pattern.setAttribute('height', bbox.height);
+        pattern.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+        const doc = new DOMParser().parseFromString(data.svgContent, 'image/svg+xml');
+        const psvg = doc.querySelector('svg');
+
+        if (psvg) {
+            if (data.replacements) {
+                Object.entries(data.replacements).forEach(([oldColor, newColor]) => {
+                    psvg.querySelectorAll('[fill]').forEach(e => {
+                        if (e.getAttribute('fill')?.toUpperCase() === oldColor.toUpperCase()) {
+                            e.setAttribute('fill', newColor);
+                        }
+                    });
+                    psvg.querySelectorAll('[stroke]').forEach(e => {
+                        if (e.getAttribute('stroke')?.toUpperCase() === oldColor.toUpperCase()) {
+                            e.setAttribute('stroke', newColor);
+                        }
+                    });
+                });
+            }
+
+            if (!psvg.hasAttribute('viewBox')) {
+                psvg.setAttribute('viewBox', '0 0 100 100');
+            }
+
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+            const userSize = data.size || 50;
+            const scale = userSize / 50;
+            const angle = data.angle || 0;
+            const opacity = (data.opacity || 100) / 100;
+
+            psvg.setAttribute('width', bbox.width);
+            psvg.setAttribute('height', bbox.height);
+            psvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+            g.setAttribute('transform', `scale(${scale}) rotate(${angle})`);
+            g.setAttribute('opacity', opacity);
+            g.appendChild(psvg.cloneNode(true));
+            pattern.appendChild(g);
+        }
+
+        defs.appendChild(pattern);
+
+        const oldOverlay = group.querySelector(`#pattern-overlay-${partId}` + (isPreview ? '-preview' : ''));
+        if (oldOverlay) oldOverlay.remove();
+
+        const over = base.cloneNode(true);
+        over.setAttribute('id', `pattern-overlay-${partId}` + (isPreview ? '-preview' : ''));
+        over.setAttribute('fill', `url(#${pid})`);
+        over.setAttribute('clip-path', `url(#${clipId})`);
+        over.style.pointerEvents = 'none';
+        group.appendChild(over);
+
+        base.dataset.hasPattern = "true";
+        base.dataset.patternId = pid;
+        base.dataset.patternSize = data.size || 50;
+        base.dataset.patternOpacity = data.opacity || 100;
+        base.dataset.patternAngle = data.angle || 0;
+        base.dataset.patternView = view;
+
+        console.log(`✅ Applied pattern to ${partId}`);
+    });
+
+    console.log(`✅ Pattern application complete for ${view}`);
+};
+
+// =================== MASCOT TEMPLATE ===================
+
+window.openMascotTemplateModal = function() {
+    document.getElementById('mascotTemplateModal').style.display = 'flex';
+
+    fetch('/api/mascot-templates')
+        .then(r => r.json())
+        .then(data => {
+let html = '';
+
+// ===== BLANK TILE (MASCOT RESET) =====
+html += `
+<div style="border:2px dashed #999;padding:10px;border-radius:8px;text-align:center;cursor:pointer;background:#fafafa"
+ onclick="clearMascotForSelectedPart();closeMascotTemplateModal();">
+   <div style="height:140px;display:flex;align-items:center;justify-content:center;font-weight:700;">
+     BLANK
+   </div>
+</div>
+`;
+            data.forEach(t => {
+                html += `
+                <div style="border:1px solid #ddd;padding:10px;border-radius:8px;text-align:center;cursor:pointer"
+                     onclick="selectMascotTemplate('${t.image_data}','${encodeURIComponent(t.svg_data || '')}')">
+                    <img src="${t.image_data}" style="width:100%;height:140px;object-fit:contain;background:#f5f5f5">
+                    <p style="margin-top:8px;font-weight:600">${t.title}</p>
+                </div>`;
+            });
+            document.getElementById('mascotTemplateGrid').innerHTML = html;
+        });
+};
+
+window.clearMascotForSelectedPart = function(){
+
+ if(!window.selectedSvgElement) return;
+
+ const view = window.currentView;
+ const partId = window.selectedSvgElement.id;
+ const svg = window.getMainSvg();
+
+ svg.querySelector(`#mascot-overlay-${partId}`)?.remove();
+ svg.querySelector(`#mascot-pattern-${partId}-${view}`)?.remove();
+ svg.querySelector(`#mascot-clip-${partId}-${view}`)?.remove();
+
+ if(window.mascotsApplied?.[view]?.[partId]){
+   delete window.mascotsApplied[view][partId];
+ }
+
+ delete window.selectedSvgElement.dataset.hasMascot;
+ delete window.selectedSvgElement.dataset.mascotId;
+
+ if(window.saveCustomizations) window.saveCustomizations();
+
+ console.log("✅ Mascot BLANK applied");
+};
+
+window.closeMascotTemplateModal = function(){
+    document.getElementById('mascotTemplateModal').style.display='none';
+};
+
+// ⭐ YEH FUNCTION MASCOT KO REPEAT KAREGA ⭐
+window.selectMascotTemplate = function(img, svg){
+    closeMascotTemplateModal();
+
+    if(svg){
+        const decodedSvg = decodeURIComponent(svg);
+        window.uploadedSvgContent = decodedSvg;
+
+        // Mascot ko repeat karne ke liye applyUploadedMascot call karo
+        window.applyUploadedMascot();
+    }
+
+    if(svg){
+        localStorage.setItem('mascotEditExistingSvg', decodeURIComponent(svg));
+    }
+};
+
+// ⭐ NAYA FUNCTION - MASCOT KO REPEAT KARTA HAI ⭐
+window.applyUploadedMascot = function() {
+
+ if (!window.selectedSvgElement) {
+   alert("Please select a part first!");
+   return;
+ }
+
+ if (!window.uploadedSvgContent) {
+   alert("Please select a mascot first!");
+   return;
+ }
+
+ const targetPart = window.selectedSvgElement;
+ const partId = targetPart.id;
+ const view = window.currentView;
+
+ const mainSvg = window.getMainSvg();
+
+ // ✅ REMOVE OLD MASCOT FOR THIS PART ONLY
+ mainSvg.querySelector(`#mascot-overlay-${partId}`)?.remove();
+ mainSvg.querySelector(`#mascot-pattern-${partId}-${view}`)?.remove();
+ mainSvg.querySelector(`#mascot-clip-${partId}-${view}`)?.remove();
+
+ console.log('🎯 APPLYING MASCOT (WITH REPEAT)');
+ console.log('Target Part ID:', partId);
+
+ if (!partId) {
+   alert("Selected part has no ID!");
+   return;
+ }
+
+ if (window.saveToHistory) window.saveToHistory();
+
+ let defs = mainSvg.querySelector('defs');
+ if (!defs) {
+   defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+   mainSvg.insertBefore(defs, mainSvg.firstChild);
+ }
+
+ // ❌ REMOVED GLOBAL DELETES (THIS WAS BREAKING EVERYTHING)
+
+ // Parse mascot SVG
+ const parser = new DOMParser();
+ const doc = parser.parseFromString(window.uploadedSvgContent, 'image/svg+xml');
+ let mascotSvg = doc.documentElement;
+
+ if (!mascotSvg || mascotSvg.nodeName !== 'svg') {
+   alert("Mascot SVG load failed");
+   return;
+ }
+
+ mascotSvg = mascotSvg.cloneNode(true);
+
+ // remove white bg
+ mascotSvg.querySelectorAll('rect,circle,path').forEach(el => {
+   const fill = el.getAttribute('fill');
+   if (fill && (fill === '#fff' || fill === '#ffffff' || fill === 'white')) {
+     el.remove();
+   }
+ });
+
+ if (!mascotSvg.hasAttribute('viewBox')) {
+   mascotSvg.setAttribute('viewBox', '0 0 100 100');
+ }
+
+ // Create clip
+ const clipId = `mascot-clip-${partId}-${view}`;
+ const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+ clipPath.setAttribute('id', clipId);
+
+ const clonedPart = targetPart.cloneNode(true);
+ clonedPart.removeAttribute('id');
+ clipPath.appendChild(clonedPart);
+ defs.appendChild(clipPath);
+
+ // Pattern
+ const bbox = targetPart.getBBox();
+ const patternId = `mascot-pattern-${partId}-${view}`;
+ const tileSize = Math.min(bbox.width, bbox.height) / 4;
+
+ const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+ pattern.setAttribute('id', patternId);
+ pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+ pattern.setAttribute('x', bbox.x);
+ pattern.setAttribute('y', bbox.y);
+ pattern.setAttribute('width', tileSize);
+ pattern.setAttribute('height', tileSize);
+
+ mascotSvg.setAttribute('width', tileSize);
+ mascotSvg.setAttribute('height', tileSize);
+ mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+ pattern.appendChild(mascotSvg);
+ defs.appendChild(pattern);
+
+ // Overlay group
+ let mascotGroup = mainSvg.querySelector('#mascot-overlay-group');
+ if (!mascotGroup) {
+   mascotGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+   mascotGroup.setAttribute('id', 'mascot-overlay-group');
+   mainSvg.appendChild(mascotGroup);
+ }
+
+ const overlay = targetPart.cloneNode(true);
+ overlay.setAttribute('id', `mascot-overlay-${partId}`);
+ overlay.setAttribute('fill', `url(#${patternId})`);
+ overlay.setAttribute('clip-path', `url(#${clipId})`);
+ overlay.style.pointerEvents = 'none';
+
+ mascotGroup.appendChild(overlay);
+
+ // Save mascot
+ if (!window.mascotsApplied) window.mascotsApplied = {};
+ if (!window.mascotsApplied[view]) window.mascotsApplied[view] = {};
+
+ window.mascotsApplied[view][partId] = {
+   patternId,
+   svgContent: new XMLSerializer().serializeToString(mascotSvg),
+   bbox,
+   tileSize
+ };
+
+ targetPart.dataset.hasMascot = 'true';
+ targetPart.dataset.mascotId = patternId;
+
+ if (window.saveCustomizations) window.saveCustomizations();
+ if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
+
+ console.log("✅ Mascot applied safely");
+
+    const mascotControls = document.getElementById('mascotControls');
+    if (mascotControls) {
+        mascotControls.style.display = 'block';
+
+        // Set default values
+        document.getElementById('mascotSize').value = 50;
+        document.getElementById('mascotSizeValue').textContent = '50';
+
+        document.getElementById('mascotOpacity').value = 100;
+        document.getElementById('mascotOpacityValue').textContent = '100%';
+
+        document.getElementById('mascotCount').value = 4; // default tile count
+        document.getElementById('mascotCountValue').textContent = '4';
+    }
+};
+
+
+
+// Mascot Size Control
+window.updateMascotSize = function(value) {
+
+    if (!window.selectedSvgElement?.dataset.hasMascot) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const mascotData = window.mascotsApplied[view]?.[partId];
+
+    if (!mascotData) return;
+
+    const pattern = document.querySelector(`#${mascotData.patternId}`);
+    if (!pattern) return;
+
+    const svg = pattern.querySelector('svg');
+    if (!svg) return;
+
+    // ORIGINAL tile size fixed rahegi
+    const tileSize = mascotData.tileSize || 60;
+
+    // sirf andar ka logo scale hoga
+    const scale = value / 100;
+    const newSize = tileSize * scale;
+
+    svg.setAttribute('width', newSize);
+    svg.setAttribute('height', newSize);
+
+    // center maintain karne ke liye
+    svg.setAttribute('x', (tileSize - newSize) / 2);
+    svg.setAttribute('y', (tileSize - newSize) / 2);
+
+    mascotData.size = value;
+
+    if (window.saveCustomizations) window.saveCustomizations();
+
+    document.getElementById('mascotSizeValue').textContent = value;
+};
+
+
+// Mascot Opacity Control
+window.updateMascotOpacity = function(value) {
+    const opacity = value / 100;
+
+    if (!window.selectedSvgElement?.dataset.hasMascot) return;
+
+    const partId = window.selectedSvgElement.id;
+    const overlay = document.querySelector(`#mascot-overlay-${partId}`);
+
+    if (overlay) {
+        overlay.setAttribute('opacity', opacity);
+    }
+
+    const view = window.currentView;
+    if (window.mascotsApplied[view]?.[partId]) {
+        window.mascotsApplied[view][partId].opacity = parseInt(value);
+        if (window.saveCustomizations) window.saveCustomizations();
+    }
+
+    document.getElementById('mascotOpacityValue').textContent = value + '%';
+};
+
+// Mascot Count/Repetition Control
+window.updateMascotCount = function(value) {
+    if (!window.selectedSvgElement?.dataset.hasMascot) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const mascotData = window.mascotsApplied[view]?.[partId];
+
+    if (!mascotData) return;
+
+    const bbox = window.selectedSvgElement.getBBox();
+    const newTileSize = Math.min(bbox.width, bbox.height) / value; // divide by count
+
+    const pattern = document.querySelector(`#${mascotData.patternId}`);
+    if (pattern) {
+        pattern.setAttribute('width', newTileSize);
+        pattern.setAttribute('height', newTileSize);
+
+        const svg = pattern.querySelector('svg');
+        if (svg) {
+            svg.setAttribute('width', newTileSize);
+            svg.setAttribute('height', newTileSize);
+        }
+    }
+
+    mascotData.tileSize = newTileSize;
+    mascotData.count = value;
+
+    if (window.saveCustomizations) window.saveCustomizations();
+
+    document.getElementById('mascotCountValue').textContent = value;
+};
+
+
+
+window.applyMascotsToSvg = function(svg, view){
+
+ if(!window.mascotsApplied?.[view]) return;
+
+ let defs = svg.querySelector('defs');
+ if(!defs){
+   defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+   svg.insertBefore(defs,svg.firstChild);
+ }
+
+ let group = svg.querySelector('#mascot-overlay-group');
+ if(!group){
+   group=document.createElementNS('http://www.w3.org/2000/svg','g');
+   group.setAttribute('id','mascot-overlay-group');
+   svg.appendChild(group);
+ }
+
+ Object.entries(window.mascotsApplied[view]).forEach(([partId,data])=>{
+
+   const base = svg.querySelector(`#${partId}`);
+   if(!base) return;
+
+   const clipId=`mascot-clip-${partId}-${view}`;
+   const patId=data.patternId;
+
+   // clip
+   const clip=document.createElementNS('http://www.w3.org/2000/svg','clipPath');
+   clip.setAttribute('id',clipId);
+   clip.appendChild(base.cloneNode(true));
+   defs.appendChild(clip);
+
+   // pattern
+   const pattern=document.createElementNS('http://www.w3.org/2000/svg','pattern');
+   pattern.setAttribute('id',patId);
+   pattern.setAttribute('patternUnits','userSpaceOnUse');
+   pattern.setAttribute('width',data.tileSize);
+   pattern.setAttribute('height',data.tileSize);
+
+   const doc=new DOMParser().parseFromString(data.svgContent,'image/svg+xml');
+   const msvg=doc.querySelector('svg');
+
+   msvg.setAttribute('width',data.tileSize);
+   msvg.setAttribute('height',data.tileSize);
+
+   pattern.appendChild(msvg);
+   defs.appendChild(pattern);
+
+   const over=base.cloneNode(true);
+   over.setAttribute('fill',`url(#${patId})`);
+   over.setAttribute('clip-path',`url(#${clipId})`);
+   over.style.pointerEvents='none';
+
+   group.appendChild(over);
+ });
+};
+
+
+//============== pattern remove===============//
+
+
+// =================== PATTERN STATE RESTORATION ===================
+
+window.restorePatternStateForPart = function(partId, view) {
+    console.log(`🔄 Restoring pattern state for ${partId} in ${view}`);
+
+    const patternData = window.patternsApplied?.[view]?.[partId];
+
+    if (!patternData) {
+        console.log(`No pattern data for ${partId}`);
+        const controls = document.getElementById('patternControls');
+        if (controls) controls.style.display = 'none';
+        return false;
+    }
+
+    console.log(`✅ Found pattern data for ${partId}`);
+
+    window.uploadedSvgContent = patternData.svgContent;
+    window.patternAngle = patternData.angle || 0;
+    window.patternSize = patternData.size || 50;
+    window.patternOpacity = patternData.opacity || 100;
+    window.patternScale = (patternData.size || 50) / 50;
+
+    const sizeSlider = document.getElementById('patternSize');
+    if (sizeSlider) {
+        sizeSlider.value = window.patternSize;
+        const sizeValue = document.getElementById('sizeValue');
+        if (sizeValue) sizeValue.textContent = window.patternSize;
+    }
+
+    const opacitySlider = document.getElementById('patternOpacity');
+    if (opacitySlider) {
+        opacitySlider.value = window.patternOpacity;
+        const opacityValue = document.getElementById('opacityValue');
+        if (opacityValue) opacityValue.textContent = window.patternOpacity + '%';
+    }
+
+    const angleDisplay = document.getElementById('angleValue');
+    if (angleDisplay) {
+        angleDisplay.textContent = window.patternAngle + '°';
+    }
+
+    const controls = document.getElementById('patternControls');
+    if (controls) {
+        controls.style.display = 'block';
+        console.log('✅ Pattern controls shown');
+    }
+
+    if (window.updatePatternPreview) window.updatePatternPreview();
+    if (window.updatePatternColorPalette) window.updatePatternColorPalette();
+
+    return true;
+};
+
+// =================== PATTERN INITIALIZATION ===================
+
+window.initializePatternsOnLoad = function() {
+    console.log('🎨 Initializing patterns...');
+
+    if (!window.patternsApplied) {
+        console.log('No saved patterns');
+        return;
+    }
+
+const mainSvg = window.getMainSvg?.() || document.querySelector('svg');
+  if (!mainSvg) {
+    console.warn('Main SVG not found — retrying...');
+    setTimeout(window.initializePatternsOnLoad, 300);
+    return;
+}
+
+
+    Object.keys(window.patternsApplied).forEach(view => {
+        console.log(`Initializing patterns for ${view}`);
+
+        Object.keys(window.patternsApplied[view]).forEach(partId => {
+const part = mainSvg.querySelector(`[id="${partId}"]`);
+
+            if (part) {
+                const patternData = window.patternsApplied[view][partId];
+
+                part.dataset.hasPattern = 'true';
+                part.dataset.patternId = patternData.patternId;
+                part.dataset.patternView = view;
+
+                console.log(`✅ Initialized ${partId}`);
+            } else {
+                console.warn(`⚠️ Part ${partId} not found`);
+            }
+        });
+    });
+
+    console.log('✅ Pattern initialization complete');
+};
+
+// =================== PART CLICK HANDLER ===================
+
+// In your part click handler, add this check:
+window.onPartClickForPattern = function(partElement) {
+    const view = window.currentView;
+    const partId = partElement.id;
+
+    console.log(`👆 Clicked: ${partId} in ${view}`);
+
+    // ✅ ALWAYS show the top buttons
+    const topButtons = document.querySelector('.pattern-top-buttons');
+    if (topButtons) topButtons.style.display = 'flex';
+
+    // Check if part has pattern
+    if (partElement.dataset.hasPattern === 'true') {
+        console.log(`✅ Restoring pattern state`);
+        window.restorePatternStateForPart(partId, view);
+
+        // ❌ DON'T hide buttons
+        // if (topButtons) topButtons.style.display = 'none';
+    } else if (partElement.dataset.hasMascot === 'true') {
+        console.log(`✅ Has mascot`);
+        // ❌ DON'T hide buttons
+        // if (topButtons) topButtons.style.display = 'none';
+    } else {
+        console.log(`❌ No pattern/mascot, show controls`);
+        const controls = document.getElementById('patternControls');
+        if (controls) controls.style.display = 'none';
+    }
+};
+// Mascot apply karne se pehle:
+function applyMascotToModel(mascotSvg) {
+    const mainSvg = document.getElementById('your-main-svg-id');
+
+    // ⭐ PEHLE saare purane mascot overlays remove karo
+    const oldMascotOverlays = mainSvg.querySelectorAll('[id^="mascot-overlay"]');
+    oldMascotOverlays.forEach(overlay => overlay.remove());
+
+    // ⭐ Ya specific mascot group remove karo
+    const oldMascotGroup = mainSvg.querySelector('#mascot-group');
+    if (oldMascotGroup) oldMascotGroup.remove();
+
+    // Ab naya mascot add karo
+    // ... your mascot code
+}
+
+window.initializeMascotsOnLoad = function(){
+
+ if(!window.mascotsApplied) return;
+
+ const svg = window.getMainSvg();
+ if(!svg) return;
+
+ Object.keys(window.mascotsApplied).forEach(view=>{
+
+   Object.entries(window.mascotsApplied[view]).forEach(([partId,data])=>{
+
+const part = svg.querySelector(`[id="${partId}"]`);
+     if(!part) return;
+
+     // dataset restore
+     part.dataset.hasMascot = 'true';
+     part.dataset.mascotId = data.patternId;
+
+     // 🔥 recreate pattern + overlay properly
+     let defs = svg.querySelector('defs');
+     if(!defs){
+        defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+        svg.insertBefore(defs, svg.firstChild);
+     }
+
+     // create clip
+     const clip = document.createElementNS('http://www.w3.org/2000/svg','clipPath');
+     const clipId = `mascot-clip-${partId}-${view}`;
+     clip.setAttribute('id', clipId);
+     clip.appendChild(part.cloneNode(true));
+     defs.appendChild(clip);
+
+     // create pattern
+     const pattern = document.createElementNS('http://www.w3.org/2000/svg','pattern');
+     pattern.setAttribute('id', data.patternId);
+     pattern.setAttribute('patternUnits','userSpaceOnUse');
+     pattern.setAttribute('width', data.tileSize);
+     pattern.setAttribute('height', data.tileSize);
+
+     const doc = new DOMParser().parseFromString(data.svgContent,'image/svg+xml');
+     const msvg = doc.querySelector('svg');
+
+     msvg.setAttribute('width', data.tileSize);
+     msvg.setAttribute('height', data.tileSize);
+
+     pattern.appendChild(msvg);
+     defs.appendChild(pattern);
+
+     // overlay
+     let group = svg.querySelector('#mascot-overlay-group');
+     if(!group){
+        group = document.createElementNS('http://www.w3.org/2000/svg','g');
+        group.setAttribute('id','mascot-overlay-group');
+        svg.appendChild(group);
+     }
+
+     const over = part.cloneNode(true);
+     over.setAttribute('id',`mascot-overlay-${partId}`);
+     over.setAttribute('fill',`url(#${data.patternId})`);
+     over.setAttribute('clip-path',`url(#${clipId})`);
+     over.style.pointerEvents='none';
+
+     group.appendChild(over);
+
+   });
+ });
+
+ console.log("✅ Mascots restored properly");
+};
+
+
+// =================== AUTO-INITIALIZE ===================
+
+if (document.readyState === 'loading') {
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        setTimeout(window.initializePatternsOnLoad, 500);
+        setTimeout(window.initializeMascotsOnLoad, 500);
+
+    });
+
+} else {
+
+    setTimeout(window.initializePatternsOnLoad, 500);
+    setTimeout(window.initializeMascotsOnLoad, 500);   // 🔥 THIS WAS MISSING
+
+}
+
+})();

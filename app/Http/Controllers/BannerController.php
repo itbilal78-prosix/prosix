@@ -1,0 +1,139 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Banner;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class BannerController extends Controller
+{
+    public function index()
+    {
+$banners = Banner::orderBy('position', 'asc')->get();  
+    return view('banner.index', compact('banners'));
+    }
+
+    public function create()
+    {
+        return view('banner.create');
+    }
+
+   public function store(Request $request)
+{
+    $maxPosition = Banner::max('position') ?? 0;
+
+    $request->validate([
+        'title'            => 'required|string|max:255',
+        'button_text'      => 'nullable|string|max:100',
+        'button_link'      => 'nullable|url',
+        'background_image' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
+        'png_image'        => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
+    ]);
+
+    $bgPath  = $request->hasFile('background_image')
+        ? $request->background_image->store('banners/backgrounds', 'public')
+        : null;
+
+    $pngPath = $request->hasFile('png_image')
+        ? $request->png_image->store('banners/png', 'public')
+        : null;
+
+    Banner::create([
+        'title'            => $request->title,
+        'button_text'      => $request->button_text,
+        'button_link'      => $request->button_link,
+        'background_image' => $bgPath,
+        'png_image'        => $pngPath,
+        'position'         => $maxPosition + 1, // ✅ Assign here
+    ]);
+
+    return redirect()->route('banners.index')->with('success', 'Banner created successfully!');
+}
+
+
+    public function edit($id)
+    {
+        $banner = Banner::findOrFail($id);
+        return view('banner.edit', compact('banner'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $banner = Banner::findOrFail($id);
+
+       $request->validate([
+    'title'             => 'required|string|max:255',
+    'button_text'       => 'nullable|string|max:100',
+    'button_link'       => 'nullable|url',
+'background_image' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
+    'png_image'         => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB
+]);
+
+
+        $banner->title       = $request->title;
+        $banner->button_text = $request->button_text;
+        $banner->button_link = $request->button_link;
+
+       if ($request->hasFile('background_image')) {
+    if ($banner->background_image) {
+        Storage::disk('public')->delete($banner->background_image);
+    }
+    $banner->background_image = $request->background_image->store('banners/backgrounds', 'public');
+}
+
+if ($request->hasFile('png_image')) {
+    if ($banner->png_image) {
+        Storage::disk('public')->delete($banner->png_image);
+    }
+    $banner->png_image = $request->png_image->store('banners/png', 'public');
+}
+
+
+        $banner->save();
+
+        return redirect()->route('banners.index')
+            ->with('success', 'Banner updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        $banner = Banner::findOrFail($id);
+
+        Storage::disk('public')->delete([
+            $banner->background_image,
+            $banner->png_image,
+        ]);
+
+        $banner->delete();
+
+        return redirect()->route('banners.index')
+            ->with('success', 'Banner deleted successfully!');
+    }
+
+    // ✅ API for Vue / Frontend
+public function apiIndex()
+{
+    return Banner::orderBy('position', 'asc')->get()->map(function ($banner) {
+        return [
+            'title'           => $banner->title,
+            'buttonText'      => $banner->button_text,
+            'buttonLink'      => $banner->button_link,
+            'backgroundImage' => asset('storage/' . $banner->background_image),
+            'pngImage'        => $banner->png_image ? asset('storage/' . $banner->png_image) : null,
+        ];
+    });
+}
+public function reorder(Request $request)
+{
+    $order = $request->input('order');
+
+    foreach ($order as $item) {
+        Banner::where('id', $item['id'])->update(['position' => $item['position']]);
+    }
+
+    return response()->json(['status' => 'success']);
+}
+
+
+}

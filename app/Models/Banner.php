@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Banner extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'title',
+        'button_text',
+        'button_link',
+        'background_image',
+        'png_image',
+        'position'
+    ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('ordered', function ($query) {
+            $query->orderBy('position', 'asc');
+        });
+    }
+}
