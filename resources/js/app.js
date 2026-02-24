@@ -1,4 +1,10 @@
 
+import axios from 'axios'
+
+axios.defaults.baseURL = 'https://prosix.com'
+axios.defaults.withCredentials = true
+
+window.axios = axios
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 
