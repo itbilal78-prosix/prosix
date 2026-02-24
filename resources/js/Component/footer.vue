@@ -2,10 +2,10 @@
   <footer class="prosix-footer bg-black text-white">
     <div class="container-fluid px-5" style="position: relative; z-index: 1;">
       <div class="row py-5 ">
-       
-<div class="footer-logo mb-4 d-flex align-items-start">
-  <img src="/public/assets/images/P LOGO WHITE.png" alt="Prosix Sports Logo" class="footer-logo-img">
-  
+
+<div class="footer-logo mb-4 d-flex align-items-start  gap-5">
+      <img src="/public/assets/images/P LOGO WHITE.png" alt="Prosix Sports Logo" class="footer-logo-img">
+
   <img src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png" alt="Prosix Sports Logo" class="footer-logo-img">
 </div>
 
@@ -37,11 +37,11 @@
           <h1 class="subscribe-title mb-3 ">SUBSCRIBE</h1>
           <p class="subscribe-subtitle mb-4">To our newsletter for latest updates</p>
           <div class="social-icons d-flex justify-content-center  gap-4">
-            <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
-            <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
-            <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
-            <a href="#" class="social-link"><i class="bi bi-twitter"></i></a>
-            <a href="#" class="social-link"><i class="bi bi-pinterest"></i></a>
+            <a href="https://www.facebook.com/prosixsports/" class="social-link"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.instagram.com/prosixsports" class="social-link"><i class="bi bi-instagram"></i></a>
+            <a href="https://www.youtube.com/@prosixsports" class="social-link"><i class="bi bi-youtube"></i></a>
+            <a href="https://x.com/ProsixSports" class="social-link"><i class="bi bi-twitter"></i></a>
+            <a href="https://www.pinterest.com/prosixsports/" class="social-link"><i class="bi bi-pinterest"></i></a>
           </div>
         </div>
 
@@ -80,7 +80,7 @@
 .footer-logo-img {
   height: 80px; /* adjust size */
   object-fit: contain;
-  
+
 }
 .prosix-footer {
   background: url('/public/assets/images/footer texture.svg') no-repeat center center;

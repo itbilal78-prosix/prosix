@@ -58,7 +58,7 @@ class NavigationController extends Controller
         'position'     => 'integer',
     ]);
 
-    $validated['status'] = $request->has('status');         
+    $validated['status'] = $request->has('status');
     $validated['has_dropdown'] = $request->has('has_dropdown');
 
     $navigation->update($validated);
@@ -89,7 +89,7 @@ class NavigationController extends Controller
     // 🔹 API index for frontend
     public function apiIndex()
     {
-        $navigations = Navigation::where('status', 1) // only active
+        $navigations = Navigation::where('status', 1)
             ->orderBy('position')
             ->get();
 

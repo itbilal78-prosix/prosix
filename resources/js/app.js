@@ -3,7 +3,7 @@ import axios from 'axios'
 
 axios.defaults.baseURL = 'https://prosix.com'
 axios.defaults.withCredentials = true
-
+axios.defaults.baseURL = import.meta.env.VITE_API_URL
 window.axios = axios
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';

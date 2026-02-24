@@ -540,7 +540,7 @@ onMounted(async () => {
     margin-top: 0;
     border-radius: 6px;
     min-width: 220px;
-    background: #111;
+    background: rgb(0, 0, 0)
 }
 .nav-item.dropdown:hover > .dropdown-menu { display: block; }
 

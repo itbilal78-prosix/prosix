@@ -7,7 +7,6 @@ use App\Models\Navigation;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -17,7 +16,7 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories = Category::latest()->get();
+        $categories = Category::orderBy('position')->get();
 
         return view('categories.index', compact('categories'));
     }
@@ -41,7 +40,7 @@ class CategoryController extends Controller
         return view('categories.sub_create', compact('navigations', 'parentCategories'));
     }
 
-   public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -63,12 +62,12 @@ class CategoryController extends Controller
 
         if ($request->hasFile('icon_image')) {
             $path = $request->file('icon_image')->store('categories', 'public');
-            $data['icon_image'] = '/storage/' . $path;
+            $data['icon_image'] = '/storage/'.$path;
         }
 
         if ($request->hasFile('highlight_image')) {
             $path = $request->file('highlight_image')->store('categories/highlight', 'public');
-            $data['highlight_image'] = '/storage/' . $path;
+            $data['highlight_image'] = '/storage/'.$path;
         }
 
         // Make sure subcategory doesn't have navigation_id
@@ -90,7 +89,7 @@ class CategoryController extends Controller
         return view('categories.edit', compact('category', 'navigations', 'categories'));
     }
 
-public function update(Request $request, Category $category)
+    public function update(Request $request, Category $category)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -128,12 +127,12 @@ public function update(Request $request, Category $category)
 
         if ($request->hasFile('icon_image')) {
             $path = $request->file('icon_image')->store('categories', 'public');
-            $data['icon_image'] = '/storage/' . $path;
+            $data['icon_image'] = '/storage/'.$path;
         }
 
         if ($request->hasFile('highlight_image')) {
             $path = $request->file('highlight_image')->store('categories/highlight', 'public');
-            $data['highlight_image'] = '/storage/' . $path;
+            $data['highlight_image'] = '/storage/'.$path;
         }
 
         $category->update($data);
@@ -144,7 +143,6 @@ public function update(Request $request, Category $category)
 
     public function destroy(Category $category)
     {
-     
 
         $category->delete();
 
@@ -183,43 +181,42 @@ public function update(Request $request, Category $category)
     }
 
     public function apiCategoriesByNavigation()
-{
-    $categories = Category::with(['subcategories' => function ($q) {
-        $q->select('id', 'name', 'parent_id', 'icon_image', 'password') // ← password شامل کرو
-          ->where('status', 1);
-    }])
-        ->where('status', 1)
-        ->whereNotNull('navigation_id')
-        ->select('id', 'name', 'navigation_id', 'icon_image', 'password') // ← یہاں بھی password شامل
-        ->orderBy('name')
-        ->get()
-        ->groupBy('navigation_id');
+    {
+        $categories = Category::with(['subcategories' => function ($q) {
+            $q->select('id', 'name', 'parent_id', 'icon_image', 'password') // ← password شامل کرو
+                ->where('status', 1);
+        }])
+            ->where('status', 1)
+            ->whereNotNull('navigation_id')
+            ->select('id', 'name', 'navigation_id', 'icon_image', 'password') // ← یہاں بھی password شامل
+            ->orderBy('name')
+            ->get()
+            ->groupBy('navigation_id');
 
-    $grouped = [];
-    foreach ($categories as $navId => $cats) {
-        $grouped[(int) $navId] = $cats->map(function ($cat) {
-            return [
-                'id' => $cat->id,
-                'name' => $cat->name,
-                'icon_image' => $cat->icon_image,
-                'password' => !empty($cat->password), // ← boolean flag (true/false)
+        $grouped = [];
+        foreach ($categories as $navId => $cats) {
+            $grouped[(int) $navId] = $cats->map(function ($cat) {
+                return [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'icon_image' => $cat->icon_image,
+                    'password' => ! empty($cat->password), // ← boolean flag (true/false)
 
-                'subcategories' => $cat->subcategories->map(fn ($sub) => [
-                    'id' => $sub->id,
-                    'name' => $sub->name,
-                    'password' => !empty($sub->password), // ← subcategory میں بھی flag
-                ])->values()->all(),
-            ];
-        })->values()->all();
+                    'subcategories' => $cat->subcategories->map(fn ($sub) => [
+                        'id' => $sub->id,
+                        'name' => $sub->name,
+                        'password' => ! empty($sub->password), // ← subcategory میں بھی flag
+                    ])->values()->all(),
+                ];
+            })->values()->all();
+        }
+
+        return response()->json($grouped);
     }
-
-    return response()->json($grouped);
-}
 
     public function categoriesBySlug($slug)
     {
-      $navigation = Navigation::where('slug', $slug)->where('status', 1)->first();
-
+        $navigation = Navigation::where('slug', $slug)->where('status', 1)->first();
 
         if (! $navigation) {
             return response()->json([
@@ -280,87 +277,88 @@ public function update(Request $request, Category $category)
         ]);
     }
 
- public function apiMenuCategories($slug)
-{
-    $navigation = Navigation::where('slug', $slug)
-        ->where('status', 1)
-        ->firstOrFail();
+    public function apiMenuCategories($slug)
+    {
+        $navigation = Navigation::where('slug', $slug)
+            ->where('status', 1)
+            ->firstOrFail();
 
-    $categories = Category::with(['subcategories' => function ($q) {
-        $q->where('status', 1)
-          ->select('id', 'name', 'parent_id');
-    }])
-    ->where('navigation_id', $navigation->id)
-    ->where('status', 1)
-    ->whereNull('parent_id')
-    ->select('id', 'name', 'icon_image', 'highlight_image', 'password')
-    ->orderBy('name')
-    ->get();
+        $categories = Category::with(['subcategories' => function ($q) {
+            $q->where('status', 1)
+                ->orderBy('position')      // 🔥 ADD THIS LINE
+                ->select('id', 'name', 'parent_id');
+        }])
+            ->where('navigation_id', $navigation->id)
+            ->where('status', 1)
+            ->whereNull('parent_id')
+            ->select('id', 'name', 'icon_image', 'highlight_image', 'password')
+            ->orderBy('position')
+            ->get();
 
-    return response()->json([
-        'navigation' => [
-            'id'    => $navigation->id,
-            'title' => $navigation->title,
-            'slug'  => $navigation->slug,
-        ],
-       'categories' => $categories->map(function ($cat) {
-    return [
-        'id' => $cat->id,
-        'name' => $cat->name,
-        'icon_image' => $cat->icon_image,
-        'highlight_image' => $cat->highlight_image,
-        'password' => !empty($cat->password), // parent password boolean
-        'subcategories' => $cat->subcategories->map(fn($sub) => [
-            'id' => $sub->id,
-            'name' => $sub->name,
-            'password' => !empty($sub->password) // ✅ SUBCATEGORY PASSWORD BOOLEAN
-        ])->values()
-    ];
-})
-
-    ]);
-}
-
-public function subcategories($id)
-{
-    $category = Category::with(['subcategories' => function ($q) {
-        $q->where('status', 1)
-          ->select('id', 'name', 'icon_image', 'parent_id', 'password'); // ✅ add password
-    }])
-    ->where('id', $id)
-    ->where('status', 1)
-    ->select('id', 'name', 'icon_image')
-    ->first();
-
-    if (! $category) {
         return response()->json([
-            'error' => 'Category not found',
-            'id_received' => $id,
-        ], 404);
+            'navigation' => [
+                'id' => $navigation->id,
+                'title' => $navigation->title,
+                'slug' => $navigation->slug,
+            ],
+            'categories' => $categories->map(function ($cat) {
+                return [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'icon_image' => $cat->icon_image,
+                    'highlight_image' => $cat->highlight_image,
+                    'password' => ! empty($cat->password), // parent password boolean
+                    'subcategories' => $cat->subcategories->map(fn ($sub) => [
+                        'id' => $sub->id,
+                        'name' => $sub->name,
+                        'password' => ! empty($sub->password), // ✅ SUBCATEGORY PASSWORD BOOLEAN
+                    ])->values(),
+                ];
+            }),
+
+        ]);
     }
 
-    $parentImage = $category->icon_image ? url($category->icon_image) : null;
+    public function subcategories($id)
+    {
+        $category = Category::with(['subcategories' => function ($q) {
+            $q->where('status', 1)
+              ->orderBy('position')    // 🔥 ADD
+                ->select('id', 'name', 'icon_image', 'parent_id', 'password'); // ✅ add password
+        }])
+            ->where('id', $id)
+            ->where('status', 1)
+            ->select('id', 'name', 'icon_image')
+            ->first();
 
-    $subcategories = $category->subcategories->map(function ($sub) {
-        return [
-            'id' => $sub->id,
-            'name' => $sub->name,
-            'icon_image' => $sub->icon_image ? url($sub->icon_image) : null,
-            'password' => !empty($sub->password), // ✅ boolean flag
-        ];
-    })->values();
+        if (! $category) {
+            return response()->json([
+                'error' => 'Category not found',
+                'id_received' => $id,
+            ], 404);
+        }
 
-    return response()->json([
-        'parent' => [
-            'id' => $category->id,
-            'name' => $category->name,
-            'icon_image' => $parentImage,
-        ],
-        'subcategories' => $subcategories,
-    ]);
-}
+        $parentImage = $category->icon_image ? url($category->icon_image) : null;
 
-  
+        $subcategories = $category->subcategories->map(function ($sub) {
+            return [
+                'id' => $sub->id,
+                'name' => $sub->name,
+                'icon_image' => $sub->icon_image ? url($sub->icon_image) : null,
+                'password' => ! empty($sub->password), // ✅ boolean flag
+            ];
+        })->values();
+
+        return response()->json([
+            'parent' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'icon_image' => $parentImage,
+            ],
+            'subcategories' => $subcategories,
+        ]);
+    }
+
     public function products($id)
     {
         $category = Category::find($id);
@@ -436,6 +434,16 @@ public function subcategories($id)
                 'success' => false,
                 'message' => 'Invalid password',
             ], 401);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function reorder(Request $request)
+    {
+        foreach ($request->order as $item) {
+            Category::where('id', $item['id'])
+                ->update(['position' => $item['position']]);
         }
 
         return response()->json(['success' => true]);

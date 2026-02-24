@@ -9,9 +9,6 @@
 
     <!-- Fixed Icons Left Side -->
     <div class="fixed-icons-left">
-      <!-- <button @click="toggleDarkMode" class="icon-btn" :title="isDarkMode ? 'Light Mode' : 'Dark Mode'">
-        <i class="bi" :class="isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
-      </button> -->
       <a href="https://wa.me/03316566200" target="_blank" class="icon-btn" title="WhatsApp">
         <i class="bi bi-whatsapp"></i>
       </a>
@@ -32,8 +29,7 @@
            <div
   :key="currentSlide"
   class="carousel-slide active"
-              :style="{ backgroundImage: `url(${safeSlides[currentSlide].backgroundImage})` }"
-            >
+              :style="{ backgroundImage: `url(${safeSlides[currentSlide].backgroundImage})` }">
               <div class="carousel-overlay">
                 <div class="carousel-content d-flex align-items-center justify-content-start h-100">
                   <div class="text-and-image-wrapper d-flex flex-column align-items-start text-start">
@@ -41,7 +37,6 @@
                       <h1 class="display-3 fw-bold main_title italic-title animate-from-top">
 {{ safeSlides[currentSlide].title }}
              </h1>
-
                       <div class="button-wrapper flex-shrink-0 animate-from-top delayed">
                         <button
                           v-if="safeSlides[currentSlide].buttonText"
@@ -115,7 +110,6 @@
   </div>
 </section>
 
-      <!-- Team Customizer Section -->
 
       <!-- Deals / Offers Section -->
   <section class="deals-section py-5">
@@ -186,12 +180,6 @@
 
     </div>
   </section>
-
-
-
-
-
-
 
       <!-- Featured Products -->
 <section class="featured-products py-5">
@@ -338,9 +326,7 @@
   </div>
 </div>
 
-      <!-- Team Showcase -->
-    <!-- Apparel Products Section -->
-<!-- Apparel Products Section - Full Black Theme -->
+
 <!-- Apparel Products Carousel - Dark Theme -->
 <section class="apparel-products py-5" style="background: #000000;">
   <div class="container">
@@ -430,103 +416,103 @@
 
       <!-- Testimonials -->
 <!-- Testimonials Section -->
-<section class="testimonials-section py-5">
-  <div class="container">
-    <div class="section-header text-center mb-5">
-      <p class="testimonial-label">TESTIMONIAL</p>
-      <h2 class="section-title text-black">HAPPY PEOPLE</h2>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="loadingTestimonials" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p class="mt-3">Loading customer reviews...</p>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="testimonialsError" class="text-center py-5 text-danger">
-      <p>{{ testimonialsError }}</p>
-      <button class="btn btn-outline-dark mt-3" @click="fetchTestimonials">
-        Try Again
-      </button>
-    </div>
-
-    <!-- No Data -->
-    <div v-else-if="testimonials.length === 0" class="text-center py-5 text-muted">
-      <p>No testimonials available yet.</p>
-    </div>
-
-    <!-- Actual Carousel -->
-    <div v-else class="testimonials-carousel-wrapper position-relative">
-      <div
-        class="testimonials-carousel d-flex"
-        :style="{ transform: `translateX(-${currentTestimonialIndex * (100 / itemsPerSlide)}%)` }"
-      >
-        <div
-          v-for="(testimonial, index) in testimonials"
-          :key="index"
-          class="testimonial-item flex-shrink-0"
-          :style="{ width: `${100 / itemsPerSlide}%` }"
-        >
-          <div class="testimonial-card bg-white rounded shadow-sm p-4 h-100">
-            <div class="quote-icon">"</div>
-
-            <!-- Stars -->
-           <div class="stars-rating mb-3">
-  <i
-    v-for="star in 5"
-    :key="star"
-    class="bi"
-    :class="{
-      'bi-star-fill text-warning': star <= testimonial.rating,
-      'bi-star text-muted': star > testimonial.rating
-    }"
-  ></i>
-</div>
-
-            <p class="testimonial-text mb-4">{{ testimonial.text }}</p>
-
-            <div class="testimonial-author d-flex align-items-center">
-              <div class="author-image me-3">
-                <img
-                  :src="testimonial.image"
-                  :alt="testimonial.name"
-                  class="rounded-circle"
-                />
-              </div>
-              <div class="author-info">
-                <h5 class="author-name mb-0">{{ testimonial.name }}</h5>
-                <p class="author-position text-muted mb-0">{{ testimonial.position }}</p>
-              </div>
-            </div>
-          </div>
+    <section class="testimonials-section py-5">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+        <p class="testimonial-label">TESTIMONIAL</p>
+        <h2 class="section-title text-black">HAPPY PEOPLE</h2>
         </div>
-      </div>
 
-      <!-- Navigation Arrows -->
-      <button
-        class="carousel-arrow left"
-        @click="prevTestimonial"
-        :disabled="currentTestimonialIndex === 0"
-      >‹</button>
-      <button
-        class="carousel-arrow right"
-        @click="nextTestimonial"
-        :disabled="currentTestimonialIndex >= maxIndex"
-      >›</button>
+        <!-- Loading State -->
+        <div v-if="loadingTestimonials" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3">Loading customer reviews...</p>
+        </div>
 
-      <div class="carousel-dots mt-4 text-center">
-        <span
-          v-for="n in Math.ceil(testimonials.length / itemsPerSlide)"
-          :key="n"
-          class="dot"
-          :class="{ active: currentTestimonialIndex === (n-1) }"
-          @click="goToTestimonial(n-1)"
-        ></span>
-      </div>
+        <!-- Error State -->
+        <div v-else-if="testimonialsError" class="text-center py-5 text-danger">
+        <p>{{ testimonialsError }}</p>
+        <button class="btn btn-outline-dark mt-3" @click="fetchTestimonials">
+            Try Again
+        </button>
+        </div>
+
+        <!-- No Data -->
+        <div v-else-if="testimonials.length === 0" class="text-center py-5 text-muted">
+        <p>No testimonials available yet.</p>
+        </div>
+
+        <!-- Actual Carousel -->
+        <div v-else class="testimonials-carousel-wrapper position-relative">
+        <div
+            class="testimonials-carousel d-flex"
+            :style="{ transform: `translateX(-${currentTestimonialIndex * (100 / itemsPerSlide)}%)` }"
+        >
+            <div
+            v-for="(testimonial, index) in testimonials"
+            :key="index"
+            class="testimonial-item flex-shrink-0"
+            :style="{ width: `${100 / itemsPerSlide}%` }"
+            >
+            <div class="testimonial-card bg-white rounded shadow-sm p-4 h-100">
+                <div class="quote-icon">"</div>
+
+                <!-- Stars -->
+            <div class="stars-rating mb-3">
+    <i
+        v-for="star in 5"
+        :key="star"
+        class="bi"
+        :class="{
+        'bi-star-fill text-warning': star <= testimonial.rating,
+        'bi-star text-muted': star > testimonial.rating
+        }"
+    ></i>
     </div>
-  </div>
-</section>
+
+                <p class="testimonial-text mb-4">{{ testimonial.text }}</p>
+
+                <div class="testimonial-author d-flex align-items-center">
+                <div class="author-image me-3">
+                    <img
+                    :src="testimonial.image"
+                    :alt="testimonial.name"
+                    class="rounded-circle"
+                    />
+                </div>
+                <div class="author-info">
+                    <h5 class="author-name mb-0">{{ testimonial.name }}</h5>
+                    <p class="author-position text-muted mb-0">{{ testimonial.position }}</p>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Navigation Arrows -->
+        <button
+            class="carousel-arrow left"
+            @click="prevTestimonial"
+            :disabled="currentTestimonialIndex === 0"
+        >‹</button>
+        <button
+            class="carousel-arrow right"
+            @click="nextTestimonial"
+            :disabled="currentTestimonialIndex >= maxIndex"
+        >›</button>
+
+        <div class="carousel-dots mt-4 text-center">
+            <span
+            v-for="n in Math.ceil(testimonials.length / itemsPerSlide)"
+            :key="n"
+            class="dot"
+            :class="{ active: currentTestimonialIndex === (n-1) }"
+            @click="goToTestimonial(n-1)"
+            ></span>
+        </div>
+        </div>
+    </div>
+    </section>
 
 
 <!-- Recent Blog Section -->
@@ -595,13 +581,6 @@ const currentVideoUrl = ref('')
 const videoPlayer = ref(null)
 const showWelcomePopup = ref(false)
 const isDarkMode = ref(false)
-
-// const toggleDarkMode = () => {
-//   isDarkMode.value = !isDarkMode.value
-//   if (typeof localStorage !== 'undefined') {
-//     localStorage.setItem('darkMode', isDarkMode.value)
-//   }
-// }
 
 const slides = ref([])
 const safeSlides = computed(() =>
@@ -1058,19 +1037,21 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon-btn:hover { background: #fff; color: #000; transform: scale(1.1); }
 
 /* Hero Carousel */
-.hero-carousel { position: relative; height: 100vh; min-height: 700px; overflow: hidden; }
+.hero-carousel { position: relative; height: 100vh;   min-height: 100vh; overflow: hidden; }
 .hero-carousel:empty {
   display: none;
 }
-.carousel-container { position: relative; height: 85%; }
+.carousel-container { position: relative; height: 100%; }
 .carousel-slide {
+      height: 100vh;
+
   position: absolute; inset: 0; background-size: cover; background-position: center;
   background-repeat: no-repeat; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 
 }
-.carousel-overlay { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; }
-.carousel-content { max-width: 1400px; margin: 0 5%; width: 100%; }
+.carousel-overlay { position: absolute;   height: 100%; inset: 0; z-index: 2; display: flex; align-items: center; }
+.carousel-content { max-width: 1400px; margin: 0 5%; width: 100%;   height: 100%; }
 .text-and-image-wrapper { max-width: 60%; text-align: center; margin-top: 12%; }
 
 .title-button-row {
@@ -2210,6 +2191,12 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
   }
 
   /* Carousel Controls */
+  @supports (-webkit-touch-callout: none) {
+  .hero-carousel,
+  .carousel-slide {
+    height: -webkit-fill-available;
+  }
+}
   .carousel-control-left,
   .carousel-control-right {
     width: 40px !important;

@@ -158,7 +158,7 @@ Route::get('/models/{id}', [FrontModel::class, 'show'])->name('frontend.models.s
 Route::get('/models/{id}/api', [FrontModel::class, 'api'])->name('frontend.models.api');
 Route::post('/models/{id}/save-design', [FrontModel::class, 'saveDesign'])->name('frontend.models.save-design');
 
-Route::post('/models/reorder',[CustomizerModelController::class,'reorder'])->name('models.reorder');
+// Route::post('/models/reorder',[CustomizerModelController::class,'reorder'])->name('models.reorder');
 Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
 
 // Template routes
@@ -172,7 +172,8 @@ Route::get('/api/mascot-templates', function () {
 });
 
 
-
+Route::post('/categories/reorder',[CategoryController::class,'reorder'])
+->name('categories.reorder');
 
 Route::get('/{any}', function () {
     return view('welcome');
