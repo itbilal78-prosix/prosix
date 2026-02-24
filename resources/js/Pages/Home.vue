@@ -37,7 +37,7 @@
                   <div class="text-and-image-wrapper d-flex flex-column align-items-start text-start">
                     <div class="title-button-row d-flex align-items-start gap-4 mb-3">
                       <h1 class="display-3 fw-bold main_title italic-title animate-from-top">
-                        {{ safeSlides[currentSlide].title ||  }}
+                        {{ safeSlides[currentSlide].title || 'Premium Sports Gear' }}
                       </h1>
 
                       <div class="button-wrapper flex-shrink-0 animate-from-top delayed">
@@ -905,7 +905,15 @@ onMounted(() => {
 onUnmounted(() => {
   if (autoInterval) clearInterval(autoInterval)
 })
-
+const fetchSlides = async () => {
+  try {
+    const res = await axios.get('/api/banners')
+    slides.value = res.data
+  } catch (err) {
+    console.error('Banner fetch failed:', err)
+    slides.value = []
+  }
+}
 
 const nextSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }
 const prevSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length }
