@@ -44,8 +44,8 @@
           <div class="col-lg-6">
             <div v-if="categories.length === 0" class="text-center py-5">
               <h3>No categories found</h3>
-              <p class="text-muted">Please add categories with navigation_id = {{ navigation?.id }}</p>
-              <router-link to="/" class="btn btn-outline-primary mt-3">Back to Home</router-link>
+              <p class="text-muted">{{ navigation?.id }}</p>
+              <router-link to="/" class="btn btn-outline-dark mt-3">Back to Home</router-link>
             </div>
 
             <div v-else class="row g-3">

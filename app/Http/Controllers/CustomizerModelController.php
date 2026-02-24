@@ -15,10 +15,8 @@ class CustomizerModelController extends Controller
     {
         $categories = Category::whereNull('parent_id')
             ->where('status', 1)
-            ->orderBy('position')
             ->with(['models' => function ($q) {
-                $q->orderBy('model_name')
-                    ->orderBy('position');
+                $q->orderBy('model_name');
             }])
             ->get();
 
@@ -32,26 +30,13 @@ class CustomizerModelController extends Controller
 
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
-            ->orderBy('position')
-            ->with(['subcategories' => function ($q) {
-                $q->orderBy('position');
-            }])
+          ->with('subcategories')
             ->get();
 
         return view('admin.models.create', compact('navigations', 'parentCategories'));
     }
 
-    public function reorder(Request $request)
-    {
-        foreach ($request->order as $row) {
 
-            CustomizerModel::where('id', $row['id'])
-                ->update(['position' => $row['position']]);
-
-        }
-
-        return response()->json(['success' => true]);
-    }
 
     public function store(Request $request)
     {
@@ -93,10 +78,8 @@ class CustomizerModelController extends Controller
             $data['thumbnail'] = $name;
         }
 
-        $max = CustomizerModel::where('category_id', $request->category_id)
-            ->max('position');
 
-        $data['position'] = $max ? $max + 1 : 1;
+
 
         CustomizerModel::create($data);
 
@@ -164,9 +147,7 @@ class CustomizerModelController extends Controller
         $navigations = Navigation::where('status', 1)->get() ?? collect();
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
-            ->with(['subcategories' => function ($q) {
-                $q->orderBy('position');
-            }])->orderBy('position')   // 🔥 YE LINE ADD
+          ->with('subcategories')
 
             ->get();
         $fonts = Font::all();   // 🔥 ADD THIS
@@ -180,9 +161,7 @@ class CustomizerModelController extends Controller
         $model = CustomizerModel::findOrFail($id);
 
         // ✅ validate first
-        $request->validate([
-            'position' => 'nullable|integer',
-        ]);
+
 
         // ✅ model data
         $data = $request->only([
@@ -359,7 +338,7 @@ class CustomizerModelController extends Controller
             ->map(function ($model) {
                 return [
                     'id' => $model->id,
-                        'model_name' => $model->model_name,   // 👈 ADD THIS
+                    'model_name' => $model->model_name,   // 👈 ADD THIS
 
                     'title' => $model->title,
                     'price' => $model->price ? number_format($model->price, 2) : '0.00',  // ← YEHI CHANGE
@@ -409,7 +388,7 @@ class CustomizerModelController extends Controller
             ->map(function ($model) {
                 return [
                     'id' => $model->id,
-                        'model_name' => $model->model_name,   // 👈 ADD THIS
+                    'model_name' => $model->model_name,   // 👈 ADD THIS
 
                     'title' => $model->title,
                     'price' => $model->price ? number_format($model->price, 2) : '0.00',
@@ -450,7 +429,7 @@ class CustomizerModelController extends Controller
             ->map(function ($model) {
                 return [
                     'id' => $model->id,
-                        'model_name' => $model->model_name,   // 👈 ADD THIS
+                    'model_name' => $model->model_name,   // 👈 ADD THIS
                     'title' => $model->title,
                     'price' => $model->price ? number_format($model->price, 2) : '0.00',
                     'description' => $model->description,
@@ -489,9 +468,7 @@ class CustomizerModelController extends Controller
     {
         $categories = Category::where('status', 1)
             ->whereHas('models') // 🔥 sirf jisme models hain
-            ->orderBy('position')
             ->with(['models' => function ($q) {
-                $q->orderBy('position');
             }])
             ->get();
 
