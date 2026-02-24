@@ -22,17 +22,16 @@
 
     <!-- Main content -->
     <main class="flex-grow-1">
+        <div v-if="safeSlides.length > 0">
       <!-- Hero Carousel Banner -->
-<section
-  v-if="safeSlides.length > 0"
-  class="hero-carousel"
-  id="hero"
->        <div class="carousel-container">
+<section class="hero-carousel" id="hero">
+
+
+<div class="carousel-container">
           <Transition name="slide" mode="out-in">
-            <div
-              v-if="safeSlides.length > 0"
-              :key="currentSlide"
-              class="carousel-slide active"
+           <div
+  :key="currentSlide"
+  class="carousel-slide active"
               :style="{ backgroundImage: `url(${safeSlides[currentSlide].backgroundImage})` }"
             >
               <div class="carousel-overlay">
@@ -91,7 +90,10 @@
           </template>
         </div>
       </section>
-
+    </div>
+    <div v-else class="text-center py-5">
+  <h3>No Banner Available</h3>
+</div>
       <!-- Clickable Moving Sports Icons -->
    <section class="sports-icons-section">
   <div class="icons-track">
@@ -611,7 +613,7 @@ const sportsIcons = ref([])
 
 const fetchCategories = async () => {
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/highlighted');
+    const res = await axios.get('/api/highlighted');
 
     console.log('Highlighted Categories Full Response:', res.data);
 
@@ -646,7 +648,7 @@ const deal = ref(null)
 
 const fetchDeal = async () => {
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/latest-deal')
+    const res = await axios.get('/api/latest-deal')
     console.log('Deal API Full Response:', res)          // Pura response
     console.log('Deal Data:', res.data)                  // Sirf data
     console.log('Images Array:', res.data?.images)       // Images check
@@ -688,7 +690,7 @@ const maxVideoSlides = computed(() => Math.max(0, Math.ceil(sportsVideos.value.l
 // Fetch videos from backend
 const fetchVideos = async () => {
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/videos');
+    const res = await axios.get('/api/videos');
     console.log('Videos from API:', res.data);
     console.log('Count:', res.data.length);
     sportsVideos.value = res.data || [];
@@ -747,7 +749,7 @@ const blogs = ref([])
 // Fetch all blogs
 const fetchBlogs = async () => {
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/blogs')
+    const res = await axios.get('/api/blogs')
     blogs.value = res.data
   } catch (err) {
     console.error(err)
@@ -757,7 +759,7 @@ const fetchBlogs = async () => {
 // Fetch single blog by slug
 const fetchBlogDetail = async (slug) => {
   try {
-    const res = await axios.get(`http://127.0.0.1:8000/api/blogs/${slug}`)
+    const res = await axios.get(`/api/blogs/${slug}`)
     currentBlog.value = res.data
   } catch (err) {
     console.error(err)
@@ -773,7 +775,7 @@ onMounted(() => {
 // Yeh line **bilkul galat** hai
 const fetchApparelProducts = async () => {
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/apparel-products')
+    const res = await axios.get('/api/apparel-products')
     apparelProducts.value = res.data || []
     console.log("Apparel products loaded:", apparelProducts.value.length)
   } catch (err) {
@@ -837,7 +839,7 @@ const tabs = ref([
 // Fetch featured (is_featured = true) products
 const fetchFeaturedProducts = async () => {
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/featured-products')
+    const res = await axios.get('/api/featured-products')
     featuredProducts.value = res.data || []
   } catch (err) {
     console.error('Featured fetch error:', err)
@@ -950,7 +952,7 @@ const fetchTestimonials = async () => {
   testimonialsError.value = null
 
   try {
-    const res = await axios.get('http://127.0.0.1:8000/api/testimonials')
+    const res = await axios.get('/api/testimonials')
     console.log('Testimonials raw data:', res.data)
 
     testimonials.value = res.data.map(item => ({
@@ -1057,6 +1059,9 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 /* Hero Carousel */
 .hero-carousel { position: relative; height: 100vh; min-height: 700px; overflow: hidden; }
+.hero-carousel:empty {
+  display: none;
+}
 .carousel-container { position: relative; height: 85%; }
 .carousel-slide {
   position: absolute; inset: 0; background-size: cover; background-position: center;
@@ -1383,7 +1388,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   position: relative;
   padding: 80px 0;
   overflow: hidden;
-  background: url('/public/assets/images/lines texture.svg') no-repeat center center;
+  background: url('/assets/images/lines texture.svg')no-repeat center center;
   background-size: cover;
 }
 
@@ -1538,7 +1543,7 @@ p {
   position: relative;
   padding: 80px 0;
   overflow: hidden;
-  background: url('/public/assets/images/lines texture.svg') no-repeat center center;
+  background: url('/assets/images/lines texture.svg') no-repeat center center;
   background-size: cover;
 }
 
@@ -1957,7 +1962,7 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
   position: relative;
   padding: 80px 0;
   overflow: hidden;
-  background: url('/public/assets/images/lines texture.svg') no-repeat center center;
+  background: url('/assets/images/lines texture.svg') no-repeat center center;
   background-size: cover;}
   .recent-blog-section::before {
   content: '';
