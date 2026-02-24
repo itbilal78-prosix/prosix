@@ -23,8 +23,11 @@
     <!-- Main content -->
     <main class="flex-grow-1">
       <!-- Hero Carousel Banner -->
-      <section class="hero-carousel" id="hero">
-        <div class="carousel-container">
+<section
+  v-if="safeSlides.length > 0"
+  class="hero-carousel"
+  id="hero"
+>        <div class="carousel-container">
           <Transition name="slide" mode="out-in">
             <div
               v-if="safeSlides.length > 0"
@@ -37,8 +40,8 @@
                   <div class="text-and-image-wrapper d-flex flex-column align-items-start text-start">
                     <div class="title-button-row d-flex align-items-start gap-4 mb-3">
                       <h1 class="display-3 fw-bold main_title italic-title animate-from-top">
-                        {{ safeSlides[currentSlide].title || 'Premium Sports Gear' }}
-                      </h1>
+{{ safeSlides[currentSlide].title }}
+             </h1>
 
                       <div class="button-wrapper flex-shrink-0 animate-from-top delayed">
                         <button
@@ -536,7 +539,7 @@
   <div class="col-lg-6" v-for="blog in blogs" :key="blog.id">
     <div class="blog-card d-flex flex-column flex-md-row">
       <div class="blog-image" v-if="blog.image">
-        <img :src="`http://127.0.0.1:8000/storage/${blog.image}`" :alt="blog.title" class="img-fluid" />
+        <img :src="`/storage/${blog.image}`" :alt="blog.title" class="img-fluid" />
       </div>
       <div class="blog-content">
         <div class="blog-meta">
