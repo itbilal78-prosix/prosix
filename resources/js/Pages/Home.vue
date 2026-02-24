@@ -37,7 +37,7 @@
                   <div class="text-and-image-wrapper d-flex flex-column align-items-start text-start">
                     <div class="title-button-row d-flex align-items-start gap-4 mb-3">
                       <h1 class="display-3 fw-bold main_title italic-title animate-from-top">
-                        {{ safeSlides[currentSlide].title || 'Premium Sports Gear' }}
+                        {{ safeSlides[currentSlide].title ||  }}
                       </h1>
 
                       <div class="button-wrapper flex-shrink-0 animate-from-top delayed">
@@ -94,15 +94,15 @@
   <div class="icons-track">
     <div
       class="icon-item"
-      v-for="(icon, index) in [...sportsIcons, ...sportsIcons]" 
+      v-for="(icon, index) in [...sportsIcons, ...sportsIcons]"
       :key="index"
       @click="selectTeam(icon.teamId)"
       :class="{ active: activeTeam === icon.teamId }"
     >
       <div class="icon-circle">
-<img 
-  :src="icon.highlight_image || icon.image" 
-  :alt="icon.name" 
+<img
+  :src="icon.highlight_image || icon.image"
+  :alt="icon.name"
   class="icon-image"
 />      </div>
       <div class="icon-name">{{ icon.name }}</div>
@@ -303,7 +303,7 @@
     <div class="videos-carousel-wrapper">
       <div class="videos-carousel-container">
         <!-- Carousel Track -->
-        <div class="videos-track" 
+        <div class="videos-track"
              :style="{ transform: `translateX(-${videoCurrentIndex * 33.333}%)`, transition: 'transform 0.5s ease' }">
           <div v-for="(video, idx) in sportsVideos" :key="video.id" class="video-card">
             <div class="video-thumbnail" @click="playVideo(video)">
@@ -365,7 +365,7 @@
                  padding: 20px 15px;
                  transition: all 0.35s ease;
                ">
-            
+
             <!-- Image -->
             <div class="product-image-wrapper mb-3">
               <img
@@ -381,7 +381,7 @@
             <h5 class="product-name text-white fw-semibold mb-2">
               {{ product.name }}
             </h5>
-            
+
             <p class="product-price text-white fw-bold mb-3 fs-5">
               ${{ product.price.toFixed(2) }}
             </p>
@@ -453,11 +453,11 @@
 
     <!-- Actual Carousel -->
     <div v-else class="testimonials-carousel-wrapper position-relative">
-      <div 
+      <div
         class="testimonials-carousel d-flex"
         :style="{ transform: `translateX(-${currentTestimonialIndex * (100 / itemsPerSlide)}%)` }"
       >
-        <div 
+        <div
           v-for="(testimonial, index) in testimonials"
           :key="index"
           class="testimonial-item flex-shrink-0"
@@ -465,11 +465,11 @@
         >
           <div class="testimonial-card bg-white rounded shadow-sm p-4 h-100">
             <div class="quote-icon">"</div>
-            
+
             <!-- Stars -->
            <div class="stars-rating mb-3">
-  <i 
-    v-for="star in 5" 
+  <i
+    v-for="star in 5"
     :key="star"
     class="bi"
     :class="{
@@ -483,9 +483,9 @@
 
             <div class="testimonial-author d-flex align-items-center">
               <div class="author-image me-3">
-                <img 
-                  :src="testimonial.image" 
-                  :alt="testimonial.name" 
+                <img
+                  :src="testimonial.image"
+                  :alt="testimonial.name"
                   class="rounded-circle"
                 />
               </div>
@@ -499,19 +499,19 @@
       </div>
 
       <!-- Navigation Arrows -->
-      <button 
-        class="carousel-arrow left" 
+      <button
+        class="carousel-arrow left"
         @click="prevTestimonial"
         :disabled="currentTestimonialIndex === 0"
       >‹</button>
-      <button 
-        class="carousel-arrow right" 
+      <button
+        class="carousel-arrow right"
         @click="nextTestimonial"
         :disabled="currentTestimonialIndex >= maxIndex"
       >›</button>
 
       <div class="carousel-dots mt-4 text-center">
-        <span 
+        <span
           v-for="n in Math.ceil(testimonials.length / itemsPerSlide)"
           :key="n"
           class="dot"
@@ -599,7 +599,7 @@ const isDarkMode = ref(false)
 // }
 
 const slides = ref([])
-const safeSlides = computed(() => 
+const safeSlides = computed(() =>
   slides.value.filter(s => s && typeof s.backgroundImage === 'string' && s.backgroundImage.trim() !== '')
 )
 const sportsIcons = ref([])
@@ -905,22 +905,15 @@ onMounted(() => {
 onUnmounted(() => {
   if (autoInterval) clearInterval(autoInterval)
 })
-const fetchSlides = async () => {
-  try {
-    const res = await axios.get('http://127.0.0.1:8000/api/banners')
-    slides.value = res.data
-  } catch (err) {
-    slides.value = [{ title: 'Premium Sports Gear', buttonText: 'Shop Now', buttonLink: '#', backgroundImage: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=1200&h=600&fit=crop', pngImage: null }]
-  }
-}
+
 
 const nextSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }
 const prevSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length }
 const goToSlide = (index) => { if (slides.value.length) currentSlide.value = index }
 const handleBuy = (url) => { if (url) window.location.href = url }
 const selectTeam = (teamId) => {
-  router.push(`/products?category=${teamId}`) 
- 
+  router.push(`/products?category=${teamId}`)
+
 }
 const goTo = (index) => { currentIndex.value = index }
 
@@ -986,20 +979,20 @@ onMounted(() => {
   fetchTestimonials()
 })
 onMounted(async () => {
-    await fetchCategories()   
+    await fetchCategories()
   showWelcomePopup.value = true
   setTimeout(() => { showWelcomePopup.value = false }, 3000)
-  
+
   if (typeof localStorage !== 'undefined') {
     isDarkMode.value = localStorage.getItem('darkMode') === 'true'
   }
-  
+
   await fetchSlides()
-  
+
   setTimeout(() => {
     carouselInterval = setInterval(() => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }, 4000)
   }, 3000)
-  
+
   setInterval(() => { if (currentIndex.value < maxSlides.value) currentIndex.value++; else currentIndex.value = 0 }, 5000)
   videoInterval = setInterval(() => { if (videoCurrentIndex.value < maxVideoSlides.value) videoCurrentIndex.value++; else videoCurrentIndex.value = 0 }, 6000)
 })
@@ -1171,7 +1164,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
     transform: translate(0, 0);
     opacity: 1;
   }
-  
+
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .welcome-content { text-align: center; }
@@ -1236,7 +1229,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon-item:hover .icon-circle::after{
     opacity: 1; transform: scale(1);
    transform: scale(1);
-  animation: rotateDotted 8s linear infinite; 
+  animation: rotateDotted 8s linear infinite;
  } .icon-item.active .icon-circle::after {
   opacity: 1; transform: scale(1);
 }
@@ -1484,17 +1477,17 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 
 .benefit-card {
-  background: white; 
-  border: 1px solid #333; 
-  transition: all 0.3s ease; 
+  background: white;
+  border: 1px solid #333;
+  transition: all 0.3s ease;
   color: black;
   border-radius: 8px;
 }
 
 .benefit-card:hover {
-  background: black; 
-  color: white; 
-  transform: translateY(-8px); 
+  background: black;
+  color: white;
+  transform: translateY(-8px);
   border: 1px solid #333;
 }
 
@@ -1504,26 +1497,26 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   color: white !important;
 }
 
-.icon { 
-  color: black; 
-  line-height: 1; 
-  transition: all 0.3s ease; 
+.icon {
+  color: black;
+  line-height: 1;
+  transition: all 0.3s ease;
 }
-.benefit-card:hover .icon i { 
-  transform: scale(1.15); 
+.benefit-card:hover .icon i {
+  transform: scale(1.15);
 }
 
-h4 { 
-  font-size: 1.4rem; 
-  transition: color 0.3s ease; 
+h4 {
+  font-size: 1.4rem;
+  transition: color 0.3s ease;
   color: black;
 }
 
-p { 
+p {
   color: black;
-  font-size: 0.95rem; 
-  line-height: 1.6; 
-  transition: color 0.3s ease; 
+  font-size: 0.95rem;
+  line-height: 1.6;
+  transition: color 0.3s ease;
 }
 
 
@@ -1595,7 +1588,7 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 }
 .video-arrow:hover:not(:disabled) {
   background: black; color: white; transform: translateY(-50%) scale(1.1);
-  
+
 }
 .video-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
 .video-arrow.prev-arrow { left: 0; }
@@ -1710,8 +1703,8 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 }
 
 .testimonial-card:hover .stars-rating i {
-  transform: scale(1.15);      
-  color: #111111;            
+  transform: scale(1.15);
+  color: #111111;
 }
 .author-image {
   width: 65px;
@@ -1903,10 +1896,10 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 
 .member-number {
   position: absolute;
-  top: 260px;              
+  top: 260px;
   left: 50%;
   transform: translateX(-50%);
- 
+
   width:100px;
   height: 80px;
   background: black;
@@ -2112,29 +2105,29 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 
 /* ========== EXTRA SMALL DEVICES (Mobile Portrait - 320px to 575px) ========== */
 @media (max-width: 575px) {
-  
+
   /* Hero Section - FULL FIX */
   .hero-carousel {
     height: 100vh !important;
     min-height: 800px !important;
   }
-  
+
   .carousel-slide {
     background-size: cover !important;
     background-position: center center !important;
   }
-  
+
   .carousel-overlay {
     padding: 20px 10px !important;
   }
-  
+
   .carousel-content {
     margin: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     padding: 0 15px !important;
   }
-  
+
   .text-and-image-wrapper {
     max-width: 100% !important;
     margin-top: 20% !important;
@@ -2142,7 +2135,7 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
     width: 100% !important;
     text-align: center !important;
   }
-  
+
   .title-button-row {
     flex-direction: column !important;
     align-items: center !important;
@@ -2150,7 +2143,7 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
     gap: 20px !important;
     width: 100% !important;
   }
-  
+
   .main_title {
     width: 100% !important;
     font-size: 2.2rem !important;
@@ -2161,14 +2154,14 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
     font-weight: 900 !important;
     padding: 0 10px !important;
   }
-  
+
   .button-wrapper {
     margin-top: 0 !important;
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
   }
-  
+
   .single-line-btn {
     font-size: 15px !important;
     padding: 12px 35px !important;
@@ -2177,7 +2170,7 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
     white-space: nowrap !important;
     display: inline-block !important;
   }
-  
+
   .lead {
     font-size: 14px !important;
     margin-bottom: 20px !important;
@@ -2185,257 +2178,257 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
     padding: 0 20px !important;
     color: #fff !important;
   }
-  
+
   .image-content {
     margin-top: 25px !important;
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
   }
-  
+
   .hero-png {
     max-width: 90% !important;
     max-height: 350px !important;
     margin: 0 auto !important;
     object-fit: contain !important;
   }
-  
+
   /* Carousel Controls */
   .carousel-control-left,
   .carousel-control-right {
     width: 40px !important;
     height: 40px !important;
   }
-  
+
   .carousel-control-left i,
   .carousel-control-right i {
     font-size: 1.5rem !important;
   }
-  
+
   .carousel-dots {
     bottom: 20px !important;
     gap: 8px !important;
   }
-  
+
   .dot {
     width: 8px !important;
     height: 8px !important;
     margin: 0 4px !important;
   }
-  
+
   .dot.active {
     width: 24px !important;
   }
-  
+
   /* Fixed Icons */
   .fixed-icons-left {
     left: 10px !important;
     gap: 10px !important;
   }
-  
+
   .icon-btn {
     width: 45px !important;
     height: 45px !important;
     font-size: 1.2rem !important;
   }
-  
+
   /* Sports Icons Section */
   .sports-icons-section {
     padding: 20px 0 !important;
   }
-  
+
   .icons-track {
     gap: 40px !important;
   }
-  
+
   .icon-circle {
     width: 60px !important;
     height: 60px !important;
   }
-  
+
   .icon-name {
     font-size: 10px !important;
     max-width: 70px !important;
   }
-  
+
   /* Deals Section */
   .deals-section {
     padding: 40px 0 !important;
   }
-  
+
   .deals-section h2 {
     font-size: 2rem !important;
     margin-bottom: 15px !important;
   }
-  
+
   .deals-section h4 {
     font-size: 1.2rem !important;
   }
-  
+
   .deals-section .lead {
     font-size: 14px !important;
   }
-  
+
   .deal-image-box {
     margin: 8px !important;
   }
-  
+
   .deal-image {
     height: 140px !important;
   }
-  
+
   /* Featured Products */
   .featured-products {
     padding: 40px 0 !important;
   }
-  
+
   .featured-header {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 20px !important;
     margin-bottom: 30px !important;
   }
-  
+
   .section-title {
     font-size: 1.8rem !important;
   }
-  
+
   .tabs {
     width: 100%;
     flex-wrap: wrap !important;
   }
-  
+
   .tab-btn {
     font-size: 12px !important;
     padding: 8px 15px !important;
     flex: 1;
     min-width: 80px;
   }
-  
+
   .carousel-wrapper {
     padding: 0 50px !important;
   }
-  
+
   .product-card {
     min-width: 100% !important;
     padding: 0 10px !important;
   }
-  
+
   .product-img {
     height: 180px !important;
   }
-  
+
   .product-title {
     font-size: 13px !important;
   }
-  
+
   .product-price {
     font-size: 1rem !important;
   }
-  
+
   .carousel-btn {
     width: 35px !important;
     height: 35px !important;
   }
-  
+
   .carousel-btn i {
     font-size: 16px !important;
   }
-  
+
   .carousel-btn-prev {
     left: 5px !important;
   }
-  
+
   .carousel-btn-next {
     right: 5px !important;
   }
-  
+
   /* Benefits Section */
   .benefits-section {
     padding: 40px 0 !important;
   }
-  
+
   .benefits-section .d-flex {
     flex-direction: column !important;
     gap: 15px !important;
   }
-  
+
   .benefit-card {
     max-width: 100% !important;
     padding: 25px 15px !important;
   }
-  
+
   .benefit-card .icon {
     margin-bottom: 15px !important;
   }
-  
+
   .benefit-card .icon i {
     font-size: 2.5rem !important;
   }
-  
+
   .benefit-card h4 {
     font-size: 1.1rem !important;
     margin-bottom: 10px !important;
   }
-  
+
   .benefit-card p {
     font-size: 0.85rem !important;
   }
-  
+
   /* Latest Videos */
   .latest-videos-section {
     padding: 40px 0 !important;
   }
-  
+
   .videos-header {
     margin-bottom: 30px !important;
   }
-  
+
   .header-icon {
     font-size: 1.8rem !important;
   }
-  
+
   .videos-title {
     font-size: 1.8rem !important;
     letter-spacing: 1px !important;
   }
-  
+
   .videos-carousel-wrapper {
     padding: 0 50px !important;
   }
-  
+
   .video-card {
     min-width: 100% !important;
     padding: 0 8px !important;
   }
-  
+
   .video-thumbnail {
     height: 250px !important;
   }
-  
+
   .play-button {
     width: 50px !important;
     height: 50px !important;
     font-size: 1.5rem !important;
   }
-  
+
   .video-arrow {
     width: 45px !important;
     height: 45px !important;
     font-size: 1.4rem !important;
   }
-  
+
   .video-title-overlay {
     font-size: 13px !important;
     padding: 15px 10px 10px !important;
   }
-  
+
   /* Video Modal */
   .video-modal-content {
     width: 95% !important;
     height: 50vh !important;
   }
-  
+
   .close-video-btn {
     width: 40px !important;
     height: 40px !important;
@@ -2443,107 +2436,107 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
     right: 10px !important;
     font-size: 1.2rem !important;
   }
-  
+
   /* Apparel Section */
   .apparel-products {
     padding: 40px 0 !important;
   }
-  
+
   .apparel-products .section-title {
     font-size: 1.8rem !important;
     margin-bottom: 30px !important;
   }
-  
+
   /* Testimonials */
   .testimonials-section {
     padding: 40px 0 !important;
   }
-  
+
   .testimonial-label {
     font-size: 0.85rem !important;
   }
-  
+
   .testimonial-item {
     flex: 0 0 100% !important;
     padding: 0 10px !important;
   }
-  
+
   .testimonial-card {
     padding: 30px 20px !important;
     min-height: auto !important;
   }
-  
+
   .quote-icon {
     font-size: 4rem !important;
     top: -10px !important;
     left: 15px !important;
   }
-  
+
   .stars-rating {
     font-size: 0.9rem !important;
     letter-spacing: 3px !important;
   }
-  
+
   .testimonial-text {
     font-size: 0.95rem !important;
     margin-bottom: 20px !important;
   }
-  
+
   .author-image {
     width: 50px !important;
     height: 50px !important;
   }
-  
+
   .author-name {
     font-size: 1rem !important;
   }
-  
+
   .author-position {
     font-size: 0.8rem !important;
   }
-  
+
   .carousel-arrow {
     width: 40px !important;
     height: 40px !important;
     font-size: 1.3rem !important;
   }
-  
+
   /* Blog Section */
   .recent-blog-section {
     padding: 40px 0 !important;
   }
-  
+
   .section-label {
     font-size: 0.85rem !important;
   }
-  
+
   .blog-card {
     flex-direction: column !important;
     margin-bottom: 20px !important;
   }
-  
+
   .blog-image {
     flex: 0 0 100% !important;
     height: 220px !important;
   }
-  
+
   .blog-content {
     padding: 20px 15px !important;
   }
-  
+
   .blog-meta {
     font-size: 0.8rem !important;
     gap: 15px !important;
   }
-  
+
   .blog-title {
     font-size: 1.2rem !important;
   }
-  
+
   .blog-excerpt {
     font-size: 0.9rem !important;
   }
-  
+
   .btn-view-all {
     padding: 12px 30px !important;
     font-size: 14px !important;
@@ -2552,64 +2545,64 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 
 /* ========== SMALL DEVICES (Mobile Landscape - 576px to 767px) ========== */
 @media (min-width: 576px) and (max-width: 767px) {
-  
+
   .hero-carousel {
     height: 100vh !important;
     min-height: 650px !important;
   }
-  
+
   .text-and-image-wrapper {
     max-width: 90% !important;
     margin-top: 15% !important;
   }
-  
+
   .main_title {
     font-size: 2.8rem !important;
     text-align: center !important;
     width: 100% !important;
   }
-  
+
   .title-button-row {
     flex-direction: column !important;
     align-items: center !important;
   }
-  
+
   .single-line-btn {
     font-size: 16px !important;
     padding: 12px 40px !important;
   }
-  
+
   .hero-png {
     max-width: 85% !important;
     max-height: 450px !important;
   }
-  
+
   .lead {
     font-size: 15px !important;
     text-align: center !important;
   }
-  
+
   .icon-circle {
     width: 70px !important;
     height: 70px !important;
   }
-  
+
   .product-card {
     min-width: 50% !important;
   }
-  
+
   .video-card {
     min-width: 50% !important;
   }
-  
+
   .video-thumbnail {
     height: 280px !important;
   }
-  
+
   .testimonial-item {
     flex: 0 0 100% !important;
   }
-  
+
   .blog-image {
     height: 250px !important;
   }
@@ -2617,82 +2610,82 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 
 /* ========== MEDIUM DEVICES (Tablets - 768px to 991px) ========== */
 @media (min-width: 768px) and (max-width: 991px) {
-  
+
   .hero-carousel {
     height: 100vh !important;
     min-height: 700px !important;
   }
-  
+
   .text-and-image-wrapper {
     max-width: 85% !important;
     margin-top: 12% !important;
   }
-  
+
   .title-button-row {
     flex-direction: row !important;
     flex-wrap: wrap !important;
     align-items: flex-start !important;
     justify-content: space-between !important;
   }
-  
+
   .main_title {
     font-size: 3.2rem !important;
     width: 60% !important;
     text-align: left !important;
   }
-  
+
   .button-wrapper {
     margin-top: 30px !important;
     width: auto !important;
   }
-  
+
   .single-line-btn {
     font-size: 17px !important;
     padding: 12px 30px !important;
   }
-  
+
   .hero-png {
     max-height: 550px !important;
     max-width: 100% !important;
   }
-  
+
   .lead {
     text-align: left !important;
     padding: 0 !important;
   }
-  
+
   .section-title {
     font-size: 2.2rem !important;
   }
-  
+
   .product-card {
     min-width: 33.333% !important;
   }
-  
+
   .carousel-wrapper {
     padding: 0 55px !important;
   }
-  
+
   .benefit-card {
     max-width: 48% !important;
   }
-  
+
   .video-card {
     min-width: 50% !important;
   }
-  
+
   .video-thumbnail {
     height: 300px !important;
   }
-  
+
   .testimonial-item {
     flex: 0 0 50% !important;
   }
-  
+
   .blog-card {
     flex-direction: row !important;
   }
-  
+
   .blog-image {
     flex: 0 0 40% !important;
     height: auto !important;
@@ -2701,27 +2694,27 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 
 /* ========== LARGE DEVICES (Small Desktops - 992px to 1199px) ========== */
 @media (min-width: 992px) and (max-width: 1199px) {
-  
+
   .text-and-image-wrapper {
     max-width: 65% !important;
   }
-  
+
   .main_title {
     font-size: 3.5rem !important;
   }
-  
+
   .product-card {
     min-width: 25% !important;
   }
-  
+
   .video-card {
     min-width: 33.333% !important;
   }
-  
+
   .testimonial-item {
     flex: 0 0 33.333% !important;
   }
-  
+
   .benefit-card {
     max-width: 32% !important;
   }
@@ -2736,24 +2729,24 @@ background: rgba(255, 255, 255, 0.933);  z-index: 1;
 
 /* ========== LANDSCAPE ORIENTATION FIX ========== */
 @media (orientation: landscape) and (max-height: 600px) {
-  
+
   .hero-carousel {
     height: 100vh !important;
     min-height: auto !important;
   }
-  
+
   .text-and-image-wrapper {
     margin-top: 3% !important;
   }
-  
+
   .main_title {
     font-size: 2.5rem !important;
   }
-  
+
   .hero-png {
     max-height: 500px !important;
   }
-  
+
   .video-modal-content {
     height: 90vh !important;
   }
@@ -2812,7 +2805,7 @@ html {
     margin-left: -8px !important;
     margin-right: -8px !important;
   }
-  
+
   .row > * {
     padding-left: 8px !important;
     padding-right: 8px !important;
