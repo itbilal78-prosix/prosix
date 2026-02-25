@@ -489,7 +489,7 @@ onMounted(async () => {
     content: "";
     position: absolute;
     top: 0; right: 0;
-    width: 55%; height: 100%;
+    width: 65%; height: 100%;
     background: #000;
     clip-path: polygon(0% 0, 100% 0, 100% 100%, 4% 100%);
     transition: all 0.35s ease;
@@ -871,9 +871,10 @@ onMounted(async () => {
 .menu-right{
     flex:1;
     display:flex;
-    justify-content: space-evenly;
-    margin-left:140px;   /* logo se distance */
-    padding-right:120px; /* icons ke liye space */
+    justify-content: center;   /* instead of space-evenly */
+    gap:40px;
+    margin-left:0;
+    padding-right:0;
 }
 /* =========================================
    MOBILE OVERRIDES (≤ 991px)
