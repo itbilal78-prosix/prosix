@@ -127,6 +127,21 @@ Route::get('/blogs/{slug}', [BlogController::class, 'apiShow']);   // Single blo
 Route::get('/featured-products', [ProductController::class, 'apiFeaturedProducts']);
 
 
+Route::get('/category/{id}/products',  [ProductController::class, 'apiCategoryProducts']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Route::get('/testimonials', [TestimonialController::class, 'apiIndex']);
 Route::get('/apparel-products', [ProductController::class, 'apiApparelProducts']);

@@ -9,7 +9,7 @@
           <div class="image-gallery">
             <div
               class="main-image-wrapper"
-            
+
               ref="imageContainer"
             >
               <img
@@ -18,7 +18,7 @@
                 class="main-product-image"
                 alt="Product"
               />
-              
+
               <!-- Wishlist Heart -->
               <button
                 class="wishlist-btn"
@@ -157,7 +157,7 @@
   <router-link
     v-for="rel in relatedProducts"
     :key="rel.id"
-    :to="`/product/${rel.id}`"  
+    :to="`/product/${rel.id}`"
     class="product-card-link d-block text-decoration-none"
   >
     <div class="product-card">
@@ -327,7 +327,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-3">Enter Card Details</label>
               <div ref="cardElementRef" class="p-4 border border-gray-200 rounded bg-white min-h-[80px]"></div>
               <div v-if="cardError" class="mt-3 text-sm text-red-600">{{ cardError }}</div>
-             
+
             </div>
 
             <div class="order-summary mt-6">
@@ -409,7 +409,7 @@ onMounted(async () => {
   try {
 const res = await axios.get(`/api/products/${route.params.id}`)
     product.value = res.data
-    
+
     await fetchRelatedProducts()
 
     stripe.value = await loadStripe(STRIPE_PUBLISHABLE_KEY)
@@ -423,7 +423,7 @@ const fetchRelatedProducts = async () => {
 
   try {
     const res = await axios.get('/api/products')
-    
+
     // 🔥 Yeh line sabse important – response ko sahi tarah handle karo
     let allProducts = []
 
@@ -481,7 +481,7 @@ const flyImageToCart = () => {
   if (!productImg) return
 
   //  Navbar cart icon dhundo (class name adjust karo apne navbar ke hisaab se)
-  const cartIcon = document.querySelector('.bi-cart') || 
+  const cartIcon = document.querySelector('.bi-cart') ||
                    document.querySelector('.cart-icon') ||
                    document.querySelector('[href*="cart"]') ||
                    document.querySelector('a[href="/cart"]')
@@ -513,7 +513,7 @@ const flyImageToCart = () => {
       clone.style.height = '30px'
       clone.style.opacity = '0'
       clone.style.transform = 'scale(0.2) rotate(360deg)'
-      
+
       // Cart icon bounce
       cartIcon.style.animation = 'cartBounce 0.6s ease'
       setTimeout(() => cartIcon.style.animation = '', 600)
@@ -556,10 +556,10 @@ watch(() => route.params.id, async (newId) => {
   if (newId) {
     selectedSize.value = ''  // Reset size
     quantity.value = 1        // Reset quantity
-    
+
     await loadProduct()
     await fetchRelatedProducts()
-    
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }

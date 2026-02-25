@@ -58,6 +58,9 @@ Route::prefix('admin')
     });
 // Admin protected routes
 Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
+ Route::post('products/featured',      [ProductController::class, 'featured'])->name('products.featured');
+    Route::post('products/apparel',       [ProductController::class, 'apparel'])->name('products.apparel');
+    Route::post('products/bulk-category', [ProductController::class, 'bulkCategory'])->name('products.bulkCategory');
 
 
     Route::resource('products', ProductController::class);
@@ -134,10 +137,7 @@ Route::post('/banners/reorder', [BannerController::class, 'reorder'])->name('ban
 
 
 
-Route::post('/products/featured', [ProductController::class, 'featured'])->name('products.featured');
 Route::get('/api/menu-categories/{slug}', [CategoryController::class, 'apiMenuCategories']);
-
-Route::post('/products/apparel', [ProductController::class, 'apparel'])->name('products.apparel');
 Route::get('/category/{id}', [CategoryController::class, 'products'])
     ->name('category.products');
 // web.php

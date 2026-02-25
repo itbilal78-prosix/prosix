@@ -44,8 +44,8 @@
             </div>
 
             <!-- ===== DESKTOP MENU ===== -->
-            <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav menu-right gap-4 ms-auto">
+<div class="collapse navbar-collapse d-flex align-items-center" id="mainNavbar">
+                    <ul class="navbar-nav menu-right gap-4 ">
                     <li
                         v-for="nav in navigations"
                         :key="nav.id"
@@ -176,83 +176,98 @@
                         <i class="bi bi-arrow-right text-white opacity-50"></i>
                     </router-link>
 
-                    <!-- Accordion item (has dropdown) -->
-                    <div v-else>
-                        <button
-                            class="drawer-link drawer-accordion-btn d-flex align-items-center justify-content-between px-4 py-3 w-100"
-                            @click="toggleAccordion(nav.id)"
+                    <!-- ✅ FIXED: Accordion item (has dropdown) - Text navigates, Icon toggles -->
+                    <div v-else class="d-flex align-items-center justify-content-between drawer-link-row">
+                        <!-- Text: navigates to menu page -->
+                        <span
+                            class="drawer-link drawer-link-text px-4 py-3 flex-grow-1"
+                            @click="goToMenu(nav.slug); closeDrawer()"
                         >
-                            <span>{{ nav.title }}</span>
+                            {{ nav.title }}
+                        </span>
+                        <!-- Icon: toggles accordion -->
+                        <button
+                            class="drawer-toggle-icon px-3 py-3"
+                            @click="toggleAccordion(nav.id)"
+                            aria-label="Toggle dropdown"
+                        >
                             <i
                                 class="bi fs-6 transition-icon"
                                 :class="openAccordion === nav.id ? 'bi-chevron-up' : 'bi-chevron-down'"
                             ></i>
                         </button>
+                    </div>
 
-                        <!-- Accordion Body -->
-                        <transition name="accordion">
-                            <div v-if="openAccordion === nav.id" class="drawer-accordion-body">
-                                <!-- sub_items -->
-                                <router-link
-                                    v-for="sub in nav.sub_items"
-                                    :key="sub.id"
+                    <!-- Accordion Body -->
+                    <transition name="accordion">
+                        <div v-if="nav.has_dropdown && openAccordion === nav.id" class="drawer-accordion-body">
+                            <!-- sub_items -->
+                            <router-link
+                                v-for="sub in nav.sub_items"
+                                :key="sub.id"
+                                class="drawer-sub-link d-flex align-items-center px-5 py-2"
+                                :to="sub.route"
+                                @click="closeDrawer"
+                            >
+                                <i class="bi bi-dash me-2 opacity-50"></i>
+                                {{ sub.title }}
+                            </router-link>
+
+                            <!-- categories -->
+                            <div
+                                v-for="cat in categoriesByNav[nav.id] || []"
+                                :key="cat.id"
+                            >
+                                <!-- Category with subcategories: text navigates, icon toggles -->
+                                <div v-if="cat.subcategories?.length" class="d-flex align-items-center drawer-sub-row">
+                                    <span
+                                        class="drawer-sub-link flex-grow-1 d-flex align-items-center px-5 py-2"
+                                        @click="handleCategoryClickInNav(cat); closeDrawer()"
+                                        style="cursor:pointer;"
+                                    >
+                                        <i class="bi bi-dash me-2 opacity-50"></i>{{ cat.name }}
+                                    </span>
+                                    <button
+                                        class="drawer-sub-toggle-icon px-3 py-2"
+                                        @click="toggleSubAccordion(cat.id)"
+                                        aria-label="Toggle subcategory"
+                                    >
+                                        <i
+                                            class="bi fs-6"
+                                            :class="openSubAccordion === cat.id ? 'bi-chevron-up' : 'bi-chevron-down'"
+                                        ></i>
+                                    </button>
+                                </div>
+
+                                <transition name="accordion">
+                                    <div v-if="cat.subcategories?.length && openSubAccordion === cat.id" class="drawer-sub-sub-body">
+                                        <a
+                                            v-for="sub in cat.subcategories"
+                                            :key="sub.id"
+                                            href="#"
+                                            class="drawer-subsub-link d-flex align-items-center py-2"
+                                            style="padding-left: 60px !important;"
+                                            @click.prevent="handleCategoryClickInNav(sub); closeDrawer()"
+                                        >
+                                            <i class="bi bi-dot me-1 opacity-40"></i>
+                                            {{ sub.name }}
+                                        </a>
+                                    </div>
+                                </transition>
+
+                                <!-- Category without subcategories -->
+                                <a
+                                    v-if="!cat.subcategories?.length"
+                                    href="#"
                                     class="drawer-sub-link d-flex align-items-center px-5 py-2"
-                                    :to="sub.route"
-                                    @click="closeDrawer"
+                                    @click.prevent="handleCategoryClickInNav(cat); closeDrawer()"
                                 >
                                     <i class="bi bi-dash me-2 opacity-50"></i>
-                                    {{ sub.title }}
-                                </router-link>
-
-                                <!-- categories -->
-                                <div
-                                    v-for="cat in categoriesByNav[nav.id] || []"
-                                    :key="cat.id"
-                                >
-                                    <!-- Category with subcategories -->
-                                    <div v-if="cat.subcategories?.length">
-                                        <button
-                                            class="drawer-sub-link drawer-sub-accordion-btn d-flex align-items-center justify-content-between px-5 py-2 w-100"
-                                            @click="toggleSubAccordion(cat.id)"
-                                        >
-                                            <span><i class="bi bi-dash me-2 opacity-50"></i>{{ cat.name }}</span>
-                                            <i
-                                                class="bi fs-6"
-                                                :class="openSubAccordion === cat.id ? 'bi-chevron-up' : 'bi-chevron-down'"
-                                            ></i>
-                                        </button>
-
-                                        <transition name="accordion">
-                                            <div v-if="openSubAccordion === cat.id" class="drawer-sub-sub-body">
-                                                <a
-                                                    v-for="sub in cat.subcategories"
-                                                    :key="sub.id"
-                                                    href="#"
-                                                    class="drawer-subsub-link d-flex align-items-center px-5 py-2"
-                                                    style="padding-left: 60px !important;"
-                                                    @click.prevent="handleCategoryClickInNav(sub); closeDrawer()"
-                                                >
-                                                    <i class="bi bi-dot me-1 opacity-40"></i>
-                                                    {{ sub.name }}
-                                                </a>
-                                            </div>
-                                        </transition>
-                                    </div>
-
-                                    <!-- Category without subcategories -->
-                                    <a
-                                        v-else
-                                        href="#"
-                                        class="drawer-sub-link d-flex align-items-center px-5 py-2"
-                                        @click.prevent="handleCategoryClickInNav(cat); closeDrawer()"
-                                    >
-                                        <i class="bi bi-dash me-2 opacity-50"></i>
-                                        {{ cat.name }}
-                                    </a>
-                                </div>
+                                    {{ cat.name }}
+                                </a>
                             </div>
-                        </transition>
-                    </div>
+                        </div>
+                    </transition>
 
                     <div class="drawer-item-divider"></div>
                 </li>
@@ -336,7 +351,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/store/cart";
@@ -380,7 +395,6 @@ const toggleSubAccordion = (id) => {
 };
 
 // Prevent body scroll when drawer open
-import { watch } from "vue";
 watch(drawerOpen, (val) => {
     document.body.style.overflow = val ? "hidden" : "";
 });
@@ -475,7 +489,7 @@ onMounted(async () => {
     content: "";
     position: absolute;
     top: 0; right: 0;
-    width: 65%; height: 100%;
+    width: 55%; height: 100%;
     background: #000;
     clip-path: polygon(0% 0, 100% 0, 100% 100%, 4% 100%);
     transition: all 0.35s ease;
@@ -644,8 +658,12 @@ onMounted(async () => {
 
 /* ─── Drawer Nav ─── */
 .drawer-nav { flex: 1; }
-
 .drawer-nav-item { border: none; }
+
+/* ✅ NEW: Split row for text + icon */
+.drawer-link-row {
+    width: 100%;
+}
 
 .drawer-link {
     color: #fff !important;
@@ -662,7 +680,35 @@ onMounted(async () => {
 }
 .drawer-link:hover { background: rgba(255,255,255,0.05); }
 
-.drawer-accordion-btn { text-align: left; }
+/* ✅ Text part of split row */
+.drawer-link-text {
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: block;
+}
+.drawer-link-text:hover { background: rgba(255,255,255,0.05); }
+
+/* ✅ Icon toggle button */
+.drawer-toggle-icon {
+    background: transparent;
+    border: none;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    color: #fff;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.drawer-toggle-icon:hover { background: rgba(255,255,255,0.08); }
 
 .transition-icon { transition: transform 0.25s ease; color: #fff; }
 
@@ -687,7 +733,26 @@ onMounted(async () => {
     color: #fff !important;
 }
 
-.drawer-sub-accordion-btn { text-align: left; }
+/* ✅ Sub-category split row */
+.drawer-sub-row {
+    width: 100%;
+}
+
+/* ✅ Sub-category icon toggle */
+.drawer-sub-toggle-icon {
+    background: transparent;
+    border: none;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    color: rgba(255,255,255,0.6);
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.drawer-sub-toggle-icon:hover { background: rgba(255,255,255,0.05); }
 
 /* sub-sub level */
 .drawer-sub-sub-body { background: #111; }
@@ -803,8 +868,13 @@ onMounted(async () => {
 /* =========================================
    MENU RIGHT (desktop)
    ========================================= */
-.menu-right { width: 95%; justify-content: end; }
-
+.menu-right{
+    flex:1;
+    display:flex;
+    justify-content: space-evenly;
+    margin-left:140px;   /* logo se distance */
+    padding-right:120px; /* icons ke liye space */
+}
 /* =========================================
    MOBILE OVERRIDES (≤ 991px)
    ========================================= */

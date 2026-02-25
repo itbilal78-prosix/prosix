@@ -19,6 +19,8 @@ class Product extends Model
     'subcategory_id',
         'is_featured',
         'is_apparel',
+            'show_in_category',
+
     ];
 
 public function category()

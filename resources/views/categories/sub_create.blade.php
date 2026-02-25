@@ -4,13 +4,13 @@
 <div class="container">
 <h2>
     @if(request()->has('parent_id'))
-        Add Subcategory 
+        Add Subcategory
         @php
             $parent = \App\Models\Category::find(request()->get('parent_id'));
         @endphp
         (Parent: {{ $parent?->name ?? 'N/A' }})
     @else
-        Add Subcategory 
+        Add Subcategory
     @endif
 </h2>
 
@@ -40,10 +40,19 @@
             </select>
         </div>
 
-        <div class="mb-3">
-            <label>Highlight</label>
-            <input type="checkbox" name="highlight">
-        </div>
+       <div class="mb-3">
+    <label>Highlight</label>
+    <input type="checkbox" id="highlightCheckbox" name="highlight" value="1">
+</div>
+
+<div class="mb-3" id="highlightImageBox" style="display:none;">
+    <label>Highlight Special Image</label>
+    <input type="file" name="highlight_image" class="form-control"
+           onchange="previewImage(this,'highlightPreview')">
+
+    <img id="highlightPreview"
+         style="max-width:150px;display:none;border:1px solid #000;border-radius:4px;margin-top:10px;">
+</div>
 
         <div class="mb-3">
             <label>Set Password?</label>
@@ -101,5 +110,11 @@
             }
         }
     </script>
+    <script>
+document.getElementById('highlightCheckbox').addEventListener('change',function(){
+    document.getElementById('highlightImageBox').style.display =
+        this.checked ? 'block' : 'none';
+});
+</script>
 </div>
 @endsection

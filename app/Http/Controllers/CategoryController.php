@@ -49,7 +49,7 @@ class CategoryController extends Controller
             'status' => 'required|boolean',
             'navigation_id' => 'nullable|exists:navigations,id',
             'parent_id' => 'nullable|exists:categories,id',
-            'highlight' => 'nullable|boolean',
+            'highlight' => 'sometimes|accepted',
             'password' => 'nullable|string|max:255',
         ]);
 
@@ -183,12 +183,12 @@ class CategoryController extends Controller
     public function apiCategoriesByNavigation()
     {
         $categories = Category::with(['subcategories' => function ($q) {
-            $q->select('id', 'name', 'parent_id', 'icon_image', 'password') // ← password شامل کرو
+            $q->select('id', 'name', 'parent_id', 'icon_image', 'password')
                 ->where('status', 1);
         }])
             ->where('status', 1)
             ->whereNotNull('navigation_id')
-            ->select('id', 'name', 'navigation_id', 'icon_image', 'password') // ← یہاں بھی password شامل
+            ->select('id', 'name', 'navigation_id', 'icon_image', 'password')
             ->orderBy('name')
             ->get()
             ->groupBy('navigation_id');
@@ -200,12 +200,12 @@ class CategoryController extends Controller
                     'id' => $cat->id,
                     'name' => $cat->name,
                     'icon_image' => $cat->icon_image,
-                    'password' => ! empty($cat->password), // ← boolean flag (true/false)
+                    'password' => ! empty($cat->password),
 
                     'subcategories' => $cat->subcategories->map(fn ($sub) => [
                         'id' => $sub->id,
                         'name' => $sub->name,
-                        'password' => ! empty($sub->password), // ← subcategory میں بھی flag
+                        'password' => ! empty($sub->password),
                     ])->values()->all(),
                 ];
             })->values()->all();
@@ -248,7 +248,6 @@ class CategoryController extends Controller
                     'icon_image' => $cat->icon_image,
                     'highlight_image' => $cat->highlight_image,
 
-                    // 🔐 password flag
                     'password' => ! empty($cat->password),
 
                     'subcategories' => $cat->subcategories->map(fn ($sub) => [
@@ -285,7 +284,7 @@ class CategoryController extends Controller
 
         $categories = Category::with(['subcategories' => function ($q) {
             $q->where('status', 1)
-                ->orderBy('position')      // 🔥 ADD THIS LINE
+                ->orderBy('position')
                 ->select('id', 'name', 'parent_id');
         }])
             ->where('navigation_id', $navigation->id)
@@ -323,7 +322,7 @@ class CategoryController extends Controller
     {
         $category = Category::with(['subcategories' => function ($q) {
             $q->where('status', 1)
-              ->orderBy('position')    // 🔥 ADD
+                ->orderBy('position')    // 🔥 ADD
                 ->select('id', 'name', 'icon_image', 'parent_id', 'password'); // ✅ add password
         }])
             ->where('id', $id)
@@ -359,63 +358,46 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function products($id)
-    {
-        $category = Category::find($id);
+// CategoryController.php mein yeh method replace karo
 
-        if (! $category) {
-            return response()->json([
-                'error' => 'Category or Subcategory not found',
-                'id_received' => $id,
-            ], 404);
-        }
+public function products($id)
+{
+    $category = Category::find($id);
 
-        // Yeh line sabse important – debug ke liye
-        $isSubcategory = ! is_null($category->parent_id);
-
-        $query = Product::query()
-            ->select('id', 'name', 'price', 'image');
-
-        // Agar STATUS column use kar rahe ho to yeh line rakhna, warna comment out kar do
-        // $query->where('status', 1);
-
-        if ($isSubcategory) {
-            // SUBCATEGORY → sirf subcategory_id se filter
-            $query->where('subcategory_id', $id);
-        } else {
-            // PARENT CATEGORY → sirf woh products jinka subcategory_id null hai
-            // (agar parent pe products nahi dikhane to yeh line rakh sakte ho ya empty return kar sakte ho)
-            $query->where('category_id', $id)
-                ->whereNull('subcategory_id');
-        }
-
-        $products = $query->get();
-
-        // Image URLs fix karo (important!)
-        $products = $products->map(function ($product) {
-            if ($product->image) {
-                $product->image = asset('storage/'.$product->image);
-            } else {
-                $product->image = null; // ya placeholder daal sakte ho
-            }
-
-            return $product;
-        });
-
-        return response()->json([
-            'category' => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'parent_id' => $category->parent_id,      // debug ke liye
-            ],
-            'products' => $products,
-            'debug_info' => [
-                'is_subcategory' => $isSubcategory,
-                'raw_product_count' => $products->count(),
-                'query_used' => $isSubcategory ? 'subcategory_id = '.$id : 'category_id = '.$id.' AND subcategory_id IS NULL',
-            ],
-        ]);
+    if (!$category) {
+        return response()->json(['error' => 'Category not found'], 404);
     }
+
+    $isSubcategory = !is_null($category->parent_id);
+
+    $query = Product::query()
+        ->select('id', 'name', 'price', 'image')
+        ->where('show_in_category', true); // ✅ SIRF YEH DIKHAO JO ADMIN NE ASSIGN KIYE
+
+    if ($isSubcategory) {
+        $query->where('subcategory_id', $id);
+    } else {
+        $query->where('category_id', $id)
+              ->whereNull('subcategory_id');
+    }
+
+    $products = $query->get()->map(function ($product) {
+        return [
+            'id'    => $product->id,
+            'name'  => $product->name,
+            'price' => $product->price,
+            'image' => $product->image ? asset('storage/' . $product->image) : null,
+        ];
+    });
+
+    return response()->json([
+        'category' => [
+            'id'   => $category->id,
+            'name' => $category->name,
+        ],
+        'products' => $products,
+    ]);
+}
 
     public function verifyCategoryPassword(Request $request, $id)
     {

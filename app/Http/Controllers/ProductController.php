@@ -3,230 +3,294 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Category;      // <-- important
-use App\Models\Subcategory;   // if you want subcategories as separate table
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-public function index(Request $request)
-{
-    $query = Product::query();
-
-    if ($request->has('search') && $request->search != '') {
-        $query->where('name', 'like', "%{$request->search}%");
-    }
-
-    $products = $query->orderBy('id', 'desc')->paginate(10);
-    $products->appends($request->all());
-
-    // Return different view for AJAX
-    if ($request->ajax()) {
-        return view('products.index', compact('products'))->render();
-    }
-
-    return view('products.index', compact('products'));
-}
-
-
-
-
-
-public function create()
-{
-    $categories = Category::with('subcategories')->whereNull('parent_id')->get();
-    return view('products.create', compact('categories'));
-}
-
-
-public function store(Request $request)
-{
-    // Fetch the selected category with its subcategories
-    $category = Category::with('subcategories')->findOrFail($request->category_id);
-
-    // Validation rules
-    $rules = [
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-        'category_id' => 'required|exists:categories,id',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ];
-
-    // If the selected category has subcategories, make subcategory_id required
-    if ($category->subcategories->count() > 0) {
-        $rules['subcategory_id'] = 'required|exists:categories,id';
-    } else {
-        $rules['subcategory_id'] = 'nullable|exists:categories,id';
-    }
-
-    // Validate request
-    $validated = $request->validate($rules);
-
-    // Handle image upload
-    $imagePath = null;
-    if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('products', 'public');
-    }
-
-    // Create the product
-    Product::create([
-        'name' => $validated['name'],
-        'description' => $validated['description'] ?? null,
-        'price' => $validated['price'],
-        'category_id' => $validated['category_id'],
-        'subcategory_id' => $validated['subcategory_id'] ?? null,
-        'image' => $imagePath,
-    ]);
-
-    return redirect()->route('products.index')
-                     ->with('success', 'Product created successfully.');
-}
-
-
- public function edit(Product $product)
+    // ════════════════════════════════════════
+    // INDEX
+    // ════════════════════════════════════════
+    public function index(Request $request)
     {
-        // Get all parent categories with their subcategories
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get();
+        $query = Product::with(['category', 'subcategory'])->orderBy('id', 'desc');
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', "%{$request->search}%");
+        }
+
+        $products = $query->paginate(10)->appends($request->all());
+
+        // ✅ Pass categories WITH subcategories for modal dropdown
+        $categories = Category::with('subcategories')->whereNull('parent_id')->where('status', 1)->get();
+
+        if ($request->ajax()) {
+            return view('products.index', compact('products', 'categories'));
+        }
+
+        return view('products.index', compact('products', 'categories'));
+    }
+
+    // ════════════════════════════════════════
+    // CREATE
+    // ════════════════════════════════════════
+    public function create()
+    {
+        $categories = Category::with('subcategories')
+            ->whereNull('parent_id')
+            ->where('status', 1)
+            ->get();
+
+        return view('products.create', compact('categories'));
+    }
+
+    // ════════════════════════════════════════
+    // STORE
+    // ════════════════════════════════════════
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string',
+            'price'          => 'required|numeric|min:0',
+            'category_id'    => 'nullable|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
+            'image'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+        }
+
+        Product::create([
+            'name'             => $validated['name'],
+            'description'      => $validated['description'] ?? null,
+            'price'            => $validated['price'],
+            'category_id'      => $validated['category_id'] ?? null,
+            'subcategory_id'   => $validated['subcategory_id'] ?? null,
+            'image'            => $imagePath,
+            // ✅ KEY: Create karte waqt show_in_category = false
+            // Frontend pe tab show hoga jab manually "Add to Category" press karein
+            'show_in_category' => false,
+        ]);
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product saved! Ab Products list se "Add to Category" click karo frontend pe dikhane ke liye.');
+    }
+
+    // ════════════════════════════════════════
+    // EDIT
+    // ════════════════════════════════════════
+    public function edit(Product $product)
+    {
+        $categories = Category::with('subcategories')
+            ->whereNull('parent_id')
+            ->where('status', 1)
+            ->get();
 
         return view('products.edit', compact('product', 'categories'));
     }
 
-public function update(Request $request, Product $product)
-{
-    // Fetch the selected category with its subcategories
-    $category = Category::with('subcategories')->findOrFail($request->category_id);
+    // ════════════════════════════════════════
+    // UPDATE
+    // ════════════════════════════════════════
+    public function update(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string',
+            'price'          => 'required|numeric|min:0',
+            'category_id'    => 'nullable|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
+            'image'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
 
-    // Validation rules
-    $rules = [
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric|min:0',
-        'category_id' => 'required|exists:categories,id',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ];
+        // Image handle
+        $imagePath = $product->image;
+        if ($request->hasFile('image')) {
+            if ($product->image) {
+                \Storage::disk('public')->delete($product->image);
+            }
+            $imagePath = $request->file('image')->store('products', 'public');
+        }
 
-    // If category has subcategories, make subcategory_id required
-    if ($category->subcategories->count() > 0) {
-        $rules['subcategory_id'] = 'required|exists:categories,id';
-    } else {
-        $rules['subcategory_id'] = 'nullable|exists:categories,id';
+        // ✅ Category change hone par show_in_category reset karo
+        $showInCategory = $product->show_in_category;
+        if ($validated['category_id'] != $product->category_id) {
+            $showInCategory = false; // Category badli toh frontend pe se hata do
+        }
+
+        $product->update([
+            'name'             => $validated['name'],
+            'description'      => $validated['description'] ?? null,
+            'price'            => $validated['price'],
+            'category_id'      => $validated['category_id'] ?? null,
+            'subcategory_id'   => $validated['subcategory_id'] ?? null,
+            'image'            => $imagePath,
+            'show_in_category' => $showInCategory,
+        ]);
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product updated!');
     }
 
-    // Validate request
-    $validated = $request->validate($rules);
-
-    // Handle image upload
-    if ($request->hasFile('image')) {
+    // ════════════════════════════════════════
+    // DESTROY
+    // ════════════════════════════════════════
+    public function destroy(Product $product)
+    {
         if ($product->image) {
             \Storage::disk('public')->delete($product->image);
         }
-        $validated['image'] = $request->file('image')->store('products', 'public');
-    }
-
-    // Update product
-    $product->update([
-        'name' => $validated['name'],
-        'description' => $validated['description'] ?? null,
-        'price' => $validated['price'],
-        'category_id' => $validated['category_id'],
-        'subcategory_id' => $validated['subcategory_id'] ?? null,
-        'image' => $validated['image'] ?? $product->image,
-    ]);
-
-    return redirect()->route('products.index')
-                     ->with('success', 'Product updated successfully.');
-}
-
-
-
-    public function destroy(Product $product)
-    {
         $product->delete();
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product deleted!');
     }
 
-// === API for Frontend ===
-public function apiFeaturedProducts()
-{
-    $products = Product::where('is_featured', true)
-        ->select('id', 'name', 'price', 'image')
-        ->orderBy('id', 'desc')
-        ->get();
+    // ════════════════════════════════════════
+    // API: FEATURED PRODUCTS
+    // ════════════════════════════════════════
+    public function apiFeaturedProducts()
+    {
+        return Product::where('is_featured', true)
+            ->select('id', 'name', 'price', 'image')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(fn($p) => [
+                'id'    => $p->id,
+                'name'  => $p->name,
+                'price' => (float) $p->price,
+                'image' => $p->image ? asset('storage/' . $p->image) : '',
+            ]);
+    }
 
-    return $products->map(function ($p) {
-        return [
-            'id'    => $p->id,
-            'name'  => $p->name,
-            'price' => (float) $p->price,
-            'image' => $p->image ? asset('storage/' . $p->image) : '',
-        ];
-    });
-}
+    // ════════════════════════════════════════
+    // API: APPAREL PRODUCTS
+    // ════════════════════════════════════════
+    public function apiApparelProducts()
+    {
+        return Product::where('is_apparel', true)
+            ->select('id', 'name', 'price', 'image')
+            ->latest()
+            ->get()
+            ->map(fn($p) => [
+                'id'    => $p->id,
+                'name'  => $p->name,
+                'price' => (float) $p->price,
+                'image' => $p->image ? asset('storage/' . $p->image) : null,
+            ]);
+    }
 
-// === Featured (POST) - Improve this ===
-public function featured(Request $request)
-{
-    $request->validate([
-        'product_ids' => 'required|array',
-        'product_ids.*' => 'integer|exists:products,id',
-        'action' => 'required|in:add,remove',
-    ]);
+    // ════════════════════════════════════════
+    // API: CATEGORY PRODUCTS
+    // ════════════════════════════════════════
+    public function apiCategoryProducts($categoryId)
+    {
+        // ✅ Sirf woh products jo show_in_category = true hain
+        $category = Category::findOrFail($categoryId);
+        $isSubcategory = !is_null($category->parent_id);
 
-    $value = $request->action === 'add' ? true : false;
+        $query = Product::where('show_in_category', true)
+            ->select('id', 'name', 'price', 'image');
 
-    Product::whereIn('id', $request->product_ids)
-        ->update(['is_featured' => $value]);
+        if ($isSubcategory) {
+            $query->where('subcategory_id', $categoryId);
+        } else {
+            $query->where('category_id', $categoryId);
+        }
 
-    $message = $request->action === 'add'
-        ? 'Selected products added to Featured successfully!'
-        : 'Selected products removed from Featured successfully!';
-
-    return response()->json([
-        'success' => true,
-        'message' => $message
-    ]);
-}
-// === Apparel (POST) - Bulk update ===
-public function apparel(Request $request)
-{
-    $request->validate([
-        'product_ids' => 'required|array',
-        'product_ids.*' => 'integer|exists:products,id',
-        'action'      => 'required|in:add,remove',
-    ]);
-
-    $value = $request->action === 'add' ? true : false;
-
-    Product::whereIn('id', $request->product_ids)
-        ->update(['is_apparel' => $value]);
-
-    $message = $request->action === 'add'
-        ? 'Selected products added to Apparel successfully!'
-        : 'Selected products removed from Apparel successfully!';
-
-    return response()->json([
-        'success' => true,
-        'message' => $message
-    ]);
-}
-public function apiApparelProducts()
-{
-    $products = Product::where('is_apparel', true)
-        ->select('id', 'name', 'price', 'image')
-        ->latest()
-        ->get();
-
-    return $products->map(function ($p) {
-        return [
+        return $query->get()->map(fn($p) => [
             'id'    => $p->id,
             'name'  => $p->name,
             'price' => (float) $p->price,
             'image' => $p->image ? asset('storage/' . $p->image) : null,
+        ]);
+    }
+
+    // ════════════════════════════════════════
+    // BULK: FEATURED (add/remove)
+    // ════════════════════════════════════════
+    public function featured(Request $request)
+    {
+        $request->validate([
+            'product_ids'   => 'required|array',
+            'product_ids.*' => 'integer|exists:products,id',
+            'action'        => 'required|in:add,remove',
+        ]);
+
+        Product::whereIn('id', $request->product_ids)
+            ->update(['is_featured' => $request->action === 'add']);
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->action === 'add'
+                ? 'Products Featured mein add ho gaye!'
+                : 'Products Featured se remove ho gaye!',
+        ]);
+    }
+
+    // ════════════════════════════════════════
+    // BULK: APPAREL (add/remove)
+    // ════════════════════════════════════════
+    public function apparel(Request $request)
+    {
+        $request->validate([
+            'product_ids'   => 'required|array',
+            'product_ids.*' => 'integer|exists:products,id',
+            'action'        => 'required|in:add,remove',
+        ]);
+
+        Product::whereIn('id', $request->product_ids)
+            ->update(['is_apparel' => $request->action === 'add']);
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->action === 'add'
+                ? 'Products Apparel mein add ho gaye!'
+                : 'Products Apparel se remove ho gaye!',
+        ]);
+    }
+
+    // ════════════════════════════════════════
+    // ✅ BULK: CATEGORY ASSIGN
+    // show_in_category = true  → frontend pe dikhao
+    // show_in_category = false → frontend pe chhupao
+    // ════════════════════════════════════════
+    public function bulkCategory(Request $request)
+    {
+        $request->validate([
+            'product_ids'      => 'required|array',
+            'product_ids.*'    => 'integer|exists:products,id',
+            'category_id'      => 'nullable|exists:categories,id',
+            'subcategory_id'   => 'nullable|exists:categories,id',
+            'show_in_category' => 'required|boolean',
+        ]);
+
+        $updateData = [
+            'show_in_category' => $request->show_in_category,
         ];
-    });
-}
 
+        // Agar category assign ho rahi hai
+        if ($request->show_in_category && $request->category_id) {
+            $updateData['category_id']    = $request->category_id;
+            $updateData['subcategory_id'] = $request->subcategory_id;
+        }
 
+        // Agar category remove ho rahi hai
+        if (!$request->show_in_category) {
+            $updateData['show_in_category'] = false;
+            // category_id aur subcategory_id database mein rehne do (sirf hide karo)
+        }
 
+        Product::whereIn('id', $request->product_ids)->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->show_in_category
+                ? count($request->product_ids) . ' products category mein add ho gaye aur frontend pe dikh rahe hain!'
+                : count($request->product_ids) . ' products category se remove ho gaye (frontend pe nahi dikhenge)!',
+        ]);
+    }
 }

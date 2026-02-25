@@ -28,16 +28,25 @@
               </router-link>
             </div>
 
-            <div v-else class="pe-lg-5">
-              <h1 class="display-5 fw-bold mb-4">
-                {{ navigation?.title || "Explore" }} Categories
-              </h1>
-              <h4 class="mb-3 fw-semibold text-black">Premium Quality Selection</h4>
-              <p class="lead mb-4 text-black">
-                Discover our exclusive range of high-quality {{ navigation?.title.toLowerCase() || "products" }}. Handpicked for style, durability and performance.
-              </p>
-              <router-link to="/shop" class="btn single-line-btn btn-md mt-2">Shop Now</router-link>
-            </div>
+           <div class="category-hero pe-lg-5">
+  <h1 class="hero-title">
+    {{ navigation?.title || "Explore" }} Categories
+  </h1>
+
+  <h4 class="hero-subtitle">
+    Premium Quality Selection
+  </h4>
+
+  <p class="hero-description">
+    Discover our exclusive range of high-quality
+    {{ navigation?.title?.toLowerCase() || "products" }}.
+    Handpicked for style, durability and performance.
+  </p>
+
+  <router-link to="#" class="btn hero-btn">
+    Shop Now
+  </router-link>
+</div>
           </div>
 
           <!-- Right Side - Categories -->
@@ -160,6 +169,41 @@ watch(() => route.params.slug, loadData);
 </script>
 
 <style scoped>
+
+.hero-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #000;
+}
+
+.hero-subtitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #444;
+}
+
+.hero-description {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.7;
+  max-width: 500px;
+}
+
+.hero-btn {
+  background-color: #000;
+  color: #fff;
+  padding: 10px 28px;
+  border-radius: 30px;
+  font-weight: 600;
+  transition: 0.3s ease;
+  border: 1px solid #000;
+}
+
+.hero-btn:hover {
+  background-color: #fff;
+  color: #000;
+  transform: translateY(-3px);
+}
 .deal-image {
   width: 100%;
   height: 220px;

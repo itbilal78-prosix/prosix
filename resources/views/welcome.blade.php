@@ -73,8 +73,8 @@
         let faviconToggle = false;
         setInterval(() => {
           if (document.hidden) {
-            favicon.href = faviconToggle 
-              ? "{{ asset('assets/images/P LOGO BLACK.png') }}" 
+            favicon.href = faviconToggle
+              ? "{{ asset('assets/images/P LOGO BLACK.png') }}"
               : "{{ asset('assets/images/P LOGO WHITE.png') }}"; // alternate image
             faviconToggle = !faviconToggle;
           } else {
