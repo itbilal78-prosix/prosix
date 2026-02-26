@@ -235,9 +235,9 @@ const loadModels = async () => {
 // ===== LOAD PRODUCTS =====
 const fetchProducts = async () => {
   try {
-const res = await axios.get(`/api/category/${categoryId}/products`)
-products.value = res.data
-    products.value  = res.data.products || []
+    const res = await axios.get(`/api/category/${route.params.id}/products`)
+    products.value = res.data   // sirf ye line rakho
+    console.log("Loaded:", products.value)
   } catch (e) {
     console.error('Products error:', e)
   } finally {
