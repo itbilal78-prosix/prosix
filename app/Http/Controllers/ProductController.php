@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -50,12 +50,12 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'description'    => 'nullable|string',
-            'price'          => 'required|numeric|min:0',
-            'category_id'    => 'nullable|exists:categories,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'category_id' => 'nullable|exists:categories,id',
             'subcategory_id' => 'nullable|exists:categories,id',
-            'image'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $imagePath = null;
@@ -64,15 +64,15 @@ class ProductController extends Controller
         }
 
         Product::create([
-            'name'             => $validated['name'],
-            'description'      => $validated['description'] ?? null,
-            'price'            => $validated['price'],
-            'category_id'      => $validated['category_id'] ?? null,
-            'subcategory_id'   => $validated['subcategory_id'] ?? null,
-            'image'            => $imagePath,
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+            'category_id' => $validated['category_id'] ?? null,
+            'subcategory_id' => $validated['subcategory_id'] ?? null,
+            'image' => $imagePath,
             // ✅ KEY: Create karte waqt show_in_category = false
             // Frontend pe tab show hoga jab manually "Add to Category" press karein
-            'show_in_category' => false,
+            'show_in_category' => $validated['category_id'] ? true : false,
         ]);
 
         return redirect()->route('products.index')
@@ -98,12 +98,12 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'description'    => 'nullable|string',
-            'price'          => 'required|numeric|min:0',
-            'category_id'    => 'nullable|exists:categories,id',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'category_id' => 'nullable|exists:categories,id',
             'subcategory_id' => 'nullable|exists:categories,id',
-            'image'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         // Image handle
@@ -117,17 +117,15 @@ class ProductController extends Controller
 
         // ✅ Category change hone par show_in_category reset karo
         $showInCategory = $product->show_in_category;
-        if ($validated['category_id'] != $product->category_id) {
-            $showInCategory = false; // Category badli toh frontend pe se hata do
-        }
+        $showInCategory = $validated['category_id'] ? true : false;
 
         $product->update([
-            'name'             => $validated['name'],
-            'description'      => $validated['description'] ?? null,
-            'price'            => $validated['price'],
-            'category_id'      => $validated['category_id'] ?? null,
-            'subcategory_id'   => $validated['subcategory_id'] ?? null,
-            'image'            => $imagePath,
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+            'category_id' => $validated['category_id'] ?? null,
+            'subcategory_id' => $validated['subcategory_id'] ?? null,
+            'image' => $imagePath,
             'show_in_category' => $showInCategory,
         ]);
 
@@ -158,11 +156,11 @@ class ProductController extends Controller
             ->select('id', 'name', 'price', 'image')
             ->orderBy('id', 'desc')
             ->get()
-            ->map(fn($p) => [
-                'id'    => $p->id,
-                'name'  => $p->name,
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
                 'price' => (float) $p->price,
-                'image' => $p->image ? asset('storage/' . $p->image) : '',
+                'image' => $p->image ? asset('storage/'.$p->image) : '',
             ]);
     }
 
@@ -175,11 +173,11 @@ class ProductController extends Controller
             ->select('id', 'name', 'price', 'image')
             ->latest()
             ->get()
-            ->map(fn($p) => [
-                'id'    => $p->id,
-                'name'  => $p->name,
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
                 'price' => (float) $p->price,
-                'image' => $p->image ? asset('storage/' . $p->image) : null,
+                'image' => $p->image ? asset('storage/'.$p->image) : null,
             ]);
     }
 
@@ -190,7 +188,7 @@ class ProductController extends Controller
     {
         // ✅ Sirf woh products jo show_in_category = true hain
         $category = Category::findOrFail($categoryId);
-        $isSubcategory = !is_null($category->parent_id);
+        $isSubcategory = ! is_null($category->parent_id);
 
         $query = Product::where('show_in_category', true)
             ->select('id', 'name', 'price', 'image');
@@ -201,11 +199,11 @@ class ProductController extends Controller
             $query->where('category_id', $categoryId);
         }
 
-        return $query->get()->map(fn($p) => [
-            'id'    => $p->id,
-            'name'  => $p->name,
+        return $query->get()->map(fn ($p) => [
+            'id' => $p->id,
+            'name' => $p->name,
             'price' => (float) $p->price,
-            'image' => $p->image ? asset('storage/' . $p->image) : null,
+            'image' => $p->image ? asset('storage/'.$p->image) : null,
         ]);
     }
 
@@ -215,9 +213,9 @@ class ProductController extends Controller
     public function featured(Request $request)
     {
         $request->validate([
-            'product_ids'   => 'required|array',
+            'product_ids' => 'required|array',
             'product_ids.*' => 'integer|exists:products,id',
-            'action'        => 'required|in:add,remove',
+            'action' => 'required|in:add,remove',
         ]);
 
         Product::whereIn('id', $request->product_ids)
@@ -237,9 +235,9 @@ class ProductController extends Controller
     public function apparel(Request $request)
     {
         $request->validate([
-            'product_ids'   => 'required|array',
+            'product_ids' => 'required|array',
             'product_ids.*' => 'integer|exists:products,id',
-            'action'        => 'required|in:add,remove',
+            'action' => 'required|in:add,remove',
         ]);
 
         Product::whereIn('id', $request->product_ids)
@@ -261,10 +259,10 @@ class ProductController extends Controller
     public function bulkCategory(Request $request)
     {
         $request->validate([
-            'product_ids'      => 'required|array',
-            'product_ids.*'    => 'integer|exists:products,id',
-            'category_id'      => 'nullable|exists:categories,id',
-            'subcategory_id'   => 'nullable|exists:categories,id',
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'integer|exists:products,id',
+            'category_id' => 'nullable|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
             'show_in_category' => 'required|boolean',
         ]);
 
@@ -274,12 +272,12 @@ class ProductController extends Controller
 
         // Agar category assign ho rahi hai
         if ($request->show_in_category && $request->category_id) {
-            $updateData['category_id']    = $request->category_id;
+            $updateData['category_id'] = $request->category_id;
             $updateData['subcategory_id'] = $request->subcategory_id;
         }
 
         // Agar category remove ho rahi hai
-        if (!$request->show_in_category) {
+        if (! $request->show_in_category) {
             $updateData['show_in_category'] = false;
             // category_id aur subcategory_id database mein rehne do (sirf hide karo)
         }
@@ -289,8 +287,8 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => $request->show_in_category
-                ? count($request->product_ids) . ' products category mein add ho gaye aur frontend pe dikh rahe hain!'
-                : count($request->product_ids) . ' products category se remove ho gaye (frontend pe nahi dikhenge)!',
+                ? count($request->product_ids).' products category mein add ho gaye aur frontend pe dikh rahe hain!'
+                : count($request->product_ids).' products category se remove ho gaye (frontend pe nahi dikhenge)!',
         ]);
     }
 }

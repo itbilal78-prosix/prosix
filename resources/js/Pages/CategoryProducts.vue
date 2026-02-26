@@ -235,8 +235,8 @@ const loadModels = async () => {
 // ===== LOAD PRODUCTS =====
 const fetchProducts = async () => {
   try {
-    const res = await axios.get(`http://127.0.0.1:8000/api/category/${categoryId}`)
-    category.value  = res.data.category
+const res = await axios.get(`/api/category/${categoryId}/products`)
+products.value = res.data
     products.value  = res.data.products || []
   } catch (e) {
     console.error('Products error:', e)
