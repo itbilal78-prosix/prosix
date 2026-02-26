@@ -44,8 +44,8 @@
             </div>
 
             <!-- ===== DESKTOP MENU ===== -->
-<div class="collapse navbar-collapse d-flex align-items-center" id="mainNavbar">
-                    <ul class="navbar-nav menu-right gap-4 ">
+<div class="collapse navbar-collapse align-items-center justify-content-between" id="mainNavbar">
+                        <ul class="navbar-nav menu-right gap-4 ">
                     <li
                         v-for="nav in navigations"
                         :key="nav.id"
@@ -871,9 +871,10 @@ onMounted(async () => {
     display:flex;
     justify-content: center;   /* instead of space-evenly */
     gap:40px;
-    margin-left:0;
+    margin-left:auto;   /* ← IMPORTANT */
     padding-right:0;
 }
+
 /* =========================================
    MOBILE OVERRIDES (≤ 991px)
    ========================================= */
