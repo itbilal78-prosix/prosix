@@ -11,7 +11,7 @@ use App\Http\Controllers\NavigationController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\BlogController;
-use App\Http\Controllers\productController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\CustomizerModelController;
 use App\Http\Controllers\OrderController;
@@ -108,7 +108,6 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
 
 // Public API to fetch banners
 Route::get('/banners', [BannerController::class, 'apiIndex']);// API route in routes/api.php
-Route::get('/socials', [SocialMediaController::class, 'apiIndex']);
 Route::get('/categories', [CategoryController::class, 'apiIndex']);
 
 // routes/api.php
