@@ -170,7 +170,8 @@ Route::post('/templates/save-from-customizer',
 Route::get('/api/mascot-templates', function () {
     return \App\Models\Template::latest()->get();
 });
-
+Route::get('/products/featured', [ProductController::class, 'featured'])
+    ->name('products.featured');
 
 Route::post('/categories/reorder',[CategoryController::class,'reorder'])
 ->name('categories.reorder');

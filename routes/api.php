@@ -19,6 +19,7 @@ use App\Http\Controllers\MembershipRequestController;
 use App\Http\Controllers\Api\StripeController;
 use App\Http\Controllers\ArtworkRequestController;
 use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\AiChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -128,9 +129,6 @@ Route::get('/featured-products', [ProductController::class, 'apiFeaturedProducts
 
 
 Route::get('/category/{id}/products',  [ProductController::class, 'apiCategoryProducts']);
-
-
-
 
 
 

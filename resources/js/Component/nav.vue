@@ -469,9 +469,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Smooch+Sans:wght@300;400;600;700&display=swap");
 
-* { font-family: "Smooch Sans", sans-serif; }
 
 /* =========================================
    NAVBAR BASE

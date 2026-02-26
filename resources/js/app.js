@@ -14,7 +14,6 @@ import { createPinia } from 'pinia';  // ← Yeh import zaroori hai
 import App from './App.vue';
 import router from './router';
 import '../css/app.css';  // Agar custom CSS hai
-
 // Pinia create aur register karo (sab se pehle!)
 const pinia = createPinia();
 const app = createApp(App);

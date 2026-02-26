@@ -8,20 +8,18 @@ const routes = [
     meta: { public: true, title: 'Home' }
   },
 
-  {
-    path: '/user-login',
-    name: 'Login',
-    component: () => import('@/user-authentication/Login.vue'),
-    meta: { guest: true }
-  },
-
-  {
-    path: '/register',
-    name: 'Register',
-    component: () => import('@/user-authentication/Register.vue'),
-    meta: { guest: true }
-  },
-
+{
+  path: '/user-login',
+  name: 'Login',
+  component: () => import('@/user-authentication/AuthPage.vue'),
+  meta: { guest: true }
+},
+{
+  path: '/register',
+  name: 'Register',
+  component: () => import('@/user-authentication/AuthPage.vue'),
+  meta: { guest: true }
+},
   {
     path: '/otp-verification',
     name: 'OTPVerification',

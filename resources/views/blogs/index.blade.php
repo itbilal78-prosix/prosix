@@ -1,11 +1,16 @@
 @extends('layouts.dashboard')
 @section('content')
 
-<h2 class="text-black">All Blogs</h2>
-<a href="{{ route('blogs.create') }}" class="btn btn-dark mb-3">Add New Blog</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-black mb-0">All Blogs</h2>
 
-@if(session('success')) 
-    <div class="alert alert-dark border border-dark">{{ session('success') }}</div> 
+    <a href="{{ route('blogs.create') }}" class="btn btn-dark">
+        <i class="bi bi-plus-lg me-1"></i> Add New Blog
+    </a>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-dark border border-dark">{{ session('success') }}</div>
 @endif
 
 <table class="table table-bordered border-dark">

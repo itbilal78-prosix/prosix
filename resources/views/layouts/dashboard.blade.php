@@ -8,7 +8,7 @@
     <title>Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-
+<link rel="stylesheet" href="/assets/global.css">
     <style>
         body { transition: background-color 0.3s, color 0.3s; }
         #sidebar { min-width: 250px; max-width: 250px; height: 100vh; position: fixed; top:0; left:0; transition: all 0.3s; overflow-y:auto; }
