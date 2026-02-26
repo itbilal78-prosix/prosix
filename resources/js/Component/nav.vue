@@ -487,7 +487,7 @@ onMounted(async () => {
     content: "";
     position: absolute;
     top: 0; right: 0;
-    width: 65%; height: 100%;
+    width: 70%; height: 100%;
     background: #000;
     clip-path: polygon(0% 0, 100% 0, 100% 100%, 4% 100%);
     transition: all 0.35s ease;
