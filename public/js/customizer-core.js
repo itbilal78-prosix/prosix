@@ -2493,8 +2493,11 @@ window.isDraggingKnob = false;
 
                 elements.forEach((el, index) => {
                     if (!el.id) el.id = `svg-part-${index}`;
-                    if (!el.dataset.partName) el.dataset.partName = `Part ${index + 1}`;
-
+                    // el.dataset.partName = el.id;
+el.dataset.partName = el.getAttribute('inkscape:label')
+    || el.getAttribute('data-name')
+    || el.getAttribute('id')
+    || `part-${index + 1}`;
                     el.classList.add('svg-hoverable');
                     el.style.cursor = 'pointer';
                     el.style.transition = 'all 0.3s ease';
@@ -2827,10 +2830,12 @@ window.isDraggingKnob = false;
 
         const active = allSvgParts[window.currentPartIndex];
 
-        if (active) {
-            partBtn.innerHTML =
-                (active.dataset.partName || 'Part') + ' ▼';
-        }
+      if (active) {
+    const nameSpan = document.getElementById('partName');
+    if (nameSpan) {
+        nameSpan.textContent = active.dataset.partName || 'Part';
+    }
+}
     }
 
 
@@ -2851,20 +2856,38 @@ window.isDraggingKnob = false;
     };
 
     // PATCH selectSvgElement
-    const originalSelect = window.selectSvgElement;
+   // PATCH selectSvgElement
+// PATCH selectSvgElement
+const originalSelect = window.selectSvgElement;
+window.selectSvgElement = function (element) {
+    if (!element) return;
 
-    window.selectSvgElement = function (element) {
+    window.selectedSvgElement = element;
 
-        if (!element) return;
+    // ✅ Part name update karo - HAMESHA
+    const partName = document.getElementById('partName');
+    if (partName) {
+        partName.textContent = element.dataset.partName || element.id || 'Part';
+    }
 
-        window.selectedSvgElement = element;
+    // ✅ Current index update karo
+    const idx = window.allSvgParts ? window.allSvgParts.indexOf(element) : -1;
+    if (idx !== -1) window.currentPartIndex = idx;
 
-        document.querySelectorAll('.selected-svg-part').forEach(e => {
-            e.classList.remove('selected-svg-part');
-        });
+    // ✅ Dropdown highlight update karo
+    document.querySelectorAll('#partDropdown li').forEach((li, i) => {
+        li.classList.toggle('active', i === window.currentPartIndex);
+    });
 
-        element.classList.add('selected-svg-part');
-    };
+    // ✅ Selected CSS class
+    document.querySelectorAll('.selected-svg-part').forEach(e => {
+        e.classList.remove('selected-svg-part');
+    });
+    element.classList.add('selected-svg-part');
+
+    // ✅ Original function bhi call karo (color/gradient logic)
+    if (originalSelect) originalSelect(element);
+};
 
 
     function updatePartDropdown() {
@@ -2875,10 +2898,12 @@ window.isDraggingKnob = false;
 
         const active = allSvgParts[window.currentPartIndex];
 
-        if (active) {
-            partBtn.innerHTML =
-                (active.dataset.partName || 'Part') + ' ▼';
-        }
+       if (active) {
+    const nameSpan = document.getElementById('partName');
+    if (nameSpan) {
+        nameSpan.textContent = active.dataset.partName || 'Part';
+    }
+}
     }
 
     // 🔥 ADD THIS FUNCTION:

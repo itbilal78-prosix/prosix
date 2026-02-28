@@ -2489,62 +2489,7 @@ border:2px solid #ddd;
 
     // =================== INITIALIZE ON LOAD ===================
 
-    // window.initializeApplicationsOnLoad = function () {
-    //     if (!window.applicationsApplied) return;
 
-    //     console.log('🎨 Initializing applications...');
-
-    //     const view = window.currentView;
-    //     if (!window.applicationsApplied[view]) return;
-
-    //     Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-    //         layers.forEach(layer => {
-
-    //             addApplicationToSvg(layer);
-
-    //             // 🔥 RESTORE PATTERN
-    //             if (layer.hasPattern && layer.patternSvg) {
-    //                 window.currentApplicationLayer = layer.id;
-
-    //                 applyPatternToText(layer.patternSvg, layer.id);
-
-    //                 if (layer.replacements)
-    //                     rebuildTextPattern(layer);
-
-    //                 if (layer.patternSize)
-    //                     updateTextPatternSize(layer.patternSize);
-
-    //                 if (layer.patternOpacity)
-    //                     updateTextPatternOpacity(layer.patternOpacity);
-    //             }
-
-    //             // 🔥 RESTORE MASCOT
-    //             if (layer.hasMascot && layer.mascotSvg) {
-    //                 window.currentApplicationLayer = layer.id;
-
-    //                 applyMascotToText(layer.mascotSvg, layer.id);
-
-    //                 if (layer.mascotSize)
-    //                     updateTextMascotSize(layer.mascotSize);
-
-    //                 if (layer.mascotOpacity)
-    //                     updateTextMascotOpacity(layer.mascotOpacity);
-
-    //                 if (layer.mascotCount)
-    //                     updateTextMascotCount(layer.mascotCount);
-    //             }
-
-    //         });
-
-    //     });
-
-    //     updateApplicationLayersList();
-
-    //     console.log('✅ Applications initialized');
-    // };
-    // =====================================================
-    // initializeApplicationsOnLoad - REPLACE IN customizer-application.js
-    // =====================================================
 
     window.initializeApplicationsOnLoad = function () {
         if (!window.applicationsApplied) return;
