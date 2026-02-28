@@ -8,18 +8,18 @@
       <div class="form-box login">
         <h2 class="animation" style="--i:0; --j:21;">Login</h2>
 
-        <!-- Error Alert -->
         <div v-if="login.error" class="auth-alert error animation" style="--i:1; --j:22;">
           {{ login.error }}
         </div>
 
         <form @submit.prevent="handleLogin">
-          <!-- Email -->
+
           <div class="input-box animation" style="--i:1; --j:22;">
             <input
               type="email"
               v-model="login.form.email"
               :class="{ invalid: login.errors.email }"
+              placeholder=" "
               required
             />
             <label>Email</label>
@@ -27,24 +27,21 @@
             <span v-if="login.errors.email" class="field-err">{{ login.errors.email }}</span>
           </div>
 
-          <!-- Password -->
           <div class="input-box has-eye animation" style="--i:2; --j:23;">
             <input
               :type="login.showPass ? 'text' : 'password'"
-              id="login-pass"
               v-model="login.form.password"
               :class="{ invalid: login.errors.password }"
+              placeholder=" "
               required
             />
             <label>Password</label>
-            <i class="bx bxs-lock-alt icon-left"></i>
             <button type="button" class="eye-toggle" @click="login.showPass = !login.showPass">
               <i :class="login.showPass ? 'bx bx-show' : 'bx bx-hide'"></i>
             </button>
             <span v-if="login.errors.password" class="field-err">{{ login.errors.password }}</span>
           </div>
 
-          <!-- Remember Me -->
           <div class="remember-box animation" style="--i:3; --j:24;">
             <label class="remember-label">
               <input type="checkbox" v-model="login.form.remember" />
@@ -52,14 +49,13 @@
             </label>
           </div>
 
-          <!-- Submit -->
           <button class="btn animation" type="submit" :disabled="login.loading" style="--i:4; --j:25;">
             <span v-if="login.loading" class="spin"></span>
             {{ login.loading ? 'Signing in...' : 'Login' }}
           </button>
 
           <div class="logreg-link animation" style="--i:5; --j:26;">
-            <p>Don't have an account? <br />
+            <p>Don't have an account?<br />
               <a href="#" @click.prevent="isRegister = true">Sign up</a>
             </p>
           </div>
@@ -76,7 +72,6 @@
       <div class="form-box register">
         <h2 class="animation" style="--i:17; --j:0;">Sign up</h2>
 
-        <!-- Error / Success Alert -->
         <div v-if="register.error" class="auth-alert error animation" style="--i:17; --j:0;">
           {{ register.error }}
         </div>
@@ -85,12 +80,13 @@
         </div>
 
         <form @submit.prevent="handleRegister">
-          <!-- Full Name -->
+
           <div class="input-box animation" style="--i:18; --j:1;">
             <input
               type="text"
               v-model="register.form.name"
               :class="{ invalid: register.errors.name }"
+              placeholder=" "
               required
             />
             <label>Full Name</label>
@@ -98,12 +94,12 @@
             <span v-if="register.errors.name" class="field-err">{{ register.errors.name }}</span>
           </div>
 
-          <!-- Email -->
           <div class="input-box animation" style="--i:19; --j:2;">
             <input
               type="email"
               v-model="register.form.email"
               :class="{ invalid: register.errors.email }"
+              placeholder=" "
               required
             />
             <label>Email</label>
@@ -111,46 +107,43 @@
             <span v-if="register.errors.email" class="field-err">{{ register.errors.email }}</span>
           </div>
 
-          <!-- Password -->
           <div class="input-box has-eye animation" style="--i:20; --j:3;">
             <input
               :type="register.showPass ? 'text' : 'password'"
               v-model="register.form.password"
               :class="{ invalid: register.errors.password }"
+              placeholder=" "
               required
             />
             <label>Password</label>
-            <i class="bx bxs-lock-alt icon-left"></i>
             <button type="button" class="eye-toggle" @click="register.showPass = !register.showPass">
               <i :class="register.showPass ? 'bx bx-show' : 'bx bx-hide'"></i>
             </button>
             <span v-if="register.errors.password" class="field-err">{{ register.errors.password }}</span>
           </div>
 
-          <!-- Confirm Password -->
           <div class="input-box has-eye animation" style="--i:21; --j:4;">
             <input
               :type="register.showConfirm ? 'text' : 'password'"
               v-model="register.form.password_confirmation"
               :class="{ invalid: register.errors.password_confirmation }"
+              placeholder=" "
               required
             />
             <label>Confirm Password</label>
-            <i class="bx bxs-lock icon-left"></i>
             <button type="button" class="eye-toggle" @click="register.showConfirm = !register.showConfirm">
               <i :class="register.showConfirm ? 'bx bx-show' : 'bx bx-hide'"></i>
             </button>
             <span v-if="register.errors.password_confirmation" class="field-err">{{ register.errors.password_confirmation }}</span>
           </div>
 
-          <!-- Submit -->
           <button class="btn animation" type="submit" :disabled="register.loading" style="--i:22; --j:5;">
             <span v-if="register.loading" class="spin"></span>
             {{ register.loading ? 'Creating account...' : 'Sign up' }}
           </button>
 
           <div class="logreg-link animation" style="--i:23; --j:6;">
-            <p>Already have an account? <br />
+            <p>Already have an account?<br />
               <a href="#" @click.prevent="isRegister = false">Login</a>
             </p>
           </div>
@@ -174,10 +167,8 @@ import axios from 'axios'
 const router = useRouter()
 const route  = useRoute()
 
-// Toggle between login / register panel
 const isRegister = ref(false)
 
-// ─── LOGIN STATE ──────────────────────────────────────────────
 const login = reactive({
   loading : false,
   showPass: false,
@@ -191,18 +182,14 @@ const handleLogin = async () => {
   login.error   = ''
   login.errors.email    = ''
   login.errors.password = ''
-
   try {
     const res = await axios.post('/api/user/login', {
       email   : login.form.email,
       password: login.form.password
     })
-
     if (res.data.status) {
-      const token = res.data.token || 'logged_in'
-      localStorage.setItem('auth_token', token)
-      const redirectTo = route.query.redirect || '/dashboard'
-      router.push(redirectTo)
+      localStorage.setItem('auth_token', res.data.token || 'logged_in')
+      router.push(route.query.redirect || '/dashboard')
     }
   } catch (e) {
     if (e.response?.data) {
@@ -220,7 +207,6 @@ const handleLogin = async () => {
   }
 }
 
-// ─── REGISTER STATE ───────────────────────────────────────────
 const register = reactive({
   loading    : false,
   showPass   : false,
@@ -248,7 +234,6 @@ const handleRegister = async () => {
   register.loading = true
   register.error   = ''
   register.success = ''
-
   try {
     const res  = await fetch('/api/user/register', {
       method : 'POST',
@@ -256,7 +241,6 @@ const handleRegister = async () => {
       body   : JSON.stringify(register.form)
     })
     const data = await res.json()
-
     if (data.status) {
       router.push({ path: '/otp-verification', query: { email: data.email } })
     } else {
@@ -280,28 +264,29 @@ const handleRegister = async () => {
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
 
-/* ── full-page centering ── */
+/* ── PAGE ── */
 .auth-body {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #081b29;
+  background: #ffffff;                        /* WHITE page background */
   font-family: 'Poppins', sans-serif;
 }
 
-/* ── card ── */
+/* ── CARD ── */
 .wrapper {
   position: relative;
   width: 750px;
   height: 480px;
   background: transparent;
-  border: 2px solid #0ef;
+  border: 2px solid #333333;                  /* dark border on white */
   overflow: hidden;
-  box-shadow: 0 0 25px #0ef;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  border-radius: 4px;
 }
 
-/* ─────────────────────── FORM BOX ─────────────────────── */
+/* ─────────────── FORM BOX ─────────────── */
 .wrapper .form-box {
   position: absolute;
   top: 0;
@@ -312,74 +297,57 @@ const handleRegister = async () => {
   justify-content: center;
 }
 
-.wrapper .form-box.login {
-  left: 0;
-  padding: 0 50px 0 36px;
-}
+.wrapper .form-box.login  { left: 0;  padding: 0 50px 0 36px; }
+.wrapper .form-box.register { right: 0; padding: 0 36px 0 50px; pointer-events: none; }
+.wrapper.active .form-box.register { pointer-events: auto; }
 
-/* LOGIN animations */
+/* LOGIN slide animations */
 .wrapper .form-box.login .animation {
-  transform: translateX(0);
-  opacity: 1;
-  filter: blur(0);
+  transform: translateX(0); opacity: 1; filter: blur(0);
   transition: 0.7s ease;
   transition-delay: calc(0.1s * var(--j));
 }
 .wrapper.active .form-box.login .animation {
-  transform: translateX(-120%);
-  opacity: 0;
-  filter: blur(10px);
+  transform: translateX(-120%); opacity: 0; filter: blur(10px);
   transition-delay: calc(0.1s * var(--i));
 }
 
-.wrapper .form-box.register {
-  right: 0;
-  padding: 0 36px 0 50px;
-  pointer-events: none;
-}
-.wrapper.active .form-box.register {
-  pointer-events: auto;
-}
-
-/* REGISTER animations */
+/* REGISTER slide animations */
 .wrapper .form-box.register .animation {
-  transform: translateX(120%);
-  opacity: 0;
-  filter: blur(10px);
+  transform: translateX(120%); opacity: 0; filter: blur(10px);
   transition: 0.7s ease;
 }
 .wrapper.active .form-box.register .animation {
-  transform: translateX(0);
-  opacity: 1;
-  filter: blur(0);
+  transform: translateX(0); opacity: 1; filter: blur(0);
   transition-delay: calc(0.1s * var(--i));
 }
 
-/* ─────────────────────── HEADINGS ─────────────────────── */
+/* ─────────────── HEADINGS ─────────────── */
 .form-box h2 {
-  font-size: 28px;
-  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  color: #111111;
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-/* ─────────────────────── ALERTS ─────────────────────── */
+/* ─────────────── ALERTS ─────────────── */
 .auth-alert {
-  font-size: 12.5px;
+  font-size: 12px;
   padding: 7px 12px;
   border-radius: 6px;
   margin-bottom: 8px;
   text-align: center;
 }
-.auth-alert.error   { background: rgba(255,80,80,0.15); border: 1px solid rgba(255,80,80,0.4); color: #ff6b6b; }
-.auth-alert.success { background: rgba(0,239,239,0.1);  border: 1px solid rgba(0,239,239,0.4); color: #0ef; }
+.auth-alert.error   { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; }
+.auth-alert.success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; }
 
-/* ─────────────────────── INPUT BOX ─────────────────────── */
+/* ─────────────── INPUT BOX ─────────────── */
 .form-box .input-box {
   position: relative;
   width: 100%;
-  height: 48px;
-  margin: 16px 0;
+  height: 50px;
+  margin: 18px 0;
 }
 
 .input-box input {
@@ -388,52 +356,64 @@ const handleRegister = async () => {
   background: transparent;
   border: none;
   outline: none;
-  border-bottom: 2px solid #fff;
-  padding-right: 26px;
-  font-size: 15px;
-  color: #fff;
+  border-bottom: 2px solid #aaaaaa;
+  padding: 18px 30px 0 6px;
+  font-size: 14px;
+  color: #111111;
   font-weight: 500;
-  transition: 0.5s;
+  transition: border-color 0.3s;
   font-family: 'Poppins', sans-serif;
 }
 
-.input-box input:focus,
-.input-box input:valid            { border-bottom-color: #0ef; }
-.input-box input.invalid          { border-bottom-color: #ff6b6b !important; }
+/* focus & filled state */
+.input-box input:focus       { border-bottom-color: #111111; }
+.input-box input.invalid     { border-bottom-color: #ef4444 !important; }
 
+/* FLOATING LABEL — uses placeholder=" " trick */
 .input-box label {
   position: absolute;
-  top: 50%;
   left: 0;
+  top: 50%;
   transform: translateY(-50%);
-  font-size: 15px;
-  color: #fff;
+  font-size: 14px;
+  color: #888888;
   pointer-events: none;
-  transition: 0.5s;
+  transition: 0.25s ease;
+  background: transparent;
+}
+/* float up when input has content (not-placeholder-shown) OR is focused */
+.input-box input:focus          ~ label,
+.input-box input:not(:placeholder-shown) ~ label {
+  top: 4px;
+  transform: translateY(0);
+  font-size: 10.5px;
+  padding: 0 0 0 6px;
+  color: #555555;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
-.input-box input:focus ~ label,
-.input-box input:valid ~ label    { top: -5px; font-size: 12px; color: #0ef; }
-
-/* field icon (lock / envelope / user) */
+/* ── right-side icon (lock / envelope / user) ── */
 .icon-left {
   position: absolute;
   top: 50%;
-  right: 0;
+  right: 2px;
+  padding: 0 6px 0 0;
   transform: translateY(-50%);
-  font-size: 18px;
-  color: #fff;
+  font-size: 17px;
+  color: #aaaaaa;
   pointer-events: none;
-  transition: 0.5s;
+  transition: color 0.3s;
+  line-height: 1;
 }
-.input-box input:focus ~ .icon-left,
-.input-box input:valid ~ .icon-left { color: #0ef; }
+.input-box input:focus          ~ .icon-left,
+.input-box input:not(:placeholder-shown) ~ .icon-left { color: #111111; }
 
-/* has-eye: make room for both icons */
-.input-box.has-eye input    { padding-right: 50px; }
-.input-box.has-eye .icon-left { right: 26px; }
+/* has-eye: shift field icon left to make room for eye button */
+.input-box.has-eye input     { padding-right: 54px; }
+.input-box.has-eye .icon-left { right: 28px; }
 
-/* eye toggle button */
+/* eye toggle */
 .eye-toggle {
   position: absolute;
   top: 50%;
@@ -443,106 +423,93 @@ const handleRegister = async () => {
   border: none;
   outline: none;
   cursor: pointer;
-  color: #fff;
-  font-size: 20px;
   padding: 0;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaaaaa;
+  font-size: 19px;
   transition: color 0.3s;
   z-index: 5;
 }
-.eye-toggle:hover { color: #0ef; }
+.eye-toggle:hover { color: #111111; }
 
-/* field-level error text */
+/* field error */
 .field-err {
   position: absolute;
   bottom: -16px;
   left: 0;
-  font-size: 10.5px;
-  color: #ff6b6b;
+  font-size: 10px;
+  color: #ef4444;
 }
 
-/* ─────────────────────── REMEMBER ME ─────────────────────── */
-.remember-box {
-  margin: -6px 0 4px;
-}
+/* ─────────────── REMEMBER ME ─────────────── */
+.remember-box { margin: -4px 0 6px; }
 .remember-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #fff;
+  font-size: 12.5px;
+  color: #555555;
   cursor: pointer;
 }
 .remember-label input[type='checkbox'] {
-  accent-color: #0ef;
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
+  accent-color: #111111;
+  width: 13px; height: 13px; cursor: pointer;
 }
 
-/* ─────────────────────── BUTTON ─────────────────────── */
+/* ─────────────── BUTTON ─────────────── */
 .btn {
   position: relative;
   width: 100%;
   height: 44px;
-  background: transparent;
-  border: 2px solid #0ef;
+  background: #111111;          /* black background */
+  border: 2px solid #111111;
   outline: none;
   border-radius: 40px;
   cursor: pointer;
-  font-size: 15px;
-  color: #fff;
+  font-size: 14px;
+  color: #ffffff;               /* white text */
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
-  z-index: 1;
-  overflow: hidden;
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition: background 0.3s, color 0.3s;
 }
-.btn::before {
-  content: '';
-  position: absolute;
-  top: -100%;
-  left: 0;
-  width: 100%;
-  height: 300%;
-  background: linear-gradient(#081b29, #0ef, #081b29, #0ef);
-  z-index: -1;
-  transition: 0.5s;
+.btn:hover:not(:disabled) {
+  background: #ffffff;          /* white background on hover */
+  color: #111111;               /* black text on hover */
 }
-.btn:hover:not(:disabled)::before { top: 0; }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* spinner inside button */
 .spin {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255,255,255,0.35);
-  border-top-color: #fff;
+  width: 13px; height: 13px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: currentColor;
   border-radius: 50%;
   animation: _spin 0.6s linear infinite;
 }
 @keyframes _spin { to { transform: rotate(360deg); } }
 
-/* ─────────────────────── LINK TEXT ─────────────────────── */
+/* ─────────────── LINK TEXT ─────────────── */
 .form-box .logreg-link {
-  font-size: 13.5px;
-  color: #fff;
+  font-size: 12.5px;
+  color: #666666;
   text-align: center;
   margin-top: 12px;
 }
 .logreg-link p a {
-  color: #0ef;
+  color: #111111;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
 }
 .logreg-link p a:hover { text-decoration: underline; }
 
-/* ─────────────────────── INFO TEXT ─────────────────────── */
+/* ─────────────── INFO TEXT ─────────────── */
 .wrapper .info-text {
   position: absolute;
   top: 0;
@@ -559,16 +526,12 @@ const handleRegister = async () => {
   padding: 0 40px 60px 140px;
 }
 .wrapper .info-text.login .animation {
-  transform: translateX(0);
-  opacity: 1;
-  filter: blur(0);
+  transform: translateX(0); opacity: 1; filter: blur(0);
   transition: 0.7s ease;
   transition-delay: calc(0.1s * var(--j));
 }
 .wrapper.active .info-text.login .animation {
-  transform: translateX(120%);
-  opacity: 0;
-  filter: blur(10px);
+  transform: translateX(120%); opacity: 0; filter: blur(10px);
   transition-delay: calc(0.1s * var(--i));
 }
 
@@ -578,43 +541,39 @@ const handleRegister = async () => {
   padding: 0 140px 60px 40px;
   pointer-events: none;
 }
-.wrapper.active .info-text.register {
-  pointer-events: auto;
-}
+.wrapper.active .info-text.register { pointer-events: auto; }
 .wrapper .info-text.register .animation {
-  transform: translateX(-120%);
-  opacity: 0;
-  filter: blur(10px);
+  transform: translateX(-120%); opacity: 0; filter: blur(10px);
   transition: 0.7s ease;
   transition-delay: calc(0.1s * var(--j));
 }
 .wrapper.active .info-text.register .animation {
-  transform: translateX(0);
-  opacity: 1;
-  filter: blur(0);
+  transform: translateX(0); opacity: 1; filter: blur(0);
   transition-delay: calc(0.1s * var(--i));
 }
 
 .info-text h2 {
-  font-size: 34px;
-  color: #fff;
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
   line-height: 1.3;
   text-transform: uppercase;
 }
 .info-text p {
-  font-size: 14.5px;
-  color: #fff;
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.85);
+  margin-top: 8px;
+  line-height: 1.6;
 }
 
-/* ─────────────────────── BG ANIMATIONS ─────────────────────── */
+/* ─────────────── BG ANIMATIONS ─────────────── */
+/* bg-animate = the diagonal slab that fills the info-text side */
 .wrapper .bg-animate {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 850px;
-  height: 600px;
-  background: linear-gradient(45deg, #081b29, #0ef);
-  border-bottom: 3px solid #0ef;
+  top: 0; right: 0;
+  width: 850px; height: 600px;
+  background: linear-gradient(45deg, #1a1a1a, #555555);  /* dark grey slab */
+  border-bottom: 3px solid #333333;
   transform: rotate(10deg) skewY(40deg);
   transform-origin: bottom right;
   transition: 1.5s ease;
@@ -627,12 +586,10 @@ const handleRegister = async () => {
 
 .wrapper .bg-animate2 {
   position: absolute;
-  top: 100%;
-  left: 250px;
-  width: 850px;
-  height: 700px;
-  background: #081b29;
-  border-top: 3px solid #0ef;
+  top: 100%; left: 230px;
+  width: 850px; height: 700px;
+  background: #ffffff;           /* white fill behind form */
+  border-top: 3px solid #333333;
   transform: rotate(0) skewY(0);
   transform-origin: bottom left;
   transition: 1.5s ease;
@@ -643,18 +600,12 @@ const handleRegister = async () => {
   transition-delay: 1.2s;
 }
 
-/* ─────────────────────── RESPONSIVE ─────────────────────── */
+/* ─────────────── RESPONSIVE ─────────────── */
 @media (max-width: 800px) {
-  .wrapper {
-    width: 95vw;
-    height: auto;
-    min-height: 460px;
-  }
+  .wrapper { width: 95vw; height: auto; min-height: 460px; }
   .wrapper .info-text { display: none; }
   .wrapper .form-box  { width: 100%; padding: 40px 28px !important; }
-  .wrapper .form-box.register { right: unset; left: 0; }
-  /* on mobile keep register hidden until active */
-  .wrapper .form-box.register { display: none; }
+  .wrapper .form-box.register { right: unset; left: 0; display: none; }
   .wrapper.active .form-box.register { display: flex; }
   .wrapper .form-box.login  { display: flex; }
   .wrapper.active .form-box.login  { display: none; }

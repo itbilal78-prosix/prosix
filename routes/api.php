@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\StripeController;
 use App\Http\Controllers\ArtworkRequestController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\FlipbookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,12 +60,7 @@ Route::post('/user/register', [UserController::class, 'register']);
 Route::post('/user/login', [UserController::class, 'login']);
 Route::post('/user/verify-otp', [UserController::class, 'verifyOtp']);
 
-// Protected
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/user/logout', [UserController::class, 'logout']);
-    Route::get('/user/profile', [UserController::class, 'profile']);
-    Route::put('/profile', [UserController::class, 'updateProfile']);
-});
+
 
 // Protected user routes (auth required)
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
@@ -133,11 +129,20 @@ Route::get('/category/{id}/products',  [ProductController::class, 'apiCategoryPr
 
 
 
+// -----------------------------------------------
+// FRONTEND ROUTES
+// -----------------------------------------------
+
+Route::get('/flipbooks', [FlipbookController::class, 'apiIndex']);
+Route::get('/flipbooks/{id}', [FlipbookController::class, 'apiShow']);
 
 
-
-
-
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user/logout',           [UserController::class, 'logout']);
+    Route::get('/user/profile',           [UserController::class, 'profile']);
+    Route::put('/profile',                [UserController::class, 'updateProfile']);   // ✅ already tha
+    Route::post('/user/change-password',  [UserController::class, 'changePassword']); // ✅ naya add karo
+});
 
 
 Route::get('/testimonials', [TestimonialController::class, 'apiIndex']);

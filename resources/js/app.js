@@ -1,12 +1,25 @@
 
 import axios from 'axios'
 
-axios.defaults.baseURL = 'https://prosix.com'
-axios.defaults.withCredentials = true
+// axios.defaults.baseURL = 'https://prosix.com'
 axios.defaults.baseURL = import.meta.env.VITE_API_URL
+axios.defaults.withCredentials = true
 window.axios = axios
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap';
+
+// 🔴 AUTO LOGOUT INTERCEPTOR
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      localStorage.removeItem('auth_token')
+      window.location.href = '/user-login'
+    }
+    return Promise.reject(error)
+  }
+)
+
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap'
 
 // Vue & Pinia
 import { createApp } from 'vue';

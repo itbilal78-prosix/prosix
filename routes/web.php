@@ -19,6 +19,7 @@ use App\Http\Controllers\MembershipRequestController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ArtworkRequestController;
 use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\FlipbookController;
 
 
 // Login routes
@@ -34,13 +35,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // User management
         Route::get('/users', [AuthController::class, 'index'])->name('users.index');
-        Route::post('/users/{id}/approve', [AuthController::class, 'approve'])->name('users.approve');
         Route::post('/api/verify-otp', [AuthController::class, 'verifyOtp']);
     });
 });
 
-Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
-    Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('admin.memberships');
+Route::middleware(['auth:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('memberships');
+
+        Route::resource('flipbooks', FlipbookController::class);
 
 });
  Route::get('/artwork-requests', [ArtworkRequestController::class, 'index'])
@@ -81,7 +87,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
         Route::post('models/{id}/save-design', [CustomizerModelController::class, 'saveDesign'])->name('admin.models.save-design');
     Route::post('models/{id}/save-thumbnail', [CustomizerModelController::class, 'saveThumbnail'])->name('models.save-thumbnail');
 
-
+Route::patch('/users/{id}/toggle', [AuthController::class, 'toggleStatus'])
+    ->name('admin.users.toggle');
 
         // Other resources
         Route::resource('colors', ColorController::class);
@@ -124,6 +131,14 @@ Route::patch('categories/{category}/toggle-status',
 
 
 
+// =============================================
+// File: routes/web.php  mein add karo yeh lines
+// =============================================
+
+
+// -----------------------------------------------
+// ADMIN ROUTES (middleware auth lagao apne hisaab se)
+// -----------------------------------------------
 
 
 
@@ -171,10 +186,14 @@ Route::get('/api/mascot-templates', function () {
     return \App\Models\Template::latest()->get();
 });
 Route::get('/products/featured', [ProductController::class, 'featured'])
-    ->name('products.featured');
+    ->name('products.featured.list');
 
 Route::post('/categories/reorder',[CategoryController::class,'reorder'])
 ->name('categories.reorder');
+
+
+
+
 
 Route::get('/{any}', function () {
     return view('welcome');

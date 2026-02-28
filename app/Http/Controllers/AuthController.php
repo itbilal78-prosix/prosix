@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
-    // Show admin login form
     public function showLoginForm()
     {
         return view('auth.login');
@@ -17,87 +16,62 @@ class AuthController extends Controller
 
     // Admin login
     public function login(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-    $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
-    // Use admin guard
-    if (Auth::guard('admin')->attempt($credentials)) {
-        $request->session()->regenerate();
+        // Use admin guard
+        if (Auth::guard('admin')->attempt($credentials)) {
+            $request->session()->regenerate();
 
-        // ✅ Redirect directly to products.index
-        return redirect()->route('products.index'); 
+            return redirect()->route('products.index');
+        }
+
+        return back()->with('error', 'Invalid credentials.');
     }
 
-    return back()->with('error', 'Invalid credentials.');
-}
-
-
     // Admin logout
-   public function logout(Request $request)
-{
-    Auth::guard('admin')->logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+    public function logout(Request $request)
+    {
+        Auth::guard('admin')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-    return redirect()->route('admin.login');
-}
-
+        return redirect()->route('admin.login');
+    }
 
     // Show all users (for admin)
     public function index()
     {
-        $users = User::where('role', 'user')->get(); // only normal users
-       return view('user_mangment.all_user', compact('users'));
+        $users = User::where('role', 'user')->latest()->get();
 
+        return view('user_mangment.all_user', compact('users'));
     }
 
-    // Approve user & send OTP
-  public function approve($id)
-{
-    $user = User::findOrFail($id);
-    $user->status = 'approved';
-    $user->otp = rand(100000, 999999); // 6 digit OTP
-    $user->otp_verified_at = null;
-    $user->save();
 
-    // Send OTP email
-    Mail::raw("Your OTP is: {$user->otp}. It expires in 24 hours.", function ($message) use ($user) {
-        $message->to($user->email)
-                ->subject('Your OTP for login');
-    });
+    public function toggleStatus($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
 
-    return response()->json(['status' => true, 'message' => 'User approved & OTP sent']);
-}
+        if ($user->status == 'blocked') {
 
-  public function verifyOtp(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'otp' => 'required|numeric',
-    ]);
+            $user->status = 'approved';
 
-    $user = User::where('email', $request->email)
-                ->where('otp', $request->otp)
-                ->where('status', 'approved')
-                ->first();
+        } else {
 
-    if (!$user) {
-        return response()->json(['status' => false, 'message' => 'Invalid OTP'], 422);
+            $user->status = 'blocked';
+
+            DB::table('sessions')
+                ->where('user_id', $user->id)
+                ->delete();
+        }
+
+        $user->save();
+
+        return back()->with('success', 'User status updated.');
     }
-
-    // OTP verified
-    $user->update([
-        'otp_verified_at' => now(),
-        'otp' => null
-    ]);
-
-    return response()->json(['status' => true, 'message' => 'OTP verified successfully']);
-}
-
-
 }

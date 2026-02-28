@@ -7,76 +7,76 @@ const routes = [
     component: () => import('@/Pages/Home.vue'),
     meta: { public: true, title: 'Home' }
   },
-
-{
-  path: '/user-login',
-  name: 'Login',
-  component: () => import('@/user-authentication/AuthPage.vue'),
-  meta: { guest: true }
-},
-{
-  path: '/register',
-  name: 'Register',
-  component: () => import('@/user-authentication/AuthPage.vue'),
-  meta: { guest: true }
-},
+  {
+    path: '/user-login',
+    name: 'Login',
+    component: () => import('@/user-authentication/AuthPage.vue'),
+    meta: { guest: true }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/user-authentication/AuthPage.vue'),
+    meta: { guest: true }
+  },
   {
     path: '/otp-verification',
     name: 'OTPVerification',
     component: () => import('@/user-authentication/OTPVerification.vue'),
     meta: { guest: true }
   },
-
+  {
+    path: '/flipbooks',
+    name: 'Flipbooks',
+    component: () => import('@/Pages/FlipbookPage.vue')   // ✅ capital P
+  },
+  {
+    path: '/flipbook/:id',
+    name: 'FlipbookView',
+    component: () => import('@/Pages/FlipbookView.vue')   // ✅ capital P
+  },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/user-dashboard/dashboard.vue'),
     meta: { requiresAuth: true }
   },
-
   {
     path: '/models/:id',
     name: 'CustomizerModel',
     component: () => import('@/Pages/CustomizerModel.vue'),
     meta: { requiresAuth: true }
   },
-
   {
     path: '/menu/:slug',
     name: 'MenuCategories',
     component: () => import('@/Pages/MenuCategories.vue')
   },
-
   {
     path: '/category/:id/products',
     name: 'CategoryProducts',
     component: () => import('@/Pages/CategoryProducts.vue')
   },
-
   {
     path: '/category/:id/subcategories',
     name: 'Subcategories',
     component: () => import('@/Pages/Subcategories.vue')
   },
-
   {
     path: '/product/:id',
     name: 'ProductDetails',
     component: () => import('@/Pages/ProductDetails.vue')
   },
-
   {
     path: '/blog/:slug',
     name: 'BlogDetail',
     component: () => import('@/Pages/BlogDetail.vue')
   },
-
   {
     path: '/membership',
     name: 'Membership',
     component: () => import('@/Pages/MembershipForm.vue')
   },
-
   {
     path: '/artwork',
     name: 'Artworkform',

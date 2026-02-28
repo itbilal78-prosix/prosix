@@ -26,12 +26,6 @@
 <li>
     <a class="nav-link text-light py-1" href="{{ route('banners.index') }}">Banner</a>
 </li>
-<li>
-    <a class="nav-link text-light py-1" href="#">Social Media</a>
-</li>
-{{-- <li>
-    <a class="nav-link text-light py-1" href="{{ route('socials.index') }}">Social Media</a>
-</li> --}}
 
   <li>
             <a class="nav-link text-light py-1"
@@ -39,6 +33,13 @@
 
         </li>
 <li>
+    <li>
+    <a class="nav-link text-light py-1 d-flex align-items-center gap-2"
+       href="{{ route('admin.flipbooks.index') }}">
+        <i class="bi bi-book-half"></i>
+        <span>Flip Books</span>
+    </a>
+</li>
     <a class="nav-link text-light py-1" href="{{ route('blogs.index') }}">Blog / News</a>
 </li>
 <li>

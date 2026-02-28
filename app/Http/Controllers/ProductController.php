@@ -13,22 +13,27 @@ class ProductController extends Controller
     // ════════════════════════════════════════
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'subcategory'])->orderBy('id', 'desc');
+        $query = Product::with(['category', 'subcategory']);
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', "%{$request->search}%");
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
-        $products = $query->paginate(10)->appends($request->all());
+        $products = $query->latest()->paginate(20);
 
-        // ✅ Pass categories WITH subcategories for modal dropdown
-        $categories = Category::with('subcategories')->whereNull('parent_id')->where('status', 1)->get();
+        // ✅ YE LINE ADD KARO — category blocks ke liye saare products
+        $allProducts = Product::with(['category', 'subcategory'])->get();
+
+        $categories = Category::whereNull('parent_id')
+            ->with('subcategories')
+            ->orderBy('position')
+            ->get();
 
         if ($request->ajax()) {
-            return view('products.index', compact('products', 'categories'));
+            return view('products.index', compact('products', 'allProducts', 'categories'));
         }
 
-        return view('products.index', compact('products', 'categories'));
+        return view('products.index', compact('products', 'allProducts', 'categories'));
     }
 
     // ════════════════════════════════════════

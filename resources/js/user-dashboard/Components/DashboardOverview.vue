@@ -1,11 +1,13 @@
 <template>
   <div class="overview-root">
 
-    <!-- Page Header -->
+    <!-- Page Header with user name -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Dashboard Overview</h1>
-        <p class="page-sub">Welcome back! Here's what's happening with your properties.</p>
+        <h1 class="page-title">
+          Welcome back, {{ user?.name ? user.name.split(' ')[0] : 'there' }}! 👋
+        </h1>
+        <p class="page-sub">Here's what's happening with your properties.</p>
       </div>
       <button class="add-property-btn" @click="$emit('navigate-to-list')">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -84,22 +86,25 @@ import { computed } from 'vue'
 
 const props = defineProps({
   dashboardStats: Object,
-  recentProperties: Array
+  recentProperties: Array,
+  // ✅ Added user prop to show name in welcome message
+  user: { type: Object, default: () => ({}) }
 })
 defineEmits(['navigate-to-list'])
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(price || 0)
 
-const formatDate = (d) => new Date(d).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' })
+const formatDate = (d) =>
+  new Date(d).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' })
 
 const statCards = computed(() => [
   {
     label: 'Total Properties',
     value: props.dashboardStats?.total_properties ?? 0,
-    color: '#4f46e5',
-    light: '#ede9fe',
-    icon: `<svg width="22" height="22" fill="none" stroke="#4f46e5" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`
+    color: '#1a1a2e',
+    light: '#e8e8f0',
+    icon: `<svg width="22" height="22" fill="none" stroke="#1a1a2e" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`
   },
   {
     label: 'Active Listings',
@@ -118,9 +123,9 @@ const statCards = computed(() => [
   {
     label: 'Total Value',
     value: formatPrice(props.dashboardStats?.total_value ?? 0),
-    color: '#7c3aed',
-    light: '#ede9fe',
-    icon: `<svg width="22" height="22" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
+    color: '#0f3460',
+    light: '#dce8f5',
+    icon: `<svg width="22" height="22" fill="none" stroke="#0f3460" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
   }
 ])
 </script>
@@ -142,7 +147,7 @@ const statCards = computed(() => [
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
   color: white;
   border: none;
   padding: 10px 18px;
@@ -151,9 +156,9 @@ const statCards = computed(() => [
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+  box-shadow: 0 4px 12px rgba(15,52,96,0.3);
 }
-.add-property-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(79,70,229,0.4); }
+.add-property-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(15,52,96,0.4); }
 
 .stats-grid {
   display: grid;
@@ -218,7 +223,7 @@ const statCards = computed(() => [
 .view-all-link {
   background: none;
   border: none;
-  color: #4f46e5;
+  color: #0f3460;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -248,7 +253,7 @@ const statCards = computed(() => [
 .empty-state p { color: #9ca3af; font-size: 0.875rem; margin: 0; }
 .cta-btn {
   margin-top: 12px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
   color: white;
   border: none;
   padding: 10px 24px;
@@ -256,7 +261,7 @@ const statCards = computed(() => [
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+  box-shadow: 0 4px 12px rgba(15,52,96,0.3);
   transition: transform 0.2s;
 }
 .cta-btn:hover { transform: translateY(-1px); }

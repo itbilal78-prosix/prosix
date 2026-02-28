@@ -300,9 +300,9 @@ window.showHideColorPickers = function (style) {
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
-        const colors = window.backendColors?.length
-            ? window.backendColors.map(c => c.code)
-            : ['#FFFFFF', '#000000', '#FF5722', '#2196F3', '#4CAF50', '#FFC107', '#9C27B0', '#666666'];
+        const colors = window.selectedColors?.length
+    ? window.selectedColors
+    : ['#FFFFFF', '#000000'];
 
         function picker(id, key) {
             createColorPicker(id, colors, layer.outlineColors[key], color => {

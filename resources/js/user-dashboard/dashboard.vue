@@ -24,6 +24,7 @@
             v-if="!isLoading && activeTab === 'overview'"
             :dashboard-stats="dashboardStats"
             :recent-properties="recentProperties"
+            :user="user"
             @navigate-to-list="$router.push('/list-property')"
             key="overview"
           />
@@ -77,32 +78,48 @@ const checkAuth = () => {
   return token
 }
 
+// ✅ FIXED: Removed axios, using only fetch consistently
 const fetchUserData = async () => {
-  const token = checkAuth(); if (!token) return
+  const token = checkAuth()
+  if (!token) return
   try {
     const res = await fetch(`${API_BASE_URL}/user/profile`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`
+      }
     })
-    if (res.ok) { const d = await res.json(); if (d.success) user.value = d.data }
-    else if (res.status === 401) handleAuthError()
-  } catch (e) { console.error(e) }
+    if (res.ok) {
+      const d = await res.json()
+      if (d.success) user.value = d.data
+    } else if (res.status === 401) {
+      handleAuthError()
+    }
+  } catch (e) {
+    console.error('Error fetching user data:', e)
+  }
 }
 
 const fetchDashboardStats = async () => {
-  const token = checkAuth(); if (!token) return
+  const token = checkAuth()
+  if (!token) return
   try {
     const res = await fetch(`${API_BASE_URL}/user/dashboard-stats`, {
       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.success) { dashboardStats.value = d.data.stats; recentProperties.value = d.data.recent_properties }
+      if (d.success) {
+        dashboardStats.value = d.data.stats
+        recentProperties.value = d.data.recent_properties
+      }
     } else if (res.status === 401) handleAuthError()
   } catch (e) { console.error(e) }
 }
 
 const fetchUserProperties = async (propertyType = '', status = '') => {
-  const token = checkAuth(); if (!token) return
+  const token = checkAuth()
+  if (!token) return
   try {
     const params = new URLSearchParams()
     if (propertyType) params.append('type', propertyType)
@@ -110,8 +127,10 @@ const fetchUserProperties = async (propertyType = '', status = '') => {
     const res = await fetch(`${API_BASE_URL}/user/properties?${params}`, {
       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
     })
-    if (res.ok) { const d = await res.json(); if (d.success) properties.value = d.data }
-    else if (res.status === 401) handleAuthError()
+    if (res.ok) {
+      const d = await res.json()
+      if (d.success) properties.value = d.data
+    } else if (res.status === 401) handleAuthError()
   } catch (e) { console.error(e) }
 }
 
@@ -120,11 +139,13 @@ const handleAuthError = () => {
   alert('Session expired. Please login again.')
   router.push('/user-login')
 }
+
 const handleFilterChange = (t, s) => fetchUserProperties(t, s)
 const editProperty = (p) => router.push(`/edit-property/${p.id}`)
 
 const togglePropertyStatus = async (property) => {
-  const token = checkAuth(); if (!token) return
+  const token = checkAuth()
+  if (!token) return
   try {
     const res = await fetch(`${API_BASE_URL}/user/properties/${property.id}/toggle-status`, {
       method: 'PATCH',
@@ -132,27 +153,45 @@ const togglePropertyStatus = async (property) => {
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.success) { property.is_active = !property.is_active; await fetchDashboardStats() }
+      if (d.success) {
+        property.is_active = !property.is_active
+        await fetchDashboardStats()
+      }
     } else if (res.status === 401) handleAuthError()
   } catch (e) { console.error(e) }
 }
 
 const updateProfile = async (profileData) => {
-  const token = checkAuth(); if (!token) return
+  const token = checkAuth()
+  if (!token) return
   try {
     isUpdatingProfile.value = true
     const res = await fetch(`${API_BASE_URL}/user/profile`, {
       method: 'PUT',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify(profileData)
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.success) { user.value = { ...user.value, ...profileData }; alert('Profile updated successfully!') }
+      if (d.success) {
+        // ✅ Update user object with new data from server or local form
+        user.value = { ...user.value, ...profileData }
+        alert('Profile updated successfully!')
+      }
     } else if (res.status === 401) handleAuthError()
-    else { const d = await res.json(); alert(d.message || 'Failed to update profile') }
-  } catch (e) { alert('Failed to update profile') }
-  finally { isUpdatingProfile.value = false }
+    else {
+      const d = await res.json()
+      alert(d.message || 'Failed to update profile')
+    }
+  } catch (e) {
+    alert('Failed to update profile')
+  } finally {
+    isUpdatingProfile.value = false
+  }
 }
 
 const logout = async () => {
@@ -162,18 +201,30 @@ const logout = async () => {
     if (token) {
       await fetch(`${API_BASE_URL}/user/user_logout`, {
         method: 'POST',
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       })
     }
-  } catch (e) { console.error(e) }
-  finally { localStorage.removeItem('auth_token'); router.push('/'); isLoggingOut.value = false }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    localStorage.removeItem('auth_token')
+    router.push('/')
+    isLoggingOut.value = false
+  }
 }
 
 onMounted(async () => {
   if (checkAuth()) {
     isLoading.value = true
-    try { await Promise.all([fetchUserData(), fetchDashboardStats(), fetchUserProperties()]) }
-    finally { isLoading.value = false }
+    try {
+      await Promise.all([fetchUserData(), fetchDashboardStats(), fetchUserProperties()])
+    } finally {
+      isLoading.value = false
+    }
   }
 })
 </script>

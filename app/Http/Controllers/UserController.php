@@ -6,11 +6,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
- public function register(Request $request)
+    public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -18,25 +17,28 @@ class UserController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+        $otp = rand(100000, 999999);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'user',
             'status' => 'pending',
-            'otp' => rand(100000, 999999),
+            'otp' => $otp,
         ]);
 
-        // Send OTP email
-        \Mail::raw("Your OTP is: {$user->otp}", function ($message) use ($user) {
-            $message->to($user->email)->subject('Your OTP for Prosix Account');
+        // Send OTP immediately
+        \Mail::raw("Your OTP is: {$otp}", function ($message) use ($user) {
+            $message->to($user->email)
+                ->subject('Your OTP Verification Code');
         });
 
         return response()->json([
             'status' => true,
-            'message' => 'Registered successfully. Please verify OTP sent to your email.',
-            'email' => $user->email
-        ], 201);
+            'message' => 'OTP sent to your email',
+            'email' => $user->email,
+        ]);
     }
 
     public function verifyOtp(Request $request)
@@ -47,25 +49,25 @@ class UserController extends Controller
         ]);
 
         $user = User::where('email', $request->email)
-                    ->where('otp', $request->otp)
-                    ->first();
+            ->where('otp', $request->otp)
+            ->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid OTP'
+                'message' => 'Invalid OTP',
             ], 422);
         }
 
         $user->update([
             'status' => 'approved',
             'otp_verified_at' => now(),
-            'otp' => null
+            'otp' => null,
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'OTP verified successfully. You can now login.'
+            'message' => 'OTP verified successfully. You can login now.',
         ]);
     }
 
@@ -76,26 +78,42 @@ class UserController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['status' => false, 'message' => 'Invalid credentials'], 401);
+        if (! Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid credentials',
+            ], 401);
         }
 
         $user = Auth::user();
 
-        if ($user->status != 'approved') {
+        if ($user->status == 'blocked') {
             Auth::logout();
-            return response()->json(['status' => false, 'message' => 'OTP verification required'], 403);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'You are blocked. Please contact admin.',
+            ], 403);
         }
 
-        // Login successful
+        if ($user->status != 'approved') {
+            Auth::logout();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP verification required',
+            ], 403);
+        }
+
+        // ✅ TOKEN CREATE KARO
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'status' => true,
-            'message' => 'Login successful'
+            'token' => $token,
+            'message' => 'Login successful',
         ]);
     }
-
-
-
 
     // Logout
     public function logout(Request $request)
@@ -105,22 +123,95 @@ class UserController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ]);
     }
 
     // Profile
+
     public function profile(Request $request)
     {
+        $user = User::find($request->user()->id);
+
+        if (! $user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found.',
+            ], 404);
+        }
+
+        if ($user->status == 'blocked') {
+            $user->tokens()->delete();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'You are blocked.',
+            ], 403);
+        }
+
         return response()->json([
             'status' => true,
-            'data' => $request->user()
+            'data' => $user,
         ]);
     }
-    // UserController.php
 
+// ✅ Profile Update
+public function updateProfile(Request $request)
+{
+    $user = $request->user();
 
+    $request->validate([
+        'name'     => 'required|string|max:255',
+        'email'    => 'required|email|unique:users,email,' . $user->id,
+        'phone'    => 'nullable|string|max:20',
+        'location' => 'nullable|string|max:255',
+    ]);
 
+    $user->update([
+        'name'     => $request->name,
+        'email'    => $request->email,
+        'phone'    => $request->phone,
+        'location' => $request->location,
+    ]);
 
+    return response()->json([
+        'status'  => true,
+        'message' => 'Profile updated successfully.',
+        'data'    => $user->fresh(),
+    ]);
+}
+
+// ✅ Change Password
+public function changePassword(Request $request)
+{
+    $request->validate([
+        'current_password'          => 'required|string',
+        'new_password'              => 'required|string|min:6|confirmed',
+        // 'new_password_confirmation' is auto-checked by 'confirmed' rule
+    ]);
+
+    $user = $request->user();
+
+    // Check current password
+    if (! \Hash::check($request->current_password, $user->password)) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'Current password is incorrect.',
+        ], 422);
+    }
+
+    // Update password
+    $user->update([
+        'password' => \Hash::make($request->new_password),
+    ]);
+
+    // Optional: logout all other devices
+    // $user->tokens()->where('id', '!=', $user->currentAccessToken()->id)->delete();
+
+    return response()->json([
+        'status'  => true,
+        'message' => 'Password changed successfully.',
+    ]);
+}
 
 }
