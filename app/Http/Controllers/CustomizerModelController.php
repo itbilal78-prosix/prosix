@@ -30,13 +30,11 @@ class CustomizerModelController extends Controller
 
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
-          ->with('subcategories')
+            ->with('subcategories')
             ->get();
 
         return view('admin.models.create', compact('navigations', 'parentCategories'));
     }
-
-
 
     public function store(Request $request)
     {
@@ -77,9 +75,6 @@ class CustomizerModelController extends Controller
             $file->move(public_path('uploads/models'), $name);
             $data['thumbnail'] = $name;
         }
-
-
-
 
         CustomizerModel::create($data);
 
@@ -147,7 +142,7 @@ class CustomizerModelController extends Controller
         $navigations = Navigation::where('status', 1)->get() ?? collect();
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
-          ->with('subcategories')
+            ->with('subcategories')
 
             ->get();
         $fonts = Font::all();   // 🔥 ADD THIS
@@ -161,7 +156,6 @@ class CustomizerModelController extends Controller
         $model = CustomizerModel::findOrFail($id);
 
         // ✅ validate first
-
 
         // ✅ model data
         $data = $request->only([
@@ -274,6 +268,20 @@ class CustomizerModelController extends Controller
         $model = CustomizerModel::findOrFail($id);
         $new = $model->replicate();
         $new->title = $model->title;
+
+        // 🔥 YEH ADD KARO — custom SVGs clear karo
+        $new->custom_front_svg = null;
+        $new->custom_back_svg = null;
+        $new->custom_left_svg = null;
+        $new->custom_right_svg = null;
+
+        // 🔥 YEH BHI CLEAR KARO
+        $new->color_changes = null;
+        $new->pattern_changes = null;
+        $new->mascot_changes = null;
+        $new->applications = null;
+        $new->customized_at = null;
+
         $new->save();
 
         return back()->with('success', 'Model Duplicated');
@@ -468,8 +476,7 @@ class CustomizerModelController extends Controller
     {
         $categories = Category::where('status', 1)
             ->whereHas('models') // 🔥 sirf jisme models hain
-            ->with(['models' => function ($q) {
-            }])
+            ->with(['models' => function ($q) {}])
             ->get();
 
         return response()->json([

@@ -14,6 +14,11 @@ class Admin extends Authenticatable
         'name',
         'email',
         'password',
+        'is_super_admin',
+        'can_products',
+        'can_categories',
+        'can_orders',
+        'can_customizer',
     ];
 
     protected $hidden = [
