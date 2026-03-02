@@ -659,7 +659,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
     background-color: #e0e0e0;
 }
 .deal-banner-box {
-  width: 100%;
+  width: 90%;
   height: 530px;
   border-radius: 18px;
   overflow: hidden;
