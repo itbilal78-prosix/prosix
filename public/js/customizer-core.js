@@ -2108,35 +2108,90 @@ font-display: swap;
 
     // =================== INITIALIZE ON LOAD ===================
 
-    window.initializeApplicationsOnLoad = function () {
+    // window.initializeApplicationsOnLoad = function () {
 
-        const svg = window.getMainSvg();
-        if (svg) {
-            const oldGroup = svg.querySelector('#application-group');
-            if (oldGroup) oldGroup.remove();
-        }
-
-
+    //     const svg = window.getMainSvg();
+    //     if (svg) {
+    //         const oldGroup = svg.querySelector('#application-group');
+    //         if (oldGroup) oldGroup.remove();
+    //     }
 
 
-        if (!window.applicationsApplied) return;
 
-        console.log('🎨 Initializing applications...');
 
-        const view = window.currentView;
-        if (!window.applicationsApplied[view]) return;
+    //     if (!window.applicationsApplied) return;
 
-        Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-            layers.forEach(layer => {
-                addApplicationToSvg(layer);
-            });
+    //     console.log('🎨 Initializing applications...');
+
+    //     const view = window.currentView;
+    //     if (!window.applicationsApplied[view]) return;
+
+    //     Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+    //         layers.forEach(layer => {
+    //             addApplicationToSvg(layer);
+    //         });
+    //     });
+
+    //     updateApplicationLayersList();
+
+    //     console.log('✅ Applications initialized');
+    // };
+window.initializeApplicationsOnLoad = function () {
+
+    const svg = window.getMainSvg();
+    if (!svg) {
+        console.warn('SVG not ready yet, retrying...');
+        setTimeout(window.initializeApplicationsOnLoad, 300);
+        return;
+    }
+
+    // ✅ PEHLE SAARI PURANI APPLICATION ELEMENTS CLEAN KARO
+    const oldGroup = svg.querySelector('#application-group');
+    if (oldGroup) oldGroup.remove();
+
+    svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+
+    if (!window.applicationsApplied) return;
+
+    const view = window.currentView;
+    if (!window.applicationsApplied[view]) return;
+    if (Object.keys(window.applicationsApplied[view]).length === 0) return;
+
+    console.log('🎨 Initializing applications for view:', view);
+
+    Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+        layers.forEach(layer => {
+
+            // addApplicationToSvg ke andar duplicate check hai - safe hai
+            addApplicationToSvg(layer);
+
+            // ✅ Pattern restore
+            if (layer.hasPattern && layer.patternSvg) {
+                const prev = window.currentApplicationLayer;
+                window.currentApplicationLayer = layer.id;
+                applyPatternToText(layer.patternSvg, layer.id);
+                if (layer.patternSize) updateTextPatternSize(layer.patternSize);
+                if (layer.patternOpacity) updateTextPatternOpacity(layer.patternOpacity);
+                window.currentApplicationLayer = prev;
+            }
+
+            // ✅ Mascot restore
+            if (layer.hasMascot && layer.mascotSvg) {
+                const prev = window.currentApplicationLayer;
+                window.currentApplicationLayer = layer.id;
+                applyMascotToText(layer.mascotSvg, layer.id);
+                if (layer.mascotSize) updateTextMascotSize(layer.mascotSize);
+                if (layer.mascotOpacity) updateTextMascotOpacity(layer.mascotOpacity);
+                if (layer.mascotCount) updateTextMascotCount(layer.mascotCount);
+                window.currentApplicationLayer = prev;
+            }
+
         });
+    });
 
-        updateApplicationLayersList();
-
-        console.log('✅ Applications initialized');
-    };
-
+    updateApplicationLayersList();
+    console.log('✅ Applications initialized for view:', view);
+};
     // Auto-initialize
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
@@ -2541,7 +2596,7 @@ el.dataset.partName = el.getAttribute('inkscape:label')
                     if (window.initializeApplicationsOnLoad) {
                         window.initializeApplicationsOnLoad();
                     }
-                }, 200);
+                }, 400);
             })
             .catch(err => console.error('SVG load error:', err));
     };
@@ -3548,165 +3603,296 @@ window.selectSvgElement = function (element) {
         };
     }
 
-    async function generateAndSaveThumbnail() {
-        try {
-            const view = window.currentView || 'front';
-            const viewData = window.modelViews?.[view];
+    // async function generateAndSaveThumbnail() {
+    //     try {
+    //         const view = window.currentView || 'front';
+    //         const viewData = window.modelViews?.[view];
 
-            const canvas = document.createElement('canvas');
-            canvas.width = 800;
-            canvas.height = 800;
-            const ctx = canvas.getContext('2d');
-            // ctx.fillStyle = '#ffffff';
-            // ctx.fillRect(0, 0, 800, 800);
+    //         const canvas = document.createElement('canvas');
+    //         canvas.width = 800;
+    //         canvas.height = 800;
+    //         const ctx = canvas.getContext('2d');
+    //         // ctx.fillStyle = '#ffffff';
+    //         // ctx.fillRect(0, 0, 800, 800);
 
-            function loadImg(src) {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.onload = () => resolve(img);
-                    img.onerror = () => resolve(null);
-                    img.src = src;
-                });
-            }
+    //         function loadImg(src) {
+    //             return new Promise((resolve) => {
+    //                 const img = new Image();
+    //                 img.crossOrigin = 'anonymous';
+    //                 img.onload = () => resolve(img);
+    //                 img.onerror = () => resolve(null);
+    //                 img.src = src;
+    //             });
+    //         }
 
-            // 🔥 Font ko Base64 mein convert karo
-            async function fontToBase64(url) {
-                try {
-                    const res = await fetch(url);
-                    const buf = await res.arrayBuffer();
-                    const bytes = new Uint8Array(buf);
-                    let binary = '';
-                    bytes.forEach(b => binary += String.fromCharCode(b));
-                    return 'data:font/truetype;base64,' + btoa(binary);
-                } catch (e) {
-                    return url;
-                }
-            }
+    //         // 🔥 Font ko Base64 mein convert karo
+    //         async function fontToBase64(url) {
+    //             try {
+    //                 const res = await fetch(url);
+    //                 const buf = await res.arrayBuffer();
+    //                 const bytes = new Uint8Array(buf);
+    //                 let binary = '';
+    //                 bytes.forEach(b => binary += String.fromCharCode(b));
+    //                 return 'data:font/truetype;base64,' + btoa(binary);
+    //             } catch (e) {
+    //                 return url;
+    //             }
+    //         }
 
-            const svgUrl = viewData?.svg_url;
-            if (svgUrl) {
-                const res = await fetch(svgUrl);
-                const svgText = await res.text();
+    //         const svgUrl = viewData?.svg_url;
+    //         if (svgUrl) {
+    //             const res = await fetch(svgUrl);
+    //             const svgText = await res.text();
 
-                const parser = new DOMParser();
-                const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
-                const svgEl = svgDoc.querySelector('svg');
+    //             const parser = new DOMParser();
+    //             const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+    //             const svgEl = svgDoc.querySelector('svg');
 
-                // Colors apply
-                svgEl.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
-                    const id = el.id || `svg-part-${i}`;
-                    if (window.colorChanges?.[view]?.[id]) {
-                        el.setAttribute('fill', window.colorChanges[view][id]);
-                    }
-                });
+    //             // Colors apply
+    //             svgEl.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
+    //                 const id = el.id || `svg-part-${i}`;
+    //                 if (window.colorChanges?.[view]?.[id]) {
+    //                     el.setAttribute('fill', window.colorChanges[view][id]);
+    //                 }
+    //             });
 
-                // Applications apply
-                if (window.applyApplicationsToSvg) {
-                    window.applyApplicationsToSvg(svgEl, view);
-                }
+    //             // Applications apply
+    //             if (window.applyApplicationsToSvg) {
+    //                 window.applyApplicationsToSvg(svgEl, view);
+    //             }
 
-                // 🔥 Font Base64 embed karo
-                let defs = svgEl.querySelector('defs');
-                if (!defs) {
-                    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-                    svgEl.insertBefore(defs, svgEl.firstChild);
-                }
+    //             // 🔥 Font Base64 embed karo
+    //             let defs = svgEl.querySelector('defs');
+    //             if (!defs) {
+    //                 defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    //                 svgEl.insertBefore(defs, svgEl.firstChild);
+    //             }
 
-                if (window.backendFonts && window.backendFonts.length > 0) {
-                    let fontCSS = '';
-                    for (const f of window.backendFonts) {
-                        const base64 = await fontToBase64(f.file_url);
-                        fontCSS += `@font-face{font-family:'font_${f.id}';src:url('${base64}') format('truetype');}`;
-                    }
-                    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-                    style.textContent = fontCSS;
-                    defs.insertBefore(style, defs.firstChild);
-                }
+    //             if (window.backendFonts && window.backendFonts.length > 0) {
+    //                 let fontCSS = '';
+    //                 for (const f of window.backendFonts) {
+    //                     const base64 = await fontToBase64(f.file_url);
+    //                     fontCSS += `@font-face{font-family:'font_${f.id}';src:url('${base64}') format('truetype');}`;
+    //                 }
+    //                 const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    //                 style.textContent = fontCSS;
+    //                 defs.insertBefore(style, defs.firstChild);
+    //             }
 
-                svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    //             svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-                if (!svgEl.getAttribute('viewBox')) {
-                    svgEl.setAttribute('viewBox', '0 0 800 800');
-                }
-
-
-                const serialized = new XMLSerializer().serializeToString(svgEl);
-                const blob = new Blob([serialized], { type: 'image/svg+xml' });
-                const url = URL.createObjectURL(blob);
-                //svg //
-                await new Promise((resolve) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const ratio = Math.min(800 / img.width, 800 / img.height);
-                        const w = img.width * ratio;
-                        const h = img.height * ratio;
-                        const x = (800 - w) / 2;
-                        const y = (800 - h) / 2;
-
-                        ctx.drawImage(img, x, y, w, h);
-                        URL.revokeObjectURL(url);
-                        resolve();
-                    };
-                    img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-                    img.src = url;
-                });
-            }
-
-            // White overlay
-            if (viewData?.white_image_url) {
-                const img = await loadImg(viewData.white_image_url);
-                if (img) {
-                    ctx.globalCompositeOperation = 'multiply';
-                    const ratio = Math.min(800 / img.width, 800 / img.height);
-                    const w = img.width * ratio;
-                    const h = img.height * ratio;
-                    const x = (800 - w) / 2;
-                    const y = (800 - h) / 2;
-
-                    ctx.drawImage(img, x, y, w, h);
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-            }
-
-            // Black overlay
-            if (viewData?.black_image_url) {
-                const img = await loadImg(viewData.black_image_url);
-                if (img) {
-                    ctx.globalCompositeOperation = 'screen';
-                    const ratio = Math.min(800 / img.width, 800 / img.height);
-                    const w = img.width * ratio;
-                    const h = img.height * ratio;
-                    const x = (800 - w) / 2;
-                    const y = (800 - h) / 2;
-
-                    ctx.drawImage(img, x, y, w, h);
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-            }
+    //             if (!svgEl.getAttribute('viewBox')) {
+    //                 svgEl.setAttribute('viewBox', '0 0 800 800');
+    //             }
 
 
+    //             const serialized = new XMLSerializer().serializeToString(svgEl);
+    //             const blob = new Blob([serialized], { type: 'image/svg+xml' });
+    //             const url = URL.createObjectURL(blob);
+    //             //svg //
+    //             await new Promise((resolve) => {
+    //                 const img = new Image();
+    //                 img.onload = () => {
+    //                     const ratio = Math.min(800 / img.width, 800 / img.height);
+    //                     const w = img.width * ratio;
+    //                     const h = img.height * ratio;
+    //                     const x = (800 - w) / 2;
+    //                     const y = (800 - h) / 2;
+
+    //                     ctx.drawImage(img, x, y, w, h);
+    //                     URL.revokeObjectURL(url);
+    //                     resolve();
+    //                 };
+    //                 img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+    //                 img.src = url;
+    //             });
+    //         }
+
+    //         // White overlay
+    //         if (viewData?.white_image_url) {
+    //             const img = await loadImg(viewData.white_image_url);
+    //             if (img) {
+    //                 ctx.globalCompositeOperation = 'multiply';
+    //                 const ratio = Math.min(800 / img.width, 800 / img.height);
+    //                 const w = img.width * ratio;
+    //                 const h = img.height * ratio;
+    //                 const x = (800 - w) / 2;
+    //                 const y = (800 - h) / 2;
+
+    //                 ctx.drawImage(img, x, y, w, h);
+    //                 ctx.globalCompositeOperation = 'source-over';
+    //             }
+    //         }
+
+    //         // Black overlay
+    //         if (viewData?.black_image_url) {
+    //             const img = await loadImg(viewData.black_image_url);
+    //             if (img) {
+    //                 ctx.globalCompositeOperation = 'screen';
+    //                 const ratio = Math.min(800 / img.width, 800 / img.height);
+    //                 const w = img.width * ratio;
+    //                 const h = img.height * ratio;
+    //                 const x = (800 - w) / 2;
+    //                 const y = (800 - h) / 2;
+
+    //                 ctx.drawImage(img, x, y, w, h);
+    //                 ctx.globalCompositeOperation = 'source-over';
+    //             }
+    //         }
+
+
+    //         return new Promise((resolve) => {
+    //             canvas.toBlob(async (blob) => {
+    //                 const formData = new FormData();
+    //                 formData.append('thumbnail', blob, 'thumbnail.png');
+    //                 await fetch(`/admin/models/${MODEL_ID}/save-thumbnail`, {
+    //                     method: 'POST',
+    //                     headers: {
+    //                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    //                     },
+    //                     body: formData
+    //                 });
+    //                 console.log('✅ Thumbnail saved with fonts!');
+    //                 resolve();
+    //             }, 'image/png', 0.9);
+    //         });
+
+    //     } catch (e) {
+    //         console.error('Thumbnail error:', e);
+    //     }
+    // }
+async function generateAndSaveThumbnail() {
+    try {
+        const view = window.currentView || 'front';
+        const viewData = window.modelViews?.[view];
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 800;
+        const ctx = canvas.getContext('2d');
+
+        function loadImg(src) {
             return new Promise((resolve) => {
-                canvas.toBlob(async (blob) => {
-                    const formData = new FormData();
-                    formData.append('thumbnail', blob, 'thumbnail.png');
-                    await fetch(`/admin/models/${MODEL_ID}/save-thumbnail`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: formData
-                    });
-                    console.log('✅ Thumbnail saved with fonts!');
-                    resolve();
-                }, 'image/png', 0.9);
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
             });
-
-        } catch (e) {
-            console.error('Thumbnail error:', e);
         }
-    }
 
+        async function fontToBase64(url) {
+            try {
+                const res = await fetch(url);
+                const buf = await res.arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                let binary = '';
+                bytes.forEach(b => binary += String.fromCharCode(b));
+                return 'data:font/truetype;base64,' + btoa(binary);
+            } catch (e) {
+                return url;
+            }
+        }
+
+        // ✅ LIVE SVG USE KARO - fresh fetch nahi
+        const liveSvg = window.getMainSvg();
+        if (liveSvg) {
+            const clone = liveSvg.cloneNode(true);
+
+            // Font embed karo
+            let defs = clone.querySelector('defs');
+            if (!defs) {
+                defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                clone.insertBefore(defs, clone.firstChild);
+            }
+
+            if (window.backendFonts && window.backendFonts.length > 0) {
+                let fontCSS = '';
+                for (const f of window.backendFonts) {
+                    const base64 = await fontToBase64(f.file_url);
+                    fontCSS += `@font-face{font-family:'font_${f.id}';src:url('${base64}') format('truetype');}`;
+                }
+                const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+                style.textContent = fontCSS;
+                defs.insertBefore(style, defs.firstChild);
+            }
+
+            clone.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            if (!clone.getAttribute('viewBox')) {
+                clone.setAttribute('viewBox', '0 0 800 800');
+            }
+
+            const serialized = new XMLSerializer().serializeToString(clone);
+            const blob = new Blob([serialized], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+
+            await new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const ratio = Math.min(800 / img.width, 800 / img.height);
+                    const w = img.width * ratio;
+                    const h = img.height * ratio;
+                    const x = (800 - w) / 2;
+                    const y = (800 - h) / 2;
+                    ctx.drawImage(img, x, y, w, h);
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+                img.src = url;
+            });
+        }
+
+        // White overlay
+        if (viewData?.white_image_url) {
+            const img = await loadImg(viewData.white_image_url);
+            if (img) {
+                ctx.globalCompositeOperation = 'multiply';
+                const ratio = Math.min(800 / img.width, 800 / img.height);
+                const w = img.width * ratio;
+                const h = img.height * ratio;
+                const x = (800 - w) / 2;
+                const y = (800 - h) / 2;
+                ctx.drawImage(img, x, y, w, h);
+                ctx.globalCompositeOperation = 'source-over';
+            }
+        }
+
+        // Black overlay
+        if (viewData?.black_image_url) {
+            const img = await loadImg(viewData.black_image_url);
+            if (img) {
+                ctx.globalCompositeOperation = 'screen';
+                const ratio = Math.min(800 / img.width, 800 / img.height);
+                const w = img.width * ratio;
+                const h = img.height * ratio;
+                const x = (800 - w) / 2;
+                const y = (800 - h) / 2;
+                ctx.drawImage(img, x, y, w, h);
+                ctx.globalCompositeOperation = 'source-over';
+            }
+        }
+
+        return new Promise((resolve) => {
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('thumbnail', blob, 'thumbnail.png');
+                await fetch(`/admin/models/${MODEL_ID}/save-thumbnail`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                });
+                console.log('✅ Thumbnail saved!');
+                resolve();
+            }, 'image/png', 0.9);
+        });
+
+    } catch (e) {
+        console.error('Thumbnail error:', e);
+    }
+}
     document.addEventListener('DOMContentLoaded', init);
 
 })();

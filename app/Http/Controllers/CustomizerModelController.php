@@ -484,4 +484,46 @@ class CustomizerModelController extends Controller
             'categories' => $categories,
         ]);
     }
+
+    public function bulkFeatured(Request $request)
+    {
+        $ids = $request->product_ids;
+        $action = $request->action;
+
+        if (! $ids || ! is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'No models selected']);
+        }
+
+        $value = $action === 'add';
+
+        CustomizerModel::whereIn('id', $ids)->update([
+            'is_featured' => $value,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Models updated successfully',
+        ]);
+    }
+
+    public function bulkApparel(Request $request)
+    {
+        $ids = $request->product_ids;
+        $action = $request->action;
+
+        if (! $ids || ! is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'No models selected']);
+        }
+
+        $value = $action === 'add';
+
+        CustomizerModel::whereIn('id', $ids)->update([
+            'is_apparel' => $value,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Models updated successfully',
+        ]);
+    }
 }

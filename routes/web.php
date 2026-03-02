@@ -45,7 +45,6 @@ Route::middleware(['auth:admin'])
 
         Route::resource('admins', \App\Http\Controllers\AdminManagerController::class);
 
-
         Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('memberships');
 
         Route::resource('flipbooks', FlipbookController::class);
@@ -91,10 +90,14 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::post('models/{id}/save-design', [CustomizerModelController::class, 'saveDesign'])->name('admin.models.save-design');
     Route::post('models/{id}/save-thumbnail', [CustomizerModelController::class, 'saveThumbnail'])->name('models.save-thumbnail');
 
+    Route::post('/models/featured', [CustomizerModelController::class, 'bulkFeatured'])
+        ->name('models.featured');
+
+    Route::post('/models/apparel', [CustomizerModelController::class, 'bulkApparel'])
+        ->name('models.apparel');
+
     Route::patch('/users/{id}/toggle', [AuthController::class, 'toggleStatus'])
         ->name('admin.users.toggle');
-
-
 
     // Other resources
     Route::resource('colors', ColorController::class);

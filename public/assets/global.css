@@ -7,3 +7,46 @@ html, body * { font-family: 'Smooch Sans', sans-serif !important;
   font-style: normal;
  }
 
+/* ============================================
+   GLOBAL FULL WIDTH - Poori website ke liye
+   ============================================ */
+
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+.container,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl,
+.container-xxl {
+  max-width: 100% !important;
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+}
+
+@media (max-width: 768px) {
+  .container,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+@media (min-width: 2000px) {
+  .container,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl,
+  .container-xxl {
+    padding-left: 80px !important;
+    padding-right: 80px !important;
+  }
+}

@@ -157,16 +157,35 @@ class ProductController extends Controller
     // ════════════════════════════════════════
     public function apiFeaturedProducts()
     {
-        return Product::where('is_featured', true)
-            ->select('id', 'name', 'price', 'image')
-            ->orderBy('id', 'desc')
-            ->get()
-            ->map(fn ($p) => [
+        $products = \App\Models\Product::where('is_featured', 1)->get()->map(function ($p) {
+            return [
                 'id' => $p->id,
                 'name' => $p->name,
                 'price' => (float) $p->price,
-                'image' => $p->image ? asset('storage/'.$p->image) : '',
-            ]);
+                'image' => $p->image ? asset('storage/'.$p->image) : null,
+                'type' => 'product',
+            ];
+        });
+
+        $models = \App\Models\CustomizerModel::where('is_featured', 1)->get()->map(function ($m) {
+            return [
+                'id' => $m->id,
+                'name' => $m->title,
+                'price' => (float) $m->price,
+                'image' => $m->thumbnail
+                    ? asset('uploads/models/'.$m->thumbnail)
+                    : ($m->custom_front_svg
+                        ? asset('uploads/models/'.$m->custom_front_svg)
+                        : ($m->front_svg
+                            ? asset('uploads/models/'.$m->front_svg)
+                            : null)),
+                'type' => 'model',
+            ];
+        });
+
+        return response()->json(
+            $products->concat($models)->values()
+        );
     }
 
     // ════════════════════════════════════════
@@ -174,16 +193,35 @@ class ProductController extends Controller
     // ════════════════════════════════════════
     public function apiApparelProducts()
     {
-        return Product::where('is_apparel', true)
-            ->select('id', 'name', 'price', 'image')
-            ->latest()
-            ->get()
-            ->map(fn ($p) => [
+        $products = \App\Models\Product::where('is_apparel', 1)->get()->map(function ($p) {
+            return [
                 'id' => $p->id,
                 'name' => $p->name,
                 'price' => (float) $p->price,
                 'image' => $p->image ? asset('storage/'.$p->image) : null,
-            ]);
+                'type' => 'product',
+            ];
+        });
+
+        $models = \App\Models\CustomizerModel::where('is_apparel', 1)->get()->map(function ($m) {
+            return [
+                'id' => $m->id,
+                'name' => $m->title,
+                'price' => (float) $m->price,
+                'image' => $m->thumbnail
+                    ? asset('uploads/models/'.$m->thumbnail)
+                    : ($m->custom_front_svg
+                        ? asset('uploads/models/'.$m->custom_front_svg)
+                        : ($m->front_svg
+                            ? asset('uploads/models/'.$m->front_svg)
+                            : null)),
+                'type' => 'model',
+            ];
+        });
+
+        return response()->json(
+            $products->concat($models)->values()
+        );
     }
 
     // ════════════════════════════════════════

@@ -71,13 +71,7 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     // });
 });
 
-// Fallback route for API
-Route::fallback(function () {
-    return response()->json([
-        'success' => false,
-        'message' => 'API endpoint not found'
-    ], 404);
-});
+
 
 
 
@@ -120,15 +114,15 @@ Route::get('/videos', [VideoController::class, 'apiIndex']);
 Route::get('/blogs', [BlogController::class, 'apiIndex']);         // All blogs
 Route::get('/blogs/{slug}', [BlogController::class, 'apiShow']);   // Single blog
 // Featured Products API
-Route::get('/featured-products', [ProductController::class, 'apiFeaturedProducts']);
 
 
 Route::get('/category/{id}/products',  [ProductController::class, 'apiCategoryProducts']);
 
 
-
-
-
+Route::get('/featured-products', [ProductController::class, 'apiFeaturedProducts']);
+Route::get('/apparel-products', [ProductController::class, 'apiApparelProducts']);
+Route::get('/products', [ProductController::class, 'indexApi']);
+Route::get('/products/{id}', [ProductController::class, 'showApi']);
 // -----------------------------------------------
 // FRONTEND ROUTES
 // -----------------------------------------------
@@ -146,7 +140,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 Route::get('/testimonials', [TestimonialController::class, 'apiIndex']);
-Route::get('/apparel-products', [ProductController::class, 'apiApparelProducts']);
 Route::get('/menu-categories/{slug}', [CategoryController::class, 'apiMenuCategories']);
 
 Route::prefix('categories')->group(function () {
@@ -174,36 +167,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
 
     // routes/api.php
-Route::get('/products/{id}', function ($id) {
-    $product = \App\Models\Product::findOrFail($id);
-
-    return response()->json([
-        'id' => $product->id,
-        'name' => $product->name,
-        'price' => $product->price,
-        'description' => $product->description,
-        'image' => $product->image ? asset('storage/'.$product->image) : null,
-        'type' => 'Apparel'
-
-    ]);
-});
 
 
 
-Route::get('/products', [ProductController::class, 'indexApi']);
-Route::get('/products', function () {
-    return \App\Models\Product::select('id', 'name', 'price', 'image', 'category_id')
-        ->get()
-        ->map(function ($p) {
-            return [
-                'id'    => $p->id,
-                'name'  => $p->name,
-                'price' => (float) $p->price,
-                'image' => $p->image ? asset('storage/' . $p->image) : null,
-                'category_id' => $p->category_id,
-            ];
-        });
-});
+
+
 
 
 
@@ -219,4 +187,3 @@ Route::fallback(function () {
 Route::get('/models/{id}', [ModelController::class, 'show']);
 
 Route::post('/api/templates/save', [TemplateController::class, 'saveFromCustomizer'])->name('templates.save.api');
-

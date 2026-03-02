@@ -14,4 +14,8 @@ class Deal extends Model
     {
         return $this->hasMany(DealImage::class);
     }
+  public function banners()
+{
+    return $this->hasMany(\App\Models\DealBanner::class);
+}
 }
