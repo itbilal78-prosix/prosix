@@ -10,6 +10,7 @@
 
             <h1 class="mb-2 text-center">All Models</h1>
 
+
             <a href="{{ route('models.create') }}" class="btn btn-dark mb-2 position-absolute end-0">
                 <i class="bi bi-plus-lg"></i> Add Model
             </a>
@@ -33,7 +34,35 @@
                 @endforeach
             ];
         </script>
+   <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap">
 
+                            <!-- LEFT SIDE -->
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="checkbox" id="selectAllModels">
+                                <label for="selectAllModels" class="mb-0">Select All</label>
+                            </div>
+
+                            <!-- RIGHT SIDE -->
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button id="addFeaturedBtn" class="btn btn-dark btn-sm">
+                                    <i class="bi bi-star-fill me-1"></i>
+                                    Add to Featured
+                                </button>
+
+                                <button id="removeFeaturedBtn" class="btn btn-outline-dark btn-sm">
+                                    Remove Featured
+                                </button>
+
+                                <button id="addApparelBtn" class="btn btn-dark btn-sm">
+                                  <i class="bi bi-bag-fill me-1"></i> Add to Apparel
+                                </button>
+
+                                <button id="removeApparelBtn" class="btn btn-outline-dark btn-sm">
+                                    Remove Apparel
+                                </button>
+                            </div>
+
+                        </div>
         <div id="sortableModels">
             @forelse($categories as $index => $category)
                 <div class="category-block {{ $index === 0 ? '' : 'hidden-block' }}" id="cat-{{ $category->id }}">
@@ -75,8 +104,13 @@
                         <div class="row mb-4">
                             @foreach ($models as $model)
                                 <div class="col-md-2 mb-4">
-                                    <div class="card model-card shadow-sm h-100">
+                                    <div class="card model-card shadow-sm h-100 position-relative">
 
+                                        <!-- 🔥 CHECKBOX -->
+                                        <div class="position-absolute top-0 start-0 p-2"
+                                            style="z-index: 999; background: white; border-radius:6px;">
+                                            <input type="checkbox" class="model-checkbox" value="{{ $model->id }}">
+                                        </div>
                                         <div class="card-image-wrapper text-center">
                                             @if ($model->thumbnail)
                                                 <img src="{{ asset('uploads/models/' . $model->thumbnail) }}"
@@ -96,6 +130,16 @@
                                         </div>
 
                                         <div class="card-body p-2">
+
+                                            {{-- ⭐ BADGES --}}
+                                            @if ($model->is_featured)
+                                                <span class="badge bg-dark mb-1 d-block">⭐ Featured</span>
+                                            @endif
+
+                                            @if ($model->is_apparel)
+                                                <span class="badge bg-secondary mb-1 d-block">👕 Apparel</span>
+                                            @endif
+
                                             <div class="d-flex justify-content-between mb-1">
                                                 <strong>{{ $model->title }}</strong>
                                                 <span>${{ number_format($model->price ?? 0, 2) }}</span>
@@ -368,6 +412,18 @@
         .card-footer form {
             height: 36px;
         }
+
+        .model-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #000;
+        }
+
+        .card-image-wrapper {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 
     <script>
@@ -419,5 +475,68 @@
             }
         }, 2000);
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 🔥 SELECT ALL FUNCTION
+            document.getElementById('selectAllModels').addEventListener('change', function() {
 
+                let checkboxes = document.querySelectorAll('.model-checkbox');
+
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = document.getElementById('selectAllModels').checked;
+                });
+
+            });
+
+            function getSelectedIds() {
+                return Array.from(document.querySelectorAll('.model-checkbox:checked'))
+                    .map(cb => cb.value);
+            }
+
+            async function postAction(url, body) {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                return res.json();
+            }
+
+            async function handle(url, action) {
+                const ids = getSelectedIds();
+
+                if (!ids.length) {
+                    alert('Pehle koi model select karo!');
+                    return;
+                }
+
+                const data = await postAction(url, {
+                    product_ids: ids,
+                    action: action
+                });
+
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                }
+            }
+
+            document.getElementById('addFeaturedBtn')
+                ?.addEventListener('click', () => handle('{{ route('models.featured') }}', 'add'));
+
+            document.getElementById('removeFeaturedBtn')
+                ?.addEventListener('click', () => handle('{{ route('models.featured') }}', 'remove'));
+
+            document.getElementById('addApparelBtn')
+                ?.addEventListener('click', () => handle('{{ route('models.apparel') }}', 'add'));
+
+            document.getElementById('removeApparelBtn')
+                ?.addEventListener('click', () => handle('{{ route('models.apparel') }}', 'remove'));
+
+        });
+    </script>
 @endsection
