@@ -53,7 +53,7 @@
           </div>
         </section>
       </div>
-      <div v-else class="text-center py-5"><h3>No Banner Available</h3></div>
+      <div v-else class="text-center py-5 mt-5"><h3>No Banner Available</h3></div>
 
       <!-- Sports Icons -->
       <section class="sports-icons-section">
@@ -68,73 +68,42 @@
       </section>
 
       <!-- Deals Section -->
-     <section class="deals-section py-5">
-  <div class="full-container" v-if="deal">
-
-    <!-- TOP CENTER TEXT -->
-    <div class="text-center mb-5">
-      <h2 class="fw-bold display-5 text-black">
-        {{ deal.title }}
-      </h2>
-      <p class="lead text-black">
-        {{ deal.subtitle }}
-      </p>
-    </div>
-
-    <!-- BOTTOM ROW -->
-    <div class="row align-items-stretch">
-
-      <!-- LEFT: BANNER CAROUSEL -->
-      <div class="col-lg-5 mb-4 mb-lg-0">
-        <div v-if="deal.banners?.length" class="deal-banner-box">
-
-          <Transition name="fade" mode="out-in">
-            <img
-              :key="currentBanner"
-              :src="deal.banners[currentBanner].image_path"
-              class="banner-img"
-              alt="Banner"
-            />
-          </Transition>
-
-        </div>
-      </div>
-
-      <!-- RIGHT: 4 IMAGES -->
-      <div class="col-lg-7">
-        <div class="row g-4">
-
-          <div
-            v-for="img in deal.images"
-            :key="img.id"
-            class="col-6 col-md-3"
-          >
-            <div class="deal-card">
-
-              <img :src="img.image_path" class="deal-card-img" />
-
-              <div class="deal-overlay">
-                <a :href="img.link || '#'" class="btn btn-light btn-sm">
-                  View More
-                </a>
+      <section class="deals-section py-5">
+        <div class="full-container" v-if="deal">
+          <div class="text-center mb-5">
+            <h2 class="fw-bold display-5 text-black">{{ deal.title }}</h2>
+            <p class="lead text-black">{{ deal.subtitle }}</p>
+          </div>
+          <div class="row align-items-stretch">
+            <div class="col-lg-5 mb-4 mb-lg-0">
+              <div v-if="deal.banners?.length" class="deal-banner-box">
+                <Transition name="fade" mode="out-in">
+                  <img :key="currentBanner" :src="deal.banners[currentBanner].image_path" class="banner-img" alt="Banner" />
+                </Transition>
               </div>
-
+            </div>
+            <div class="col-lg-7">
+              <div class="row g-4">
+                <div v-for="img in deal.images" :key="img.id" class="col-6 col-md-3">
+                  <div class="deal-card">
+                    <div v-if="img.label" class="deal-ribbon">{{ img.label }}</div>
+                    <img :src="img.image_path" class="deal-card-img" />
+                    <div class="deal-overlay">
+                      <a :href="img.link || '#'" class="btn btn-light btn-sm">View More</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
         </div>
-      </div>
-
-    </div>
-
-  </div>
-</section>
+      </section>
 
       <!-- Featured Products -->
       <section class="featured-products py-5">
         <div class="full-container">
           <div class="featured-header d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3">
-            <h2 class="section-title text-black mb-0">featured products</h2>
+            <div class="left-ribbon"><span>Trending Now</span></div>
             <div class="tabs d-flex gap-2">
               <button v-for="tab in tabs" :key="tab.value" class="tab-btn px-4 py-2" :class="{ active: activeTab === tab.value }" @click="setTab(tab.value)">{{ tab.label }}</button>
             </div>
@@ -148,7 +117,8 @@
                     <h5 class="product-title">{{ product.name }}</h5>
                     <p class="product-price">${{ product.price.toFixed(2) }}</p>
                   </div>
-                  <button class="add-cart-btn btn btn-dark w-100 py-2">ADD TO CART</button>
+                  <button v-if="product.type === 'product'" class="add-cart-btn btn btn-dark w-100 py-2" @click="addToCart(product)">ADD TO CART</button>
+                  <button v-else-if="product.type === 'model'" class="add-cart-btn btn btn-dark w-100 py-2" @click="goToCustomizer(product)">CUSTOMIZE</button>
                 </div>
               </div>
               <div v-if="displayedProducts.length === 0" class="w-100 text-center py-5">
@@ -189,10 +159,7 @@
       <!-- Latest Videos -->
       <section class="latest-videos-section">
         <div class="full-container">
-          <div class="videos-header">
-            <div class="header-icon">🗲</div>
-            <h2 class="videos-title">LATEST VIDEOS</h2>
-          </div>
+          <div class="left-ribbon"><span>Featured Reels</span></div>
           <div class="videos-carousel-wrapper">
             <div class="videos-carousel-container">
               <div class="videos-track" :style="videoTrackStyle">
@@ -221,7 +188,7 @@
       <!-- Apparel -->
       <section class="apparel-products py-5" style="background: #000000;">
         <div class="full-container">
-          <h2 class="section-title text-white text-start mb-5 fw-bold">APPAREL COLLECTION</h2>
+          <h2 class="left2-ribbon text-start mb-5 fw-bold">Premium Showcase</h2>
           <div class="carousel-wrapper position-relative overflow-hidden">
             <div class="products-track d-flex" :style="apparelTrackStyle">
               <div v-for="(product, idx) in infiniteApparel" :key="idx" class="product-card flex-shrink-0 px-2">
@@ -233,7 +200,8 @@
                     <h5 class="product-name text-white fw-semibold">{{ product.name }}</h5>
                     <p class="product-price text-white fw-bold">${{ product.price.toFixed(2) }}</p>
                   </div>
-                  <button class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn">ADD TO CART</button>
+                  <button v-if="product.type === 'product'" class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn" @click="addToCart(product)">ADD TO CART</button>
+                  <button v-else-if="product.type === 'model'" class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn" @click="goToCustomizer(product)">CUSTOMIZE</button>
                 </div>
               </div>
               <div v-if="apparelProducts.length === 0" class="w-100 text-center py-5 text-white"><h4>No Apparel Products Found</h4></div>
@@ -247,10 +215,7 @@
       <!-- TESTIMONIALS -->
       <section class="testimonials-section py-5">
         <div class="full-container">
-          <div class="section-header text-center mb-5">
-            <p class="testimonial-label">TESTIMONIAL</p>
-            <h2 class="section-title text-black">HAPPY PEOPLE</h2>
-          </div>
+          <div class="left-ribbon"><span>Trusted Reviews</span></div>
           <div v-if="loadingTestimonials" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Loading customer reviews...</p></div>
           <div v-else-if="testimonialsError" class="text-center py-5 text-danger"><p>{{ testimonialsError }}</p><button class="btn btn-outline-dark mt-3" @click="fetchTestimonials">Try Again</button></div>
           <div v-else-if="testimonials.length === 0" class="text-center py-5 text-muted"><p>No testimonials available yet.</p></div>
@@ -286,10 +251,7 @@
       <!-- RECENT BLOG -->
       <section class="recent-blog-section py-5">
         <div class="full-container">
-          <div class="section-header text-center mb-5">
-            <p class="section-label text-uppercase fw-bold">OUR BLOG</p>
-            <h2 class="section-title text-black">RECENT BLOG</h2>
-          </div>
+          <div class="left-ribbon"><span>Our Stories</span></div>
           <div class="row g-4">
             <div class="col-6 col-lg-6" v-for="blog in visibleBlogs" :key="blog.id">
               <div class="blog-card d-flex flex-column flex-md-row">
@@ -370,6 +332,9 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useCartStore } from '@/store/cart'
+
+const cartStore = useCartStore()
 
 const activeTeam = ref(null)
 const activeTab = ref('all')
@@ -392,33 +357,27 @@ const sportsIcons = ref([])
 const currentBanner = ref(0)
 let bannerInterval = null
 
-
 // ============================================
 // SMART CAROUSEL
-// - items <= itemsPerView: normal display, no scroll, no loop, NO duplication
-// - items > itemsPerView: infinite loop + auto scroll
 // ============================================
 function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   const index = ref(0)
   const isTransitioning = ref(false)
   const transitionVal = ref('transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)')
 
-  // Sirf tab loop karo jab items, view se zyada hon
   const shouldLoop = computed(() => items.value.length > itemsPerView.value)
 
-  // Items array - loop mode mein triple, normal mein original
   const infinite = computed(() => {
     if (items.value.length === 0) return []
-    if (!shouldLoop.value) return [...items.value]   // ← NO tripling, exactly original
+    if (!shouldLoop.value) return [...items.value]
     return [...items.value, ...items.value, ...items.value]
   })
 
-  // CSS transform + transition
   const trackStyle = computed(() => {
     const pct = 100 / itemsPerView.value
     const translateX = shouldLoop.value
-      ? (index.value + items.value.length) * pct   // middle copy se start
-      : index.value * pct                           // normal scroll
+      ? (index.value + items.value.length) * pct
+      : index.value * pct
     return {
       transform: `translateX(-${translateX}%)`,
       transition: transitionVal.value
@@ -427,7 +386,6 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
 
   const next = () => {
     if (!shouldLoop.value) {
-      // Normal: end tak ja, phir ruk
       const maxIdx = Math.max(0, items.value.length - itemsPerView.value)
       if (index.value < maxIdx) index.value++
       return
@@ -470,7 +428,6 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   let autoTimer = null
   const startAuto = () => {
     stopAuto()
-    // Auto sirf tab chale jab loop hona chahiye
     autoTimer = setInterval(() => {
       if (shouldLoop.value) next()
     }, autoSpeed)
@@ -480,7 +437,7 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   return { trackStyle, infinite, next, prev, startAuto, stopAuto }
 }
 
-// Featured
+// Featured Products
 const featuredProducts = ref([])
 const tabs = ref([{ label: 'All', value: 'all' }, { label: 'New Arrivals', value: 'new' }, { label: 'Best Sellers', value: 'bestsellers' }])
 const fetchFeaturedProducts = async () => {
@@ -493,12 +450,17 @@ const displayedProducts = computed(() => {
   if (activeTab.value === 'bestsellers') return products.slice(0, 12)
   return products
 })
+
+// ✅ FIXED: 5 cards on large screens
 const featuredItemsPerView = computed(() => {
+  if (typeof window === 'undefined') return 5
   if (window.innerWidth < 576) return 1
   if (window.innerWidth < 768) return 2
   if (window.innerWidth < 992) return 3
-  return 4
+  if (window.innerWidth < 1400) return 4
+  return 5
 })
+
 const { trackStyle: featuredTrackStyle, infinite: infiniteFeatured, next: nextProduct, prev: prevProduct, startAuto: startFeaturedAuto, stopAuto: stopFeaturedAuto } = useInfiniteCarousel(displayedProducts, featuredItemsPerView, 2500)
 
 // Apparel
@@ -506,12 +468,17 @@ const apparelProducts = ref([])
 const fetchApparelProducts = async () => {
   try { const res = await axios.get('/api/apparel-products'); apparelProducts.value = res.data || [] } catch (e) { console.error(e) }
 }
+
+// ✅ FIXED: 5 cards on large screens for apparel too
 const apparelItemsPerView = computed(() => {
+  if (typeof window === 'undefined') return 5
   if (window.innerWidth < 576) return 1
   if (window.innerWidth < 768) return 2
   if (window.innerWidth < 992) return 3
-  return 4
+  if (window.innerWidth < 1400) return 4
+  return 5
 })
+
 const { trackStyle: apparelTrackStyle, infinite: infiniteApparel, next: nextApparel, prev: prevApparel, startAuto: startApparelAuto, stopAuto: stopApparelAuto } = useInfiniteCarousel(apparelProducts, apparelItemsPerView, 2500)
 
 // Videos
@@ -537,16 +504,33 @@ const fetchTestimonials = async () => {
 }
 const { trackStyle: testimonialTrackStyle, infinite: infiniteTestimonials, next: nextTestimonial, prev: prevTestimonial, startAuto: startTestimonialAuto } = useInfiniteCarousel(testimonials, testimonialItemsPerView, 3500)
 
-// Rest
+// Categories / Icons
 const fetchCategories = async () => {
   try { const res = await axios.get('/api/highlighted'); if (!Array.isArray(res.data)) { sportsIcons.value = []; return }; sportsIcons.value = res.data.map(cat => ({ teamId: cat.id, name: cat.name, image: cat.icon_image, highlight_image: cat.highlight_image })) } catch { sportsIcons.value = [] }
 }
 const scrollingIcons = computed(() => { if (isMobile.value || sportsIcons.value.length > 12) return [...sportsIcons.value, ...sportsIcons.value]; return sportsIcons.value })
+
+// Deal
 const deal = ref(null)
 const fetchDeal = async () => { try { const res = await axios.get('/api/latest-deal'); deal.value = res.data } catch (e) { console.error(e) } }
+
+// Blogs
 const blogs = ref([])
 const fetchBlogs = async () => { try { const res = await axios.get('/api/blogs'); blogs.value = res.data } catch (e) { console.error(e) } }
-const fetchSlides = async () => { try { const res = await axios.get('/api/banners'); slides.value = res.data } catch { slides.value = [] } }
+
+// ✅ FIXED: Slides - ensure full URL for background images
+const fetchSlides = async () => {
+  try {
+    const res = await axios.get('/api/banners')
+    slides.value = (res.data || []).map(s => ({
+      ...s,
+      backgroundImage: s.backgroundImage
+        ? (s.backgroundImage.startsWith('http') ? s.backgroundImage : `${window.location.origin}${s.backgroundImage}`)
+        : ''
+    }))
+  } catch { slides.value = [] }
+}
+
 const nextSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }
 const prevSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length }
 const goToSlide = (i) => { currentSlide.value = i }
@@ -561,6 +545,9 @@ const switchTab = (tab) => { chatTab.value = tab }
 const openTawkTo = () => { if (window.Tawk_API && window.Tawk_API.maximize) window.Tawk_API.maximize() }
 const handleResize = () => { updateMobile() }
 
+const addToCart = (product) => { cartStore.addItem(product) }
+const goToCustomizer = (product) => { router.push({ name: 'Customizer', params: { id: product.id } }) }
+
 onMounted(async () => {
   updateMobile()
   window.addEventListener('resize', handleResize)
@@ -570,26 +557,24 @@ onMounted(async () => {
   await fetchApparelProducts()
   await fetchSlides()
   startFeaturedAuto(); startApparelAuto(); startVideoAuto(); startTestimonialAuto()
-  setTimeout(() => { carouselInterval = setInterval(() => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }, 4000) }, 3000)
-})
-
-onUnmounted(() => {
-  if (carouselInterval) clearInterval(carouselInterval)
-  stopFeaturedAuto(); stopApparelAuto(); stopVideoAuto()
-  window.removeEventListener('resize', handleResize)
-  window.removeEventListener('scroll', handleScroll)
-})
-onMounted(() => {
+  setTimeout(() => {
+    carouselInterval = setInterval(() => {
+      if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length
+    }, 4000)
+  }, 3000)
   bannerInterval = setInterval(() => {
     if (deal.value?.banners?.length) {
-      currentBanner.value =
-        (currentBanner.value + 1) % deal.value.banners.length
+      currentBanner.value = (currentBanner.value + 1) % deal.value.banners.length
     }
   }, 3000)
 })
 
 onUnmounted(() => {
+  if (carouselInterval) clearInterval(carouselInterval)
   if (bannerInterval) clearInterval(bannerInterval)
+  stopFeaturedAuto(); stopApparelAuto(); stopVideoAuto()
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -606,10 +591,29 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .dark-mode .section-title { color: #fff; }
 .dark-mode .product-card-inner { background: #1a1a1a; color: #fff; }
 .dark-mode .testimonials-section { background: #111; }
+
+/* ✅ HERO CAROUSEL - Background always shows */
 .hero-carousel { position: relative; height: 100vh; min-height: 100vh; overflow: hidden; }
 .carousel-container { position: relative; height: 100%; }
-.carousel-slide { height: 100vh; position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-.carousel-overlay { position: absolute; height: 100%; inset: 0; z-index: 2; display: flex; align-items: center; }
+.carousel-slide {
+  height: 100vh;
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+/* ✅ Overlay is transparent gradient - does NOT block background image */
+.carousel-overlay {
+  position: absolute;
+  height: 100%;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to right, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 60%, transparent 100%);
+}
 .carousel-content { max-width: 100%; margin: 0 5%; width: 90%; height: 100%; }
 .text-and-image-wrapper { max-width: 60%; text-align: center; margin-top: 12%; }
 .title-button-row { width: 100%; display: flex; align-items: flex-start; flex-wrap: nowrap; justify-content: space-between; }
@@ -636,6 +640,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; gap: 6px; align-items: center; }
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: rgba(0,0,0,0.4); border: none; padding: 0; cursor: pointer; transition: all 0.3s; }
 .dot.active { background: #000; width: 20px; border-radius: 10px; }
+
+/* Sports Icons */
 .sports-icons-section { background: black; padding: 25px 0; overflow: hidden; position: relative; }
 .sports-icons-section::before, .sports-icons-section::after { content: ''; position: absolute; top: 0; bottom: 0; width: 70px; z-index: 2; }
 .sports-icons-section::before { left: 0; background: linear-gradient(to right, black, transparent); }
@@ -654,68 +660,28 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon-circle::after { content: ''; position: absolute; inset: 0; border: 3px dotted #fff; border-radius: 50%; opacity: 0; transition: opacity 0.35s, transform 0.35s; transform: scale(0.92); pointer-events: none; }
 @keyframes rotateDotted { from { transform: scale(0.92) rotate(0deg); } to { transform: scale(0.92) rotate(360deg); } }
 .lead { color: #000; }
-/* Banner Box */
-.deals-section {
-    background-color: #e0e0e0;
-}
-.deal-banner-box {
-  width: 90%;
-  height: 530px;
-  border-radius: 18px;
-  overflow: hidden;
-}
 
-.banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+/* Ribbons */
+.left-ribbon { position: relative; display: inline-block; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 1.8rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
+.left-ribbon.dark { background: #fff; color: #000; }
+.left-ribbon span { position: relative; z-index: 2; }
+.left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 14px 40px; font-weight: 800; font-size: 1.8rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
 
-/* Cards */
-.deal-card {
-  position: relative;
-  height: 260px;
-  border-radius: 14px;
-  overflow: hidden;
-  transition: 0.3s ease;
-}
+/* Deals */
+.deals-section { background-color: #e0e0e0; }
+.deal-banner-box { width: 90%; height: 530px; border-radius: 18px; overflow: hidden; }
+.banner-img { width: 100%; height: 100%; object-fit: cover; }
+.deal-card { position: relative; height: 260px; border-radius: 14px; overflow: hidden; transition: 0.3s ease; }
+.deal-card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s ease; }
+.deal-card:hover .deal-card-img { transform: scale(1.08); }
+.deal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s ease; }
+.deal-card:hover .deal-overlay { opacity: 1; }
+.deal-ribbon { position: absolute; top: 15px; left: -35px; background: #000000; color: #fff; padding: 2px 40px; font-size: 12px; font-weight: 700; transform: rotate(-45deg); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; letter-spacing: 1px; }
+.fade-enter-active, .fade-leave-active { transition: all 0.7s ease; }
+.fade-enter-from { opacity: 0; filter: blur(15px); transform: scale(1.1); }
+.fade-leave-to { opacity: 0; filter: blur(10px); }
 
-.deal-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: 0.4s ease;
-}
-
-.deal-card:hover .deal-card-img {
-  transform: scale(1.08);
-}
-
-.deal-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: 0.3s ease;
-}
-
-.deal-card:hover .deal-overlay {
-  opacity: 1;
-}
-
-/* Fade Animation */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.6s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
+/* ✅ FEATURED PRODUCTS - 5 cards on desktop */
 .featured-products { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .featured-products::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .featured-products > * { position: relative; z-index: 2; }
@@ -726,26 +692,33 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .tab-btn:hover, .tab-btn.active { background: #000; color: #fff; }
 .carousel-wrapper { position: relative; overflow: hidden; padding: 0 55px; }
 .products-track { display: flex; will-change: transform; }
-.product-card { min-width: 25%; padding: 0 10px; box-sizing: border-box; }
+
+/* ✅ DEFAULT: 5 cards = 20% each */
+.product-card { min-width: 20%; padding: 0 8px; box-sizing: border-box; }
+
 .product-card-inner { background: #fff; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; }
 .product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.product-img { width: 100%; height: 280px; object-fit: contain; background: #f8f9fa; margin-bottom: 12px; border-radius: 8px; }
+.product-img { width: 100%; height: 240px; object-fit: contain; background: #f8f9fa; margin-bottom: 12px; border-radius: 8px; }
 .product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
-.product-title { font-size: 13px; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.product-price { color: #000; font-weight: 800; font-size: 1rem; margin: 0; white-space: nowrap; flex-shrink: 0; }
-.add-cart-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s; margin-top: auto; }
+.product-title { font-size: 12px; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.product-price { color: #000; font-weight: 800; font-size: 0.95rem; margin: 0; white-space: nowrap; flex-shrink: 0; }
+.add-cart-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s; margin-top: auto; font-size: 12px; }
 .add-cart-btn:hover { background: #333; transform: translateY(-2px); }
 .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; background: #000; border: none; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: all 0.3s; z-index: 10; }
 .carousel-btn i { font-size: 20px; }
 .carousel-btn-prev { left: 5px; }
 .carousel-btn-next { right: 5px; }
 .carousel-btn:hover { background: #222; transform: translateY(-50%) scale(1.05); }
+
+/* Apparel */
 .apparel-card-inner { background: transparent !important; border: 1px solid #444; border-radius: 12px; padding: 16px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; }
 .apparel-card-inner:hover { border-color: #fff; transform: translateY(-6px); }
 .product-image-wrapper { margin-bottom: 12px; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
-.product-name { font-size: 13px; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.add-to-cart-btn { margin-top: auto; }
+.product-name { font-size: 12px; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.add-to-cart-btn { margin-top: auto; font-size: 12px; }
+
+/* Benefits */
 .benefits-section { background: #111; }
 .benefit-card { background: white; border: 1px solid #333; transition: all 0.3s; color: black; border-radius: 8px; }
 .benefit-card:hover { background: black; color: white; transform: translateY(-8px); }
@@ -753,13 +726,11 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon { color: black; line-height: 1; transition: all 0.3s; }
 .benefits-desktop { display: flex; }
 .benefits-mobile-carousel { display: none; }
+
+/* Videos */
 .latest-videos-section { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .latest-videos-section::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .latest-videos-section > * { position: relative; z-index: 2; }
-.videos-header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 50px; }
-.header-icon { font-size: 2.5rem; color: black; animation: pulse 2s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-.videos-title { font-size: 3rem; font-weight: 800; color: black; letter-spacing: 3px; margin: 0; }
 .videos-carousel-wrapper { position: relative; padding: 0 70px; }
 .videos-carousel-container { overflow: hidden; border-radius: 12px; }
 .videos-track { display: flex; will-change: transform; }
@@ -782,8 +753,9 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .fullscreen-video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 .close-video-btn { position: absolute; top: 20px; right: 20px; z-index: 10000; width: 50px; height: 50px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; color: #000; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
 .close-video-btn:hover { background: black; color: white; transform: scale(1.1) rotate(90deg); }
+
+/* Testimonials */
 .testimonials-section { background-color: #eeecec; padding: 100px 0; }
-.testimonial-label { color: #000; font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
 .testimonial-card, .testimonial-text, .author-name, .author-position, .stars-rating { user-select: none; -webkit-user-select: none; }
 .testimonials-outer-wrapper { display: flex; align-items: center; width: 100%; gap: 0; }
 .t-arrow { flex-shrink: 0; width: 48px; height: 48px; background: #000; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.3s; }
@@ -794,8 +766,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .testimonials-carousel { display: flex; will-change: transform; }
 .testimonial-item { flex: 0 0 33.333%; padding: 0 12px; box-sizing: border-box; }
 .t-card-wrapper { position: relative; padding-top: 28px; }
-.quote-float { position: absolute; top: 0; left: 16px; z-index: 10; font-size: 3.6rem; line-height: 1; color: #000; pointer-events: none; }
-.testimonial-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; min-height: 240px; position: relative; transition: all 0.35s; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+.quote-float { position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 3.6rem; line-height: 1; color: #000; pointer-events: none; }
+.testimonial-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; min-height: auto; position: relative; transition: all 0.35s; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
 .testimonial-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); border-color: #333; }
 .stars-rating { font-size: 1rem; letter-spacing: 3px; margin-bottom: 12px; text-align: left; }
 .stars-rating .bi-star-fill { color: #000 !important; }
@@ -806,10 +778,11 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .author-image img { width: 100%; height: 100%; object-fit: cover; }
 .author-name { font-size: 1.1rem; font-weight: 700; color: #111; margin: 0; }
 .author-position { font-size: 0.85rem; color: #777; margin: 4px 0 0; text-transform: uppercase; letter-spacing: 0.8px; }
+
+/* Blog */
 .recent-blog-section { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .recent-blog-section::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .recent-blog-section * { position: relative; z-index: 2; }
-.section-label { color: #000; font-size: 1rem; letter-spacing: 2px; margin-bottom: 8px; }
 .blog-card { background: white; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: all 0.35s; height: 100%; }
 .blog-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
 .blog-image { flex: 0 0 45%; overflow: hidden; }
@@ -823,10 +796,41 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .read-more:hover { color: #dc3545; }
 .btn-view-all { background: #000; color: white; padding: 14px 40px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; }
 .btn-view-all:hover { background: #333; transform: translateY(-3px); }
+
+/* Scroll top */
 .scroll-top-btn { position: fixed; bottom: 30px; right: 30px; z-index: 9997; width: 52px; height: 52px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); opacity: 0; transform: translateY(20px) scale(0.8); pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s; }
 .scroll-top-btn.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 .scroll-top-btn:hover { background: #fff; color: #000; transform: translateY(-3px) scale(1.08); }
-@media (min-width: 2000px) { .product-card { min-width: 20% !important; } .video-card { width: 20% !important; } .testimonial-item { flex: 0 0 25% !important; } .product-img { height: 320px !important; } }
+
+/* ============================================
+   ✅ FULLY RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* 4 cards: 992px - 1399px */
+@media (min-width: 992px) and (max-width: 1399px) {
+  .product-card { min-width: 25% !important; }
+}
+
+/* 3 cards: 768px - 991px */
+@media (min-width: 768px) and (max-width: 991px) {
+  .product-card { min-width: 33.333% !important; }
+  .video-card { width: 50% !important; }
+  .testimonial-item { flex: 0 0 50% !important; }
+  .t-arrow { width: 38px !important; height: 38px !important; }
+  .t-arrow-left { margin-right: 8px !important; }
+  .t-arrow-right { margin-left: 8px !important; }
+  .icons-track { gap: 35px !important; }
+  .icon-circle { width: 75px !important; height: 75px !important; }
+  .icon-name { font-size: 11px !important; }
+  .main_title { font-size: 3.2rem !important; width: 60% !important; }
+  .hero-png { max-height: 550px !important; }
+  .carousel-wrapper { padding: 0 50px !important; }
+  .video-thumbnail { height: 280px !important; }
+  .blog-card { flex-direction: row !important; }
+  .blog-image { flex: 0 0 40% !important; height: auto !important; }
+}
+
+/* Tablet & mobile: benefits carousel */
 @media (max-width: 991px) {
   .benefits-desktop { display: none !important; }
   .benefits-mobile-carousel { display: block; position: relative; padding: 0 55px; }
@@ -841,40 +845,115 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .benefit-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
   .bdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.3s; }
   .bdot.active { background: #fff; width: 20px; border-radius: 10px; }
-  .icons-track { gap: 35px !important; } .icon-circle { width: 75px !important; height: 75px !important; } .icon-name { font-size: 11px !important; }
-  .testimonial-item { flex: 0 0 50% !important; } .t-arrow { width: 38px !important; height: 38px !important; }
-  .t-arrow-left { margin-right: 8px !important; } .t-arrow-right { margin-left: 8px !important; }
-  .product-card { min-width: 33.333% !important; } .video-card { width: 50% !important; }
 }
-@media (max-width: 767px) { .product-card { min-width: 50% !important; } .video-card { width: 50% !important; } .testimonial-item { flex: 0 0 100% !important; } .product-img { height: 220px !important; } .video-thumbnail { height: 260px !important; } }
+
+/* 2 cards: 576px - 767px */
+@media (max-width: 767px) {
+  .product-card { min-width: 50% !important; }
+  .video-card { width: 50% !important; }
+  .testimonial-item { flex: 0 0 100% !important; }
+  .product-img { height: 220px !important; }
+  .video-thumbnail { height: 260px !important; }
+}
+
+/* 1 card: mobile small */
 @media (max-width: 575px) {
-  .hero-carousel { height: 100vh !important; min-height: 600px !important; } .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; } .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; } .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; } .main_title { width: 100% !important; font-size: 2.2rem !important; text-align: center !important; padding: 0 10px !important; } .button-wrapper { margin-top: 0 !important; width: 100% !important; display: flex !important; justify-content: center !important; } .single-line-btn { font-size: 15px !important; padding: 12px 35px !important; } .lead { font-size: 14px !important; text-align: center !important; padding: 0 20px !important; } .hero-png { max-width: 90% !important; max-height: 300px !important; }
-  .sports-icons-section { padding: 20px 0 !important; } .icons-track { gap: 28px !important; padding-left: 60px !important; } .icon-circle { width: 58px !important; height: 58px !important; } .icon-name { font-size: 9px !important; max-width: 65px !important; }
-  .deal-image { height: 140px !important; } .featured-products { padding: 40px 0 !important; } .featured-header { flex-direction: column !important; align-items: flex-start !important; } .section-title { font-size: 1.8rem !important; } .tabs { width: 100%; flex-wrap: wrap !important; } .tab-btn { font-size: 12px !important; padding: 8px 15px !important; flex: 1; min-width: 80px; } .carousel-wrapper { padding: 0 44px !important; } .product-card { min-width: 100% !important; padding: 0 8px !important; } .product-img { height: 200px !important; } .carousel-btn { width: 35px !important; height: 35px !important; } .carousel-btn i { font-size: 16px !important; }
-  .latest-videos-section { padding: 40px 0 !important; } .videos-title { font-size: 1.8rem !important; letter-spacing: 1px !important; } .videos-carousel-wrapper { padding: 0 44px !important; } .video-card { width: 100% !important; padding: 0 6px !important; } .video-thumbnail { height: 220px !important; } .video-arrow { width: 38px !important; height: 38px !important; font-size: 1rem !important; } .video-modal-content { width: 95% !important; height: 50vh !important; }
-  .testimonials-section { padding: 50px 0 !important; } .testimonial-item { flex: 0 0 100% !important; padding: 0 6px !important; } .testimonial-card { padding: 16px !important; min-height: auto !important; } .t-arrow { width: 34px !important; height: 34px !important; font-size: 0.9rem !important; } .t-arrow-left { margin-right: 6px !important; } .t-arrow-right { margin-left: 6px !important; } .testimonials-carousel-inner { padding-top: 30px !important; } .quote-float { font-size: 2.8rem !important; }
-  .recent-blog-section { padding: 40px 0 !important; } .col-6.col-lg-6 { padding-left: 6px !important; padding-right: 6px !important; } .blog-card { flex-direction: column !important; box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important; overflow: hidden !important; } .blog-image { display: block !important; flex: 0 0 auto !important; height: 100px !important; overflow: hidden !important; } .blog-image img { width: 100% !important; height: 100px !important; object-fit: cover !important; } .blog-content { padding: 10px 12px !important; justify-content: flex-start !important; } .blog-meta { display: none !important; } .blog-excerpt { display: none !important; } .blog-title { font-size: 0.82rem !important; margin-bottom: 8px !important; color: #111 !important; line-height: 1.35 !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; } .read-more { font-size: 0.78rem !important; color: #dc3545 !important; font-weight: 700 !important; } .read-more:hover { color: #a00020 !important; }
+  .hero-carousel { height: 100vh !important; min-height: 600px !important; }
+  .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; }
+  .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
+  .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; }
+  .main_title { width: 100% !important; font-size: 2.2rem !important; text-align: center !important; padding: 0 10px !important; }
+  .button-wrapper { margin-top: 0 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
+  .single-line-btn { font-size: 15px !important; padding: 12px 35px !important; }
+  .lead { font-size: 14px !important; text-align: center !important; padding: 0 20px !important; }
+  .hero-png { max-width: 90% !important; max-height: 300px !important; }
+  .sports-icons-section { padding: 20px 0 !important; }
+  .icons-track { gap: 28px !important; padding-left: 60px !important; }
+  .icon-circle { width: 58px !important; height: 58px !important; }
+  .icon-name { font-size: 9px !important; max-width: 65px !important; }
+  .featured-products { padding: 40px 0 !important; }
+  .featured-header { flex-direction: column !important; align-items: flex-start !important; }
+  .tabs { width: 100%; flex-wrap: wrap !important; }
+  .tab-btn { font-size: 12px !important; padding: 8px 15px !important; flex: 1; min-width: 80px; }
+  .carousel-wrapper { padding: 0 44px !important; }
+  .product-card { min-width: 100% !important; padding: 0 8px !important; }
+  .product-img { height: 200px !important; }
+  .carousel-btn { width: 35px !important; height: 35px !important; }
+  .carousel-btn i { font-size: 16px !important; }
+  .latest-videos-section { padding: 40px 0 !important; }
+  .videos-carousel-wrapper { padding: 0 44px !important; }
+  .video-card { width: 100% !important; padding: 0 6px !important; }
+  .video-thumbnail { height: 220px !important; }
+  .video-arrow { width: 38px !important; height: 38px !important; font-size: 1rem !important; }
+  .video-modal-content { width: 95% !important; height: 50vh !important; }
+  .testimonials-section { padding: 50px 0 !important; }
+  .testimonial-item { flex: 0 0 100% !important; padding: 0 6px !important; }
+  .testimonial-card { padding: 16px !important; }
+  .t-arrow { width: 34px !important; height: 34px !important; font-size: 0.9rem !important; }
+  .t-arrow-left { margin-right: 6px !important; }
+  .t-arrow-right { margin-left: 6px !important; }
+  .testimonials-carousel-inner { padding-top: 30px !important; }
+  .quote-float { font-size: 2.8rem !important; }
+  .recent-blog-section { padding: 40px 0 !important; }
+  .col-6.col-lg-6 { padding-left: 6px !important; padding-right: 6px !important; }
+  .blog-card { flex-direction: column !important; box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important; }
+  .blog-image { display: block !important; flex: 0 0 auto !important; height: 100px !important; }
+  .blog-image img { width: 100% !important; height: 100px !important; object-fit: cover !important; }
+  .blog-content { padding: 10px 12px !important; }
+  .blog-meta { display: none !important; }
+  .blog-excerpt { display: none !important; }
+  .blog-title { font-size: 0.82rem !important; margin-bottom: 8px !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
+  .read-more { font-size: 0.78rem !important; color: #dc3545 !important; font-weight: 700 !important; }
+  .left-ribbon { font-size: 1.3rem !important; padding: 8px 24px 8px 20px !important; margin-left: -20px !important; }
+  .left2-ribbon { font-size: 1.3rem !important; padding: 8px 24px !important; margin-left: -20px !important; }
 }
-@media (min-width: 768px) and (max-width: 991px) { .main_title { font-size: 3.2rem !important; width: 60% !important; } .hero-png { max-height: 550px !important; } .section-title { font-size: 2.2rem !important; } .carousel-wrapper { padding: 0 50px !important; } .video-thumbnail { height: 280px !important; } .blog-card { flex-direction: row !important; } .blog-image { flex: 0 0 40% !important; height: auto !important; } }
-@media (min-width: 992px) and (max-width: 1199px) { .text-and-image-wrapper { max-width: 65% !important; } .main_title { font-size: 3.5rem !important; } }
-@media (orientation: landscape) and (max-height: 600px) { .hero-carousel { height: 100vh !important; } .text-and-image-wrapper { margin-top: 3% !important; } .main_title { font-size: 2.5rem !important; } .hero-png { max-height: 500px !important; } }
+
+/* Landscape mobile */
+@media (orientation: landscape) and (max-height: 600px) {
+  .hero-carousel { height: 100vh !important; }
+  .text-and-image-wrapper { margin-top: 3% !important; }
+  .main_title { font-size: 2.5rem !important; }
+  .hero-png { max-height: 500px !important; }
+}
+
+/* Very large screens */
+@media (min-width: 2000px) {
+  .product-card { min-width: 20% !important; }
+  .video-card { width: 20% !important; }
+  .testimonial-item { flex: 0 0 25% !important; }
+  .product-img { height: 320px !important; }
+}
+
+/* General */
 img { max-width: 100%; height: auto; }
 *:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
-.tawk-icon { background: #000 !important; } .tawk-btn { background: #000 !important; } .tawk-btn:hover { background: #222 !important; } .tawkto-tab { justify-content: center; } #tawk-bubble-container, .tawk-min-container, iframe[title="chat widget"] { display: none !important; } .tawk-header { background-color: #000000 !important; } .tawk-button-circle { background-color: #000000 !important; }
+
+/* Chat */
+.tawk-icon { background: #000 !important; }
+.tawk-btn { background: #000 !important; }
+.tawk-btn:hover { background: #222 !important; }
+.tawkto-tab { justify-content: center; }
+#tawk-bubble-container, .tawk-min-container, iframe[title="chat widget"] { display: none !important; }
 .chat-widget-wrapper { position: fixed; bottom: 30px; left: 24px; z-index: 99990; font-family: 'Poppins', sans-serif; }
 .launcher-btn { width: 58px; height: 58px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 24px rgba(0,0,0,0.35); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.25s; position: relative; z-index: 2; border: 2.5px solid #fff; }
-.launcher-btn:hover { transform: scale(1.1); background: #222; } .launcher-btn.open { background: #111; }
+.launcher-btn:hover { transform: scale(1.1); background: #222; }
+.launcher-btn.open { background: #111; }
 .launcher-icon { position: absolute; transition: opacity 0.25s, transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-.close-icon { opacity: 0; transform: rotate(-90deg) scale(0.6); font-size: 1.2rem; } .chat-icon { opacity: 1; transform: rotate(0deg) scale(1); }
-.launcher-btn.open .close-icon { opacity: 1; transform: rotate(0deg) scale(1); } .launcher-btn.open .chat-icon { opacity: 0; transform: rotate(90deg) scale(0.6); }
+.close-icon { opacity: 0; transform: rotate(-90deg) scale(0.6); font-size: 1.2rem; }
+.chat-icon { opacity: 1; transform: rotate(0deg) scale(1); }
+.launcher-btn.open .close-icon { opacity: 1; transform: rotate(0deg) scale(1); }
+.launcher-btn.open .chat-icon { opacity: 0; transform: rotate(90deg) scale(0.6); }
 .launcher-pulse { position: absolute; bottom: 2px; width: 58px; height: 58px; border-radius: 50%; background: rgba(0,0,0,0.15); animation: pulseRing 2.4s ease-out infinite; pointer-events: none; z-index: 1; }
 @keyframes pulseRing { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(2); opacity: 0; } }
 .widget-panel { position: absolute; bottom: 72px; left: 0; width: 340px; background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; max-height: 560px; border: 1px solid #e8e8e8; }
-.widget-pop-enter-active { transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); } .widget-pop-leave-active { transition: all 0.22s ease-in; }
-.widget-pop-enter-from { opacity: 0; transform: translateY(20px) scale(0.92); transform-origin: bottom left; } .widget-pop-leave-to { opacity: 0; transform: translateY(10px) scale(0.95); transform-origin: bottom left; }
+.widget-pop-enter-active { transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+.widget-pop-leave-active { transition: all 0.22s ease-in; }
+.widget-pop-enter-from { opacity: 0; transform: translateY(20px) scale(0.92); transform-origin: bottom left; }
+.widget-pop-leave-to { opacity: 0; transform: translateY(10px) scale(0.95); transform-origin: bottom left; }
 .widget-header { background: #000; color: #fff; padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
 .header-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,0.3); }
-.header-info { flex: 1; } .header-title { display: block; font-weight: 700; font-size: 0.95rem; }
+.header-info { flex: 1; }
+.header-title { display: block; font-weight: 700; font-size: 0.95rem; }
 .header-status { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: rgba(255,255,255,0.75); margin-top: 2px; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; animation: blink 2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -882,13 +961,17 @@ img { max-width: 100%; height: auto; }
 .header-close:hover { background: rgba(255,255,255,0.25); }
 .tab-row { display: flex; border-bottom: 1.5px solid #f0f0f0; background: #fafafa; }
 .tab-item { flex: 1; padding: 11px 0; background: none; border: none; font-size: 0.82rem; font-weight: 600; color: #888; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; font-family: 'Poppins', sans-serif; }
-.tab-item:hover { color: #000; } .tab-item.active { color: #000; border-bottom-color: #000; background: #fff; }
-.chat-tab-content { display: flex; flex-direction: column; flex: 1; overflow: hidden; } .whatsapp-tab { justify-content: center; }
+.tab-item:hover { color: #000; }
+.tab-item.active { color: #000; border-bottom-color: #000; background: #fff; }
+.chat-tab-content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.whatsapp-tab { justify-content: center; }
 .wa-body { display: flex; flex-direction: column; align-items: center; padding: 28px 24px; text-align: center; }
 .wa-icon-wrap { width: 68px; height: 68px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-.wa-title { font-size: 1.05rem; font-weight: 700; color: #111; margin: 0 0 8px; } .wa-desc { font-size: 0.82rem; color: #666; line-height: 1.5; margin: 0 0 12px; }
+.wa-title { font-size: 1.05rem; font-weight: 700; color: #111; margin: 0 0 8px; }
+.wa-desc { font-size: 0.82rem; color: #666; line-height: 1.5; margin: 0 0 12px; }
 .wa-hours { font-size: 0.76rem; color: #888; background: #f5f5f5; padding: 5px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; margin-bottom: 18px; }
 .wa-cta-btn { display: flex; align-items: center; gap: 8px; background: #000; color: #fff; padding: 12px 28px; border-radius: 30px; font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: all 0.25s; font-family: 'Poppins', sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,0.2); border: none; cursor: pointer; }
-.wa-cta-btn:hover { background: #222; transform: translateY(-2px); } .wa-number { font-size: 0.76rem; color: #aaa; margin-top: 10px; }
+.wa-cta-btn:hover { background: #222; transform: translateY(-2px); }
+.wa-number { font-size: 0.76rem; color: #aaa; margin-top: 10px; }
 @media (max-width: 400px) { .widget-panel { width: 290px; } .chat-widget-wrapper { left: 10px; bottom: 16px; } }
 </style>

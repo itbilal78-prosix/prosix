@@ -27,81 +27,64 @@
                    value="{{ old('subtitle', $deal->subtitle) }}">
         </div>
 
-        <!-- Description -->
-        <div class="mb-3">
-            <label class="form-label fw-semibold text-black">Description</label>
-            <textarea name="description"
-                      class="form-control border-dark text-black"
-                      rows="4">{{ old('description', $deal->description) }}</textarea>
-        </div>
-
-        <!-- Button -->
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-semibold text-black">Button Text</label>
-                <input type="text" name="button_text"
-                       class="form-control border-dark text-black"
-                       value="{{ old('button_text', $deal->button_text) }}">
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-semibold text-black">Button Link</label>
-                <input type="text" name="button_link"
-                       class="form-control border-dark text-black"
-                       value="{{ old('button_link', $deal->button_link) }}">
-            </div>
-        </div>
-
         <hr>
 
-        <!-- ================= IMAGES SECTION ================= -->
+        <!-- ================= IMAGES ================= -->
         <h5 class="fw-bold text-black mb-3">Deal Images</h5>
 
         <div class="row">
             @foreach($deal->images as $img)
-            <div class="col-md-3 mb-4 text-center">
+            <div class="col-md-3 mb-4">
 
-                <div class="position-relative image-box">
-                    <img src="{{ $img->image_path }}"
-                         class="img-fluid img-thumbnail mb-2"
-                         id="preview{{ $img->id }}">
-                </div>
+                <img src="{{ $img->image_path }}"
+                     class="img-fluid img-thumbnail mb-2"
+                     id="preview{{ $img->id }}">
 
+                <!-- Replace Image -->
                 <input type="file"
                        name="replace_images[{{ $img->id }}]"
                        class="form-control border-dark mb-2"
                        accept="image/*"
                        onchange="previewImage(event, {{ $img->id }})">
 
+                <!-- Existing Link -->
                 <input type="text"
                        name="existing_links[{{ $img->id }}]"
-                       class="form-control border-dark"
+                       class="form-control border-dark mb-2"
                        value="{{ $img->link }}"
                        placeholder="Image Link">
+
+                <!-- Existing Ribbon -->
+                <input type="text"
+                       name="existing_labels[{{ $img->id }}]"
+                       class="form-control border-dark"
+                       value="{{ $img->label }}"
+                       placeholder="Ribbon Text (SALE / NEW)">
             </div>
             @endforeach
         </div>
 
-        <!-- Add New Images -->
-        <div class="mb-4">
-            <label class="form-label fw-semibold text-black">
-                Add New Images
-            </label>
-            <input type="file"
-                   name="images[]"
-                   multiple
-                   class="form-control border-dark"
-                   accept="image/*">
-        </div>
+        <hr>
+
+        <!-- ADD NEW IMAGES -->
+        <h5 class="fw-bold text-black mb-3">Add New Images</h5>
+
+        <div id="newImagesWrapper"></div>
+
+        <button type="button"
+                class="btn btn-outline-dark mb-4"
+                onclick="addNewImageField()">
+            + Add Image
+        </button>
 
         <hr>
 
-        <!-- ================= BANNERS SECTION ================= -->
+        <!-- ================= BANNERS ================= -->
         <h5 class="fw-bold text-black mb-3">Deal Banners</h5>
 
         <div class="row">
             @foreach($deal->banners as $banner)
-            <div class="col-md-4 mb-4 text-center">
+            <div class="col-md-4 mb-4">
 
                 <img src="{{ $banner->image_path }}"
                      class="img-fluid img-thumbnail mb-2"
@@ -112,16 +95,12 @@
                        class="form-control border-dark"
                        accept="image/*"
                        onchange="previewBanner(event, {{ $banner->id }})">
-
             </div>
             @endforeach
         </div>
 
         <!-- Add New Banners -->
         <div class="mb-4">
-            <label class="form-label fw-semibold text-black">
-                Add New Banners
-            </label>
             <input type="file"
                    name="banners[]"
                    multiple
@@ -151,5 +130,33 @@ function previewBanner(event, id) {
     }
     reader.readAsDataURL(event.target.files[0]);
 }
+
+function addNewImageField() {
+
+    const wrapper = document.getElementById('newImagesWrapper');
+
+    const div = document.createElement('div');
+    div.classList.add('mb-3', 'border', 'p-3', 'rounded');
+
+    div.innerHTML = `
+        <label class="fw-semibold">Image</label>
+        <input type="file" name="images[]" class="form-control mb-2" accept="image/*" required>
+
+        <label class="fw-semibold">Image Link</label>
+        <input type="text" name="links[]" class="form-control mb-2" placeholder="Optional link">
+
+        <label class="fw-semibold">Ribbon Text</label>
+        <input type="text" name="labels[]" class="form-control mb-2" placeholder="SALE / NEW">
+
+        <button type="button"
+            class="btn btn-sm btn-danger"
+            onclick="this.parentElement.remove()">
+            Remove
+        </button>
+    `;
+
+    wrapper.appendChild(div);
+}
 </script>
+
 @endsection

@@ -7,6 +7,11 @@ const routes = [
     component: () => import('@/Pages/Home.vue'),
     meta: { public: true, title: 'Home' }
   },
+{
+  path: '/checkout',
+  name: 'Checkout',
+  component: () => import('./Pages/CheckoutPage.vue')
+},
   {
     path: '/user-login',
     name: 'Login',
@@ -28,12 +33,12 @@ const routes = [
   {
     path: '/flipbooks',
     name: 'Flipbooks',
-    component: () => import('@/Pages/FlipbookPage.vue')   // ✅ capital P
+    component: () => import('@/Pages/FlipbookPage.vue')
   },
   {
     path: '/flipbook/:id',
     name: 'FlipbookView',
-    component: () => import('@/Pages/FlipbookView.vue')   // ✅ capital P
+    component: () => import('@/Pages/FlipbookView.vue')
   },
   {
     path: '/dashboard',

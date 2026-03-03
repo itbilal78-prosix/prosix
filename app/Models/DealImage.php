@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class DealImage extends Model
 {
-    protected $fillable = ['deal_id', 'image_path', 'link'];
+    protected $fillable = ['deal_id', 'image_path', 'link', 'label'];
 }

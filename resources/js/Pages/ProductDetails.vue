@@ -101,7 +101,7 @@
             </button>
             <button
               class="btn-checkout"
-              @click="showCheckout = true"
+@click="router.push('/checkout')"
               :disabled="cartStore.items.length === 0"
             >
               Buy Now
@@ -177,183 +177,7 @@
       </div>
     </div>
 
-    <!-- Checkout Modal -->
-    <div
-      v-if="showCheckout"
-      class="checkout-modal"
-      @click.self="showCheckout = false; checkoutStore.resetForm()"
-    >
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Checkout</h3>
-          <button
-            class="close-btn"
-            @click="showCheckout = false; checkoutStore.resetForm()"
-          >
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
 
-        <div class="modal-body">
-          <!-- Progress Indicator -->
-          <div class="progress-steps">
-            <div
-              v-for="step in 3"
-              :key="step"
-              :class="['step', { active: checkoutStore.currentStep >= step }]"
-            >
-              <div class="step-number">{{ step }}</div>
-              <span class="step-label">
-                {{ step === 1 ? 'Info' : step === 2 ? 'Address' : 'Payment' }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Step 1: Personal Info -->
-          <div v-if="checkoutStore.currentStep === 1" class="form-step">
-            <h4 class="step-title">Personal Information</h4>
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Full Name *</label>
-                <input v-model="checkoutStore.form.name" type="text" placeholder="Muhammad Ahmed" required />
-              </div>
-              <div class="form-group">
-                <label>Phone Number *</label>
-                <input v-model="checkoutStore.form.phone" type="tel" placeholder="+92 XXX XXX XXXX" required />
-              </div>
-              <div class="form-group">
-                <label>Age (optional)</label>
-                <input v-model.number="checkoutStore.form.age" type="number" min="18" placeholder="25" />
-              </div>
-              <div class="form-group">
-                <label>Delivery Time</label>
-                <select v-model="checkoutStore.form.deliveryDays">
-                  <option value="1-3">1–3 days (Express)</option>
-                  <option value="3-5" selected>3–5 days (Standard)</option>
-                  <option value="7+">7+ days (Economy)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button class="btn-secondary" @click="showCheckout = false">Cancel</button>
-              <button
-                class="btn-primary"
-                @click="checkoutStore.goToNextStep"
-                :disabled="!checkoutStore.form.name || !checkoutStore.form.phone"
-              >
-                Next <i class="bi bi-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Step 2: Address -->
-          <div v-if="checkoutStore.currentStep === 2" class="form-step">
-            <h4 class="step-title">Shipping Address</h4>
-            <div class="form-grid">
-              <div class="form-group full-width">
-                <label>Full Address *</label>
-                <textarea
-                  v-model="checkoutStore.form.address"
-                  rows="2"
-                  placeholder="House #12, Street 5, DHA Phase 1, Lahore"
-                  required
-                ></textarea>
-              </div>
-              <div class="form-group">
-                <label>City *</label>
-                <input v-model="checkoutStore.form.city" type="text" placeholder="Lahore" required />
-              </div>
-              <div class="form-group">
-                <label>Province</label>
-                <select v-model="checkoutStore.form.province">
-                  <option>Punjab</option>
-                  <option>Sindh</option>
-                  <option>Khyber Pakhtunkhwa</option>
-                  <option>Balochistan</option>
-                  <option>Islamabad Capital Territory</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Postal Code</label>
-                <input v-model="checkoutStore.form.postalCode" type="text" placeholder="54000" />
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button class="btn-secondary" @click="checkoutStore.goToPrevStep">
-                <i class="bi bi-arrow-left"></i> Back
-              </button>
-              <button
-                class="btn-primary"
-                @click="checkoutStore.goToNextStep"
-                :disabled="!checkoutStore.form.address || !checkoutStore.form.city"
-              >
-                Next <i class="bi bi-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Step 3: Payment -->
-          <div v-if="checkoutStore.currentStep === 3" class="form-step">
-            <h4 class="step-title">Payment Method</h4>
-
-            <div class="payment-options">
-              <label class="payment-option">
-                <input type="radio" v-model="checkoutStore.form.paymentMethod" value="cod" checked />
-                <div class="option-content">
-                  <i class="bi bi-cash-coin"></i>
-                  <div>
-                    <strong>Cash on Delivery</strong>
-                    <p>Pay when you receive</p>
-                  </div>
-                </div>
-              </label>
-
-              <label class="payment-option">
-                <input type="radio" v-model="checkoutStore.form.paymentMethod" value="stripe" />
-                <div class="option-content">
-                  <i class="bi bi-credit-card"></i>
-                  <div>
-                    <strong>Credit / Debit Card</strong>
-                    <p>Visa, Mastercard via Stripe</p>
-                  </div>
-                </div>
-              </label>
-            </div>
-
-            <!-- Stripe Card Element -->
-            <div v-if="checkoutStore.form.paymentMethod === 'stripe'" class="stripe-section mt-6 p-4 bg-gray-50 rounded-lg border border-gray-300 min-h-[140px]">
-              <label class="block text-sm font-medium text-gray-700 mb-3">Enter Card Details</label>
-              <div ref="cardElementRef" class="p-4 border border-gray-200 rounded bg-white min-h-[80px]"></div>
-              <div v-if="cardError" class="mt-3 text-sm text-red-600">{{ cardError }}</div>
-
-            </div>
-
-            <div class="order-summary mt-6">
-              <div class="summary-row">
-                <span>Total Amount:</span>
-                <strong>${{ cartStore.totalPrice.toFixed(2) }}</strong>
-              </div>
-              <div class="summary-row">
-                <span>Delivery:</span>
-                <span>{{ checkoutStore.form.deliveryDays }}</span>
-              </div>
-            </div>
-
-            <div class="form-actions mt-6">
-              <button class="btn-secondary" @click="checkoutStore.goToPrevStep">
-                <i class="bi bi-arrow-left"></i> Back
-              </button>
-              <button class="btn-primary" @click="confirmOrder" :disabled="loading">
-                <i class="bi bi-check-circle"></i>
-                {{ loading ? 'Processing...' : 'Place Order' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <footer-component />
   </div>
@@ -366,6 +190,8 @@ import axios from 'axios'
 import { loadStripe } from '@stripe/stripe-js'
 import { useCartStore } from '@/store/cart'
 import { useCheckoutStore } from '@/store/checkout'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const route = useRoute()
 const cartStore = useCartStore()
 const checkoutStore = useCheckoutStore()
@@ -379,7 +205,7 @@ const product = ref({
   image: ''
 })
 
-const showCheckout = ref(false)
+// const showCheckout = ref(false)
 const sizes = ref(['S', 'M', 'L', 'XL', 'XXL'])
 const selectedSize = ref('')
 const quantity = ref(1)

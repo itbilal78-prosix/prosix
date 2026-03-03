@@ -31,6 +31,7 @@
                             <th>Title</th>
                             <th>Subtitle</th>
                             <th>Images</th>
+                            <th>Banners</th> {{-- ADD THIS --}}
                             <th>Button</th>
                             <th>Actions</th>
                         </tr>
@@ -48,11 +49,22 @@
 
                                 {{-- DEAL IMAGES --}}
                                 <td>
-                                    @if ($deal->images->count())
+                                    @if ($deal->images && $deal->images->count() > 0)
                                         <div class="d-flex flex-wrap gap-2">
+
                                             @foreach ($deal->images->take(3) as $img)
-                                                <img src="{{ $img->image_path }}" class="img-thumbnail"
-                                                    style="width:60px; height:60px; object-fit:cover;">
+                                                <div class="position-relative">
+
+                                                    <img src="{{ asset($img->image_path) }}" class="img-thumbnail"
+                                                        style="width:60px; height:60px; object-fit:cover;">
+
+                                                    @if (!empty($img->label))
+                                                        <span class="deal-ribbon">
+                                                            {{ $img->label }}
+                                                        </span>
+                                                    @endif
+
+                                                </div>
                                             @endforeach
 
                                             @if ($deal->images->count() > 3)
@@ -60,6 +72,7 @@
                                                     +{{ $deal->images->count() - 3 }}
                                                 </span>
                                             @endif
+
                                         </div>
                                     @else
                                         <span class="text-muted">No images</span>
@@ -113,6 +126,19 @@
     </div>
 
     <style scoped>
+        .deal-ribbon {
+            position: absolute;
+            top: 5px;
+            left: -5px;
+            background: #000;
+            color: #fff;
+            font-size: 9px;
+            padding: 3px 10px;
+            font-weight: 600;
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
         .text-black {
             color: #000 !important;
         }

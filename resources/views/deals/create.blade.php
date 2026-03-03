@@ -34,10 +34,15 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-semibold text-black">Upload Images (max 6)</label>
-                <input type="file" name="images[]" multiple class="form-control border-dark" accept="image/*"
-                    id="dealImagesInput">
-                <div class="mt-2 d-flex flex-wrap gap-2" id="dealImagePreview"></div>
+                <label class="form-label fw-semibold text-black">
+                    Deal Images
+                </label>
+
+                <div id="dealImagesWrapper"></div>
+
+                <button type="button" class="btn btn-outline-dark mt-2" onclick="addDealImageField()">
+                    + Add Image
+                </button>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-semibold text-black">
@@ -52,22 +57,7 @@
         </form>
     </div>
 
-    <script>
-        // Live preview for deal images
-        document.getElementById('dealImagesInput').addEventListener('change', function(e) {
-            const previewContainer = document.getElementById('dealImagePreview');
-            previewContainer.innerHTML = '';
-            Array.from(e.target.files).forEach(file => {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.classList.add('img-thumbnail');
-                img.style.width = '80px';
-                img.style.height = '80px';
-                img.style.objectFit = 'cover';
-                previewContainer.appendChild(img);
-            });
-        });
-    </script>
+   
     <script>
         document.getElementById('bannerImagesInput')
             .addEventListener('change', function(e) {
@@ -85,6 +75,46 @@
                     previewContainer.appendChild(img);
                 });
             });
+    </script>
+    <script>
+        let imageCount = 0;
+
+       function addDealImageField() {
+
+    const wrapper = document.getElementById('dealImagesWrapper');
+
+    const div = document.createElement('div');
+    div.classList.add('mb-3', 'border', 'p-3', 'rounded');
+
+    div.innerHTML = `
+        <input type="file" name="images[]" class="form-control mb-2 image-input" accept="image/*" required>
+        <div class="preview-box mb-2"></div>
+
+        <input type="text" name="labels[]" class="form-control mb-2" placeholder="Ribbon Text">
+
+        <button type="button"
+            class="btn btn-sm btn-danger"
+            onclick="this.parentElement.remove();">
+            Remove
+        </button>
+    `;
+
+    wrapper.appendChild(div);
+
+    div.querySelector('.image-input').addEventListener('change', function(e){
+        const preview = div.querySelector('.preview-box');
+        preview.innerHTML = '';
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(e.target.files[0]);
+        img.style.width = '80px';
+        img.style.height = '80px';
+        img.style.objectFit = 'cover';
+        img.classList.add('img-thumbnail');
+
+        preview.appendChild(img);
+    });
+}
     </script>
 
     <style scoped>

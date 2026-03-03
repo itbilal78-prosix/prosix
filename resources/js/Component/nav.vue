@@ -314,10 +314,8 @@
                 <div class="flex-grow-1">
                     <h6>{{ item.name }} ({{ item.size }})</h6>
                     <p>
-                        {{ item.price }} × {{ item.quantity }} = ${{
-                            parseFloat(item.price.replace("$", "")) * item.quantity
-                        }}
-                    </p>
+    ${{ Number(item.price) * item.quantity }}
+</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button class="btn btn-sm btn-outline-secondary" @click="cartStore.updateQuantity(item.id, item.size, item.quantity - 1)">-</button>
@@ -328,8 +326,12 @@
             </div>
             <div class="mt-4">
                 <h5>Total: ${{ cartStore.totalPrice }}</h5>
-                <button class="btn btn-dark w-100">Checkout</button>
-            </div>
+<button
+  class="btn btn-dark w-100"
+  @click="goToCheckout"
+>
+  Checkout
+</button>            </div>
         </div>
     </div>
 
@@ -356,6 +358,10 @@ import axios from "axios";
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/store/cart";
 
+const goToCheckout = () => {
+  showCartSidebar.value = false
+  router.push('/checkout')
+}
 // ── Cart & Router ──────────────────────────────────────
 const cartStore = useCartStore();
 const router = useRouter();

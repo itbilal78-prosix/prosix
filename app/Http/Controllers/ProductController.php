@@ -334,4 +334,38 @@ class ProductController extends Controller
                 : count($request->product_ids).' products category se remove ho gaye (frontend pe nahi dikhenge)!',
         ]);
     }
+
+    // ════════════════════════════════════════
+    // API: ALL PRODUCTS
+    // ════════════════════════════════════════
+    public function indexApi()
+    {
+        return Product::select('id', 'name', 'price', 'image')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'price' => (float) $p->price,
+                    'image' => $p->image ? asset('storage/'.$p->image) : null,
+                ];
+            });
+    }
+
+    // ════════════════════════════════════════
+    // API: SINGLE PRODUCT
+    // ════════════════════════════════════════
+    public function showApi($id)
+    {
+        $product = Product::findOrFail($id);
+
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'price' => (float) $product->price,
+            'image' => $product->image ? asset('storage/'.$product->image) : null,
+            'type' => 'product',
+        ]);
+    }
 }

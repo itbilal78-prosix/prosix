@@ -37,6 +37,11 @@ class DealController extends Controller
             // Unlimited banners
             'banners' => 'nullable|array',
             'banners.*' => 'image|mimes:jpg,png,jpeg|max:2048',
+            'labels' => 'nullable|array',
+            'labels.*' => 'nullable|string|max:50',
+
+            'existing_labels' => 'nullable|array',
+            'existing_labels.*' => 'nullable|string|max:50',
         ]);
 
         $deal = Deal::create($request->only([
@@ -51,6 +56,7 @@ class DealController extends Controller
                 $deal->images()->create([
                     'image_path' => '/storage/'.$path,
                     'link' => $request->links[$index] ?? null,
+                    'label' => $request->labels[$index] ?? null,
                 ]);
             }
         }
@@ -99,6 +105,11 @@ class DealController extends Controller
             'banners.*' => 'image|mimes:jpg,png,jpeg|max:2048',
             'replace_banners' => 'nullable|array',
             'replace_banners.*' => 'image|mimes:jpg,png,jpeg|max:2048',
+            'labels' => 'nullable|array',
+            'labels.*' => 'nullable|string|max:50',
+
+            'existing_labels' => 'nullable|array',
+            'existing_labels.*' => 'nullable|string|max:50',
         ]);
 
         $deal->update($request->only([
@@ -149,15 +160,26 @@ class DealController extends Controller
                 }
             }
         }
-
+        // Update only labels
+        if ($request->has('existing_labels')) {
+            foreach ($request->existing_labels as $id => $label) {
+                $imgModel = $deal->images()->find($id);
+                if ($imgModel) {
+                    $imgModel->update(['label' => $label]);
+                }
+            }
+        }
+        // Add new images
         // Add new images
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
+
                 $path = $image->store('deals', 'public');
 
                 $deal->images()->create([
                     'image_path' => '/storage/'.$path,
                     'link' => $request->links[$index] ?? null,
+                    'label' => $request->labels[$index] ?? null,
                 ]);
             }
         }
