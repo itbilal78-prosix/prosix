@@ -18,10 +18,13 @@ class ArtworkRequestMail extends Mailable
         $this->data = $data;
     }
 
-    public function build()
-    {
-        return $this->subject('New Artwork Request')
-            ->view('emails.artwork-request');
-    }
+   public function build()
+{
+    return $this->subject(' New Artwork Request Received')
+                ->view('emails.artwork-request')
+                ->with([
+                    'data' => $this->data
+                ]);
+}
 }
 

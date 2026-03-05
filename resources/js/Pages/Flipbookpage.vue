@@ -71,7 +71,7 @@ export default {
   },
   methods: {
     goToBook(id) {
-      this.$router.push(`/flipbook/${id}`)
+      this.$router.push(`/catalogue/${id}`)
     }
   },
   async mounted() {

@@ -187,6 +187,17 @@ Route::get('/products/featured', [ProductController::class, 'featured'])
 Route::post('/categories/reorder', [CategoryController::class, 'reorder'])
     ->name('categories.reorder');
 
+
+// Storage files directly serve karo
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+    if (!file_exists($fullPath)) abort(404);
+    return response()->file($fullPath);
+})->where('path', '.*');
+
+
+Route::get('/api/search', [App\Http\Controllers\SearchController::class, 'search']);
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

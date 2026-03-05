@@ -65,9 +65,9 @@
 
       <!-- Back Button -->
       <div class="text-center mt-5">
-        <button class="btn-back" @click="goBlogs">
-          ← Back to Blogs
-        </button>
+        <router-link to="/" class="btn-back">
+  ← Back to Home
+</router-link>
       </div>
 
     </div>
@@ -162,7 +162,7 @@ onMounted(() => {
   text-align: center;
 }
 
-/* Body */ 
+/* Body */
 .blog-body {
   font-size: 1.05rem;
   line-height: 1.9;
@@ -201,7 +201,7 @@ onMounted(() => {
 }
 
 .btn-back:hover {
-  background: #ff3b3b;
+  background: #272727;
 }
 
 /* Loader */

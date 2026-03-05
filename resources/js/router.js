@@ -5,87 +5,97 @@ const routes = [
     path: '/',
     name: 'Home',
     component: () => import('@/Pages/Home.vue'),
-    meta: { public: true, title: 'Home' }
+    meta: { public: true, title: 'Home', breadcrumb: 'Home' }
   },
-{
-  path: '/checkout',
-  name: 'Checkout',
-  component: () => import('./Pages/CheckoutPage.vue')
-},
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: () => import('./Pages/CheckoutPage.vue'),
+    meta: { breadcrumb: 'Checkout' }
+  },
   {
     path: '/user-login',
     name: 'Login',
     component: () => import('@/user-authentication/AuthPage.vue'),
-    meta: { guest: true }
+    meta: { guest: true, breadcrumb: 'Login' }
   },
   {
     path: '/register',
     name: 'Register',
     component: () => import('@/user-authentication/AuthPage.vue'),
-    meta: { guest: true }
+    meta: { guest: true, breadcrumb: 'Register' }
   },
   {
     path: '/otp-verification',
     name: 'OTPVerification',
     component: () => import('@/user-authentication/OTPVerification.vue'),
-    meta: { guest: true }
+    meta: { guest: true, breadcrumb: 'OTP Verification' }
   },
-  {
-    path: '/flipbooks',
-    name: 'Flipbooks',
-    component: () => import('@/Pages/FlipbookPage.vue')
-  },
-  {
-    path: '/flipbook/:id',
-    name: 'FlipbookView',
-    component: () => import('@/Pages/FlipbookView.vue')
-  },
+{
+  path: '/catalogue',
+  name: 'Catalogue',
+  component: () => import('@/Pages/FlipbookPage.vue'),
+  meta: { breadcrumb: 'Catalogue' }
+},
+{
+  path: '/catalogue/:id',
+  name: 'CatalogueView',
+  component: () => import('@/Pages/FlipbookView.vue'),
+  meta: { breadcrumb: 'Catalogue View' }
+},
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/user-dashboard/dashboard.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, breadcrumb: 'Dashboard' }
   },
   {
     path: '/models/:id',
     name: 'CustomizerModel',
     component: () => import('@/Pages/CustomizerModel.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, breadcrumb: 'Model Customizer' }
   },
   {
     path: '/menu/:slug',
     name: 'MenuCategories',
-    component: () => import('@/Pages/MenuCategories.vue')
+    component: () => import('@/Pages/MenuCategories.vue'),
+    meta: { breadcrumb: 'Menu' }
   },
   {
     path: '/category/:id/products',
     name: 'CategoryProducts',
-    component: () => import('@/Pages/CategoryProducts.vue')
+    component: () => import('@/Pages/CategoryProducts.vue'),
+    meta: { breadcrumb: 'Products' }
   },
   {
     path: '/category/:id/subcategories',
     name: 'Subcategories',
-    component: () => import('@/Pages/Subcategories.vue')
+    component: () => import('@/Pages/Subcategories.vue'),
+    meta: { breadcrumb: 'Subcategories' }
   },
   {
     path: '/product/:id',
     name: 'ProductDetails',
-    component: () => import('@/Pages/ProductDetails.vue')
+    component: () => import('@/Pages/ProductDetails.vue'),
+    meta: { breadcrumb: 'Product Details' }
   },
   {
     path: '/blog/:slug',
     name: 'BlogDetail',
-    component: () => import('@/Pages/BlogDetail.vue')
+    component: () => import('@/Pages/BlogDetail.vue'),
+    meta: { breadcrumb: 'Blog Detail' }
   },
   {
     path: '/membership',
     name: 'Membership',
-    component: () => import('@/Pages/MembershipForm.vue')
+    component: () => import('@/Pages/MembershipForm.vue'),
+    meta: { breadcrumb: 'Membership' }
   },
   {
     path: '/artwork',
     name: 'Artworkform',
-    component: () => import('@/Pages/Artworkform.vue')
+    component: () => import('@/Pages/Artworkform.vue'),
+    meta: { breadcrumb: 'Artwork' }
   },
 ]
 

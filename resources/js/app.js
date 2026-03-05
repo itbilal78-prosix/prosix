@@ -40,7 +40,8 @@ app.use(router);
 // Global components (nav, footer, dashboard waghera)
 import nav from './Component/nav.vue';
 app.component('nav-component', nav);
-
+import Breadcrumb from './Component/Breadcrumb.vue';
+app.component('breadcrumb-component', Breadcrumb);
 import footer from './Component/footer.vue';
 app.component('footer-component', footer);
 
@@ -61,3 +62,72 @@ app.component('analytics-tab', AnalyticsTab);
 
 // Mount app
 app.mount('#app');
+// =====================================================
+// BREADCRUMB LOGIC — app.js mein router.afterEach replace karo
+// =====================================================
+
+// Yeh ROUTE NAME → Display Name mapping hai
+const routeNames = {
+  'Home':            'Home',
+  'MenuCategories':  'Menu',
+  'Subcategories':   'Categories',
+  'CategoryProducts':'Products',
+  'ProductDetails':  'Product Details',
+  'Checkout':        'Checkout',
+  'Dashboard':       'Dashboard',
+  'Login':           'Login',
+  'Register':        'Register',
+  'CustomizerModel': 'Customizer',
+  'Flipbooks':       'Flipbooks',
+  'FlipbookView':    'Flipbook',
+  'BlogDetail':      'Blog',
+  'Membership':      'Membership',
+  'Artworkform':     'Artwork',
+}
+
+router.afterEach((to, from) => {
+  // Agar Home par aaye toh history reset karo
+  if (to.name === 'Home') {
+    localStorage.setItem('breadcrumbs', JSON.stringify([
+      { name: 'Home', path: '/' }
+    ]))
+    return
+  }
+
+  // Existing history lo
+  let history = []
+  try {
+    history = JSON.parse(localStorage.getItem('breadcrumbs') || '[]')
+  } catch {
+    history = [{ name: 'Home', path: '/' }]
+  }
+
+  // Agar Home nahi hai toh add karo
+  if (!history.length || history[0].path !== '/') {
+    history = [{ name: 'Home', path: '/' }]
+  }
+
+  const currentPath = to.fullPath
+  const displayName = routeNames[to.name] || to.meta?.breadcrumb || to.name || 'Page'
+
+  // Check karo yeh page pehle se history mein hai
+  const existingIdx = history.findIndex(b => b.path === currentPath)
+
+  if (existingIdx !== -1) {
+    // Pehle se hai — uske baad wala sab cut karo (back navigation)
+    history = history.slice(0, existingIdx + 1)
+  } else {
+    // Naya page — add karo
+    history.push({
+      name: displayName,
+      path: currentPath
+    })
+  }
+
+  // Max 6 items rakho
+  if (history.length > 6) {
+    history = [history[0], ...history.slice(-(5))]
+  }
+
+  localStorage.setItem('breadcrumbs', JSON.stringify(history))
+})

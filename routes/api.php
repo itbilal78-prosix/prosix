@@ -184,6 +184,5 @@ Route::post('/create-payment-intent', [StripeController::class, 'createPaymentIn
 Route::fallback(function () {
     return response()->json(['error' => 'API endpoint not found'], 404);
 });
-Route::get('/models/{id}', [ModelController::class, 'show']);
-
+Route::get('/models/{id}', [CustomizerModelController::class, 'show']);
 Route::post('/api/templates/save', [TemplateController::class, 'saveFromCustomizer'])->name('templates.save.api');

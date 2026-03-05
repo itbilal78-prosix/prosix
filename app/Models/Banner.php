@@ -14,8 +14,10 @@ class Banner extends Model
         'button_text',
         'button_link',
         'background_image',
+        'mobile_background_image',  // ✅ نیا
+
         'png_image',
-        'position'
+        'position',
     ];
 
     public static function boot()

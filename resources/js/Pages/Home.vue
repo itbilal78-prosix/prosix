@@ -1,5 +1,7 @@
 <template>
   <div class="d-flex flex-column min-vh-100" :class="{ 'dark-mode': isDarkMode }">
+
+    <!-- ✅ Scroll Top - CENTER bottom -->
     <button class="scroll-top-btn" :class="{ visible: showScrollTop }" @click="scrollToTop" title="Back to Top">
       <i class="bi bi-arrow-up"></i>
     </button>
@@ -14,7 +16,13 @@
               <div
                 :key="currentSlide"
                 class="carousel-slide active"
-                :style="{ backgroundImage: `url(${safeSlides[currentSlide].backgroundImage})` }">
+:style="{
+  backgroundImage: `url(${
+    isMobile && safeSlides[currentSlide].mobileBackgroundImage
+      ? safeSlides[currentSlide].mobileBackgroundImage
+      : safeSlides[currentSlide].backgroundImage
+  })`
+}">
                 <div class="carousel-overlay">
                   <div class="carousel-content d-flex align-items-center justify-content-start h-100">
                     <div class="text-and-image-wrapper d-flex flex-column align-items-start text-start">
@@ -280,51 +288,34 @@
     <component :is="'script'" v-once></component>
     <footer-component />
 
-    <!-- CHAT WIDGET -->
-    <div class="chat-widget-wrapper">
-      <div class="launcher-btn" :class="{ open: chatOpen }" @click="chatOpen = !chatOpen">
-        <div class="launcher-icon close-icon"><i class="bi bi-x-lg"></i></div>
-        <div class="launcher-icon chat-icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.253 2 11.5c0 2.304.87 4.41 2.306 6.033L3 21l3.647-1.268A10.07 10.07 0 0012 21c5.523 0 10-4.253 10-9.5S17.523 2 12 2z" fill="currentColor"/></svg>
-        </div>
-      </div>
-      <div class="launcher-pulse" v-if="!chatOpen"></div>
-      <Transition name="widget-pop">
-        <div class="widget-panel" v-if="chatOpen">
-          <div class="widget-header">
-            <div class="header-avatar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.253 2 11.5c0 2.304.87 4.41 2.306 6.033L3 21l3.647-1.268A10.07 10.07 0 0012 21c5.523 0 10-4.253 10-9.5S17.523 2 12 2z" fill="white"/></svg></div>
-            <div class="header-info">
-              <span class="header-title">Support Assistant</span>
-              <span class="header-status"><span class="status-dot"></span> Online</span>
-            </div>
-            <button class="header-close" @click="chatOpen = false"><i class="bi bi-x-lg"></i></button>
-          </div>
-          <div class="tab-row">
-            <button class="tab-item" :class="{ active: chatTab === 'tawkto' }" @click="switchTab('tawkto')"><i class="bi bi-headset"></i> Live Chat</button>
-            <button class="tab-item" :class="{ active: chatTab === 'whatsapp' }" @click="chatTab = 'whatsapp'"><i class="bi bi-whatsapp"></i> WhatsApp</button>
-          </div>
-          <div class="chat-tab-content tawkto-tab" v-if="chatTab === 'tawkto'">
-            <div class="wa-body">
-              <div class="wa-icon-wrap tawk-icon"><i class="bi bi-headset"></i></div>
-              <h3 class="wa-title">Live Chat Support</h3>
-              <p class="wa-desc">Chat with our support team in real-time. We're here to help you!</p>
-              <div class="wa-hours"><i class="bi bi-clock"></i> Available 9am – 9pm PKT</div>
-              <button class="wa-cta-btn tawk-btn" @click="openTawkTo"><i class="bi bi-headset"></i> Start Live Chat</button>
-            </div>
-          </div>
-          <div class="chat-tab-content whatsapp-tab" v-if="chatTab === 'whatsapp'">
-            <div class="wa-body">
-              <div class="wa-icon-wrap"><i class="bi bi-whatsapp"></i></div>
-              <h3 class="wa-title">Chat on WhatsApp</h3>
-              <p class="wa-desc">Get instant help from our team. We usually reply within minutes.</p>
-              <div class="wa-hours"><i class="bi bi-clock"></i> Available 9am – 9pm PKT</div>
-              <a href="https://wa.me/03316566200" target="_blank" class="wa-cta-btn"><i class="bi bi-whatsapp"></i> Open WhatsApp</a>
-              <p class="wa-number">+92 331 6566200</p>
-            </div>
-          </div>
-        </div>
-      </Transition>
+    <!-- ✅ LEFT SIDE: Two floating icon buttons (TawkTo + WhatsApp) -->
+ <!-- LEFT SIDE: WhatsApp -->
+<div class="float-icons-left">
+
+  <div class="float-icon-wrap">
+    <a href="https://wa.me/03316566200" target="_blank" class="float-icon-btn wa-icon-btn">
+      <i class="bi bi-whatsapp"></i>
+    </a>
+    <div class="float-icon-pulse wa-pulse"></div>
+    <div class="float-icon-tooltip">WhatsApp</div>
+  </div>
+
+</div>
+
+
+<!-- RIGHT SIDE: Live Chat -->
+<div class="float-icons-right">
+
+  <div class="float-icon-wrap" @click="openTawkTo" title="Live Chat">
+    <div class="float-icon-btn">
+      <i class="bi bi-headset"></i>
     </div>
+    <div class="float-icon-pulse"></div>
+    <div class="float-icon-tooltip">Live Chat</div>
+  </div>
+
+</div>
+
   </div>
 </template>
 
@@ -451,7 +442,6 @@ const displayedProducts = computed(() => {
   return products
 })
 
-// ✅ FIXED: 5 cards on large screens
 const featuredItemsPerView = computed(() => {
   if (typeof window === 'undefined') return 5
   if (window.innerWidth < 576) return 1
@@ -469,7 +459,6 @@ const fetchApparelProducts = async () => {
   try { const res = await axios.get('/api/apparel-products'); apparelProducts.value = res.data || [] } catch (e) { console.error(e) }
 }
 
-// ✅ FIXED: 5 cards on large screens for apparel too
 const apparelItemsPerView = computed(() => {
   if (typeof window === 'undefined') return 5
   if (window.innerWidth < 576) return 1
@@ -518,7 +507,7 @@ const fetchDeal = async () => { try { const res = await axios.get('/api/latest-d
 const blogs = ref([])
 const fetchBlogs = async () => { try { const res = await axios.get('/api/blogs'); blogs.value = res.data } catch (e) { console.error(e) } }
 
-// ✅ FIXED: Slides - ensure full URL for background images
+// Slides
 const fetchSlides = async () => {
   try {
     const res = await axios.get('/api/banners')
@@ -526,11 +515,14 @@ const fetchSlides = async () => {
       ...s,
       backgroundImage: s.backgroundImage
         ? (s.backgroundImage.startsWith('http') ? s.backgroundImage : `${window.location.origin}${s.backgroundImage}`)
+        : '',
+      // ✅ نیا
+      mobileBackgroundImage: s.mobileBackgroundImage
+        ? (s.mobileBackgroundImage.startsWith('http') ? s.mobileBackgroundImage : `${window.location.origin}${s.mobileBackgroundImage}`)
         : ''
     }))
   } catch { slides.value = [] }
 }
-
 const nextSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }
 const prevSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length }
 const goToSlide = (i) => { currentSlide.value = i }
@@ -539,12 +531,8 @@ const selectTeam = (id) => { activeTeam.value = id; router.push({ name: 'Categor
 const showScrollTop = ref(false)
 const handleScroll = () => { showScrollTop.value = window.scrollY > 400 }
 const scrollToTop = () => { window.scrollTo({ top: 0, behavior: 'smooth' }) }
-const chatOpen = ref(false)
-const chatTab = ref('tawkto')
-const switchTab = (tab) => { chatTab.value = tab }
 const openTawkTo = () => { if (window.Tawk_API && window.Tawk_API.maximize) window.Tawk_API.maximize() }
 const handleResize = () => { updateMobile() }
-
 const addToCart = (product) => { cartStore.addItem(product) }
 const goToCustomizer = (product) => { router.push({ name: 'Customizer', params: { id: product.id } }) }
 
@@ -588,11 +576,144 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @media (max-width: 768px) { .full-container { padding: 0 20px; } }
 @media (max-width: 575px) { .full-container { padding: 0 12px; } }
 .dark-mode { background: #0a0a0a; color: #fff; }
-.dark-mode .section-title { color: #fff; }
-.dark-mode .product-card-inner { background: #1a1a1a; color: #fff; }
-.dark-mode .testimonials-section { background: #111; }
 
-/* ✅ HERO CAROUSEL - Background always shows */
+/* ✅ SCROLL TOP - CENTER bottom */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px) scale(0.8);
+  z-index: 9997;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s;
+}
+.scroll-top-btn.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+  pointer-events: auto;
+}
+.scroll-top-btn:hover {
+  background: #fff;
+  color: #000;
+  transform: translateX(-50%) translateY(-3px) scale(1.08);
+}
+
+/* ✅ LEFT SIDE: Two floating icon buttons stacked vertically */
+.float-icons-left {
+  position: fixed;
+  bottom: 30px;
+  left: 20px;
+  z-index: 99990;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Each icon wrapper */
+.float-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* The circular button - BLACK style */
+.float-icon-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border: 2.5px solid #fff;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.2s;
+  position: relative;
+  z-index: 2;
+  text-decoration: none;
+  cursor: pointer;
+}
+.float-icon-btn:hover {
+  background: #222;
+  color: #fff;
+  transform: scale(1.12);
+}
+
+/* WhatsApp button - WHITE style (black icon on white) */
+.wa-icon-btn {
+  background: #fff !important;
+  color: #000 !important;
+  border: 2.5px solid #000 !important;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.2) !important;
+}
+.wa-icon-btn:hover {
+  background: #f0f0f0 !important;
+  color: #000 !important;
+  transform: scale(1.12);
+}
+
+/* Pulse ring */
+.float-icon-pulse {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.12);
+  animation: floatPulse 2.6s ease-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.wa-pulse {
+  background: rgba(0,0,0,0.08) !important;
+}
+@keyframes floatPulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+/* Tooltip - appears to the right of icon */
+.float-icon-tooltip {
+  position: absolute;
+  left: 64px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  background: #000;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.25s;
+  pointer-events: none;
+}
+.float-icon-wrap:hover .float-icon-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* HERO */
 .hero-carousel { position: relative; height: 100vh; min-height: 100vh; overflow: hidden; }
 .carousel-container { position: relative; height: 100%; }
 .carousel-slide {
@@ -604,7 +725,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   background-repeat: no-repeat;
   animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
-/* ✅ Overlay is transparent gradient - does NOT block background image */
 .carousel-overlay {
   position: absolute;
   height: 100%;
@@ -617,11 +737,36 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-content { max-width: 100%; margin: 0 5%; width: 90%; height: 100%; }
 .text-and-image-wrapper { max-width: 60%; text-align: center; margin-top: 12%; }
 .title-button-row { width: 100%; display: flex; align-items: flex-start; flex-wrap: nowrap; justify-content: space-between; }
-.main_title { width: 60%; font-size: 4rem; line-height: 0.9; font-weight: 800; font-style: italic; text-align: left; margin: 0; padding: 0; word-break: break-word; flex-shrink: 0; color: black; }
+.float-icons-right {
+  position: fixed;
+  bottom: 30px;
+  right: 20px;
+  z-index: 99990;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-end;
+}
+.float-icons-right .float-icon-tooltip {
+  left: auto;
+  right: 64px;
+  transform: translateY(-50%) translateX(6px);
+}
+
+.float-icons-right .float-icon-wrap:hover .float-icon-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+/* ✅ INCREASED font sizes */
+.main_title { width: 60%; font-size: 4.5rem; line-height: 0.9; font-weight: 800; font-style: italic; text-align: left; margin: 0; padding: 0; word-break: break-word; flex-shrink: 0; color: black; }
 .button-wrapper { margin-top: 50px; flex-shrink: 0; align-self: flex-start; }
-.single-line-btn { white-space: nowrap; display: inline-block; text-align: center; line-height: 1.2; padding: 10px 30px; background: black; color: white; border-radius: 20px; font-size: 20px; letter-spacing: 1px; font-weight: 550; border: none; cursor: pointer; transition: all 0.3s ease; }
+.single-line-btn { white-space: nowrap; display: inline-block; text-align: center; line-height: 1.2; padding: 12px 34px; background: black; color: white; border-radius: 20px; font-size: 1.2rem; letter-spacing: 1px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; }
 .single-line-btn:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.4); transform: translateY(-2px); }
 .hero-png { max-width: 110%; max-height: 850px; height: auto; animation: float 6s ease-in-out infinite; }
+
+/* ✅ INCREASED lead font */
+.lead { color: #000; font-size: 1.2rem; }
+
 .animate-from-left { opacity: 0; transform: translateX(-150%); animation: slideInFromLeft 1.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.4s; }
 .animate-from-top { opacity: 0; transform: translate(-100%, -100%); animation: slideInFromTopLeft 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.2s; }
 .delayed { opacity: 0; transform: translate(-100%, 100%); animation: slideInFromBottomLeft 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.6s; }
@@ -655,17 +800,17 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon-item:hover .icon-circle::after, .icon-item.active .icon-circle::after { opacity: 1; transform: scale(1); animation: rotateDotted 8s linear infinite; }
 .icon-item:hover .icon-circle, .icon-item.active .icon-circle { transform: scale(1.08); }
 .icon-image { width: 90%; height: 90%; object-fit: cover; }
-.icon-name { color: white; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; max-width: 100px; }
+
+/* ✅ INCREASED icon name font */
+.icon-name { color: white; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; max-width: 100px; }
 .icon-circle { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; background: black; border-radius: 50%; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
 .icon-circle::after { content: ''; position: absolute; inset: 0; border: 3px dotted #fff; border-radius: 50%; opacity: 0; transition: opacity 0.35s, transform 0.35s; transform: scale(0.92); pointer-events: none; }
 @keyframes rotateDotted { from { transform: scale(0.92) rotate(0deg); } to { transform: scale(0.92) rotate(360deg); } }
-.lead { color: #000; }
 
 /* Ribbons */
-.left-ribbon { position: relative; display: inline-block; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 1.8rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
-.left-ribbon.dark { background: #fff; color: #000; }
+.left-ribbon { position: relative; display: inline-block; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
 .left-ribbon span { position: relative; z-index: 2; }
-.left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 14px 40px; font-weight: 800; font-size: 1.8rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
+.left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 14px 40px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
 
 /* Deals */
 .deals-section { background-color: #e0e0e0; }
@@ -676,33 +821,31 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .deal-card:hover .deal-card-img { transform: scale(1.08); }
 .deal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s ease; }
 .deal-card:hover .deal-overlay { opacity: 1; }
-.deal-ribbon { position: absolute; top: 15px; left: -35px; background: #000000; color: #fff; padding: 2px 40px; font-size: 12px; font-weight: 700; transform: rotate(-45deg); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; letter-spacing: 1px; }
+.deal-ribbon { position: absolute; top: 15px; left: -35px; background: #000000; color: #fff; padding: 2px 40px; font-size: 13px; font-weight: 700; transform: rotate(-45deg); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; letter-spacing: 1px; }
 .fade-enter-active, .fade-leave-active { transition: all 0.7s ease; }
 .fade-enter-from { opacity: 0; filter: blur(15px); transform: scale(1.1); }
 .fade-leave-to { opacity: 0; filter: blur(10px); }
 
-/* ✅ FEATURED PRODUCTS - 5 cards on desktop */
+/* Featured Products */
 .featured-products { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .featured-products::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .featured-products > * { position: relative; z-index: 2; }
 .featured-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 3rem; }
-.section-title { font-size: 2.8rem; font-weight: 800; color: #000; margin: 0; }
 .tabs { display: flex; gap: 10px; flex-wrap: wrap; }
-.tab-btn { padding: 10px 20px; border: 2px solid #000; background: #fff; color: #000; font-weight: 600; cursor: pointer; transition: all 0.3s; border-radius: 4px; }
+.tab-btn { padding: 10px 22px; border: 2px solid #000; background: #fff; color: #000; font-weight: 600; cursor: pointer; transition: all 0.3s; border-radius: 4px; font-size: 0.95rem; }
 .tab-btn:hover, .tab-btn.active { background: #000; color: #fff; }
 .carousel-wrapper { position: relative; overflow: hidden; padding: 0 55px; }
 .products-track { display: flex; will-change: transform; }
-
-/* ✅ DEFAULT: 5 cards = 20% each */
 .product-card { min-width: 20%; padding: 0 8px; box-sizing: border-box; }
-
 .product-card-inner { background: #fff; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; }
 .product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
 .product-img { width: 100%; height: 240px; object-fit: contain; background: #f8f9fa; margin-bottom: 12px; border-radius: 8px; }
 .product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
-.product-title { font-size: 12px; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.product-price { color: #000; font-weight: 800; font-size: 0.95rem; margin: 0; white-space: nowrap; flex-shrink: 0; }
-.add-cart-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s; margin-top: auto; font-size: 12px; }
+
+/* ✅ INCREASED product title/price fonts */
+.product-title { font-size: 0.88rem; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.product-price { color: #000; font-weight: 800; font-size: 1rem; margin: 0; white-space: nowrap; flex-shrink: 0; }
+.add-cart-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s; margin-top: auto; font-size: 0.85rem; }
 .add-cart-btn:hover { background: #333; transform: translateY(-2px); }
 .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; background: #000; border: none; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: all 0.3s; z-index: 10; }
 .carousel-btn i { font-size: 20px; }
@@ -715,8 +858,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .apparel-card-inner:hover { border-color: #fff; transform: translateY(-6px); }
 .product-image-wrapper { margin-bottom: 12px; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
-.product-name { font-size: 12px; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.add-to-cart-btn { margin-top: auto; font-size: 12px; }
+.product-name { font-size: 0.88rem; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.add-to-cart-btn { margin-top: auto; font-size: 0.85rem; }
 
 /* Benefits */
 .benefits-section { background: #111; }
@@ -724,6 +867,11 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .benefit-card:hover { background: black; color: white; transform: translateY(-8px); }
 .benefit-card:hover .icon, .benefit-card:hover h4, .benefit-card:hover p { color: white !important; }
 .icon { color: black; line-height: 1; transition: all 0.3s; }
+
+/* ✅ INCREASED benefit card fonts */
+.benefit-card h4 { font-size: 1.1rem; font-weight: 700; }
+.benefit-card p { font-size: 0.95rem; }
+
 .benefits-desktop { display: flex; }
 .benefits-mobile-carousel { display: none; }
 
@@ -746,7 +894,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .video-arrow:hover { background: #333; transform: translateY(-50%) scale(1.1); }
 .video-arrow.prev-arrow { left: 5px; }
 .video-arrow.next-arrow { right: 5px; }
-.video-title-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); color: white; padding: 20px 15px 15px; font-size: 16px; font-weight: 600; text-align: center; opacity: 0; transition: opacity 0.3s; }
+.video-title-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); color: white; padding: 20px 15px 15px; font-size: 1rem; font-weight: 600; text-align: center; opacity: 0; transition: opacity 0.3s; }
 .video-thumbnail:hover .video-title-overlay { opacity: 1; }
 .video-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
 .video-modal-content { position: relative; width: 90%; max-width: 1400px; height: 80vh; background: #000; border-radius: 12px; overflow: hidden; }
@@ -769,15 +917,17 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .quote-float { position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 3.6rem; line-height: 1; color: #000; pointer-events: none; }
 .testimonial-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; min-height: auto; position: relative; transition: all 0.35s; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
 .testimonial-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); border-color: #333; }
-.stars-rating { font-size: 1rem; letter-spacing: 3px; margin-bottom: 12px; text-align: left; }
+.stars-rating { font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 12px; text-align: left; }
 .stars-rating .bi-star-fill { color: #000 !important; }
 .stars-rating .bi-star { color: #ccc !important; }
+
+/* ✅ INCREASED testimonial text fonts */
 .testimonial-text { font-size: 1rem; line-height: 1.75; color: #444; margin-bottom: 20px; }
 .testimonial-author { display: flex; align-items: center; gap: 15px; }
 .author-image { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 3px solid #f0f0f0; flex-shrink: 0; }
 .author-image img { width: 100%; height: 100%; object-fit: cover; }
 .author-name { font-size: 1.1rem; font-weight: 700; color: #111; margin: 0; }
-.author-position { font-size: 0.85rem; color: #777; margin: 4px 0 0; text-transform: uppercase; letter-spacing: 0.8px; }
+.author-position { font-size: 0.88rem; color: #777; margin: 4px 0 0; text-transform: uppercase; letter-spacing: 0.8px; }
 
 /* Blog */
 .recent-blog-section { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
@@ -792,26 +942,16 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .blog-meta { display: flex; gap: 20px; margin-bottom: 12px; font-size: 0.9rem; color: #777; text-transform: uppercase; }
 .blog-title { font-size: 1.4rem; font-weight: 700; color: #000; margin-bottom: 12px; line-height: 1.3; }
 .blog-excerpt { font-size: 1rem; color: #555; line-height: 1.6; margin-bottom: 18px; }
-.read-more { color: #000; font-weight: 600; text-decoration: none; transition: color 0.3s; }
+.read-more { color: #000; font-weight: 600; text-decoration: none; transition: color 0.3s; font-size: 0.95rem; }
 .read-more:hover { color: #dc3545; }
-.btn-view-all { background: #000; color: white; padding: 14px 40px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; }
+.btn-view-all { background: #000; color: white; padding: 14px 40px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; font-size: 1rem; }
 .btn-view-all:hover { background: #333; transform: translateY(-3px); }
 
-/* Scroll top */
-.scroll-top-btn { position: fixed; bottom: 30px; right: 30px; z-index: 9997; width: 52px; height: 52px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); opacity: 0; transform: translateY(20px) scale(0.8); pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s; }
-.scroll-top-btn.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-.scroll-top-btn:hover { background: #fff; color: #000; transform: translateY(-3px) scale(1.08); }
-
 /* ============================================
-   ✅ FULLY RESPONSIVE BREAKPOINTS
+   RESPONSIVE BREAKPOINTS
    ============================================ */
+@media (min-width: 992px) and (max-width: 1399px) { .product-card { min-width: 25% !important; } }
 
-/* 4 cards: 992px - 1399px */
-@media (min-width: 992px) and (max-width: 1399px) {
-  .product-card { min-width: 25% !important; }
-}
-
-/* 3 cards: 768px - 991px */
 @media (min-width: 768px) and (max-width: 991px) {
   .product-card { min-width: 33.333% !important; }
   .video-card { width: 50% !important; }
@@ -821,16 +961,17 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .t-arrow-right { margin-left: 8px !important; }
   .icons-track { gap: 35px !important; }
   .icon-circle { width: 75px !important; height: 75px !important; }
-  .icon-name { font-size: 11px !important; }
-  .main_title { font-size: 3.2rem !important; width: 60% !important; }
+  .icon-name { font-size: 12px !important; }
+  .main_title { font-size: 3.5rem !important; width: 60% !important; }
   .hero-png { max-height: 550px !important; }
   .carousel-wrapper { padding: 0 50px !important; }
   .video-thumbnail { height: 280px !important; }
   .blog-card { flex-direction: row !important; }
   .blog-image { flex: 0 0 40% !important; height: auto !important; }
+  /* Slightly smaller icons on tablet */
+  .float-icon-btn { width: 50px; height: 50px; font-size: 1.4rem; }
 }
 
-/* Tablet & mobile: benefits carousel */
 @media (max-width: 991px) {
   .benefits-desktop { display: none !important; }
   .benefits-mobile-carousel { display: block; position: relative; padding: 0 55px; }
@@ -847,34 +988,36 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .bdot.active { background: #fff; width: 20px; border-radius: 10px; }
 }
 
-/* 2 cards: 576px - 767px */
 @media (max-width: 767px) {
   .product-card { min-width: 50% !important; }
   .video-card { width: 50% !important; }
   .testimonial-item { flex: 0 0 100% !important; }
   .product-img { height: 220px !important; }
   .video-thumbnail { height: 260px !important; }
+  /* Smaller icons on mobile */
+  .float-icons-left { bottom: 20px; left: 12px; gap: 10px; }
+  .float-icon-btn { width: 46px !important; height: 46px !important; font-size: 1.3rem !important; }
+  .float-icon-pulse { width: 46px !important; height: 46px !important; }
 }
 
-/* 1 card: mobile small */
 @media (max-width: 575px) {
   .hero-carousel { height: 100vh !important; min-height: 600px !important; }
   .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; }
   .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
   .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; }
-  .main_title { width: 100% !important; font-size: 2.2rem !important; text-align: center !important; padding: 0 10px !important; }
+  .main_title { width: 100% !important; font-size: 2.4rem !important; text-align: center !important; padding: 0 10px !important; }
   .button-wrapper { margin-top: 0 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
-  .single-line-btn { font-size: 15px !important; padding: 12px 35px !important; }
-  .lead { font-size: 14px !important; text-align: center !important; padding: 0 20px !important; }
+  .single-line-btn { font-size: 1rem !important; padding: 12px 35px !important; }
+  .lead { font-size: 1rem !important; text-align: center !important; padding: 0 20px !important; }
   .hero-png { max-width: 90% !important; max-height: 300px !important; }
   .sports-icons-section { padding: 20px 0 !important; }
   .icons-track { gap: 28px !important; padding-left: 60px !important; }
-  .icon-circle { width: 58px !important; height: 58px !important; }
-  .icon-name { font-size: 9px !important; max-width: 65px !important; }
+  .icon-circle { width: 60px !important; height: 60px !important; }
+  .icon-name { font-size: 10px !important; max-width: 65px !important; }
   .featured-products { padding: 40px 0 !important; }
   .featured-header { flex-direction: column !important; align-items: flex-start !important; }
   .tabs { width: 100%; flex-wrap: wrap !important; }
-  .tab-btn { font-size: 12px !important; padding: 8px 15px !important; flex: 1; min-width: 80px; }
+  .tab-btn { font-size: 0.85rem !important; padding: 8px 15px !important; flex: 1; min-width: 80px; }
   .carousel-wrapper { padding: 0 44px !important; }
   .product-card { min-width: 100% !important; padding: 0 8px !important; }
   .product-img { height: 200px !important; }
@@ -902,13 +1045,14 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .blog-content { padding: 10px 12px !important; }
   .blog-meta { display: none !important; }
   .blog-excerpt { display: none !important; }
-  .blog-title { font-size: 0.82rem !important; margin-bottom: 8px !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
-  .read-more { font-size: 0.78rem !important; color: #dc3545 !important; font-weight: 700 !important; }
-  .left-ribbon { font-size: 1.3rem !important; padding: 8px 24px 8px 20px !important; margin-left: -20px !important; }
-  .left2-ribbon { font-size: 1.3rem !important; padding: 8px 24px !important; margin-left: -20px !important; }
+  .blog-title { font-size: 0.9rem !important; margin-bottom: 8px !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
+  .read-more { font-size: 0.85rem !important; color: #dc3545 !important; font-weight: 700 !important; }
+  .left-ribbon { font-size: 1.4rem !important; padding: 8px 24px 8px 20px !important; margin-left: -20px !important; }
+  .left2-ribbon { font-size: 1.4rem !important; padding: 8px 24px !important; margin-left: -20px !important; }
+  /* Keep scroll top centered on mobile */
+  .scroll-top-btn { bottom: 80px !important; }
 }
 
-/* Landscape mobile */
 @media (orientation: landscape) and (max-height: 600px) {
   .hero-carousel { height: 100vh !important; }
   .text-and-image-wrapper { margin-top: 3% !important; }
@@ -916,7 +1060,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .hero-png { max-height: 500px !important; }
 }
 
-/* Very large screens */
 @media (min-width: 2000px) {
   .product-card { min-width: 20% !important; }
   .video-card { width: 20% !important; }
@@ -924,54 +1067,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .product-img { height: 320px !important; }
 }
 
-/* General */
 img { max-width: 100%; height: auto; }
 *:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
-
-/* Chat */
-.tawk-icon { background: #000 !important; }
-.tawk-btn { background: #000 !important; }
-.tawk-btn:hover { background: #222 !important; }
-.tawkto-tab { justify-content: center; }
 #tawk-bubble-container, .tawk-min-container, iframe[title="chat widget"] { display: none !important; }
-.chat-widget-wrapper { position: fixed; bottom: 30px; left: 24px; z-index: 99990; font-family: 'Poppins', sans-serif; }
-.launcher-btn { width: 58px; height: 58px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 24px rgba(0,0,0,0.35); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.25s; position: relative; z-index: 2; border: 2.5px solid #fff; }
-.launcher-btn:hover { transform: scale(1.1); background: #222; }
-.launcher-btn.open { background: #111; }
-.launcher-icon { position: absolute; transition: opacity 0.25s, transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-.close-icon { opacity: 0; transform: rotate(-90deg) scale(0.6); font-size: 1.2rem; }
-.chat-icon { opacity: 1; transform: rotate(0deg) scale(1); }
-.launcher-btn.open .close-icon { opacity: 1; transform: rotate(0deg) scale(1); }
-.launcher-btn.open .chat-icon { opacity: 0; transform: rotate(90deg) scale(0.6); }
-.launcher-pulse { position: absolute; bottom: 2px; width: 58px; height: 58px; border-radius: 50%; background: rgba(0,0,0,0.15); animation: pulseRing 2.4s ease-out infinite; pointer-events: none; z-index: 1; }
-@keyframes pulseRing { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(2); opacity: 0; } }
-.widget-panel { position: absolute; bottom: 72px; left: 0; width: 340px; background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; max-height: 560px; border: 1px solid #e8e8e8; }
-.widget-pop-enter-active { transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
-.widget-pop-leave-active { transition: all 0.22s ease-in; }
-.widget-pop-enter-from { opacity: 0; transform: translateY(20px) scale(0.92); transform-origin: bottom left; }
-.widget-pop-leave-to { opacity: 0; transform: translateY(10px) scale(0.95); transform-origin: bottom left; }
-.widget-header { background: #000; color: #fff; padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
-.header-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,0.3); }
-.header-info { flex: 1; }
-.header-title { display: block; font-weight: 700; font-size: 0.95rem; }
-.header-status { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: rgba(255,255,255,0.75); margin-top: 2px; }
-.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; animation: blink 2s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
-.header-close { background: rgba(255,255,255,0.12); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; transition: background 0.2s; }
-.header-close:hover { background: rgba(255,255,255,0.25); }
-.tab-row { display: flex; border-bottom: 1.5px solid #f0f0f0; background: #fafafa; }
-.tab-item { flex: 1; padding: 11px 0; background: none; border: none; font-size: 0.82rem; font-weight: 600; color: #888; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; font-family: 'Poppins', sans-serif; }
-.tab-item:hover { color: #000; }
-.tab-item.active { color: #000; border-bottom-color: #000; background: #fff; }
-.chat-tab-content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.whatsapp-tab { justify-content: center; }
-.wa-body { display: flex; flex-direction: column; align-items: center; padding: 28px 24px; text-align: center; }
-.wa-icon-wrap { width: 68px; height: 68px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-.wa-title { font-size: 1.05rem; font-weight: 700; color: #111; margin: 0 0 8px; }
-.wa-desc { font-size: 0.82rem; color: #666; line-height: 1.5; margin: 0 0 12px; }
-.wa-hours { font-size: 0.76rem; color: #888; background: #f5f5f5; padding: 5px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; margin-bottom: 18px; }
-.wa-cta-btn { display: flex; align-items: center; gap: 8px; background: #000; color: #fff; padding: 12px 28px; border-radius: 30px; font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: all 0.25s; font-family: 'Poppins', sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,0.2); border: none; cursor: pointer; }
-.wa-cta-btn:hover { background: #222; transform: translateY(-2px); }
-.wa-number { font-size: 0.76rem; color: #aaa; margin-top: 10px; }
-@media (max-width: 400px) { .widget-panel { width: 290px; } .chat-widget-wrapper { left: 10px; bottom: 16px; } }
 </style>

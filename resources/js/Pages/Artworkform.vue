@@ -1,6 +1,7 @@
 <template>
   <div>
     <nav-component />
+        <breadcrumb-component />
 
     <div class="container py-4 mt-5 form-section">
       <!-- Header -->
@@ -243,9 +244,7 @@ export default {
         });
         this.images.forEach(img => formData.append("images[]", img));
 
-        await axios.post("http://localhost:8000/api/artwork-request", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
+       axios.post('/api/artwork-request', formData)
 
         // Show success modal
         const modal = new bootstrap.Modal(document.getElementById("successModal"));

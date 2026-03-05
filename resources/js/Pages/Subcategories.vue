@@ -1,9 +1,10 @@
 <template>
   <div class="d-flex flex-column min-vh-100">
     <nav-component />
+        <breadcrumb-component />
 
-    <main class="flex-grow-1 py-5">
-      <div class="container my-5 pt-4">
+    <main class="flex-grow-1 ">
+      <div class="container my-5 ">
         <h1 class="display-5 fw-bold text-center mb-5">
           {{ parentCategory?.name || "Subcategories" }}
         </h1>

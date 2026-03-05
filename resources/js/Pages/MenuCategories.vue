@@ -1,89 +1,61 @@
 <template>
   <div class="d-flex flex-column min-vh-100">
     <nav-component />
-    <main class="flex-grow-1 pt-5 mt-5">
-      <div class="container my-5 pt-4">
-        <!-- Loading -->
-        <div v-if="loading" class="text-center py-5">
-          <div class="spinner-border text-primary"></div>
+    <breadcrumb-component />
+
+    <main class="flex-grow-1">
+      <div v-if="loading" class="text-center py-5 mt-5">
+        <div class="spinner-border text-dark"></div>
+      </div>
+
+      <div v-else class="page-wrap">
+
+        <!-- ── TOP: Heading ── -->
+        <div class="top-panel">
+          <h1 class="hero-title">{{ navigation?.title || "Explore" }} Categories</h1>
+          <p class="hero-desc">
+            Discover our exclusive range of high-quality {{ navigation?.title?.toLowerCase() || "products" }}.
+            Handpicked for style, durability and performance.
+          </p>
         </div>
 
-        <div v-else class="row g-4 align-items-center">
-          <!-- Left Side - Text Content -->
-          <div class="col-lg-6 mb-5 mb-lg-0">
-            <div v-if="content" class="pe-lg-5">
-              <h1 class="display-5 fw-bold mb-4">
-                {{ content.title || navigation?.title + " Collection" }}
-              </h1>
-              <h4 v-if="content.subtitle" class="mb-3 fw-semibold">
-                {{ content.subtitle }}
-              </h4>
-              <div v-if="content.description" class="lead mb-4 text-muted" v-html="content.description"></div>
-              <router-link
-                v-if="content.button_text"
-                :to="{ name: 'ShopAll' }"
-                class="btn single-line-btn btn-lg px-5 py-3 mt-2"
-              >
-                {{ content.button_text }}
-              </router-link>
-            </div>
-
-           <div class="category-hero pe-lg-5">
-  <h1 class="hero-title">
-    {{ navigation?.title || "Explore" }} Categories
-  </h1>
-
-  <h4 class="hero-subtitle">
-    Premium Quality Selection
-  </h4>
-
-  <p class="hero-description">
-    Discover our exclusive range of high-quality
-    {{ navigation?.title?.toLowerCase() || "products" }}.
-    Handpicked for style, durability and performance.
-  </p>
-
-  <router-link to="#" class="btn hero-btn">
-    Shop Now
-  </router-link>
-</div>
+        <!-- ── BOTTOM: Categories 5 per row ── -->
+        <div class="bottom-panel">
+          <div v-if="categories.length === 0" class="text-center py-5">
+            <h3>No categories found</h3>
+            <router-link to="/" class="btn btn-outline-dark mt-3">Back to Home</router-link>
           </div>
 
-          <!-- Right Side - Categories -->
-          <div class="col-lg-6">
-            <div v-if="categories.length === 0" class="text-center py-5">
-              <h3>No categories found</h3>
-              <p class="text-muted">{{ navigation?.id }}</p>
-              <router-link to="/" class="btn btn-outline-dark mt-3">Back to Home</router-link>
-            </div>
-
-            <div v-else class="row g-3">
-              <div v-for="cat in categories" :key="cat.id" class="col-6 col-md-4">
-                <div class="deal-card h-100 text-center" @click="handleCategoryClick(cat)">
-                  <!-- Image -->
-                  <img
-                    :src="cat.icon_image || defaultImage"
-                    class="deal-image mb-2"
-                    :alt="cat.name"
-                    @error="handleImageError"
-                  />
-                  <!-- Category Name -->
-                  <h5 class="mt-2 fw-bold">{{ cat.name }}</h5>
-                </div>
+          <div v-else class="cat-grid">
+            <div
+              v-for="cat in categories"
+              :key="cat.id"
+              class="cat-card"
+              @click="handleCategoryClick(cat)"
+            >
+              <div class="cat-img-wrap">
+                <img
+                  :src="cat.icon_image || defaultImage"
+                  class="cat-img"
+                  :alt="cat.name"
+                  @error="handleImageError"
+                />
               </div>
+              <h6 class="cat-name">{{ cat.name }}</h6>
             </div>
           </div>
         </div>
+
       </div>
     </main>
 
     <!-- Password Modal -->
-    <div v-if="showPasswordModal" class="password-modal">
-      <div class="password-box">
-        <button class="close-btn" @click="closePasswordModal">&times;</button>
-        <h5>Enter Password</h5>
-        <input type="password" v-model="enteredPassword" class="form-control mb-3" placeholder="Password" />
-        <p v-if="passwordError" class="text-danger small">{{ passwordError }}</p>
+    <div v-if="showPasswordModal" class="pw-overlay">
+      <div class="pw-box">
+        <button class="pw-close" @click="closePasswordModal">&times;</button>
+        <h5 class="fw-bold mb-3">Enter Password</h5>
+        <input type="password" v-model="enteredPassword" class="form-control mb-2" placeholder="Password" />
+        <p v-if="passwordError" class="text-danger small mb-2">{{ passwordError }}</p>
         <button class="btn btn-dark w-100" @click="submitPassword">Unlock</button>
       </div>
     </div>
@@ -93,143 +65,166 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import axios from "axios";
+import { ref, onMounted, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import axios from "axios"
 
-const route = useRoute();
-const router = useRouter();
+const route  = useRoute()
+const router = useRouter()
 
-const loading = ref(true);
-const navigation = ref(null);
-const categories = ref([]);
-const content = ref(null);
-const defaultImage = "https://via.placeholder.com/400x300/f8f9fa/6c757d?text=Category";
-const showPasswordModal = ref(false);
-const enteredPassword = ref("");
-const passwordError = ref("");
-const pendingRoute = ref(null);
-const selectedCategoryId = ref(null);
+const loading            = ref(true)
+const navigation         = ref(null)
+const categories         = ref([])
+const defaultImage       = "https://via.placeholder.com/400x300/f8f9fa/6c757d?text=Category"
+const showPasswordModal  = ref(false)
+const enteredPassword    = ref("")
+const passwordError      = ref("")
+const pendingRoute       = ref(null)
+const selectedCategoryId = ref(null)
 
 const handleCategoryClick = (cat) => {
   if (cat.password) {
-    selectedCategoryId.value = cat.id;
+    selectedCategoryId.value = cat.id
     pendingRoute.value = cat.subcategories?.length
-      ? { name: "Subcategories", params: { id: cat.id } }
-      : { name: "CategoryProducts", params: { id: cat.id } };
-    showPasswordModal.value = true;
+      ? { name: "Subcategories",    params: { id: cat.id } }
+      : { name: "CategoryProducts", params: { id: cat.id } }
+    showPasswordModal.value = true
   } else {
     router.push(
       cat.subcategories?.length
-        ? { name: "Subcategories", params: { id: cat.id } }
+        ? { name: "Subcategories",    params: { id: cat.id } }
         : { name: "CategoryProducts", params: { id: cat.id } }
-    );
+    )
   }
-};
+}
 
 const submitPassword = async () => {
   try {
-    await axios.post(`/api/categories/${selectedCategoryId.value}/verify-password`, { password: enteredPassword.value });
-    showPasswordModal.value = false;
-    enteredPassword.value = "";
-    passwordError.value = "";
-    router.push(pendingRoute.value);
+    await axios.post(`/api/categories/${selectedCategoryId.value}/verify-password`, {
+      password: enteredPassword.value
+    })
+    showPasswordModal.value = false
+    enteredPassword.value   = ""
+    passwordError.value     = ""
+    router.push(pendingRoute.value)
   } catch {
-    passwordError.value = "Wrong password";
+    passwordError.value = "Wrong password"
   }
-};
+}
 
-const handleImageError = (e) => { e.target.src = defaultImage; };
-
-const loadData = async () => {
-  loading.value = true;
-  try {
-    const slug = route.params.slug;
-    const { data } = await axios.get(`/api/menu-categories/${slug}`);
-    navigation.value = data.navigation;
-    categories.value = data.categories || [];
-    content.value = data.content;
-  } catch {
-    router.push("/");
-  } finally {
-    loading.value = false;
-  }
-};
+const handleImageError = (e) => { e.target.src = defaultImage }
 
 const closePasswordModal = () => {
-  showPasswordModal.value = false;
-  enteredPassword.value = "";
-  passwordError.value = "";
-  pendingRoute.value = null;
-  selectedCategoryId.value = null;
-};
+  showPasswordModal.value  = false
+  enteredPassword.value    = ""
+  passwordError.value      = ""
+  pendingRoute.value       = null
+  selectedCategoryId.value = null
+}
 
-onMounted(loadData);
-watch(() => route.params.slug, loadData);
+const loadData = async () => {
+  loading.value = true
+  try {
+    const { data } = await axios.get(`/api/menu-categories/${route.params.slug}`)
+    navigation.value = data.navigation
+    categories.value = data.categories || []
+  } catch {
+    router.push("/")
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadData)
+watch(() => route.params.slug, loadData)
 </script>
 
 <style scoped>
+.page-wrap {
+  width: 100%;
+  padding: 40px 40px 60px;
+}
+
+/* ── TOP: Heading ── */
+.top-panel {
+  text-align: center;
+  margin-bottom: 40px;
+}
 
 .hero-title {
-  font-size: 42px;
-  font-weight: 700;
+  font-size: 38px;
+  font-weight: 800;
   color: #000;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 10px;
 }
 
-.hero-subtitle {
-  font-size: 20px;
-  font-weight: 600;
-  color: #444;
-}
-
-.hero-description {
-  font-size: 16px;
-  color: #666;
-  line-height: 1.7;
+.hero-desc {
+  font-size: 15px;
+  color: #777;
   max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
 }
 
-.hero-btn {
-  background-color: #000;
-  color: #fff;
-  padding: 10px 28px;
-  border-radius: 30px;
-  font-weight: 600;
-  transition: 0.3s ease;
-  border: 1px solid #000;
+/* ── BOTTOM: Categories Grid ── */
+.bottom-panel { width: 100%; }
+
+/* ✅ 5 per row */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
 }
 
-.hero-btn:hover {
-  background-color: #fff;
-  color: #000;
-  transform: translateY(-3px);
-}
-.deal-image {
-  width: 100%;
-  height: 220px;
-  object-fit: contain;
-  padding: 20px;
-  filter: grayscale(100%) brightness(0.85);
-  transition: all 0.4s ease;
-  border-radius: 12px;
-}
+@media (max-width: 1200px) { .cat-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 900px)  { .cat-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px)  { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
 
-.deal-card:hover .deal-image {
-  filter: grayscale(0%) brightness(1);
-  transform: scale(1.05);
-}
-
-.deal-card {
-  transition: all 0.3s ease;
+/* ── Category Card ── */
+.cat-card {
   cursor: pointer;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+.cat-card:hover { transform: translateY(-6px); }
+
+.cat-img-wrap {
+  width: 90%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
 }
 
-.deal-card h5 {
-  margin-top: 0.5rem;
+
+.cat-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 14px;
+  filter: grayscale(30%);
+  transition: filter 0.3s, transform 0.3s;
+}
+.cat-card:hover .cat-img {
+  filter: grayscale(0%);
+  transform: scale(1.06);
 }
 
-/* Password modal */
-.password-modal {
+.cat-name {
+  font-size: 19px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Password Modal ── */
+.pw-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
@@ -238,17 +233,17 @@ watch(() => route.params.slug, loadData);
   justify-content: center;
   z-index: 9999;
 }
-.password-box {
+.pw-box {
   position: relative;
   background: #fff;
-  padding: 25px;
+  padding: 28px;
   width: 320px;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
 }
-.password-box .close-btn {
+.pw-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 10px; right: 14px;
   background: transparent;
   border: none;
   font-size: 1.5rem;
@@ -256,5 +251,5 @@ watch(() => route.params.slug, loadData);
   cursor: pointer;
   color: #333;
 }
-.password-box .close-btn:hover { color: #000; }
+.pw-close:hover { color: #000; }
 </style>

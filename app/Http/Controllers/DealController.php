@@ -100,21 +100,162 @@ class DealController extends Controller
             'existing_links' => 'nullable|array',
             'existing_links.*' => 'nullable|url',
 
-            // Banner validation
-            'banners' => 'nullable|array',
-            'banners.*' => 'image|mimes:jpg,png,jpeg|max:2048',
-            'replace_banners' => 'nullable|array',
-            'replace_banners.*' => 'image|mimes:jpg,png,jpeg|max:2048',
+            'existing_labels' => 'nullable|array',
+            'existing_labels.*' => 'nullable|string|max:50',
+
             'labels' => 'nullable|array',
             'labels.*' => 'nullable|string|max:50',
 
-            'existing_labels' => 'nullable|array',
-            'existing_labels.*' => 'nullable|string|max:50',
+            'banners' => 'nullable|array',
+            'banners.*' => 'image|mimes:jpg,png,jpeg|max:2048',
+
+            'replace_banners' => 'nullable|array',
+            'replace_banners.*' => 'image|mimes:jpg,png,jpeg|max:2048',
         ]);
 
         $deal->update($request->only([
-            'title', 'subtitle', 'description', 'button_text', 'button_link',
+            'title',
+            'subtitle',
+            'description',
+            'button_text',
+            'button_link',
         ]));
+
+        /*
+        =========================
+        DELETE IMAGES
+        =========================
+        */
+
+        if ($request->has('delete_images')) {
+
+            foreach ($request->delete_images as $id) {
+
+                $imgModel = $deal->images()->find($id);
+
+                if ($imgModel) {
+
+                    Storage::delete(str_replace('/storage/', 'public/', $imgModel->image_path));
+
+                    $imgModel->delete();
+                }
+            }
+        }
+
+        /*
+        =========================
+        DELETE BANNERS
+        =========================
+        */
+
+        if ($request->has('delete_banners')) {
+
+            foreach ($request->delete_banners as $id) {
+
+                $bannerModel = $deal->banners()->find($id);
+
+                if ($bannerModel) {
+
+                    Storage::delete(str_replace('/storage/', 'public/', $bannerModel->image_path));
+
+                    $bannerModel->delete();
+                }
+            }
+        }
+
+        /*
+        =========================
+        REPLACE IMAGES
+        =========================
+        */
+
+        if ($request->hasFile('replace_images')) {
+
+            foreach ($request->file('replace_images') as $id => $newImage) {
+
+                $imgModel = $deal->images()->find($id);
+
+                if ($imgModel) {
+
+                    Storage::delete(str_replace('/storage/', 'public/', $imgModel->image_path));
+
+                    $path = $newImage->store('deals', 'public');
+
+                    $imgModel->update([
+                        'image_path' => '/storage/'.$path,
+                        'link' => $request->existing_links[$id] ?? $imgModel->link,
+                        'label' => $request->existing_labels[$id] ?? $imgModel->label,
+                    ]);
+                }
+            }
+        }
+
+        /*
+        =========================
+        UPDATE LINKS
+        =========================
+        */
+
+        if ($request->has('existing_links')) {
+
+            foreach ($request->existing_links as $id => $link) {
+
+                $imgModel = $deal->images()->find($id);
+
+                if ($imgModel) {
+                    $imgModel->update([
+                        'link' => $link,
+                    ]);
+                }
+            }
+        }
+
+        /*
+        =========================
+        UPDATE LABELS
+        =========================
+        */
+
+        if ($request->has('existing_labels')) {
+
+            foreach ($request->existing_labels as $id => $label) {
+
+                $imgModel = $deal->images()->find($id);
+
+                if ($imgModel) {
+                    $imgModel->update([
+                        'label' => $label,
+                    ]);
+                }
+            }
+        }
+
+        /*
+        =========================
+        ADD NEW IMAGES
+        =========================
+        */
+
+        if ($request->hasFile('images')) {
+
+            foreach ($request->file('images') as $index => $image) {
+
+                $path = $image->store('deals', 'public');
+
+                $deal->images()->create([
+                    'image_path' => '/storage/'.$path,
+                    'link' => $request->links[$index] ?? null,
+                    'label' => $request->labels[$index] ?? null,
+                ]);
+            }
+        }
+
+        /*
+        =========================
+        REPLACE BANNERS
+        =========================
+        */
+
         if ($request->hasFile('replace_banners')) {
 
             foreach ($request->file('replace_banners') as $id => $newBanner) {
@@ -133,60 +274,17 @@ class DealController extends Controller
                 }
             }
         }
-        // Replace existing images
-        if ($request->hasFile('replace_images')) {
-            foreach ($request->replace_images as $id => $newImage) {
-                $imgModel = $deal->images()->find($id);
-                if ($imgModel && $newImage) {
 
-                    Storage::delete(str_replace('/storage/', 'public/', $imgModel->image_path));
+        /*
+        =========================
+        ADD NEW BANNERS
+        =========================
+        */
 
-                    $path = $newImage->store('deals', 'public');
-
-                    $imgModel->update([
-                        'image_path' => '/storage/'.$path,
-                        'link' => $request->existing_links[$id] ?? $imgModel->link,
-                    ]);
-                }
-            }
-        }
-
-        // Update only links
-        if ($request->has('existing_links')) {
-            foreach ($request->existing_links as $id => $link) {
-                $imgModel = $deal->images()->find($id);
-                if ($imgModel) {
-                    $imgModel->update(['link' => $link]);
-                }
-            }
-        }
-        // Update only labels
-        if ($request->has('existing_labels')) {
-            foreach ($request->existing_labels as $id => $label) {
-                $imgModel = $deal->images()->find($id);
-                if ($imgModel) {
-                    $imgModel->update(['label' => $label]);
-                }
-            }
-        }
-        // Add new images
-        // Add new images
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-
-                $path = $image->store('deals', 'public');
-
-                $deal->images()->create([
-                    'image_path' => '/storage/'.$path,
-                    'link' => $request->links[$index] ?? null,
-                    'label' => $request->labels[$index] ?? null,
-                ]);
-            }
-        }
-
-        // Add new banners
         if ($request->hasFile('banners')) {
+
             foreach ($request->file('banners') as $banner) {
+
                 $path = $banner->store('deal_banners', 'public');
 
                 $deal->banners()->create([
@@ -195,7 +293,9 @@ class DealController extends Controller
             }
         }
 
-        return redirect()->route('deals.index')->with('success', 'Deal Updated Successfully');
+        return redirect()
+            ->route('deals.index')
+            ->with('success', 'Deal Updated Successfully');
     }
 
     public function destroy(Deal $deal)

@@ -2,6 +2,7 @@
   <div class="d-flex flex-column min-vh-100">
     <!-- Navbar -->
     <nav-component />
+        <breadcrumb-component />
 
     <!-- Page Content -->
     <main class="flex-grow-1 form-page d-flex justify-content-center align-items-center">

@@ -28,11 +28,12 @@ class MembershipRequestController extends Controller
         $membership = MembershipRequest::create($data);
         // Admin ko email bhejo
         try {
-            Mail::to('itbilal78@gmail.com')->send(new NewMembershipRequest($membership));
+            Mail::to('sales@prosix.com')->send(new NewMembershipRequest($membership));
         } catch (\Exception $e) {
             // Email fail hone par bhi user ko success dikhao
             \Log::error('Membership email failed: ' . $e->getMessage());
         }
+
 
         return response()->json([
             'message' => 'Membership request submitted successfully! We will contact you soon.'
@@ -48,6 +49,7 @@ class MembershipRequestController extends Controller
 
 public function download(Request $request)
 {
+    
     $ids = explode(',', $request->query('ids', ''));
 
     if (empty($ids)) {

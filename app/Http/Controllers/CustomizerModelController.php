@@ -104,6 +104,8 @@ class CustomizerModelController extends Controller
                 'title' => $model->title,
                 'description' => $model->description,
                 'price' => $model->price,
+                'category_id'    => $model->category_id,      // ← YEH ADD KARO
+        'subcategory_id' => $model->subcategory_id,
                 'views' => [
                     'front' => [
                         'black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
