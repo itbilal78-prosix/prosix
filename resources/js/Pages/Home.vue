@@ -351,12 +351,14 @@ let bannerInterval = null
 // ============================================
 // SMART CAROUSEL
 // ============================================
+
 function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   const index = ref(0)
   const isTransitioning = ref(false)
   const transitionVal = ref('transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)')
 
-  const shouldLoop = computed(() => items.value.length > itemsPerView.value)
+  // 5 se zyada ho tab hi loop chalega
+  const shouldLoop = computed(() => items.value.length > 5)
 
   const infinite = computed(() => {
     if (items.value.length === 0) return []
@@ -377,6 +379,7 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
 
   const next = () => {
     if (!shouldLoop.value) {
+      // 5 ya kam: sirf aage tak jao, loop nahi
       const maxIdx = Math.max(0, items.value.length - itemsPerView.value)
       if (index.value < maxIdx) index.value++
       return
@@ -398,6 +401,7 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
 
   const prev = () => {
     if (!shouldLoop.value) {
+      // 5 ya kam: sirf peeche tak jao, loop nahi
       if (index.value > 0) index.value--
       return
     }
@@ -420,14 +424,16 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   const startAuto = () => {
     stopAuto()
     autoTimer = setInterval(() => {
+      // Auto-play sirf tab jab 5 se zyada items hon
       if (shouldLoop.value) next()
     }, autoSpeed)
   }
-  const stopAuto = () => { if (autoTimer) { clearInterval(autoTimer); autoTimer = null } }
+  const stopAuto = () => {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null }
+  }
 
   return { trackStyle, infinite, next, prev, startAuto, stopAuto }
 }
-
 // Featured Products
 const featuredProducts = ref([])
 const tabs = ref([{ label: 'All', value: 'all' }, { label: 'New Arrivals', value: 'new' }, { label: 'Best Sellers', value: 'bestsellers' }])
@@ -839,7 +845,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .product-card { min-width: 20%; padding: 0 8px; box-sizing: border-box; }
 .product-card-inner { background: #fff; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; }
 .product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.product-img { width: 100%; height: 240px; object-fit: contain; background: #f8f9fa; margin-bottom: 12px; border-radius: 8px; }
+.product-img { width: 100%; height: 240px; object-fit: contain;  margin-bottom: 12px; border-radius: 8px; }
 .product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 
 /* ✅ INCREASED product title/price fonts */
@@ -854,8 +860,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-btn:hover { background: #222; transform: translateY(-50%) scale(1.05); }
 
 /* Apparel */
-.apparel-card-inner { background: transparent !important; border: 1px solid #444; border-radius: 12px; padding: 16px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; }
-.apparel-card-inner:hover { border-color: #fff; transform: translateY(-6px); }
+.apparel-card-inner { background:#1d1d1d; border: 1px solid #444; border-radius: 12px; padding: 16px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; }
+.apparel-card-inner:hover {  transform: translateY(-6px); }
 .product-image-wrapper { margin-bottom: 12px; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-name { font-size: 0.88rem; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -914,7 +920,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .testimonials-carousel { display: flex; will-change: transform; }
 .testimonial-item { flex: 0 0 33.333%; padding: 0 12px; box-sizing: border-box; }
 .t-card-wrapper { position: relative; padding-top: 28px; }
-.quote-float { position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 3.6rem; line-height: 1; color: #000; pointer-events: none; }
+.quote-float { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 3.6rem; line-height: 1; color: #000; pointer-events: none; }
 .testimonial-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; min-height: auto; position: relative; transition: all 0.35s; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
 .testimonial-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); border-color: #333; }
 .stars-rating { font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 12px; text-align: left; }
@@ -943,7 +949,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .blog-title { font-size: 1.4rem; font-weight: 700; color: #000; margin-bottom: 12px; line-height: 1.3; }
 .blog-excerpt { font-size: 1rem; color: #555; line-height: 1.6; margin-bottom: 18px; }
 .read-more { color: #000; font-weight: 600; text-decoration: none; transition: color 0.3s; font-size: 0.95rem; }
-.read-more:hover { color: #dc3545; }
+.read-more:hover { color: #000000; }
 .btn-view-all { background: #000; color: white; padding: 14px 40px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; font-size: 1rem; }
 .btn-view-all:hover { background: #333; transform: translateY(-3px); }
 

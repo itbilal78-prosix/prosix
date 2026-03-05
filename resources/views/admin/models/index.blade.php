@@ -362,7 +362,6 @@
             document.querySelectorAll('.cat-block').forEach(b => b.style.display = 'none');
             document.getElementById(targetId).style.display = 'block';
             sessionStorage.setItem(BLOCK_KEY, targetId);
-            // Clear all checks
             document.querySelectorAll('.model-checkbox, .block-select-all').forEach(cb => cb.checked = false);
             document.querySelectorAll('.block-toolbar').forEach(t => renderToolbar(t.dataset.block));
         };
@@ -389,7 +388,6 @@
                 row.style.display = vis.length ? '' : 'none';
             });
 
-            // Reset checks for this block after tab change
             const blockId = `block-cat-${catId}`;
             document.querySelectorAll(`.model-checkbox[data-block="${blockId}"]`).forEach(cb => cb.checked = false);
             const saEl = document.querySelector(`.block-select-all[data-block="${blockId}"]`);
@@ -414,6 +412,12 @@
                     </button>
                     <button class="btn btn-dark btn-sm opacity-50" disabled title="Select models first">
                         <i class="bi bi-bag-fill me-1"></i> Add to Apparel
+                    </button>
+                    <button class="btn btn-secondary btn-sm opacity-50" disabled title="Select models first">
+                        <i class="bi bi-copy me-1"></i> Duplicate
+                    </button>
+                    <button class="btn btn-danger btn-sm opacity-50" disabled title="Select models first">
+                        <i class="bi bi-trash-fill me-1"></i> Delete
                     </button>`;
                 return;
             }
@@ -456,6 +460,20 @@
                 b.addEventListener('click', () => doAction('{{ route("models.apparel") }}', 'remove', blockId));
                 toolbar.appendChild(b);
             }
+
+            // ── Bulk Duplicate button ──
+            const dupBtn = document.createElement('button');
+            dupBtn.className = 'btn btn-secondary btn-sm';
+            dupBtn.innerHTML = `<i class="bi bi-copy me-1"></i> Duplicate (${n})`;
+            dupBtn.addEventListener('click', () => bulkDuplicate(blockId));
+            toolbar.appendChild(dupBtn);
+
+            // ── Bulk Delete button ──
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn btn-danger btn-sm';
+            delBtn.innerHTML = `<i class="bi bi-trash-fill me-1"></i> Delete (${n})`;
+            delBtn.addEventListener('click', () => bulkDelete(blockId));
+            toolbar.appendChild(delBtn);
         }
 
         // ─── Select All per block ───
@@ -484,7 +502,6 @@
                 lastChecked = this;
                 renderToolbar(blockId);
 
-                // Sync select-all checkbox
                 const all = Array.from(document.querySelectorAll(`.model-checkbox[data-block="${blockId}"]`))
                                  .filter(c => c.offsetParent !== null);
                 const saEl = document.querySelector(`.block-select-all[data-block="${blockId}"]`);
@@ -492,16 +509,59 @@
             });
         });
 
-        // ─── POST action ───
+        // ─── POST action (featured / apparel) ───
+       // ─── POST action (featured / apparel) ───
         async function doAction(url, action, blockId) {
             const ids = Array.from(document.querySelectorAll(`.model-checkbox[data-block="${blockId}"]:checked`))
                              .filter(cb => cb.offsetParent !== null)
                              .map(cb => cb.value);
-            if (!ids.length) { alert('Koi model select nahi!'); return; }
+            if (!ids.length) { alert('No models selected!'); return; }
             const res  = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':'{{ csrf_token() }}', 'Accept':'application/json' },
                 body: JSON.stringify({ product_ids: ids, action })
+            });
+            const data = await res.json();
+            if (data.success) { alert(data.message); location.reload(); }
+            else alert('Error: ' + data.message);
+        }
+
+        // ─── Bulk Delete ───
+        async function bulkDelete(blockId) {
+            const ids = Array.from(document.querySelectorAll(`.model-checkbox[data-block="${blockId}"]:checked`))
+                             .filter(cb => cb.offsetParent !== null)
+                             .map(cb => cb.value);
+            if (!ids.length) { alert('No models selected!'); return; }
+            if (!confirm(`Are you sure you want to delete ${ids.length} model(s)?\nThis action cannot be undone!`)) return;
+
+            sessionStorage.setItem('activeModelBlock', blockId);
+            sessionStorage.setItem('modelPageScrollY', window.scrollY);
+
+            const res  = await fetch('{{ route("models.bulkDestroy") }}', {
+                method: 'POST',
+                headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':'{{ csrf_token() }}', 'Accept':'application/json' },
+                body: JSON.stringify({ product_ids: ids })
+            });
+            const data = await res.json();
+            if (data.success) { alert(data.message); location.reload(); }
+            else alert('Error: ' + data.message);
+        }
+
+        // ─── Bulk Duplicate ───
+        async function bulkDuplicate(blockId) {
+            const ids = Array.from(document.querySelectorAll(`.model-checkbox[data-block="${blockId}"]:checked`))
+                             .filter(cb => cb.offsetParent !== null)
+                             .map(cb => cb.value);
+            if (!ids.length) { alert('No models selected!'); return; }
+            if (!confirm(`Are you sure you want to duplicate ${ids.length} model(s)?`)) return;
+
+            sessionStorage.setItem('activeModelBlock', blockId);
+            sessionStorage.setItem('modelPageScrollY', window.scrollY);
+
+            const res  = await fetch('{{ route("models.bulkDuplicate") }}', {
+                method: 'POST',
+                headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':'{{ csrf_token() }}', 'Accept':'application/json' },
+                body: JSON.stringify({ product_ids: ids })
             });
             const data = await res.json();
             if (data.success) { alert(data.message); location.reload(); }

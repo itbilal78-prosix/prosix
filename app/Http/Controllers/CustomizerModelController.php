@@ -82,13 +82,11 @@ class CustomizerModelController extends Controller
             ->with('success', 'Model Added Successfully');
     }
 
-    // Show customizer view - YEH IMPORTANT HAI
-
+    // Show customizer view
     public function show($id)
     {
         $model = CustomizerModel::findOrFail($id);
 
-        // Fetch all colors from DB
         $colors = Color::all();
         $fonts = Font::all()->map(function ($font) {
             return [
@@ -97,15 +95,15 @@ class CustomizerModelController extends Controller
                 'file_url' => asset('storage/'.$font->file),
             ];
         });
-        // Check if this is an AJAX request
+
         if (request()->expectsJson()) {
             return response()->json([
                 'id' => $model->id,
                 'title' => $model->title,
                 'description' => $model->description,
                 'price' => $model->price,
-                'category_id'    => $model->category_id,      // ← YEH ADD KARO
-        'subcategory_id' => $model->subcategory_id,
+                'category_id'    => $model->category_id,
+                'subcategory_id' => $model->subcategory_id,
                 'views' => [
                     'front' => [
                         'black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
@@ -132,12 +130,10 @@ class CustomizerModelController extends Controller
             ]);
         }
 
-        // Pass $colors to Blade
         return view('admin.models.show', compact('model', 'colors', 'fonts'));
     }
 
     // Edit form
-
     public function edit($id)
     {
         $model = CustomizerModel::findOrFail($id);
@@ -145,9 +141,8 @@ class CustomizerModelController extends Controller
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
             ->with('subcategories')
-
             ->get();
-        $fonts = Font::all();   // 🔥 ADD THIS
+        $fonts = Font::all();
 
         return view('admin.models.edit', compact('model', 'navigations', 'parentCategories', 'fonts'));
     }
@@ -157,9 +152,6 @@ class CustomizerModelController extends Controller
     {
         $model = CustomizerModel::findOrFail($id);
 
-        // ✅ validate first
-
-        // ✅ model data
         $data = $request->only([
             'model_name',
             'title',
@@ -170,7 +162,6 @@ class CustomizerModelController extends Controller
             'subcategory_id',
         ]);
 
-        // ✅ images
         $views = ['front', 'back', 'left', 'right'];
         $types = ['black', 'white', 'svg'];
 
@@ -186,7 +177,6 @@ class CustomizerModelController extends Controller
             }
         }
 
-        // ✅ thumbnail
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
             $name = time().'_thumbnail.'.$file->extension();
@@ -194,9 +184,6 @@ class CustomizerModelController extends Controller
             $data['thumbnail'] = $name;
         }
 
-        // 🔥 CATEGORY POSITION SAVE
-
-        // ✅ update model
         $model->update($data);
 
         return redirect()->route('models.index')
@@ -210,52 +197,42 @@ class CustomizerModelController extends Controller
         return response()->json([
             'id' => $model->id,
             'title' => $model->title,
-
-            // 🔥 SEND BACK SAVED STATES
             'color_changes' => $model->color_changes ?? [],
             'pattern_changes' => $model->pattern_changes ?? [],
             'mascot_changes' => $model->mascot_changes ?? [],
-            'applications' => $model->applications ?? [],   // 🔥
-
+            'applications' => $model->applications ?? [],
             'front_view' => [
                 'svg_url' => $model->custom_front_svg
                     ? asset('uploads/models/'.$model->custom_front_svg)
                     : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
-
                 'white_image_url' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
                 'black_image_url' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
             ],
-
             'back_view' => [
                 'svg_url' => $model->custom_back_svg
                     ? asset('uploads/models/'.$model->custom_back_svg)
                     : ($model->back_svg ? asset('uploads/models/'.$model->back_svg) : null),
-
                 'white_image_url' => $model->back_white ? asset('uploads/models/'.$model->back_white) : null,
                 'black_image_url' => $model->back_black ? asset('uploads/models/'.$model->back_black) : null,
             ],
-
             'left_view' => [
                 'svg_url' => $model->custom_left_svg
                     ? asset('uploads/models/'.$model->custom_left_svg)
                     : ($model->left_svg ? asset('uploads/models/'.$model->left_svg) : null),
-
                 'white_image_url' => $model->left_white ? asset('uploads/models/'.$model->left_white) : null,
                 'black_image_url' => $model->left_black ? asset('uploads/models/'.$model->left_black) : null,
             ],
-
             'right_view' => [
                 'svg_url' => $model->custom_right_svg
                     ? asset('uploads/models/'.$model->custom_right_svg)
                     : ($model->right_svg ? asset('uploads/models/'.$model->right_svg) : null),
-
                 'white_image_url' => $model->right_white ? asset('uploads/models/'.$model->right_white) : null,
                 'black_image_url' => $model->right_black ? asset('uploads/models/'.$model->right_black) : null,
             ],
         ]);
     }
 
-    // Delete model
+    // Delete single model
     public function destroy($id)
     {
         $model = CustomizerModel::findOrFail($id);
@@ -264,20 +241,18 @@ class CustomizerModelController extends Controller
         return back()->with('success', 'Model Deleted');
     }
 
-    // Duplicate model
+    // Duplicate single model
     public function duplicate($id)
     {
         $model = CustomizerModel::findOrFail($id);
         $new = $model->replicate();
         $new->title = $model->title;
 
-        // 🔥 YEH ADD KARO — custom SVGs clear karo
         $new->custom_front_svg = null;
         $new->custom_back_svg = null;
         $new->custom_left_svg = null;
         $new->custom_right_svg = null;
 
-        // 🔥 YEH BHI CLEAR KARO
         $new->color_changes = null;
         $new->pattern_changes = null;
         $new->mascot_changes = null;
@@ -289,6 +264,64 @@ class CustomizerModelController extends Controller
         return back()->with('success', 'Model Duplicated');
     }
 
+    // ─── Bulk Delete ───
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('product_ids', []);
+
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
+        }
+
+        $count = CustomizerModel::whereIn('id', $ids)->count();
+        CustomizerModel::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' model(s) delete ho gaye!',
+        ]);
+    }
+
+    // ─── Bulk Duplicate ───
+    public function bulkDuplicate(Request $request)
+    {
+        $ids = $request->input('product_ids', []);
+
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
+        }
+
+        $count = 0;
+        foreach ($ids as $id) {
+            $original = CustomizerModel::find($id);
+            if (!$original) continue;
+
+            $copy = $original->replicate();
+            $copy->title = $original->title . ' (Copy)';
+
+            // Custom SVGs clear karo duplicate mein
+            $copy->custom_front_svg = null;
+            $copy->custom_back_svg  = null;
+            $copy->custom_left_svg  = null;
+            $copy->custom_right_svg = null;
+
+            // Customization data bhi clear karo
+            $copy->color_changes   = null;
+            $copy->pattern_changes = null;
+            $copy->mascot_changes  = null;
+            $copy->applications    = null;
+            $copy->customized_at   = null;
+
+            $copy->save();
+            $count++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' model(s) duplicate ho gaye!',
+        ]);
+    }
+
     public function saveDesign(Request $request, $id)
     {
         $model = CustomizerModel::findOrFail($id);
@@ -296,167 +329,99 @@ class CustomizerModelController extends Controller
         $svgs = $request->svgs ?? [];
 
         foreach ($svgs as $view => $svgContent) {
+            if (!$svgContent) continue;
 
-            if (! $svgContent) {
-                continue;
-            }
-
-            // 🔥 ALWAYS SAME NAME (overwrite)
             $filename = "custom_{$view}_{$id}.svg";
-
-            file_put_contents(
-                public_path('uploads/models/'.$filename),
-                $svgContent
-            );
-
+            file_put_contents(public_path('uploads/models/'.$filename), $svgContent);
             $model->{"custom_{$view}_svg"} = $filename;
         }
 
         $model->pattern_changes = $request->pattern_changes;
-        $model->color_changes = $request->color_changes;
-        $model->mascot_changes = $request->mascot_changes;
-        $model->applications = $request->applications;
-        $model->customized_at = now();
+        $model->color_changes   = $request->color_changes;
+        $model->mascot_changes  = $request->mascot_changes;
+        $model->applications    = $request->applications;
+        $model->customized_at   = now();
 
         $model->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Design saved',
-        ]);
+        return response()->json(['success' => true, 'message' => 'Design saved']);
     }
 
     public function modelsByCategory($id)
     {
         $models = CustomizerModel::where('category_id', $id)
             ->whereNull('subcategory_id')
-            // ->select('id', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'thumbnail')
-            ->select(
-                'id',
-                'model_name',
-                'title',
-                'price',
-                'description',
-                'front_black',
-                'front_white',
-                'front_svg',
-                'custom_front_svg',   // ← add this
-                'thumbnail'
-            )
-
+            ->select('id', 'model_name', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'custom_front_svg', 'thumbnail')
             ->get()
             ->map(function ($model) {
                 return [
-                    'id' => $model->id,
-                    'model_name' => $model->model_name,   // 👈 ADD THIS
-
-                    'title' => $model->title,
-                    'price' => $model->price ? number_format($model->price, 2) : '0.00',  // ← YEHI CHANGE
-                    'description' => $model->description ?? '',  // ← YEHI ADD
-                    // Full asset URLs (same as subcategory)
-                    'front_black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
-                    'front_white' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
-                    'front_svg' => $model->custom_front_svg
-                        ? asset('uploads/models/'.$model->custom_front_svg)
-                        : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
-                    'thumbnail' => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
-
-                ];
-            });
-
-        return response()->json([
-            'success' => true,
-            'models' => $models,
-        ]);
-    }
-
-    // CustomizerModelController.php
-    public function modelsByEntity($id)
-    {
-        $isSubcategory = Category::where('id', $id)
-            ->whereNotNull('parent_id')
-            ->exists();
-
-        $models = CustomizerModel::query()
-            ->when($isSubcategory, fn ($q) => $q->where('subcategory_id', $id))
-            ->when(! $isSubcategory, fn ($q) => $q->where('category_id', $id)->whereNull('subcategory_id'))
-            // ->select('id', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'thumbnail')
-            ->select(
-                'id',
-                'model_name',
-                'title',
-                'price',
-                'description',
-                'front_black',
-                'front_white',
-                'front_svg',
-                'custom_front_svg',   // ← add this
-                'thumbnail'
-            )
-
-            ->get()
-            ->map(function ($model) {
-                return [
-                    'id' => $model->id,
-                    'model_name' => $model->model_name,   // 👈 ADD THIS
-
-                    'title' => $model->title,
-                    'price' => $model->price ? number_format($model->price, 2) : '0.00',
+                    'id'          => $model->id,
+                    'model_name'  => $model->model_name,
+                    'title'       => $model->title,
+                    'price'       => $model->price ? number_format($model->price, 2) : '0.00',
                     'description' => $model->description ?? '',
                     'front_black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
                     'front_white' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
-                    'front_svg' => $model->custom_front_svg
+                    'front_svg'   => $model->custom_front_svg
                         ? asset('uploads/models/'.$model->custom_front_svg)
                         : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
-                    'thumbnail' => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
+                    'thumbnail'   => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'models' => $models,
-        ]);
+        return response()->json(['success' => true, 'models' => $models]);
+    }
+
+    public function modelsByEntity($id)
+    {
+        $isSubcategory = Category::where('id', $id)->whereNotNull('parent_id')->exists();
+
+        $models = CustomizerModel::query()
+            ->when($isSubcategory, fn ($q) => $q->where('subcategory_id', $id))
+            ->when(!$isSubcategory, fn ($q) => $q->where('category_id', $id)->whereNull('subcategory_id'))
+            ->select('id', 'model_name', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'custom_front_svg', 'thumbnail')
+            ->get()
+            ->map(function ($model) {
+                return [
+                    'id'          => $model->id,
+                    'model_name'  => $model->model_name,
+                    'title'       => $model->title,
+                    'price'       => $model->price ? number_format($model->price, 2) : '0.00',
+                    'description' => $model->description ?? '',
+                    'front_black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
+                    'front_white' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
+                    'front_svg'   => $model->custom_front_svg
+                        ? asset('uploads/models/'.$model->custom_front_svg)
+                        : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
+                    'thumbnail'   => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
+                ];
+            });
+
+        return response()->json(['success' => true, 'models' => $models]);
     }
 
     public function modelsBySubcategory($id)
     {
         $models = CustomizerModel::where('subcategory_id', $id)
-            // ->select('id', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'thumbnail')
-            ->select(
-                'id',
-                'model_name',
-                'title',
-                'price',
-                'description',
-                'front_black',
-                'front_white',
-                'front_svg',
-                'custom_front_svg',   // ← add this
-                'thumbnail'
-            )
-
+            ->select('id', 'model_name', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'custom_front_svg', 'thumbnail')
             ->get()
             ->map(function ($model) {
                 return [
-                    'id' => $model->id,
-                    'model_name' => $model->model_name,   // 👈 ADD THIS
-                    'title' => $model->title,
-                    'price' => $model->price ? number_format($model->price, 2) : '0.00',
+                    'id'          => $model->id,
+                    'model_name'  => $model->model_name,
+                    'title'       => $model->title,
+                    'price'       => $model->price ? number_format($model->price, 2) : '0.00',
                     'description' => $model->description,
-                    // Full asset URLs bhejo
                     'front_black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
                     'front_white' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
-                    'front_svg' => $model->custom_front_svg
+                    'front_svg'   => $model->custom_front_svg
                         ? asset('uploads/models/'.$model->custom_front_svg)
                         : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
-                    'thumbnail' => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
+                    'thumbnail'   => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'models' => $models,
-        ]);
+        return response()->json(['success' => true, 'models' => $models]);
     }
 
     public function saveThumbnail(Request $request, $id)
@@ -477,55 +442,38 @@ class CustomizerModelController extends Controller
     public function userCategoriesWithModels()
     {
         $categories = Category::where('status', 1)
-            ->whereHas('models') // 🔥 sirf jisme models hain
+            ->whereHas('models')
             ->with(['models' => function ($q) {}])
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'categories' => $categories,
-        ]);
+        return response()->json(['success' => true, 'categories' => $categories]);
     }
 
     public function bulkFeatured(Request $request)
     {
-        $ids = $request->product_ids;
+        $ids    = $request->product_ids;
         $action = $request->action;
 
-        if (! $ids || ! is_array($ids)) {
+        if (!$ids || !is_array($ids)) {
             return response()->json(['success' => false, 'message' => 'No models selected']);
         }
 
-        $value = $action === 'add';
+        CustomizerModel::whereIn('id', $ids)->update(['is_featured' => $action === 'add']);
 
-        CustomizerModel::whereIn('id', $ids)->update([
-            'is_featured' => $value,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Models updated successfully',
-        ]);
+        return response()->json(['success' => true, 'message' => 'Models updated successfully']);
     }
 
     public function bulkApparel(Request $request)
     {
-        $ids = $request->product_ids;
+        $ids    = $request->product_ids;
         $action = $request->action;
 
-        if (! $ids || ! is_array($ids)) {
+        if (!$ids || !is_array($ids)) {
             return response()->json(['success' => false, 'message' => 'No models selected']);
         }
 
-        $value = $action === 'add';
+        CustomizerModel::whereIn('id', $ids)->update(['is_apparel' => $action === 'add']);
 
-        CustomizerModel::whereIn('id', $ids)->update([
-            'is_apparel' => $value,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Models updated successfully',
-        ]);
+        return response()->json(['success' => true, 'message' => 'Models updated successfully']);
     }
 }
