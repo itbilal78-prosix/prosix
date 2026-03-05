@@ -409,7 +409,6 @@ const goTo = (url) => {
   }
 }
 
-// ── clearSearch: reset models too ✅
 const clearSearch       = () => { searchQuery.value = ''; results.value = emptyResults() }
 const closeSearch       = () => { searchFocused.value = false }
 const openMobileSearch  = () => { mobileSearchOpen.value = true; nextTick(() => mobileSearchRef.value?.focus()) }
