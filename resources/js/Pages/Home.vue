@@ -823,7 +823,9 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .deal-banner-box { width: 90%; height: 530px; border-radius: 18px; overflow: hidden; }
 .banner-img { width: 100%; height: 100%; object-fit: cover; }
 .deal-card { position: relative; height: 260px; border-radius: 14px; overflow: hidden; transition: 0.3s ease; }
-.deal-card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s ease; }
+@media (max-width: 991px) { .deal-card { height: 200px !important; } }
+@media (max-width: 767px) { .deal-card { height: 160px !important; } .deal-ribbon { font-size: 11px !important; padding: 2px 32px !important; } }
+@media (max-width: 575px) { .deal-banner-box { width: 100% !important; height: 220px !important; margin-bottom: 16px !important; } .deal-card { height: 130px !important; } .deals-section .row.g-4 > [class*="col-"] { padding: 4px !important; } }.deal-card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s ease; }
 .deal-card:hover .deal-card-img { transform: scale(1.08); }
 .deal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s ease; }
 .deal-card:hover .deal-overlay { opacity: 1; }
@@ -916,11 +918,11 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .t-arrow:hover { background: #333; transform: scale(1.1); }
 .t-arrow-left { margin-right: 16px; }
 .t-arrow-right { margin-left: 16px; }
-.testimonials-carousel-inner { flex: 1; overflow: hidden; padding-top: 36px; }
+.testimonials-carousel-inner { flex: 1; overflow: hidden; padding-top: 46px; }
 .testimonials-carousel { display: flex; will-change: transform; }
 .testimonial-item { flex: 0 0 33.333%; padding: 0 12px; box-sizing: border-box; }
-.t-card-wrapper { position: relative; padding-top: 28px; }
-.quote-float { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 3.6rem; line-height: 1; color: #000; pointer-events: none; }
+.t-card-wrapper { position: relative; padding-top: 38px; }
+.quote-float { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 5.5rem; line-height: 1; color: #000; pointer-events: none; }
 .testimonial-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; min-height: auto; position: relative; transition: all 0.35s; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
 .testimonial-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); border-color: #333; }
 .stars-rating { font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 12px; text-align: left; }
@@ -1007,6 +1009,9 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 }
 
 @media (max-width: 575px) {
+    .deal-card-img { width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center !important; }
+.deals-section .col-6 { padding-left: 4px !important; padding-right: 4px !important; }
+.deals-section .row.g-4 { --bs-gutter-x: 0.5rem !important; --bs-gutter-y: 0.5rem !important; }
   .hero-carousel { height: 100vh !important; min-height: 600px !important; }
   .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; }
   .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
@@ -1042,7 +1047,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .t-arrow-left { margin-right: 6px !important; }
   .t-arrow-right { margin-left: 6px !important; }
   .testimonials-carousel-inner { padding-top: 30px !important; }
-  .quote-float { font-size: 2.8rem !important; }
+.quote-float { font-size: 4.2rem !important; top: -24px !important; }
   .recent-blog-section { padding: 40px 0 !important; }
   .col-6.col-lg-6 { padding-left: 6px !important; padding-right: 6px !important; }
   .blog-card { flex-direction: column !important; box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important; }

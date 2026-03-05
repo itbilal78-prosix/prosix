@@ -251,7 +251,7 @@ title="View Product"
           <div class="modal-body text-center px-5 pb-2">
             <h5 class="fw-bold mb-2">Login Required</h5>
             <p class="text-muted mb-0">
-              Customizer use karne ke liye pehle apne account mein login karna hoga.
+To use the Customizer, you must first log in to your account.
             </p>
           </div>
           <div class="modal-footer justify-content-center border-0 px-5 pb-4 gap-3">
