@@ -174,7 +174,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-
+Route::get('/colors', [\App\Http\Controllers\ColorController::class, 'apiIndex']);
 
 Route::post('/membership-request', [MembershipRequestController::class, 'store']);
 

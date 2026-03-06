@@ -150,7 +150,6 @@ watch(() => route.params.slug, loadData)
   text-align: center;
   margin-bottom: 40px;
 }
-
 .hero-title {
   font-size: 38px;
   font-weight: 800;
@@ -158,7 +157,6 @@ watch(() => route.params.slug, loadData)
   font-family: 'Montserrat', sans-serif;
   margin-bottom: 10px;
 }
-
 .hero-desc {
   font-size: 15px;
   color: #777;
@@ -170,57 +168,67 @@ watch(() => route.params.slug, loadData)
 /* ── BOTTOM: Categories Grid ── */
 .bottom-panel { width: 100%; }
 
-/* ✅ 5 per row */
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
+  gap: 24px;
 }
 
 @media (max-width: 1200px) { .cat-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 900px)  { .cat-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 600px)  { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
 
-/* ── Category Card ── */
+/* ── Category Card - FIXED UNIFORM SIZE ── */
 .cat-card {
   cursor: pointer;
   text-align: center;
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .cat-card:hover { transform: translateY(-6px); }
 
+/* THIS is the key - fixed square box, image always same size */
 .cat-img-wrap {
-  width: 90%;
+  width: 100%;
+  aspect-ratio: 1 / 1;   /* perfect square */
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-
+  background: #f5f5f5;
+  border-radius: 12px;
+  border: 1px solid #eee;
 }
-
 
 .cat-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 14px;
-  filter: grayscale(30%);
+  object-fit: contain;   /* never crops, always fits inside */
+  padding: 16px;
+  filter: grayscale(20%);
   transition: filter 0.3s, transform 0.3s;
 }
 .cat-card:hover .cat-img {
   filter: grayscale(0%);
-  transform: scale(1.06);
+  transform: scale(1.08);
 }
 
 .cat-name {
-  font-size: 19px;
+  font-size: 13px;
   font-weight: 700;
   color: #222;
-  margin: 0;
+  margin-top: 10px;
+  margin-bottom: 0;
   font-family: 'Montserrat', sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* ── Password Modal ── */

@@ -1,18 +1,18 @@
 <template>
     <nav
         class="navbar navbar-expand-lg fixed-top custom-navbar"
-        :class="{ 'navbar-scrolled': isScrolled }"
+        :class="{ 'navbar-scrolled': isScrolled, 'navbar-full': navigations.length > 8 }"
     >
-        <div class="container-fluid px-4 px-lg-5">
+        <div class="container-fluid px-0">
 
             <!-- Logo -->
-            <router-link to="/" class="navbar-brand">
-                <img src="/public/assets/images/P LOGO BLACK.png" alt="Prosix Logo" class="navbar-logo" :class="{ 'logo-small': isScrolled }" />
-                <img v-if="isScrolled" src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png" alt="Secondary Logo" class="navbar-logo-secondary" />
+            <router-link to="/" class="navbar-brand navbar-brand-fixed">
+                <img src="/public/assets/images/P LOGO BLACK.png" alt="Prosix Logo" class="navbar-logo" :class="{ 'logo-small': isScrolled || navigations.length > 8 }" />
+                <img v-if="isScrolled || navigations.length > 8" src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png" alt="Secondary Logo" class="navbar-logo-secondary" />
             </router-link>
 
             <!-- Mobile top icons -->
-            <div class="d-flex align-items-center gap-3 ms-auto d-lg-none mobile-top-icons">
+            <div class="d-flex align-items-center gap-3 ms-auto me-3 d-lg-none mobile-top-icons">
                 <i class="bi bi-search fs-5 text-white" @click="openMobileSearch"></i>
                 <div class="position-relative cursor-pointer" @click="showCartSidebar = true">
                     <i class="bi bi-bag fs-5 text-white"></i>
@@ -27,130 +27,104 @@
             </div>
 
             <!-- ===== DESKTOP MENU ===== -->
-            <div class="collapse navbar-collapse align-items-center justify-content-between" id="mainNavbar">
-                <ul class="navbar-nav menu-right gap-4">
-                    <li v-for="nav in navigations" :key="nav.id" class="nav-item" :class="{ dropdown: nav.has_dropdown }">
-                        <router-link v-if="!nav.has_dropdown && nav.route" class="nav-link" :to="nav.route">{{ nav.title }}</router-link>
-                        <a v-else class="nav-link dropdown-toggle" href="#" @click.prevent="goToMenu(nav.slug)">{{ nav.title }}</a>
-                        <ul v-if="nav.has_dropdown" class="dropdown-menu border-0 shadow-lg">
-                            <li v-for="sub in nav.sub_items" :key="sub.id">
-                                <router-link class="dropdown-item" :to="sub.route">{{ sub.title }}</router-link>
-                            </li>
-                            <li v-for="cat in categoriesByNav[nav.id] || []" :key="cat.id" class="dropdown-submenu position-relative">
-                                <a href="#" class="dropdown-item d-flex justify-content-between align-items-center" @click.prevent="handleCategoryClickInNav(cat)">
-                                    {{ cat.name }}<i v-if="cat.subcategories?.length" class="bi bi-chevron-right ms-2"></i>
-                                </a>
-                                <ul v-if="cat.subcategories?.length" class="sub-dropdown dropdown-menu border-0 shadow-lg">
-                                    <li v-for="sub in cat.subcategories" :key="sub.id">
-                                        <a href="#" class="dropdown-item" @click.prevent="handleCategoryClickInNav(sub)">{{ sub.name }}</a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
+            <div class="collapse navbar-collapse align-items-center nav-right-block" id="mainNavbar">
+
+                <!-- Nav items -->
+                <ul class="navbar-nav nav-items-list   flex-grow-1">
+                    <li
+                        v-for="nav in navigations"
+                        :key="nav.id"
+                        class="nav-item"
+                        :class="{ dropdown: nav.has_dropdown }"
+                    >
+                        <router-link
+                            v-if="!nav.has_dropdown && nav.route"
+                            class="nav-link"
+                            :to="nav.route"
+                        >{{ nav.title }}</router-link>
+
+                        <a
+                            v-else
+                            class="nav-link dropdown-toggle"
+                            href="#"
+                            @click.prevent="goToMenu(nav.slug)"
+                        >{{ nav.title }}</a>
+
+                        <!-- DROPDOWN MENU -->
+                        <div
+                            v-if="nav.has_dropdown"
+                            class="dropdown-menu border-0 shadow-lg"
+                            :class="{ 'two-col': totalDropdownItems(nav) > 10 }"
+                        >
+                            <template v-if="nav.sub_items?.length">
+                                <div class="dropdown-col">
+                                    <router-link
+                                        v-for="sub in nav.sub_items"
+                                        :key="sub.id"
+                                        class="dropdown-item"
+                                        :to="sub.route"
+                                    >{{ sub.title }}</router-link>
+                                </div>
+                            </template>
+
+                            <template v-if="categoriesByNav[nav.id]?.length">
+                                <template v-if="totalDropdownItems(nav) > 10">
+                                    <div class="dropdown-col">
+                                        <div v-for="cat in leftColItems(nav)" :key="cat.id" class="dropdown-submenu position-relative">
+                                            <a href="#" class="dropdown-item d-flex justify-content-between align-items-center" @click.prevent="handleCategoryClickInNav(cat)">
+                                                {{ cat.name }}
+                                                <i v-if="cat.subcategories?.length" class="bi bi-chevron-right ms-2"></i>
+                                            </a>
+                                            <ul v-if="cat.subcategories?.length" class="sub-dropdown dropdown-menu border-0 shadow-lg">
+                                                <li v-for="sub in cat.subcategories" :key="sub.id">
+                                                    <a href="#" class="dropdown-item" @click.prevent="handleCategoryClickInNav(sub)">{{ sub.name }}</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-col dropdown-col-right">
+                                        <div v-for="cat in rightColItems(nav)" :key="cat.id" class="dropdown-submenu position-relative">
+                                            <a href="#" class="dropdown-item d-flex justify-content-between align-items-center" @click.prevent="handleCategoryClickInNav(cat)">
+                                                {{ cat.name }}
+                                                <i v-if="cat.subcategories?.length" class="bi bi-chevron-right ms-2"></i>
+                                            </a>
+                                            <ul v-if="cat.subcategories?.length" class="sub-dropdown sub-dropdown-left dropdown-menu border-0 shadow-lg">
+                                                <li v-for="sub in cat.subcategories" :key="sub.id">
+                                                    <a href="#" class="dropdown-item" @click.prevent="handleCategoryClickInNav(sub)">{{ sub.name }}</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template v-else>
+                                    <div class="dropdown-col">
+                                        <div v-for="cat in categoriesByNav[nav.id]" :key="cat.id" class="dropdown-submenu position-relative">
+                                            <a href="#" class="dropdown-item d-flex justify-content-between align-items-center" @click.prevent="handleCategoryClickInNav(cat)">
+                                                {{ cat.name }}
+                                                <i v-if="cat.subcategories?.length" class="bi bi-chevron-right ms-2"></i>
+                                            </a>
+                                            <ul v-if="cat.subcategories?.length" class="sub-dropdown dropdown-menu border-0 shadow-lg">
+                                                <li v-for="sub in cat.subcategories" :key="sub.id">
+                                                    <a href="#" class="dropdown-item" @click.prevent="handleCategoryClickInNav(sub)">{{ sub.name }}</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
                     </li>
                 </ul>
 
                 <!-- Desktop right icons -->
-                <div class="d-flex align-items-center gap-4 nav-icons ms-4">
+                <div class="d-flex align-items-center gap-3 nav-icons ms-auto me-3">
 
-                    <!-- SEARCH BOX -->
-                    <div class="search-box-wrapper" ref="searchBoxRef">
-                        <div class="search-box" :class="{ focused: searchFocused }">
-                            <i class="bi bi-search search-box-icon"></i>
-                            <input
-                                ref="searchInputRef"
-                                v-model="searchQuery"
-                                type="text"
-                                placeholder="Search..."
-                                class="search-box-input"
-                                @focus="searchFocused = true"
-                                @input="onSearchInput"
-                                @keydown.escape="closeSearch"
-                            />
-                            <div v-if="searchLoading" class="s-spinner"></div>
-                            <button v-if="searchQuery" class="s-clear" @click="clearSearch"><i class="bi bi-x"></i></button>
-                        </div>
-
-                        <!-- RESULTS DROPDOWN -->
-                        <Transition name="drop">
-                            <div v-if="searchFocused && searchQuery.length >= 2" class="s-dropdown">
-
-                                <div v-if="searchLoading" class="s-loading">
-                                    <div class="s-spinner-sm"></div> Searching...
-                                </div>
-
-                                <div v-else-if="totalResults === 0" class="s-empty">
-                                    <i class="bi bi-search"></i> No results for "<strong>{{ searchQuery }}</strong>"
-                                </div>
-
-                                <template v-if="!searchLoading">
-                                    <!-- Products -->
-                                    <template v-if="results.products?.length">
-                                        <div class="s-label">Products</div>
-                                        <div v-for="item in results.products" :key="'p'+item.id" class="s-item" @mousedown.prevent="goTo(item.url)">
-                                            <div class="s-thumb">
-                                                <img v-if="item.image" :src="item.image" :alt="item.name" />
-                                                <i v-else class="bi bi-box"></i>
-                                            </div>
-                                            <div class="s-meta">
-                                                <span class="s-name">{{ item.name }}</span>
-                                                <span class="s-price">${{ Number(item.price).toFixed(2) }}</span>
-                                            </div>
-                                            <i class="bi bi-arrow-right s-arrow"></i>
-                                        </div>
-                                    </template>
-
-                                    <!-- Models -->
-                                    <template v-if="results.models?.length">
-                                        <div class="s-label">Models</div>
-                                        <div v-for="item in results.models" :key="'mo'+item.id" class="s-item" @mousedown.prevent="goTo(item.url)">
-                                            <div class="s-thumb">
-                                                <img v-if="item.image" :src="item.image" :alt="item.name" />
-                                                <i v-else class="bi bi-box-seam"></i>
-                                            </div>
-                                            <div class="s-meta">
-                                                <span class="s-name">{{ item.name }}</span>
-                                                <span class="s-price">${{ Number(item.price).toFixed(2) }}</span>
-                                            </div>
-                                            <i class="bi bi-arrow-right s-arrow"></i>
-                                        </div>
-                                    </template>
-
-                                    <!-- Categories -->
-                                    <template v-if="results.categories?.length">
-                                        <div class="s-label">Categories</div>
-                                        <div v-for="item in results.categories" :key="'c'+item.id" class="s-item" @mousedown.prevent="goTo(item.url)">
-                                            <div class="s-thumb round">
-                                                <img v-if="item.image" :src="item.image" :alt="item.name" />
-                                                <i v-else class="bi bi-grid"></i>
-                                            </div>
-                                            <div class="s-meta">
-                                                <span class="s-name">{{ item.name }}</span>
-                                                <span class="s-badge">Category</span>
-                                            </div>
-                                            <i class="bi bi-arrow-right s-arrow"></i>
-                                        </div>
-                                    </template>
-
-                                    <!-- Blogs -->
-                                    <template v-if="results.blogs?.length">
-                                        <div class="s-label">Blogs</div>
-                                        <div v-for="item in results.blogs" :key="'b'+item.id" class="s-item" @mousedown.prevent="goTo(item.url)">
-                                            <div class="s-thumb">
-                                                <img v-if="item.image" :src="item.image" :alt="item.name" />
-                                                <i v-else class="bi bi-newspaper"></i>
-                                            </div>
-                                            <div class="s-meta">
-                                                <span class="s-name">{{ item.name }}</span>
-                                                <span class="s-badge">Blog</span>
-                                            </div>
-                                            <i class="bi bi-arrow-right s-arrow"></i>
-                                        </div>
-                                    </template>
-                                </template>
-
-                            </div>
-                        </Transition>
+                    <!-- SEARCH ICON -->
+                    <div class="desktop-search-trigger" ref="searchTriggerRef">
+                        <button class="search-icon-btn" @click="toggleDesktopSearch" :class="{ active: desktopSearchOpen }">
+                            <i class="bi" :class="desktopSearchOpen ? 'bi-x' : 'bi-search'"></i>
+                        </button>
                     </div>
 
                     <div class="position-relative cursor-pointer" @click="showCartSidebar = true">
@@ -163,8 +137,70 @@
         </div>
     </nav>
 
-    <!-- Backdrop close search -->
-    <div v-if="searchFocused && searchQuery.length >= 2" class="s-backdrop" @click="closeSearch"></div>
+    <!-- ===== DESKTOP SEARCH BAR (drops below navbar, inside black area) ===== -->
+    <Transition name="search-drop">
+        <div v-if="desktopSearchOpen" class="desktop-search-bar" ref="desktopSearchBarRef"
+             :class="{ 'search-full': isScrolled || navigations.length > 8 }">
+            <div class="desktop-search-inner">
+                <i class="bi bi-search ds-icon"></i>
+                <input
+                    ref="desktopSearchInputRef"
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search products, categories, blogs..."
+                    class="ds-input"
+                    @input="onSearchInput"
+                    @keydown.escape="closeDesktopSearch"
+                />
+                <div v-if="searchLoading" class="s-spinner"></div>
+                <button v-if="searchQuery" class="s-clear" @click="clearSearch"><i class="bi bi-x"></i></button>
+            </div>
+
+            <div v-if="searchQuery.length >= 2" class="ds-results">
+                <div v-if="searchLoading" class="s-loading"><div class="s-spinner-sm"></div> Searching...</div>
+                <div v-else-if="totalResults === 0" class="s-empty">
+                    <i class="bi bi-search"></i> No results for "<strong>{{ searchQuery }}</strong>"
+                </div>
+                <template v-if="!searchLoading">
+                    <template v-if="results.products?.length">
+                        <div class="s-label">Products</div>
+                        <div v-for="item in results.products" :key="'p'+item.id" class="s-item" @click="goTo(item.url)">
+                            <div class="s-thumb"><img v-if="item.image" :src="item.image" :alt="item.name" /><i v-else class="bi bi-box"></i></div>
+                            <div class="s-meta"><span class="s-name">{{ item.name }}</span><span class="s-price">${{ Number(item.price).toFixed(2) }}</span></div>
+                            <i class="bi bi-arrow-right s-arrow"></i>
+                        </div>
+                    </template>
+                    <template v-if="results.models?.length">
+                        <div class="s-label">Models</div>
+                        <div v-for="item in results.models" :key="'mo'+item.id" class="s-item" @click="goTo(item.url)">
+                            <div class="s-thumb"><img v-if="item.image" :src="item.image" :alt="item.name" /><i v-else class="bi bi-box-seam"></i></div>
+                            <div class="s-meta"><span class="s-name">{{ item.name }}</span><span class="s-price">${{ Number(item.price).toFixed(2) }}</span></div>
+                            <i class="bi bi-arrow-right s-arrow"></i>
+                        </div>
+                    </template>
+                    <template v-if="results.categories?.length">
+                        <div class="s-label">Categories</div>
+                        <div v-for="item in results.categories" :key="'c'+item.id" class="s-item" @click="goTo(item.url)">
+                            <div class="s-thumb round"><img v-if="item.image" :src="item.image" :alt="item.name" /><i v-else class="bi bi-grid"></i></div>
+                            <div class="s-meta"><span class="s-name">{{ item.name }}</span><span class="s-badge">Category</span></div>
+                            <i class="bi bi-arrow-right s-arrow"></i>
+                        </div>
+                    </template>
+                    <template v-if="results.blogs?.length">
+                        <div class="s-label">Blogs</div>
+                        <div v-for="item in results.blogs" :key="'b'+item.id" class="s-item" @click="goTo(item.url)">
+                            <div class="s-thumb"><img v-if="item.image" :src="item.image" :alt="item.name" /><i v-else class="bi bi-newspaper"></i></div>
+                            <div class="s-meta"><span class="s-name">{{ item.name }}</span><span class="s-badge">Blog</span></div>
+                            <i class="bi bi-arrow-right s-arrow"></i>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </Transition>
+
+    <!-- Backdrop for desktop search -->
+    <div v-if="desktopSearchOpen" class="s-backdrop" @click="closeDesktopSearch"></div>
 
     <!-- ===== MOBILE SEARCH ===== -->
     <Transition name="mobile-drop">
@@ -190,7 +226,6 @@
                 <div v-else-if="totalResults === 0" class="s-empty dark"><i class="bi bi-search"></i> No results for "<strong>{{ searchQuery }}</strong>"</div>
 
                 <template v-if="!searchLoading">
-                    <!-- Mobile Products -->
                     <template v-if="results.products?.length">
                         <div class="s-label dark">Products</div>
                         <div v-for="item in results.products" :key="'mp'+item.id" class="s-item dark" @click="goTo(item.url); closeMobileSearch()">
@@ -199,8 +234,6 @@
                             <i class="bi bi-arrow-right s-arrow dark"></i>
                         </div>
                     </template>
-
-                    <!-- Mobile Models -->
                     <template v-if="results.models?.length">
                         <div class="s-label dark">Models</div>
                         <div v-for="item in results.models" :key="'mm'+item.id" class="s-item dark" @click="goTo(item.url); closeMobileSearch()">
@@ -209,8 +242,6 @@
                             <i class="bi bi-arrow-right s-arrow dark"></i>
                         </div>
                     </template>
-
-                    <!-- Mobile Categories -->
                     <template v-if="results.categories?.length">
                         <div class="s-label dark">Categories</div>
                         <div v-for="item in results.categories" :key="'mc'+item.id" class="s-item dark" @click="goTo(item.url); closeMobileSearch()">
@@ -219,8 +250,6 @@
                             <i class="bi bi-arrow-right s-arrow dark"></i>
                         </div>
                     </template>
-
-                    <!-- Mobile Blogs -->
                     <template v-if="results.blogs?.length">
                         <div class="s-label dark">Blogs</div>
                         <div v-for="item in results.blogs" :key="'mb'+item.id" class="s-item dark" @click="goTo(item.url); closeMobileSearch()">
@@ -344,22 +373,21 @@ const isScrolled = ref(false)
 const handleScroll = () => { isScrolled.value = window.scrollY > 80 }
 
 // ── Search state
-const searchQuery    = ref('')
-const searchFocused  = ref(false)
-const searchLoading  = ref(false)
-const results        = ref({ products: [], categories: [], blogs: [], models: [] })
-const searchInputRef = ref(null)
-const searchBoxRef   = ref(null)
-const mobileSearchOpen = ref(false)
-const mobileSearchRef  = ref(null)
+const searchQuery       = ref('')
+const searchLoading     = ref(false)
+const results           = ref({ products: [], categories: [], blogs: [], models: [] })
+const mobileSearchOpen  = ref(false)
+const mobileSearchRef   = ref(null)
+const desktopSearchOpen = ref(false)
+const desktopSearchInputRef = ref(null)
+const desktopSearchBarRef   = ref(null)
 let debounceTimer = null
 
-// ── totalResults includes models ✅
 const totalResults = computed(() =>
-  (results.value.products?.length  || 0) +
+  (results.value.products?.length   || 0) +
   (results.value.categories?.length || 0) +
-  (results.value.blogs?.length     || 0) +
-  (results.value.models?.length    || 0)
+  (results.value.blogs?.length      || 0) +
+  (results.value.models?.length     || 0)
 )
 
 const emptyResults = () => ({ products: [], categories: [], blogs: [], models: [] })
@@ -377,31 +405,26 @@ const onSearchInput = () => {
   }, 350)
 }
 
-// ── Search History
-const HISTORY_KEY = 'prosix_search_history'
-const MAX_HISTORY = 10
-const getHistory = () => { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]') } catch { return [] } }
-const saveToHistory = (query) => {
-  if (!query || query.trim().length < 2) return
-  let history = getHistory()
-  history = history.filter(h => h !== query.trim())
-  history.unshift(query.trim())
-  if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY)
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
-  searchHistory.value = history
+// ── Desktop search toggle
+const toggleDesktopSearch = () => {
+  desktopSearchOpen.value = !desktopSearchOpen.value
+  if (desktopSearchOpen.value) {
+    nextTick(() => desktopSearchInputRef.value?.focus())
+  } else {
+    clearSearch()
+  }
 }
-const clearHistory = () => { localStorage.removeItem(HISTORY_KEY); searchHistory.value = [] }
-const searchHistory = ref(getHistory())
+const closeDesktopSearch = () => {
+  desktopSearchOpen.value = false
+  clearSearch()
+}
 
-// ── goTo: navigation fix ✅
+// ── goTo
 const goTo = (url) => {
-  saveToHistory(searchQuery.value)
-
-  searchFocused.value = false
+  closeDesktopSearch()
   mobileSearchOpen.value = false
   searchQuery.value = ''
   results.value = emptyResults()
-
   if (url.startsWith('/')) {
     router.push(url)
   } else {
@@ -410,7 +433,6 @@ const goTo = (url) => {
 }
 
 const clearSearch       = () => { searchQuery.value = ''; results.value = emptyResults() }
-const closeSearch       = () => { searchFocused.value = false }
 const openMobileSearch  = () => { mobileSearchOpen.value = true; nextTick(() => mobileSearchRef.value?.focus()) }
 const closeMobileSearch = () => { mobileSearchOpen.value = false; clearSearch() }
 
@@ -426,6 +448,21 @@ const closeDrawer        = () => { drawerOpen.value = false; openAccordion.value
 const toggleAccordion    = (id) => { openAccordion.value = openAccordion.value === id ? null : id; openSubAccordion.value = null }
 const toggleSubAccordion = (id) => { openSubAccordion.value = openSubAccordion.value === id ? null : id }
 watch(drawerOpen, (val) => { document.body.style.overflow = val ? "hidden" : "" })
+
+// ── Dropdown helpers
+const totalDropdownItems = (nav) => {
+  const subs = nav.sub_items?.length || 0
+  const cats = categoriesByNav.value[nav.id]?.length || 0
+  return subs + cats
+}
+const leftColItems = (nav) => {
+  const cats = categoriesByNav.value[nav.id] || []
+  return cats.slice(0, 10)
+}
+const rightColItems = (nav) => {
+  const cats = categoriesByNav.value[nav.id] || []
+  return cats.slice(10)
+}
 
 // ── Password modal
 const showPasswordModal  = ref(false)
@@ -460,12 +497,20 @@ const closePasswordModal = () => {
 }
 
 // ── Navigation
-const navigations    = ref([])
+const navigations     = ref([])
 const categoriesByNav = ref({})
 const goToMenu = (slug) => { if (slug) router.push({ name: "MenuCategories", params: { slug } }) }
 
+// Close desktop search on outside click
+const handleOutsideClick = (e) => {
+  if (desktopSearchOpen.value && desktopSearchBarRef.value && !desktopSearchBarRef.value.contains(e.target)) {
+    // backdrop handles this
+  }
+}
+
 onMounted(async () => {
   window.addEventListener("scroll", handleScroll)
+  document.addEventListener("click", handleOutsideClick)
   try {
     const navRes = await axios.get("/api/navigations")
     navigations.value = navRes.data
@@ -474,67 +519,221 @@ onMounted(async () => {
     Object.keys(catRes.data).forEach((key) => { categoriesByNav.value[Number(key)] = catRes.data[key] || [] })
   } catch (err) { console.error("Fetch error:", err) }
 })
-onUnmounted(() => { window.removeEventListener("scroll", handleScroll); clearTimeout(debounceTimer) })
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll)
+  document.removeEventListener("click", handleOutsideClick)
+  clearTimeout(debounceTimer)
+})
 </script>
 
 <style scoped>
-.custom-navbar { height: 50px; background: transparent; transition: all 0.35s ease; z-index: 1000; display: flex; align-items: center; }
-.custom-navbar::before { content: ""; position: absolute; top: 0; right: 0; width: 70%; height: 100%; background: #000; clip-path: polygon(0% 0, 100% 0, 100% 100%, 4% 100%); transition: all 0.35s ease; z-index: -1; }
-.navbar-scrolled { height: 50px; background: #000; }
-.navbar-scrolled::before { width: 100%; clip-path: none; }
+/* ── Navbar base ── */
+.custom-navbar {
+  height: 50px;
+  background: transparent;
+  transition: all 0.35s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+
+/*
+  The black slanted background covers the RIGHT 72% of navbar.
+  Nav items start FROM where the cut begins (28% from left).
+  The ::before pseudo element creates the slanted black shape.
+*/
+.custom-navbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 73%;
+  height: 100%;
+  background: #000;
+  /* polygon: top-left angled, top-right square, bottom-right square, bottom-left square */
+  clip-path: polygon(0% 0, 100% 0, 100% 100%, 4% 100%);
+  transition: all 0.35s ease;
+  z-index: -1;
+}
+.badge {
+  font-size: 12px;
+  margin-top: 2px;
+  padding: 2px 5px;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 50%;
+}
+/* When scrolled OR more than 8 items → full black navbar */
+.navbar-scrolled,
+.navbar-full {
+  height: 50px;
+  background: #000;
+}
+.navbar-scrolled::before,
+.navbar-full::before {
+  width: 100%;
+  clip-path: none;
+}
+
+/* Logo */
+.navbar-brand-fixed {
+  /* Logo sits in the transparent (white) left 28% area */
+  width: 28%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+}
 .navbar-logo { height: 80px; margin-top: 70px; transition: all 0.35s ease; }
 .navbar-logo-secondary { height: 24px; margin-left: 30px; }
 .logo-small { height: 24px; margin-bottom: 70px; filter: brightness(0) invert(1); }
-.nav-link { color: #fff !important; font-weight: 600; }
-.nav-link:hover { color: #ddd !important; }
-.nav-icons i { color: #fff; cursor: pointer; }
-.menu-right { flex: 1; display: flex; justify-content: center; gap: 40px; margin-left: auto; }
 
-.search-box-wrapper { position: relative; z-index: 1100; }
-.search-box { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.22); border-radius: 30px; padding: 6px 14px; transition: all 0.25s; width: 190px; }
-.search-box.focused { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.55); width: 250px; }
-.search-box-icon { color: rgba(255,255,255,0.65); font-size: 0.88rem; flex-shrink: 0; }
-.search-box-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 0.88rem; font-family: 'Poppins', sans-serif; min-width: 0; }
-.search-box-input::placeholder { color: rgba(255,255,255,0.4); }
+/*
+  nav-right-block: this is the collapsible area.
+  It starts exactly at the 28% mark (where black cut begins),
+  and stretches to the right end.
+  We achieve this by making the navbar brand take ~28% and the rest auto.
+*/
+.nav-right-block {
+  display: flex !important;
+  align-items: center;
+  flex: 1;
+  width: 72%;
+  min-width: 0;
+  justify-content: flex-start;
+  padding-left: 0;
+}
+
+/* ── Nav items list ── */
+.nav-items-list {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1vw, 22px);
+  flex-wrap: nowrap;
+  list-style: none;
+  padding: 0;
+  margin: 0 !important;
+  padding-left: 30px;
+  justify-content: flex-start;
+}
+
+.nav-link {
+  color: #fff !important;
+  font-weight: 600;
+  font-size: clamp(0.70rem, 0.95vw, 0.88rem);
+  white-space: nowrap;
+  padding: 6px 2px !important;
+}
+.nav-link:hover { color: #ddd !important; }
+.nav-icons i { color: #fff; cursor: pointer; font-size: clamp(0.9rem, 1.1vw, 1.15rem); }
+
+/* ── Desktop Search Icon Button ── */
+.desktop-search-trigger { position: relative; }
+.search-icon-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+.search-icon-btn:hover, .search-icon-btn.active { background: rgba(255,255,255,0.15); }
+
+/* ── Desktop Search Bar ──
+   Default: aligned to right 72% (same as black cut area)
+   When scrolled or >8 items: full width
+*/
+.desktop-search-bar {
+  position: fixed;
+  top: 50px;
+  left: 60%;
+  right: 0;
+  background: #000000;
+  z-index: 1080;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  transition: left 0.35s ease;
+
+}
+
+/* when navbar becomes full width */
+.desktop-search-bar.search-full {
+  left: 0;
+
+  /* remove angle */
+  clip-path: none;
+}
+
+.desktop-search-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 40px;
+}
+.ds-icon { color: rgba(255,255,255,0.5); font-size: 1rem; flex-shrink: 0; }
+.ds-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+}
+.ds-input::placeholder { color: rgba(255,255,255,0.3); }
+.ds-results {
+  max-height: 420px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 8px;
+}
+.ds-results::-webkit-scrollbar { width: 3px; }
+.ds-results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+
+/* Search drop animation */
+.search-drop-enter-active { transition: all 0.28s cubic-bezier(0.34,1.3,0.64,1); }
+.search-drop-leave-active { transition: all 0.18s ease; }
+.search-drop-enter-from { opacity: 0; transform: translateY(-12px); }
+.search-drop-leave-to { opacity: 0; transform: translateY(-6px); }
+
+/* Shared search result styles */
 .s-spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .s-clear { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 1rem; cursor: pointer; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s; }
 .s-clear:hover { color: #fff; }
-
-.s-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 340px; background: #fff; border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.16); border: 1px solid #eee; max-height: 420px; overflow-y: auto; }
-.s-dropdown::-webkit-scrollbar { width: 4px; }
-.s-dropdown::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
-.s-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; padding: 10px 14px 4px; }
+.s-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.35); padding: 10px 40px 4px; }
 .s-label.dark { color: rgba(255,255,255,0.35); }
-.s-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; transition: background 0.15s; }
-.s-item:hover { background: #f5f5f5; }
+.s-item { display: flex; align-items: center; gap: 10px; padding: 9px 40px; cursor: pointer; transition: background 0.15s; }
+.s-item:hover { background: rgba(255,255,255,0.07); }
 .s-item.dark:hover { background: rgba(255,255,255,0.07); }
-.s-thumb { width: 38px; height: 38px; border-radius: 8px; overflow: hidden; background: #f0f0f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 1rem; }
+.s-thumb { width: 38px; height: 38px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.1); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); font-size: 1rem; }
 .s-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .s-thumb.round { border-radius: 50%; }
 .s-meta { flex: 1; min-width: 0; }
-.s-name { display: block; font-size: 0.84rem; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-name { display: block; font-size: 0.84rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .s-name.dark { color: #fff; }
-.s-price { display: block; font-size: 0.76rem; font-weight: 700; color: #000; margin-top: 1px; }
-.s-badge { display: block; font-size: 0.72rem; color: #999; margin-top: 1px; }
+.s-price { display: block; font-size: 0.76rem; font-weight: 700; color: rgba(255,255,255,0.6); margin-top: 1px; }
+.s-badge { display: block; font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 1px; }
 .s-badge.dark { color: rgba(255,255,255,0.4); }
-.s-arrow { color: #ddd; font-size: 0.8rem; flex-shrink: 0; transition: all 0.15s; }
-.s-item:hover .s-arrow { color: #000; transform: translateX(2px); }
+.s-arrow { color: rgba(255,255,255,0.25); font-size: 0.8rem; flex-shrink: 0; transition: all 0.15s; }
+.s-item:hover .s-arrow { color: #fff; transform: translateX(2px); }
 .s-arrow.dark { color: rgba(255,255,255,0.25); }
 .s-item.dark:hover .s-arrow { color: #fff; }
-.s-loading { display: flex; align-items: center; gap: 10px; padding: 16px 14px; font-size: 0.84rem; color: #888; }
+.s-loading { display: flex; align-items: center; gap: 10px; padding: 16px 40px; font-size: 0.84rem; color: rgba(255,255,255,0.45); }
 .s-loading.dark { color: rgba(255,255,255,0.45); }
-.s-spinner-sm { width: 13px; height: 13px; border: 2px solid #eee; border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
+.s-spinner-sm { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
 .s-spinner-sm.dark { border-color: rgba(255,255,255,0.2); border-top-color: #fff; }
-.s-empty { padding: 18px 14px; font-size: 0.84rem; color: #888; display: flex; align-items: center; gap: 8px; }
+.s-empty { padding: 18px 40px; font-size: 0.84rem; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; }
 .s-empty.dark { color: rgba(255,255,255,0.4); }
+.s-backdrop { position: fixed; inset: 0; z-index: 1070; }
 
-.drop-enter-active { transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1); }
-.drop-leave-active { transition: all 0.15s ease; }
-.drop-enter-from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-.drop-leave-to { opacity: 0; transform: translateY(-4px); }
-.s-backdrop { position: fixed; inset: 0; z-index: 1050; }
-
+/* ── Mobile search ── */
 .m-search-overlay { position: fixed; top: 56px; left: 0; right: 0; background: #111; z-index: 1099; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .m-search-bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .m-search-icon { color: rgba(255,255,255,0.4); font-size: 0.95rem; flex-shrink: 0; }
@@ -545,19 +744,52 @@ onUnmounted(() => { window.removeEventListener("scroll", handleScroll); clearTim
 .m-search-results { max-height: 55vh; overflow-y: auto; }
 .m-search-results::-webkit-scrollbar { width: 3px; }
 .m-search-results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+.m-search-results .s-label { padding-left: 16px; }
+.m-search-results .s-item { padding-left: 16px; padding-right: 16px; }
+.m-search-results .s-loading { padding-left: 16px; }
+.m-search-results .s-empty { padding-left: 16px; }
+
 .mobile-drop-enter-active { transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); }
 .mobile-drop-leave-active { transition: all 0.18s ease; }
 .mobile-drop-enter-from { opacity: 0; transform: translateY(-10px); }
 .mobile-drop-leave-to { opacity: 0; transform: translateY(-6px); }
 
-.dropdown-menu { display: none; margin-top: 0; border-radius: 6px; min-width: 220px; background: #000; }
-.nav-item.dropdown:hover > .dropdown-menu { display: block; }
-.dropdown-item { padding: 8px 16px; color: #fff !important; transition: all 0.15s; }
-.dropdown-item:hover { background-color: #111 !important; }
+/* ── Dropdown menu ── */
+.dropdown-menu {
+  display: none;
+  margin-top: 0;
+  border-radius: 6px;
+  background: #000;
+  min-width: 220px;
+  padding: 6px 0;
+}
+.nav-item.dropdown:hover > .dropdown-menu { display: flex; flex-direction: row; }
+.dropdown-menu:not(.two-col) { flex-direction: column !important; }
+.dropdown-col { display: flex; flex-direction: column; min-width: 200px; }
+.dropdown-col-right { border-left: 1px solid rgba(255,255,255,0.08); }
+.dropdown-item { padding: 8px 16px; color: #fff !important; transition: all 0.15s; font-size: clamp(0.78rem, 0.9vw, 0.9rem); white-space: nowrap; }
+.dropdown-item:hover { background-color: #222 !important; }
+
 .dropdown-submenu { position: relative; }
 .dropdown-submenu:hover > .sub-dropdown { display: block !important; }
-.sub-dropdown { display: none; position: absolute !important; top: 0; left: 100%; min-width: 220px; margin-left: 4px; background: #111; }
+.sub-dropdown {
+  display: none;
+  position: absolute !important;
+  top: 0;
+  left: 100%;
+  min-width: 200px;
+  margin-left: 2px;
+  background: #111;
+  z-index: 10;
+}
+.sub-dropdown-left {
+  left: auto !important;
+  right: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 2px !important;
+}
 
+/* ── Mobile Drawer ── */
 .mobile-top-icons a { color: inherit; text-decoration: none; }
 .hamburger-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 4px; }
 .hamburger-btn span { display: block; width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s ease; transform-origin: center; }
@@ -599,12 +831,18 @@ onUnmounted(() => { window.removeEventListener("scroll", handleScroll); clearTim
 .accordion-enter-active, .accordion-leave-active { transition: max-height 0.3s ease, opacity 0.25s ease; overflow: hidden; max-height: 600px; opacity: 1; }
 .accordion-enter-from, .accordion-leave-to { max-height: 0; opacity: 0; }
 
+/* ── Cart & Password modal ── */
 .cart-sidebar { overflow-y: auto; }
 .password-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 2000; }
 .password-modal-box { background: #fff; padding: 30px 25px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 15px 40px rgba(0,0,0,0.4); position: relative; animation: fadeInModal 0.3s ease; }
 .close-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.3rem; cursor: pointer; }
 @keyframes fadeInModal { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ── Responsive ── */
+@media (max-width: 1200px) {
+  .nav-items-list { gap: clamp(4px, 0.7vw, 14px); }
+  .nav-link { font-size: clamp(0.66rem, 0.8vw, 0.8rem); }
+}
 @media (max-width: 991px) {
   .custom-navbar { height: 56px; background: #000 !important; }
   .custom-navbar::before { display: none; }
@@ -612,6 +850,7 @@ onUnmounted(() => { window.removeEventListener("scroll", handleScroll); clearTim
   .logo-small { margin-bottom: 0; }
   #mainNavbar { display: none !important; }
   .cart-sidebar { width: 100% !important; }
+  .desktop-search-bar { top: 56px; left: 0 !important; }
 }
 @media (max-width: 400px) { .mobile-drawer { width: 85vw; } }
 </style>

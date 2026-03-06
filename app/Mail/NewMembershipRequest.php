@@ -20,8 +20,22 @@ class NewMembershipRequest extends Mailable
 
     public function build()
     {
-        return $this->subject('New Membership Request - Prosix Sports')
-                    ->view('emails.membership-request')
-                    ->with(['data' => $this->request]);
+        $mail = $this->subject('New Membership Request - Prosix Sports')
+                     ->replyTo($this->request->email, $this->request->name)
+                     ->view('emails.membership-request')
+                     ->with(['data' => $this->request]);
+
+        if (!empty($this->request->image)) {
+            $path = storage_path('app/public/' . $this->request->image);
+            if (file_exists($path)) {
+                $mail->attachData(
+                    file_get_contents($path),
+                    basename($path),
+                    ['mime' => mime_content_type($path)]
+                );
+            }
+        }
+
+        return $mail;
     }
 }

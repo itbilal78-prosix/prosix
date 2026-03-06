@@ -194,7 +194,8 @@ Route::get('/storage/{path}', function ($path) {
     if (!file_exists($fullPath)) abort(404);
     return response()->file($fullPath);
 })->where('path', '.*');
-
+Route::post('/admin/artwork/download-pdf',    [ArtworkRequestController::class,    'downloadPdf'])->name('artwork.download.pdf');
+Route::post('/admin/membership/download-pdf', [MembershipRequestController::class, 'downloadPdf'])->name('membership.download.pdf');
 Route::post('/models/bulk-destroy',   [CustomizerModelController::class, 'bulkDestroy'])->name('models.bulkDestroy');
 Route::post('/models/bulk-duplicate', [CustomizerModelController::class, 'bulkDuplicate'])->name('models.bulkDuplicate');
 Route::get('/api/search', [App\Http\Controllers\SearchController::class, 'search']);

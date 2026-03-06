@@ -1,12 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
- use App\Exports\MembershipRequestsExport;
+
+use App\Exports\MembershipRequestsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use App\Models\MembershipRequest;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\NewMembershipRequest;  // ← yeh mail class banayenge
+use App\Mail\NewMembershipRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class MembershipRequestController extends Controller
 {
     public function store(Request $request)
@@ -24,46 +27,44 @@ class MembershipRequestController extends Controller
             'level'        => 'required|string|max:50',
         ]);
 
-        // Save to database
         $membership = MembershipRequest::create($data);
-        // Admin ko email bhejo
+
         try {
             Mail::to('sales@prosix.com')->send(new NewMembershipRequest($membership));
+            Mail::to($membership->email)->send(new NewMembershipRequest($membership));
         } catch (\Exception $e) {
-            // Email fail hone par bhi user ko success dikhao
             \Log::error('Membership email failed: ' . $e->getMessage());
         }
-
 
         return response()->json([
             'message' => 'Membership request submitted successfully! We will contact you soon.'
         ], 200);
     }
 
-    // Admin ke liye all requests ki list
     public function index()
     {
         $requests = MembershipRequest::latest()->get();
         return view('admin.memberships', compact('requests'));
     }
 
-public function download(Request $request)
-{
-    
-    $ids = explode(',', $request->query('ids', ''));
-
-    if (empty($ids)) {
-        return redirect()->back()->with('error', 'No requests selected.');
+    public function download(Request $request)
+    {
+        $ids = explode(',', $request->query('ids', ''));
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'No requests selected.');
+        }
+        $fileName = 'membership_requests_' . now()->format('Ymd_His') . '.xlsx';
+        return Excel::download(new MembershipRequestsExport($ids), $fileName);
     }
 
-    $fileName = 'membership_requests_' . now()->format('Ymd_His') . '.xlsx';
-    return Excel::download(new MembershipRequestsExport($ids), $fileName);
-}
+    public function downloadPdf(Request $request)
+    {
+        $ids = explode(',', $request->input('ids', ''));
+        $requests = MembershipRequest::whereIn('id', array_filter($ids))->get();
 
+        $pdf = Pdf::loadView('pdf.membership-pdf', compact('requests'))
+                  ->setPaper('a4', 'portrait');
 
-
-
-
-
-
+        return $pdf->download('membership-requests-' . now()->format('Ymd_His') . '.pdf');
+    }
 }

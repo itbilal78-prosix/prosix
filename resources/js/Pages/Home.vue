@@ -209,7 +209,7 @@
                     <p class="product-price text-white fw-bold">${{ product.price.toFixed(2) }}</p>
                   </div>
                   <button v-if="product.type === 'product'" class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn" @click="addToCart(product)">ADD TO CART</button>
-                  <button v-else-if="product.type === 'model'" class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn" @click="goToCustomizer(product)">CUSTOMIZE</button>
+                  <button v-else-if="product.type === 'model'" class="btn button-apperal w-100 py-2 fw-bold add-to-cart-btn" @click="goToCustomizer(product)">CUSTOMIZE</button>
                 </div>
               </div>
               <div v-if="apparelProducts.length === 0" class="w-100 text-center py-5 text-white"><h4>No Apparel Products Found</h4></div>
@@ -288,12 +288,11 @@
     <component :is="'script'" v-once></component>
     <footer-component />
 
-    <!-- ✅ LEFT SIDE: Two floating icon buttons (TawkTo + WhatsApp) -->
  <!-- LEFT SIDE: WhatsApp -->
 <div class="float-icons-left">
 
   <div class="float-icon-wrap">
-    <a href="https://wa.me/03316566200" target="_blank" class="float-icon-btn wa-icon-btn">
+    <a href="https://wa.me/19292104402" target="_blank" class="float-icon-btn wa-icon-btn">
       <i class="bi bi-whatsapp"></i>
     </a>
     <div class="float-icon-pulse wa-pulse"></div>
@@ -808,8 +807,19 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon-image { width: 90%; height: 90%; object-fit: cover; }
 
 /* ✅ INCREASED icon name font */
-.icon-name { color: white; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; max-width: 100px; }
-.icon-circle { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; background: black; border-radius: 50%; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
+.icon-name {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}.icon-circle { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; background: black; border-radius: 50%; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
 .icon-circle::after { content: ''; position: absolute; inset: 0; border: 3px dotted #fff; border-radius: 50%; opacity: 0; transition: opacity 0.35s, transform 0.35s; transform: scale(0.92); pointer-events: none; }
 @keyframes rotateDotted { from { transform: scale(0.92) rotate(0deg); } to { transform: scale(0.92) rotate(360deg); } }
 
@@ -862,8 +872,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-btn:hover { background: #222; transform: translateY(-50%) scale(1.05); }
 
 /* Apparel */
-.apparel-card-inner { background:#1d1d1d; border: 1px solid #444; border-radius: 12px; padding: 16px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; }
-.apparel-card-inner:hover {  transform: translateY(-6px); }
+.apparel-card-inner { background:#323233; border: 1px solid #444; border-radius: 12px; padding: 16px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; }
 .product-image-wrapper { margin-bottom: 12px; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-name { font-size: 0.88rem; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -1077,7 +1086,10 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .testimonial-item { flex: 0 0 25% !important; }
   .product-img { height: 320px !important; }
 }
-
+.button-apperal{
+    background-color: #000;
+    color: white;
+}
 img { max-width: 100%; height: auto; }
 *:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
 #tawk-bubble-container, .tawk-min-container, iframe[title="chat widget"] { display: none !important; }

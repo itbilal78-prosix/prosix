@@ -34,7 +34,10 @@ class ColorController extends Controller
 {
     return view('colors.edit', compact('color'));
 }
-
+public function apiIndex()
+{
+    return response()->json(Color::all());
+}
 public function update(Request $request, Color $color)
 {
     $request->validate([
