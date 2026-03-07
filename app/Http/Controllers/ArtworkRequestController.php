@@ -21,7 +21,7 @@ class ArtworkRequestController extends Controller
         $request->validate([
             'fullName' => 'required|string|max:255',
             'email'    => 'required|email|max:255',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         $imagePaths = [];

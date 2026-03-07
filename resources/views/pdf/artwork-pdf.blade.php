@@ -22,7 +22,7 @@
 <div class="email-wrap {{ !$loop->last ? 'page-break' : '' }}">
 
   <div class="header">
-    <div class="header-text"> PROSIX SPORTSssss </div>
+    <div class="header-text"> PROSIX SPORTS </div>
   </div>
 
   <div class="content">

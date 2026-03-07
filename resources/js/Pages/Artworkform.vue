@@ -305,8 +305,12 @@ export default {
         const modal = new bootstrap.Modal(document.getElementById("successModal"));
         modal.show();
       } catch (err) {
-        alert("Something went wrong ❌");
-      } finally {
+  if (err.response) {
+    alert(err.response.data.message || "Server Error");
+  } else {
+    alert("Network error");
+  }
+}finally {
         this.isSubmitting = false;
       }
     },

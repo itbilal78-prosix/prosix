@@ -387,8 +387,7 @@ import { useRouter } from 'vue-router'
 const cartStore = useCartStore()
 const router    = useRouter()
 
-const STRIPE_PK = 'pk_test_51SvXN3HItCFNDxYMwZ1SdJWuuASPyJKQPVlvHAhAU4iICKJnrdBR4gZpdZWDdRYKWs9NVN2e400v8ng7M0Ubi15w00w0tMVAyz'
-
+const STRIPE_PK = 'pk_live_51Me8FHImWDOcEyespCiF4IVvemDbUaKUlQk5U3UY5QBgR0Z3bcDrVCJbjfG2rYwNaMS5Dou34Oe7GAMwREHGGs6P000VDG7j3M'
 const loading     = ref(false)
 const currentStep = ref(1)
 const activeGroup = ref('card')

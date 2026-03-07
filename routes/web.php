@@ -200,6 +200,9 @@ Route::post('/models/bulk-destroy',   [CustomizerModelController::class, 'bulkDe
 Route::post('/models/bulk-duplicate', [CustomizerModelController::class, 'bulkDuplicate'])->name('models.bulkDuplicate');
 Route::get('/api/search', [App\Http\Controllers\SearchController::class, 'search']);
 
+
+
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');
