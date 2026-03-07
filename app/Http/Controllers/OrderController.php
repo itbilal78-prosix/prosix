@@ -48,13 +48,17 @@ class OrderController extends Controller
             $totalQty = collect($request->cart)->sum(fn($i) => (int) $i['quantity']);
 
             // Shipping logic
-            if ($totalQty > 3) {
-                $shipping = 0;
-            } elseif ($totalQty === 3) {
-                $shipping = round($subtotal * 0.10, 2);
-            } else {
-                $shipping = 19;
-            }
+           $shipping = 0;
+foreach ($request->cart as $item) {
+    $shippingEnabled = $item['shipping_enabled'] ?? false;
+    if (!$shippingEnabled) continue;
+    $cost      = (float) ($item['shipping_cost'] ?? 0);
+    $freeAbove = isset($item['free_shipping_above']) ? (float) $item['free_shipping_above'] : null;
+    if ($freeAbove !== null && $subtotal >= $freeAbove) continue;
+    $shipping += $cost * (int) $item['quantity'];
+}
+$shipping = round($shipping, 2);
+
 
             $total = $subtotal + $shipping;
 
