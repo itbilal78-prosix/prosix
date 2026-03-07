@@ -595,22 +595,55 @@ const placeOrder = async () => {
       if (error) { stripeError.value = error.message; loading.value = false; return }
       paymentToken = paymentMethod.id
     }
-    const res = await axios.post('/api/orders', {
-      cart: cartStore.items,
+
+    const orderPayload = {
+      cart: cartStore.items.map(i => ({
+        id:       i.id,
+        name:     i.name,
+        price:    i.price,
+        quantity: i.quantity,
+        size:     i.size,
+        image:    i.image,
+      })),
       checkout: {
-        name: form.value.name, email: form.value.email, phone: form.value.phone,
-        address: form.value.address, city: form.value.city, postalCode: form.value.postalCode,
-        province: form.value.province, country: form.value.country,
-        deliveryDays: form.value.deliveryDays,
+        name:          form.value.name,
+        email:         form.value.email         || '',
+        phone:         form.value.phone,
+        address:       form.value.address,
+        city:          form.value.city,
+        postalCode:    form.value.postalCode     || '',
+        province:      form.value.province       || '',
+        country:       form.value.country        || '',
+        deliveryDays:  form.value.deliveryDays   || 'standard',
         paymentMethod: activeGroup.value === 'card' ? 'stripe' : form.value.paymentMethod,
-        stripeToken: paymentToken,
+        stripeToken:   paymentToken,
+        total:         totalAmount.value,
+        shipping:      shipping.value,
       }
-    }, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } })
+    }
+
+    console.log('Order payload:', orderPayload) // ✅ Check karo console mein kya ja raha hai
+
+    const res = await axios.post('/api/orders', orderPayload, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token') || ''}` }
+    })
+
     alert(`✅ Order placed! ID: ${res.data.order_id || 'N/A'}`)
     cartStore.clearCart()
     router.push('/')
+
   } catch (e) {
-    alert('❌ ' + (e.response?.data?.message || 'Something went wrong. Please try again.'))
+    // ✅ Full error details dikhao
+    const errData = e.response?.data
+    console.error('Order error full:', errData)
+
+    if (errData?.errors) {
+      // Laravel validation errors
+      const msgs = Object.values(errData.errors).flat().join('\n')
+      alert('❌ Validation errors:\n' + msgs)
+    } else {
+      alert('❌ ' + (errData?.message || 'Something went wrong. Please try again.'))
+    }
   } finally {
     loading.value = false
   }
