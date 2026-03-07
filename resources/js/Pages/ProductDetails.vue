@@ -11,7 +11,7 @@
           <div class="gallery-wrap">
 
             <!-- Left thumbnails -->
-            <div class="thumbnails" v-if="!isModel && thumbList.length > 1">
+            <div class="thumbnails" v-if="!isModel && thumbList.length > 0">
               <div
                 v-for="(thumb, ti) in thumbList"
                 :key="ti"
@@ -77,22 +77,42 @@
           </p>
           <hr class="divider" />
 
-          <!-- Color Swatches -->
+          <!-- ══ Color Swatches — SQUARE with checkmark + Default box ══ -->
           <div class="option-group" v-if="!isModel && productColors.length">
             <div class="option-header">
               <label class="option-label">Color</label>
-              <span class="selected-value">{{ selectedColorIdx === -1 ? 'None' : productColors[selectedColorIdx]?.name }}</span>
+              <span class="selected-value">{{ selectedColorIdx === -1 ? 'Original' : productColors[selectedColorIdx]?.name }}</span>
             </div>
             <div class="color-swatches">
+
+              <!-- ✅ DEFAULT / ORIGINAL box — pehle show hoga -->
+              <button
+                class="color-swatch default-swatch"
+                :class="{ selected: selectedColorIdx === -1 }"
+                title="Original"
+                @click="selectDefault()"
+              >
+                <img v-if="product.image" :src="product.image" class="default-swatch-img" alt="Original" />
+                <span v-else class="default-swatch-text">Org</span>
+                <i v-if="selectedColorIdx === -1" class="bi bi-check check-icon check-dark"></i>
+              </button>
+
+              <!-- Color swatches -->
               <button
                 v-for="(c, ci) in productColors"
                 :key="ci"
                 class="color-swatch"
-                :class="{ selected: selectedColorIdx === ci, 'white-swatch': c.hex === '#ffffff' || c.hex === '#FFFFFF' }"
+                :class="{
+                  selected: selectedColorIdx === ci,
+                  'white-swatch': c.hex === '#ffffff' || c.hex === '#FFFFFF'
+                }"
                 :style="{ background: c.hex }"
                 :title="c.name"
                 @click="selectColor(ci)"
-              ></button>
+              >
+                <i v-if="selectedColorIdx === ci" class="bi bi-check check-icon"
+                  :style="{ color: isLightColor(c.hex) ? '#000' : '#fff' }"></i>
+              </button>
             </div>
           </div>
 
@@ -152,15 +172,23 @@
           </div>
           <p v-if="!effectiveSize && stockAvailable" style="font-size:12px;color:#e53e3e;margin-top:-10px;margin-bottom:14px">⚠ Select a size to continue</p>
 
-          <!-- Features -->
+          <!-- ══ Features — HORIZONTAL ROW ══ -->
           <div class="product-features">
-            <div class="feature-item"><i class="bi bi-truck"></i>
-              <div><strong>{{ (!product.shipping_cost || product.shipping_cost == 0) ? 'Free Delivery' : 'Shipping Available' }}</strong>
-                <p>{{ product.free_shipping_above ? `Free above $${formatPrice(product.free_shipping_above)}` : 'Standard & Express options' }}</p>
+            <div class="feature-item">
+              <i class="bi bi-truck"></i>
+              <div>
+                <strong>{{ (!product.shipping_cost || product.shipping_cost == 0) ? 'Free Delivery' : 'Shipping Available' }}</strong>
+                <p>{{ product.free_shipping_above ? `Free above $${formatPrice(product.free_shipping_above)}` : 'Standard & Express' }}</p>
               </div>
             </div>
-            <div class="feature-item"><i class="bi bi-arrow-clockwise"></i><div><strong>60 Day Return</strong><p>Free returns via dropoff</p></div></div>
-            <div class="feature-item"><i class="bi bi-shield-check"></i><div><strong>Secure Payment</strong><p>Multiple options</p></div></div>
+            <div class="feature-item">
+              <i class="bi bi-arrow-clockwise"></i>
+              <div><strong>60 Day Return</strong><p>Free returns via dropoff</p></div>
+            </div>
+            <div class="feature-item">
+              <i class="bi bi-shield-check"></i>
+              <div><strong>Secure Payment</strong><p>Multiple options</p></div>
+            </div>
           </div>
         </div>
       </div>
@@ -196,7 +224,7 @@
           </div>
         </div>
 
-        <!-- Size Chart -->
+        <!-- ══ Size Chart — NO DEFAULT TABLE ══ -->
         <div class="tab-panel" :class="{ active: activeTab === 'sizechart' }">
           <h3 class="tab-heading">Size Chart</h3>
           <template v-if="product.size_chart_image">
@@ -205,19 +233,10 @@
             </div>
           </template>
           <template v-else>
-            <div style="overflow-x:auto">
-              <table class="size-chart-table">
-                <thead><tr><th>Size</th><th>Chest (in)</th><th>Waist (in)</th><th>Hip (in)</th><th>Height</th></tr></thead>
-                <tbody>
-                  <tr v-for="row in sizeChartData" :key="row.size"
-                    :class="{ highlighted: effectiveSize === row.size, 'row-unavail': productSizes.length && !productSizes.includes(row.size) }">
-                    <td><strong>{{ row.size }}{{ effectiveSize === row.size ? ' ✓' : '' }}</strong>
-                      <span v-if="productSizes.length && !productSizes.includes(row.size)" style="font-size:10px;color:#e53e3e;margin-left:4px">N/A</span>
-                    </td>
-                    <td>{{ row.chest }}</td><td>{{ row.waist }}</td><td>{{ row.hip }}</td><td>{{ row.height }}</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="sc-empty">
+              <i class="bi bi-table"></i>
+              <p>No size chart uploaded for this product.</p>
+              <span>Contact us for sizing assistance.</span>
             </div>
           </template>
         </div>
@@ -378,16 +397,27 @@ const qtyMax = computed(() => {
 
 // ── Colors ──────────────────────────────────────────────────────
 const productColors = computed(() => product.value.colors || [])
-
-// -1 = no color selected (show main image)
 const selectedColorIdx = ref(-1)
 
-// ── ✅ selectColor: toggle behavior
-// - Click unselected color → select it (show color images if available)
-// - Click same color again → deselect (go back to main image)
+// ✅ Light color detect (white/light colors ke liye black checkmark)
+const isLightColor = (hex) => {
+  if (!hex) return false
+  const h = hex.replace('#', '')
+  const r = parseInt(h.substring(0,2), 16)
+  const g = parseInt(h.substring(2,4), 16)
+  const b = parseInt(h.substring(4,6), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 160
+}
+
+// ✅ Default/Original box click — deselect color, show main image
+const selectDefault = () => {
+  selectedColorIdx.value = -1
+  activeThumbIdx.value   = 0
+  previewImage.value     = null
+}
+
 const selectColor = (ci) => {
   if (selectedColorIdx.value === ci) {
-    // Deselect — go back to main image
     selectedColorIdx.value = -1
   } else {
     selectedColorIdx.value = ci
@@ -399,45 +429,28 @@ const selectColor = (ci) => {
 // ── Global gallery ───────────────────────────────────────────────
 const globalGallery = computed(() => product.value.gallery_images || [])
 
-// ── ✅ thumbList: Build left-side thumbnails
-// Logic:
-// 1. Always start with main product image
-// 2. Add global gallery images
-// 3. If a color is selected AND has images → prepend color thumb + color gallery
-//    (replace slot 0 with color thumb if color has one)
+// ── thumbList: Build left-side thumbnails ────────────────────────
 const thumbList = computed(() => {
   if (isModel.value) return []
 
   const list = []
-
   const color = selectedColorIdx.value >= 0
     ? productColors.value[selectedColorIdx.value]
     : null
-
   const colorHasImages = color && (color.image || (color.gallery && color.gallery.length > 0))
 
   if (colorHasImages) {
-    // Color thumbnail first
+    // ✅ Color selected — sirf us color ki images dikhao
     if (color.image) {
       list.push({ src: color.image, label: color.name, colorHex: color.hex })
     }
-    // Color gallery images
     ;(color.gallery || []).forEach((src, i) => {
       list.push({ src, label: `${color.name} #${i + 1}`, colorHex: null })
     })
-    // Then main image
-    if (product.value.image) {
-      list.push({ src: product.value.image, label: 'Main', colorHex: null })
-    }
-    // Then global gallery
-    globalGallery.value.forEach((src, i) => {
-      list.push({ src, label: `Gallery #${i + 1}`, colorHex: null })
-    })
   } else {
-    // No color selected OR selected color has no images
-    // Show: main image + global gallery
+    // ✅ Default/Original selected (-1) — main image + global gallery
     if (product.value.image) {
-      list.push({ src: product.value.image, label: 'Main', colorHex: null })
+      list.push({ src: product.value.image, label: 'Original', colorHex: null })
     }
     globalGallery.value.forEach((src, i) => {
       list.push({ src, label: `Gallery #${i + 1}`, colorHex: null })
@@ -448,30 +461,21 @@ const thumbList = computed(() => {
 })
 
 const activeThumbIdx = ref(0)
-const selectThumb    = (idx) => {
+const selectThumb = (idx) => {
   activeThumbIdx.value = idx
   previewImage.value   = null
 }
 
-// ── ✅ displayImage: main logic
-// Default (no color / color has no images) → main product image
-// Color selected AND has images → show color image / thumb
-// Manual thumb click → show that thumb
-// Related product preview → show preview image
+// ── displayImage ─────────────────────────────────────────────────
 const displayImage = computed(() => {
-  // Related product preview overrides everything
   if (previewImage.value) return previewImage.value
-
-  // If thumb is manually selected, show it
   if (thumbList.value.length > 0 && activeThumbIdx.value < thumbList.value.length) {
     return thumbList.value[activeThumbIdx.value].src
   }
-
-  // Fallback: main product image
   return product.value.image || ''
 })
 
-// ── Related product preview ─────────────────────────────────────
+// ── Related product preview ──────────────────────────────────────
 const previewImage       = ref(null)
 const previewProductId   = ref(null)
 const previewProductName = ref('')
@@ -489,7 +493,7 @@ const clearPreview = () => {
   previewProductName.value = ''
 }
 
-// ── Sizes ────────────────────────────────────────────────────────
+// ── Sizes ─────────────────────────────────────────────────────────
 const allSizes      = ['YXS','YS','YM','YL','YXL','S','M','L','XL','2XL']
 const productSizes  = computed(() => product.value.sizes || [])
 const selectedSize  = ref('')
@@ -510,7 +514,7 @@ const confirmCustomSize = () => {
   showToast(`✅ Size "${customSizeVal.value.trim()}" confirmed!`)
 }
 
-// ── Quantity ─────────────────────────────────────────────────────
+// ── Quantity ──────────────────────────────────────────────────────
 const quantity     = ref(1)
 const incrementQty = () => {
   if (qtyMax.value !== null && quantity.value >= qtyMax.value) {
@@ -520,7 +524,7 @@ const incrementQty = () => {
 }
 const decrementQty = () => { if (quantity.value > 1) quantity.value-- }
 
-// ── Tabs ─────────────────────────────────────────────────────────
+// ── Tabs ──────────────────────────────────────────────────────────
 const activeTab = ref('description')
 const tabs = [
   { id: 'description', label: 'Description' },
@@ -533,20 +537,7 @@ const openTab = (id) => {
   nextTick(() => tabsRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 
-const sizeChartData = [
-  { size:'YXS', chest:'26-27', waist:'22-23', hip:'27-28', height:"4'6-4'8"  },
-  { size:'YS',  chest:'28-29', waist:'24-25', hip:'29-30', height:"4'8-4'10" },
-  { size:'YM',  chest:'30-31', waist:'26-27', hip:'31-32', height:"4'10-5'0" },
-  { size:'YL',  chest:'32-33', waist:'28-29', hip:'33-34', height:"5'0-5'2"  },
-  { size:'YXL', chest:'34-35', waist:'29-30', hip:'35-36', height:"5'2-5'4"  },
-  { size:'S',   chest:'35-37', waist:'29-31', hip:'37-39', height:"5'5-5'7"  },
-  { size:'M',   chest:'38-40', waist:'32-34', hip:'40-42', height:"5'7-5'9"  },
-  { size:'L',   chest:'41-43', waist:'35-37', hip:'43-45', height:"5'9-5'11" },
-  { size:'XL',  chest:'44-46', waist:'38-40', hip:'46-48', height:"5'11-6'1" },
-  { size:'2XL', chest:'47-49', waist:'41-43', hip:'49-51', height:"6'1-6'3"  },
-]
-
-// ── Reviews ──────────────────────────────────────────────────────
+// ── Reviews ───────────────────────────────────────────────────────
 const allReviews      = ref([])
 const hoverStar       = ref(0)
 const submitting      = ref(false)
@@ -559,7 +550,7 @@ const saveReviews     = () => { try { localStorage.setItem(reviewKey.value, JSON
 const avgRatingRaw    = computed(() => !allReviews.value.length ? 0 : allReviews.value.reduce((s,r)=>s+r.stars,0)/allReviews.value.length)
 const avgRating       = computed(() => avgRatingRaw.value ? avgRatingRaw.value.toFixed(1) : '0.0')
 const computedBars    = computed(() => [5,4,3,2,1].map(star => { const count=allReviews.value.filter(r=>r.stars===star).length; return { star, count, pct: allReviews.value.length ? Math.round(count/allReviews.value.length*100) : 0 } }))
-const submitReview    = () => {
+const submitReview = () => {
   if (!newReview.value.stars)       { showToast('⭐ Please select a rating!'); return }
   if (!newReview.value.name.trim()) { showToast('📝 Please enter your name!'); return }
   if (!newReview.value.text.trim()) { showToast('💬 Please write your review!'); return }
@@ -580,7 +571,7 @@ const startEdit  = (r) => { editingReviewId.value=r.id; newReview.value={stars:r
 const cancelEdit = () => { editingReviewId.value=null; newReview.value={stars:0,name:'',title:'',text:''}; hoverStar.value=0 }
 const deleteReview = (id) => { if(!confirm('Delete?')) return; allReviews.value=allReviews.value.filter(r=>r.id!==id); saveReviews(); showToast('🗑️ Review deleted.') }
 
-// ── Related ──────────────────────────────────────────────────────
+// ── Related ───────────────────────────────────────────────────────
 const relatedItems     = ref([])
 const relatedLoading   = ref(false)
 const relatedPage      = ref(0)
@@ -588,7 +579,7 @@ const perPage          = 5
 const paginatedRelated = computed(() => relatedItems.value.slice(relatedPage.value*perPage, relatedPage.value*perPage+perPage))
 const totalPages       = computed(() => Math.ceil(relatedItems.value.length/perPage))
 
-// ── Toast ────────────────────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────────
 const toastVisible = ref(false)
 const toastText    = ref('')
 let toastTimer
@@ -604,45 +595,91 @@ const formatPrice = (p) => {
   return Number(p) || 0
 }
 
-// ── Load product ─────────────────────────────────────────────────
-const loadProduct = async () => {
-  let loadedAsProduct = false
+// ── Load product ──────────────────────────────────────────────────
+// const loadProduct = async () => {
+//   let loadedAsProduct = false
+//   try {
+//     const res = await axios.get(`/api/products/${route.params.id}`)
+//     if (res.data && res.data.id) {
+//       loadedAsProduct = true
+//       isModel.value = false
+//       product.value = res.data
+//       // ✅ Default pe Original selected hoga (-1), color click pe apni images
+//       selectedColorIdx.value = -1
+//       activeThumbIdx.value = 0
+//       nextTick(() => loadReviews())
+//     }
+//   } catch {}
 
-  // ✅ PEHLE product try karo
-  try {
-    const res = await axios.get(`/api/products/${route.params.id}`)
-    if (res.data && res.data.id) {
-      loadedAsProduct = true
+//   if (!loadedAsProduct) {
+//     try {
+//       const res = await axios.get(`/api/models/${route.params.id}`)
+//       const m = res.data
+//       if (m && m.id) {
+//         isModel.value = true
+//         product.value = {
+//           id: m.id, name: m.title, type: 'Custom Model', price: m.price || 0,
+//           description: m.description || '',
+//           image: m.thumbnail || m.views?.front?.svg || '',
+//           is_new: false, in_stock: true, stock_quantity: null,
+//           shipping_enabled: false, sizes: [], colors: [],
+//           gallery_images: [], size_chart_image: null,
+//           category_id: m.category_id || null,
+//           subcategory_id: m.subcategory_id || null
+//         }
+//         nextTick(() => loadReviews())
+//       }
+//     } catch (err) { console.error('Load failed:', err) }
+//   }
+// }
+// loadProduct function mein — REPLACE karo poora function:
+const loadProduct = async () => {
+  const type = route.query.type
+
+  if (type === 'model') {
+    try {
+      const res = await axios.get(`/api/models/${route.params.id}`)
+      const m = res.data
+      isModel.value = true
+      product.value = {
+        id: m.id,
+        name: m.title,
+        type: 'Custom Model',
+        price: m.price || 0,
+        description: m.description || '',
+        image: m.thumbnail || m.front_svg || m.views?.front?.svg || '',
+        is_new: false,
+        in_stock: true,
+        stock_quantity: null,
+        shipping_enabled: false,
+        shipping_cost: 0,
+        free_shipping_above: null,
+        sizes: [],
+        colors: [],
+        gallery_images: [],
+        size_chart_image: null,
+        category_id: m.category_id || null,
+        subcategory_id: m.subcategory_id || null,
+      }
+      nextTick(() => loadReviews())
+    } catch (err) {
+      console.error('Model load error:', err)
+    }
+
+  } else {
+    try {
+      const res = await axios.get(`/api/products/${route.params.id}`)
       isModel.value = false
       product.value = res.data
       selectedColorIdx.value = -1
       activeThumbIdx.value = 0
       nextTick(() => loadReviews())
+    } catch (err) {
+      console.error('Product load error:', err)
     }
-  } catch {}
-
-  // ✅ Agar product nahi mila TAB model try karo
-  if (!loadedAsProduct) {
-    try {
-      const res = await axios.get(`/api/models/${route.params.id}`)
-      const m = res.data
-      if (m && m.id) {
-        isModel.value = true
-        product.value = {
-          id: m.id, name: m.title, type: 'Custom Model', price: m.price || 0,
-          description: m.description || '',
-          image: m.thumbnail || m.views?.front?.svg || '',
-          is_new: false, in_stock: true, stock_quantity: null,
-          shipping_enabled: false, sizes: [], colors: [],
-          gallery_images: [], size_chart_image: null,
-          category_id: m.category_id || null,
-          subcategory_id: m.subcategory_id || null
-        }
-        nextTick(() => loadReviews())
-      }
-    } catch (err) { console.error('Load failed:', err) }
   }
 }
+
 const fetchRelated = async () => {
   relatedLoading.value = true; relatedItems.value = []
   try {
@@ -663,15 +700,45 @@ const fetchRelated = async () => {
 const toggleLike  = () => { cartStore.toggleLike(product.value.id); showToast(cartStore.isLiked(product.value.id) ? '❤️ Added to wishlist!' : '🤍 Removed from wishlist') }
 const handleShare = () => { if (navigator.share) navigator.share({ title: product.value.name, url: window.location.href }); else { navigator.clipboard.writeText(window.location.href); showToast('🔗 Link copied!') } }
 
+// const addToCart = () => {
+//   if (!effectiveSize.value)  { showToast('⚠️ Please select a size!'); return }
+//   if (!stockAvailable.value) { showToast('❌ This product is out of stock!'); return }
+//   if (qtyMax.value && quantity.value > qtyMax.value) { showToast(`⚠️ Only ${qtyMax.value} in stock!`); return }
+// const cartItem = {
+//   ...product.value,
+//   image:               displayImage.value || product.value.image,
+//   // ✅ Checkout mein shipping calc ke liye
+//   shipping_enabled:    product.value.shipping_enabled    ?? false,
+//   shipping_cost:       product.value.shipping_cost       ?? 0,
+//   free_shipping_above: product.value.free_shipping_above ?? null,
+//   stock_quantity:      product.value.stock_quantity      ?? null,
+// }
+//   cartStore.addToCart(cartItem, effectiveSize.value, quantity.value)
+//   flyToCart(); showToast(`🛒 ${quantity.value}× (${effectiveSize.value}) added!`); quantity.value = 1
+// }
 const addToCart = () => {
   if (!effectiveSize.value)  { showToast('⚠️ Please select a size!'); return }
-  if (!stockAvailable.value) { showToast('❌ This product is out of stock!'); return }
+  if (!stockAvailable.value) { showToast('❌ Out of stock!'); return }
   if (qtyMax.value && quantity.value > qtyMax.value) { showToast(`⚠️ Only ${qtyMax.value} in stock!`); return }
-  const cartItem = { ...product.value, image: displayImage.value || product.value.image }
-  cartStore.addToCart(cartItem, effectiveSize.value, quantity.value)
-  flyToCart(); showToast(`🛒 ${quantity.value}× (${effectiveSize.value}) added!`); quantity.value = 1
-}
 
+  // ✅ Model ho to uski apni image, product ho to display image
+  const cartImage = isModel.value
+    ? product.value.image
+    : (displayImage.value || product.value.image)
+
+  const cartItem = {
+    ...product.value,
+    image: cartImage,
+    shipping_enabled:    product.value.shipping_enabled    ?? false,
+    shipping_cost:       product.value.shipping_cost       ?? 0,
+    free_shipping_above: product.value.free_shipping_above ?? null,
+    stock_quantity:      product.value.stock_quantity      ?? null,
+  }
+  cartStore.addToCart(cartItem, effectiveSize.value, quantity.value)
+  flyToCart()
+  showToast(`🛒 ${quantity.value}× (${effectiveSize.value}) added!`)
+  quantity.value = 1
+}
 const flyToCart = () => {
   const wrapper = imageContainer.value; if (!wrapper) return
   const img = wrapper.querySelector('img'); if (!img) return
@@ -685,10 +752,10 @@ const flyToCart = () => {
 }
 
 const resetState = () => {
-  selectedSize.value    = ''; customSizeVal.value = ''; customSizeOk.value = false
-  quantity.value        = 1;  relatedPage.value   = 0;  activeTab.value    = 'description'
+  selectedSize.value     = ''; customSizeVal.value = ''; customSizeOk.value = false
+  quantity.value         = 1;  relatedPage.value   = 0;  activeTab.value    = 'description'
   selectedColorIdx.value = -1; activeThumbIdx.value = 0
-  editingReviewId.value = null; newReview.value = { stars:0, name:'', title:'', text:'' }
+  editingReviewId.value  = null; newReview.value = { stars:0, name:'', title:'', text:'' }
   clearPreview()
 }
 
@@ -710,7 +777,7 @@ watch(() => route.params.id, async (newId) => {
 .product-layout{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-bottom:80px;padding-top:24px}
 @media(max-width:968px){.product-layout{grid-template-columns:1fr;gap:36px}}
 
-/* Gallery */
+/* ── Gallery ── */
 .product-visual{position:sticky;top:90px;height:fit-content}
 .gallery-wrap{display:flex;gap:10px}
 .thumbnails{display:flex;flex-direction:column;gap:8px;width:72px}
@@ -731,7 +798,7 @@ watch(() => route.params.id, async (newId) => {
 .img-action-btn:hover,.img-action-btn.active{background:#000;color:#fff;border-color:#000}
 .wishlist-btn{right:14px}.share-btn{right:62px}
 
-/* Product Info */
+/* ── Product Info ── */
 .product-info{padding-top:8px}
 .product-title{font-size:28px;font-weight:700;line-height:1.2;margin-bottom:6px}
 .product-subtitle{font-size:13px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
@@ -747,10 +814,49 @@ watch(() => route.params.id, async (newId) => {
 .option-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
 .selected-value{font-size:12px;color:#555;font-weight:600}
 .size-chart-link{font-size:12px;color:#2563eb;cursor:pointer;text-decoration:underline}
-.color-swatches{display:flex;gap:8px;flex-wrap:wrap}
-.color-swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:.15s;outline:none}
-.color-swatch:hover,.color-swatch.selected{border-color:#000;transform:scale(1.15)}
+
+/* ✅ COLOR SWATCHES — SQUARE with checkmark */
+.color-swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.color-swatch{
+  width:36px;height:36px;
+  border-radius:6px;
+  cursor:pointer;
+  border:3px solid transparent;
+  transition:.15s;
+  outline:none;
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.color-swatch:hover{border-color:#000;transform:scale(1.1)}
+.color-swatch.selected{border-color:#000;transform:scale(1.1)}
 .white-swatch{box-shadow:inset 0 0 0 1px #ccc}
+.check-icon{font-size:16px;font-weight:900;line-height:1}
+.check-dark{color:#000 !important}
+
+/* ✅ DEFAULT / ORIGINAL swatch */
+.default-swatch{
+  background:#f5f5f5;
+  overflow:hidden;
+  padding:0;
+}
+.default-swatch-img{
+  width:100%;height:100%;
+  object-fit:cover;
+  pointer-events:none;
+}
+.default-swatch-text{
+  font-size:9px;font-weight:700;color:#666;
+  text-transform:uppercase;letter-spacing:.3px;
+}
+.default-swatch .check-icon{
+  position:absolute;
+  bottom:1px;right:2px;
+  font-size:13px;
+  text-shadow:0 0 3px rgba(255,255,255,.8);
+}
+
+/* ── Sizes ── */
 .size-selector{display:flex;flex-wrap:wrap;gap:6px}
 .size-btn{min-width:44px;height:40px;padding:0 8px;border:1.5px solid #e0e0e0;background:#fff;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit;position:relative}
 .size-btn:hover:not(.unavailable):not(:disabled){border-color:#000}
@@ -765,12 +871,16 @@ watch(() => route.params.id, async (newId) => {
 .custom-size-input:focus{outline:none;border-color:#000}
 .custom-size-confirm{height:40px;padding:0 14px;background:#000;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
 .custom-confirmed{font-size:12px;color:#166534;margin-top:6px}
+
+/* ── Quantity ── */
 .quantity-selector{display:flex;align-items:center;width:fit-content;border:1.5px solid #e0e0e0;border-radius:6px;overflow:hidden}
 .qty-btn{width:42px;height:42px;border:none;background:#fff;font-size:18px;cursor:pointer;transition:.2s}
 .qty-btn:hover:not(:disabled){background:#f5f5f5}
 .qty-btn:disabled{opacity:.3;cursor:not-allowed}
 .qty-input{width:52px;height:42px;border:none;border-left:1.5px solid #e0e0e0;border-right:1.5px solid #e0e0e0;text-align:center;font-size:15px;font-weight:600}
 .qty-input:focus{outline:none}
+
+/* ── Action Buttons ── */
 .action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .btn-add-cart,.btn-checkout{height:50px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-add-cart{background:#000;color:#fff}
@@ -778,13 +888,22 @@ watch(() => route.params.id, async (newId) => {
 .btn-checkout{background:#fff;color:#000;border:1.5px solid #000}
 .btn-checkout:hover:not(:disabled){background:#000;color:#fff}
 .btn-add-cart:disabled,.btn-checkout:disabled{opacity:.35;cursor:not-allowed}
-.product-features{display:grid;gap:12px;padding-top:18px;border-top:1px solid #e8e8e8}
-.feature-item{display:flex;align-items:flex-start;gap:12px}
-.feature-item i{font-size:20px;color:#2563eb;margin-top:2px}
-.feature-item strong{display:block;font-size:13px;font-weight:700;margin-bottom:2px}
-.feature-item p{font-size:12px;color:#777;margin:0}
 
-/* Tabs */
+/* ✅ FEATURES — HORIZONTAL ROW (3 columns) */
+.product-features{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  padding-top:18px;
+  border-top:1px solid #e8e8e8;
+}
+@media(max-width:640px){.product-features{grid-template-columns:1fr}}
+.feature-item{display:flex;align-items:flex-start;gap:10px}
+.feature-item i{font-size:18px;color:#2563eb;margin-top:2px;flex-shrink:0}
+.feature-item strong{display:block;font-size:12px;font-weight:700;margin-bottom:2px}
+.feature-item p{font-size:11px;color:#777;margin:0}
+
+/* ── Tabs ── */
 .tabs-section{border-top:2px solid #e8e8e8;margin-bottom:70px}
 .tabs-nav{display:flex;border-bottom:1px solid #e8e8e8;overflow-x:auto}
 .tab-btn{padding:14px 22px;background:none;border:none;font-size:13px;font-weight:600;cursor:pointer;color:#888;border-bottom:3px solid transparent;margin-bottom:-1px;transition:.2s;font-family:inherit;white-space:nowrap}
@@ -804,18 +923,22 @@ watch(() => route.params.id, async (newId) => {
 .spec-table td:last-child{font-weight:600}
 .sc-img-wrap{text-align:center}
 .sc-img{max-width:100%;border-radius:10px;border:1px solid #e8e8e8;box-shadow:0 2px 12px rgba(0,0,0,.07)}
-.size-chart-table{width:100%;border-collapse:collapse;font-size:13px;min-width:460px}
-.size-chart-table th{background:#000;color:#fff;padding:11px 14px;text-align:center;font-weight:700}
-.size-chart-table td{padding:9px 14px;text-align:center;border-bottom:1px solid #f0f0f0}
-.size-chart-table tr:nth-child(even){background:#fafafa}
-.size-chart-table tr.highlighted{background:#dbeafe!important}
-.size-chart-table tr.row-unavail td{color:#ccc}
+
+/* ✅ SIZE CHART EMPTY STATE */
+.sc-empty{text-align:center;padding:48px 20px;background:#fafafa;border-radius:12px;border:1px solid #f0f0f0}
+.sc-empty i{font-size:36px;color:#ddd;display:block;margin-bottom:12px}
+.sc-empty p{color:#888;font-size:14px;font-weight:600;margin:0 0 4px}
+.sc-empty span{color:#bbb;font-size:12px}
+
+/* ── Shipping ── */
 .shipping-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:768px){.shipping-grid{grid-template-columns:1fr}}
 .ship-card{padding:18px;border:1px solid #e8e8e8;border-radius:8px}
 .ship-card i{font-size:24px;color:#2563eb;margin-bottom:8px;display:block}
 .ship-card h4{font-size:13px;font-weight:700;margin-bottom:4px}
 .ship-card p{font-size:12px;color:#666}
+
+/* ── Reviews ── */
 .reviews-summary{display:grid;grid-template-columns:150px 1fr;gap:32px;margin-bottom:28px;align-items:center;padding-bottom:24px;border-bottom:1px solid #e8e8e8}
 .rating-big{text-align:center}
 .rating-num{font-size:50px;font-weight:800;line-height:1}
@@ -863,6 +986,8 @@ watch(() => route.params.id, async (newId) => {
 .review-action-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:.2s}
 .edit-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
 .delete-btn:hover{background:#e53e3e;color:#fff;border-color:#e53e3e}
+
+/* ── Related ── */
 .related-section{padding-top:56px;border-top:1px solid #e8e8e8}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
 .section-header h2{font-size:20px;font-weight:700}
@@ -910,4 +1035,5 @@ watch(() => route.params.id, async (newId) => {
 .toast-msg{position:fixed;bottom:28px;right:28px;background:#111;color:#fff;padding:12px 18px;border-radius:8px;font-size:14px;font-weight:600;z-index:9999;pointer-events:none}
 .toast-slide-enter-active,.toast-slide-leave-active{transition:all .35s ease}
 .toast-slide-enter-from,.toast-slide-leave-to{opacity:0;transform:translateY(20px)}
+.pf-hint{font-size:11px;color:#999}
 </style>

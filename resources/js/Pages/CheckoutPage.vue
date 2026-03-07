@@ -3,10 +3,11 @@
   <breadcrumb-component />
 
   <div class="checkout-page">
+
     <!-- EMPTY CART -->
     <div v-if="cartStore.items.length === 0" class="empty-cart">
       <div class="empty-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       </div>
       <h3>Your cart is empty</h3>
       <p>Add some items to get started</p>
@@ -14,52 +15,64 @@
     </div>
 
     <div v-else class="checkout-wrapper">
-      <!-- HEADER -->
-      <div class="page-header">
+
+      <!-- TOP BAR -->
+      <div class="top-bar">
         <button class="btn-back" @click="router.push('/')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back
         </button>
-        <h1>Checkout</h1>
+        <div class="logo-area">
+          <span class="logo-text">Checkout</span>
+        </div>
         <div class="secure-badge">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Secure Checkout
+          Secure
         </div>
       </div>
 
-      <!-- BODY -->
-      <div class="checkout-body">
-        <!-- ─── LEFT COLUMN ─── -->
+      <!-- STEP PROGRESS -->
+      <div class="progress-bar">
+        <template v-for="(label, idx) in steps" :key="idx">
+          <div :class="['prog-step', { active: currentStep === idx+1, done: currentStep > idx+1 }]"
+               @click="currentStep > idx+1 ? currentStep = idx+1 : null">
+            <div class="prog-circle">
+              <svg v-if="currentStep > idx+1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span v-else>{{ idx+1 }}</span>
+            </div>
+            <span class="prog-label">{{ label }}</span>
+          </div>
+          <div v-if="idx < steps.length-1" :class="['prog-line', { filled: currentStep > idx+1 }]"></div>
+        </template>
+      </div>
+
+      <!-- MAIN GRID -->
+      <div class="main-grid">
+
+        <!-- LEFT -->
         <div class="left-col">
 
-          <!-- STEP BAR -->
-          <div class="step-bar-wrap">
-            <template v-for="(label, idx) in steps" :key="idx">
-              <div :class="['step', { active: currentStep === idx+1, done: currentStep > idx+1 }]"
-                   @click="currentStep > idx+1 ? currentStep = idx+1 : null">
-                <div class="step-circle">
-                  <svg v-if="currentStep > idx+1" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span v-else>{{ idx+1 }}</span>
+          <!-- STEP 1: Contact -->
+          <transition name="fade-up" mode="out-in">
+            <div v-if="currentStep === 1" key="s1" class="panel">
+              <div class="panel-header">
+                <div class="panel-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
-                <span class="step-label">{{ label }}</span>
-              </div>
-              <div v-if="idx < steps.length-1" :class="['step-line', { filled: currentStep > idx+1 }]"></div>
-            </template>
-          </div>
-
-          <!-- ── STEP 1: Contact ── -->
-          <transition name="slide" mode="out-in">
-            <div v-if="currentStep === 1" key="s1" class="card">
-              <div class="card-head">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <h2>Contact Information</h2>
-              </div>
-              <div class="fields">
-                <div class="field">
-                  <label>Full Name <span class="req">*</span></label>
-                  <input v-model="form.name" type="text" placeholder="John Doe" :class="{ error: errors.name }" @input="errors.name=''" />
-                  <span v-if="errors.name" class="err-msg">{{ errors.name }}</span>
+                <div>
+                  <h2>Contact Information</h2>
+                  <p>We'll use this to send your order updates</p>
                 </div>
-                <div class="field-2col">
+              </div>
+              <div class="panel-body">
+                <div class="field-group">
+                  <div class="field">
+                    <label>Full Name <span class="req">*</span></label>
+                    <input v-model="form.name" type="text" placeholder="John Doe" :class="{ error: errors.name }" @input="errors.name=''" />
+                    <span v-if="errors.name" class="err-msg">{{ errors.name }}</span>
+                  </div>
+                </div>
+                <div class="field-row">
                   <div class="field">
                     <label>Email Address</label>
                     <input v-model="form.email" type="email" placeholder="you@example.com" />
@@ -71,7 +84,7 @@
                   </div>
                 </div>
               </div>
-              <div class="card-footer">
+              <div class="panel-footer">
                 <button class="btn-ghost" @click="router.push('/')">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                   Back to Shop
@@ -84,20 +97,25 @@
             </div>
           </transition>
 
-          <!-- ── STEP 2: Shipping ── -->
-          <transition name="slide" mode="out-in">
-            <div v-if="currentStep === 2" key="s2" class="card">
-              <div class="card-head">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <h2>Shipping Address</h2>
+          <!-- STEP 2: Shipping -->
+          <transition name="fade-up" mode="out-in">
+            <div v-if="currentStep === 2" key="s2" class="panel">
+              <div class="panel-header">
+                <div class="panel-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <div>
+                  <h2>Shipping Address</h2>
+                  <p>Where should we deliver your order?</p>
+                </div>
               </div>
-              <div class="fields">
+              <div class="panel-body">
                 <div class="field">
                   <label>Street Address <span class="req">*</span></label>
                   <textarea v-model="form.address" rows="2" placeholder="123 Main Street, Apt 4B" :class="{ error: errors.address }" @input="errors.address=''"></textarea>
                   <span v-if="errors.address" class="err-msg">{{ errors.address }}</span>
                 </div>
-                <div class="field-2col">
+                <div class="field-row">
                   <div class="field">
                     <label>City <span class="req">*</span></label>
                     <input v-model="form.city" type="text" placeholder="New York" :class="{ error: errors.city }" @input="errors.city=''" />
@@ -108,7 +126,7 @@
                     <input v-model="form.postalCode" type="text" placeholder="10001" />
                   </div>
                 </div>
-                <div class="field-2col">
+                <div class="field-row">
                   <div class="field">
                     <label>Province / State</label>
                     <input v-model="form.province" type="text" placeholder="e.g. Punjab" />
@@ -128,9 +146,8 @@
                     </select>
                   </div>
                 </div>
-
               </div>
-              <div class="card-footer">
+              <div class="panel-footer">
                 <button class="btn-ghost" @click="currentStep = 1">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                   Back
@@ -143,223 +160,215 @@
             </div>
           </transition>
 
-          <!-- ── STEP 3: Payment ── -->
-          <transition name="slide" mode="out-in">
-            <div v-if="currentStep === 3" key="s3" class="card">
-              <div class="card-head">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                <h2>Payment Method</h2>
-              </div>
-
-              <div class="pay-panel">
-                <!-- SIDEBAR TABS -->
-                <nav class="pay-nav">
-                  <button v-for="g in paymentGroups" :key="g.id"
-                          :class="['pay-tab', { active: activeGroup === g.id }]"
-                          @click="switchPaymentGroup(g)">
-                    <span class="tab-icon" v-html="g.svg"></span>
-                    <span class="tab-text">{{ g.label }}</span>
-                    <svg class="tab-arr" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-                  </button>
-                </nav>
-
-                <!-- PAYMENT CONTENT -->
-                <div class="pay-content">
-
-                  <!-- STRIPE CARD -->
-                  <transition name="slide" mode="out-in">
-                    <div v-if="activeGroup === 'card'" key="card" class="pay-section">
-                      <div class="card-brands">
-                        <!-- Mastercard -->
-                        <svg viewBox="0 0 50 30" class="brand-logo"><rect width="50" height="30" rx="4" fill="#fff" stroke="#e5e5e5"/><circle cx="19" cy="15" r="8" fill="#EB001B" opacity=".9"/><circle cx="31" cy="15" r="8" fill="#F79E1B" opacity=".9"/><path d="M25 8.6A8 8 0 0 1 28 15a8 8 0 0 1-3 6.4A8 8 0 0 1 22 15a8 8 0 0 1 3-6.4z" fill="#FF5F00"/></svg>
-                        <!-- Visa -->
-                        <svg viewBox="0 0 60 30" class="brand-logo"><rect width="60" height="30" rx="4" fill="#fff" stroke="#e5e5e5"/><text x="7" y="21" font-family="Arial" font-weight="900" font-size="14" fill="#1A1F71">VISA</text></svg>
-                        <!-- Amex -->
-                        <svg viewBox="0 0 60 30" class="brand-logo"><rect width="60" height="30" rx="4" fill="#fff" stroke="#e5e5e5"/><text x="5" y="13" font-family="Arial" font-weight="700" font-size="7" fill="#006FCF">AMERICAN</text><text x="5" y="22" font-family="Arial" font-weight="700" font-size="7" fill="#006FCF">EXPRESS</text></svg>
-                        <!-- Stripe badge -->
-                        <div class="stripe-badge">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#635bff" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                          Powered by Stripe
-                        </div>
-                      </div>
-
-                      <!-- Stripe Single Card Element -->
-                      <div class="field">
-                        <label>Card Information <span class="req">*</span></label>
-                        <div id="stripe-card-element" class="stripe-element-single"></div>
-                      </div>
-                      <div v-if="stripeError" class="stripe-err">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        {{ stripeError }}
-                      </div>
-                    </div>
-                  </transition>
-
-                  <!-- WALLETS -->
-                  <transition name="slide" mode="out-in">
-                    <div v-if="activeGroup === 'wallets'" key="wallets" class="pay-section">
-                      <p class="pay-desc">Select your preferred digital wallet to complete payment.</p>
-                      <div class="wallet-list">
-                        <button v-for="w in walletOptions" :key="w.id"
-                                :class="['wallet-item', { selected: form.paymentMethod === w.id }]"
-                                @click="form.paymentMethod = w.id">
-                          <span v-html="w.svg"></span>
-                          <span class="w-name">{{ w.name }}</span>
-                          <svg v-if="form.paymentMethod === w.id" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                        </button>
-                      </div>
-                      <div class="info-note">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        You'll be redirected to complete payment securely.
-                      </div>
-                    </div>
-                  </transition>
-
-                  <!-- P2P -->
-                  <transition name="slide" mode="out-in">
-                    <div v-if="activeGroup === 'p2p'" key="p2p" class="pay-section">
-                      <p class="pay-desc">Choose a peer-to-peer payment service.</p>
-                      <div class="wallet-list">
-                        <button v-for="w in p2pOptions" :key="w.id"
-                                :class="['wallet-item', { selected: form.paymentMethod === w.id }]"
-                                @click="form.paymentMethod = w.id">
-                          <span v-html="w.svg"></span>
-                          <span class="w-name">{{ w.name }}</span>
-                          <svg v-if="form.paymentMethod === w.id" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                        </button>
-                      </div>
-                      <div class="info-note">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        Payment details sent after order confirmation.
-                      </div>
-                    </div>
-                  </transition>
-
-                  <!-- PAYPAL -->
-                  <transition name="slide" mode="out-in">
-                    <div v-if="activeGroup === 'paypal'" key="paypal" class="pay-section">
-                      <div class="redir-block">
-                        <svg width="88" height="26" viewBox="0 0 88 26"><text x="0" y="22" font-family="Arial" font-weight="900" font-size="22" fill="#003087">Pay</text><text x="42" y="22" font-family="Arial" font-weight="900" font-size="22" fill="#009cde">Pal</text></svg>
-                        <p>You'll be securely redirected to PayPal. After confirmation, you'll return automatically.</p>
-                      </div>
-                    </div>
-                  </transition>
-
-                  <!-- WIRE -->
-                  <transition name="slide" mode="out-in">
-                    <div v-if="activeGroup === 'wire'" key="wire" class="pay-section">
-                      <p class="pay-desc">Transfer directly to our bank account.</p>
-                      <div class="wire-table">
-                        <div class="wire-row"><span>Bank</span><strong>Chase Bank</strong></div>
-                        <div class="wire-row"><span>Account Name</span><strong>Your Store LLC</strong></div>
-                        <div class="wire-row"><span>Account No.</span><strong>•••• 4521</strong></div>
-                        <div class="wire-row"><span>Routing No.</span><strong>021000021</strong></div>
-                      </div>
-                      <div class="info-note" style="margin-top:12px">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        Include order number as reference. Ships 1–2 days after clearance.
-                      </div>
-                    </div>
-                  </transition>
-
-                  <!-- COD -->
-                  <transition name="slide" mode="out-in">
-                    <div v-if="activeGroup === 'cod'" key="cod" class="pay-section">
-                      <div class="cod-block">
-                        <div class="cod-icon">
-                          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                        </div>
-                        <h4>Cash on Delivery</h4>
-                        <p>Pay in cash when your order arrives. No card or pre-payment required.</p>
-                      </div>
-                    </div>
-                  </transition>
-
+          <!-- STEP 3: Payment -->
+          <transition name="fade-up" mode="out-in">
+            <div v-if="currentStep === 3" key="s3" class="panel">
+              <div class="panel-header">
+                <div class="panel-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <div>
+                  <h2>Payment Method</h2>
+                  <p>Choose how you'd like to pay</p>
                 </div>
               </div>
 
-              <div class="card-footer">
+              <!-- Payment Tabs -->
+              <div class="pay-tabs-row">
+                <button v-for="g in paymentGroups" :key="g.id"
+                        :class="['pay-chip', { active: activeGroup === g.id }]"
+                        @click="switchPaymentGroup(g)">
+                  <span v-html="g.svg"></span>
+                  {{ g.label }}
+                </button>
+              </div>
+
+              <div class="panel-body pay-body">
+
+                <!-- CARD -->
+                <transition name="fade-up" mode="out-in">
+                  <div v-if="activeGroup === 'card'" key="card">
+                    <div class="brand-row">
+                      <svg viewBox="0 0 50 30" class="brand-svg"><rect width="50" height="30" rx="4" fill="#fff" stroke="#e8e8e8"/><circle cx="19" cy="15" r="8" fill="#EB001B" opacity=".9"/><circle cx="31" cy="15" r="8" fill="#F79E1B" opacity=".9"/><path d="M25 8.6A8 8 0 0 1 28 15a8 8 0 0 1-3 6.4A8 8 0 0 1 22 15a8 8 0 0 1 3-6.4z" fill="#FF5F00"/></svg>
+                      <svg viewBox="0 0 60 30" class="brand-svg"><rect width="60" height="30" rx="4" fill="#fff" stroke="#e8e8e8"/><text x="7" y="21" font-family="Arial" font-weight="900" font-size="14" fill="#1A1F71">VISA</text></svg>
+                      <svg viewBox="0 0 60 30" class="brand-svg"><rect width="60" height="30" rx="4" fill="#fff" stroke="#e8e8e8"/><text x="5" y="13" font-family="Arial" font-weight="700" font-size="7" fill="#006FCF">AMERICAN</text><text x="5" y="22" font-family="Arial" font-weight="700" font-size="7" fill="#006FCF">EXPRESS</text></svg>
+                      <div class="stripe-pill">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#635bff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Powered by Stripe
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label>Card Information <span class="req">*</span></label>
+                      <div id="stripe-card-element" class="stripe-box"></div>
+                    </div>
+                    <div v-if="stripeError" class="stripe-err">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      {{ stripeError }}
+                    </div>
+                  </div>
+                </transition>
+
+                <!-- WALLETS -->
+                <transition name="fade-up" mode="out-in">
+                  <div v-if="activeGroup === 'wallets'" key="wallets">
+                    <p class="pay-hint">Select your preferred digital wallet.</p>
+                    <div class="option-list">
+                      <button v-for="w in walletOptions" :key="w.id"
+                              :class="['option-item', { selected: form.paymentMethod === w.id }]"
+                              @click="form.paymentMethod = w.id">
+                        <span v-html="w.svg"></span>
+                        <span class="opt-name">{{ w.name }}</span>
+                        <span class="opt-check" v-if="form.paymentMethod === w.id">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                      </button>
+                    </div>
+                    <div class="info-note">You'll be redirected to complete payment securely.</div>
+                  </div>
+                </transition>
+
+                <!-- P2P -->
+                <transition name="fade-up" mode="out-in">
+                  <div v-if="activeGroup === 'p2p'" key="p2p">
+                    <p class="pay-hint">Choose a peer-to-peer payment service.</p>
+                    <div class="option-list">
+                      <button v-for="w in p2pOptions" :key="w.id"
+                              :class="['option-item', { selected: form.paymentMethod === w.id }]"
+                              @click="form.paymentMethod = w.id">
+                        <span v-html="w.svg"></span>
+                        <span class="opt-name">{{ w.name }}</span>
+                        <span class="opt-check" v-if="form.paymentMethod === w.id">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                      </button>
+                    </div>
+                    <div class="info-note">Payment details sent after order confirmation.</div>
+                  </div>
+                </transition>
+
+                <!-- PAYPAL -->
+                <transition name="fade-up" mode="out-in">
+                  <div v-if="activeGroup === 'paypal'" key="paypal" class="paypal-block">
+                    <svg width="100" height="28" viewBox="0 0 88 26"><text x="0" y="22" font-family="Arial" font-weight="900" font-size="22" fill="#003087">Pay</text><text x="42" y="22" font-family="Arial" font-weight="900" font-size="22" fill="#009cde">Pal</text></svg>
+                    <p>You'll be securely redirected to PayPal. After completing payment, you'll return here automatically.</p>
+                  </div>
+                </transition>
+
+                <!-- WIRE -->
+                <transition name="fade-up" mode="out-in">
+                  <div v-if="activeGroup === 'wire'" key="wire">
+                    <p class="pay-hint">Transfer directly to our bank account.</p>
+                    <div class="wire-grid">
+                      <div class="wire-row"><span>Bank</span><strong>Chase Bank</strong></div>
+                      <div class="wire-row"><span>Account Name</span><strong>Your Store LLC</strong></div>
+                      <div class="wire-row"><span>Account No.</span><strong>•••• 4521</strong></div>
+                      <div class="wire-row"><span>Routing No.</span><strong>021000021</strong></div>
+                    </div>
+                    <div class="info-note" style="margin-top:14px">Include order number as reference. Ships 1–2 days after clearance.</div>
+                  </div>
+                </transition>
+
+                <!-- COD -->
+                <transition name="fade-up" mode="out-in">
+                  <div v-if="activeGroup === 'cod'" key="cod" class="cod-block">
+                    <div class="cod-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    </div>
+                    <h4>Cash on Delivery</h4>
+                    <p>Pay in cash when your order arrives. No card or pre-payment needed.</p>
+                  </div>
+                </transition>
+
+              </div>
+
+              <div class="panel-footer">
                 <button class="btn-ghost" @click="currentStep = 2">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                   Back
                 </button>
-                <button class="btn-primary btn-place" :disabled="!form.paymentMethod || loading" @click="placeOrder">
-                  <svg v-if="!loading" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <button class="btn-place" :disabled="!form.paymentMethod || loading" @click="placeOrder">
+                  <svg v-if="!loading" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   <span v-if="loading" class="spin"></span>
                   {{ loading ? 'Processing...' : `Place Order — $${totalAmount}` }}
                 </button>
               </div>
             </div>
           </transition>
-
         </div>
 
-        <!-- ─── RIGHT COLUMN: Order Summary ─── -->
+        <!-- RIGHT: Order Summary -->
         <aside class="right-col">
-          <div class="summary-card">
-            <h3 class="sum-title">Order Summary</h3>
+          <div class="summary-panel">
+            <h3>Order Summary</h3>
 
             <div class="sum-items">
               <div v-for="item in cartStore.items" :key="item.id + item.size" class="sum-item">
-                <div class="sum-thumb">
+                <div class="thumb-wrap">
                   <img :src="item.image" :alt="item.name" />
-                  <span class="sum-qty-badge">{{ item.quantity }}</span>
+                  <span class="qty-badge">{{ item.quantity }}</span>
                 </div>
-                <div class="sum-info">
-                  <p class="sum-name">{{ item.name }}</p>
-                  <p class="sum-meta">Size: {{ item.size }}</p>
-                  <div class="qty-ctrl">
+                <div class="item-info">
+                  <p class="item-name">{{ item.name }}</p>
+                  <p class="item-size">Size: {{ item.size }}</p>
+                  <p v-if="item.stock_quantity" class="item-stock">{{ item.stock_quantity }} left</p>
+                  <div class="qty-row">
                     <button class="qty-btn" @click="decreaseQty(item)" :disabled="item.quantity <= 1">
                       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
                     <span>{{ item.quantity }}</span>
-                    <button class="qty-btn" @click="increaseQty(item)">
+                    <button class="qty-btn" @click="increaseQty(item)" :disabled="item.stock_quantity && item.quantity >= Number(item.stock_quantity)">
                       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
                   </div>
                 </div>
-                <div class="sum-item-right">
-                  <span class="sum-price">${{ (Number(item.price) * item.quantity).toFixed(2) }}</span>
-                  <button class="del-btn" @click="removeItem(item)" title="Remove">
+                <div class="item-right">
+                  <span class="item-price">${{ (Number(item.price) * item.quantity).toFixed(2) }}</span>
+                  <button class="del-btn" @click="removeItem(item)">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div class="sum-divider"></div>
+            <div class="divider"></div>
 
             <div class="sum-rows">
-              <div class="sum-row"><span>Subtotal</span><span>${{ subtotal }}</span></div>
+              <div class="sum-row"><span>Subtotal</span><span>${{ subtotal.toFixed(2) }}</span></div>
               <div class="sum-row">
                 <span>Shipping</span>
-                <span :class="shipping === 0 ? 'tag-free' : totalQty === 3 ? 'tag-discount' : ''">{{ shippingLabel }}</span>
+                <span :class="shipping === 0 ? 'tag-free' : totalQty === 3 ? 'tag-disc' : ''">{{ shippingLabel }}</span>
               </div>
-              <div v-if="totalQty === 3" class="ship-note">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                10% shipping for qty 3
-              </div>
-              <div v-if="totalQty > 3" class="ship-note free-note">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Free shipping on qty 4+! 🎉
+              <!-- Free Shipping Progress Bar -->
+              <div v-if="freeShippingThreshold" class="free-ship-bar-wrap">
+                <div class="free-ship-bar-track">
+                  <div class="free-ship-bar-fill" :style="{ width: freeShippingProgress + '%' }"></div>
+                </div>
+                <div v-if="amountToFreeShipping" class="free-ship-msg">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  Add <strong>${{ amountToFreeShipping }}</strong> more for FREE shipping!
+                </div>
+                <div v-else class="free-ship-msg unlocked">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                   Free shipping unlocked!
+                </div>
               </div>
             </div>
 
-            <div class="sum-divider"></div>
-            <div class="sum-total"><span>Total</span><span>${{ totalAmount }}</span></div>
+            <div class="divider"></div>
+            <div class="sum-total"><span>Total</span><strong>${{ totalAmount }}</strong></div>
 
-            <div class="trust-badges">
+            <div class="trust-list">
               <div class="trust-item">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span>SSL Secure Checkout</span>
+                SSL Secure Checkout
               </div>
               <div class="trust-item">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-                <span>60-Day Free Returns</span>
+                60-Day Free Returns
               </div>
               <div class="trust-item">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                <span>Fast Worldwide Delivery</span>
+                Fast Worldwide Delivery
               </div>
             </div>
           </div>
@@ -385,9 +394,8 @@ const currentStep = ref(1)
 const activeGroup = ref('card')
 const stripeError = ref('')
 
-// Stripe instances
-let stripe      = null
-let cardElement = null   // single combined card element
+let stripe = null
+let cardElement = null
 
 const steps = ['Contact', 'Shipping', 'Payment']
 
@@ -397,12 +405,8 @@ const form = ref({
   deliveryDays: 'standard',
   paymentMethod: 'stripe',
 })
-
 const errors = ref({ name: '', phone: '', address: '', city: '' })
 
-
-
-// ── SVGs ──
 const svgCard   = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>'
 const svgWallet = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>'
 const svgDollar = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
@@ -411,104 +415,123 @@ const svgWire   = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" s
 const svgBox    = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
 
 const paymentGroups = [
-  { id: 'card',    svg: svgCard,   label: 'Credit / Debit Card',  defaultMethod: 'stripe'   },
-  { id: 'wallets', svg: svgWallet, label: 'Apple / Google Pay',   defaultMethod: 'applepay' },
-  { id: 'p2p',     svg: svgDollar, label: 'Cash App · Venmo · Zelle', defaultMethod: 'cashapp' },
-  { id: 'paypal',  svg: svgGlobe,  label: 'PayPal',               defaultMethod: 'paypal'   },
-  { id: 'wire',    svg: svgWire,   label: 'Wire Transfer',        defaultMethod: 'wire'     },
-  { id: 'cod',     svg: svgBox,    label: 'Cash on Delivery',     defaultMethod: 'cod'      },
+  { id: 'card',    svg: svgCard,   label: 'Card',      defaultMethod: 'stripe'   },
+  { id: 'wallets', svg: svgWallet, label: 'Wallets',   defaultMethod: 'applepay' },
+  { id: 'p2p',     svg: svgDollar, label: 'P2P',       defaultMethod: 'cashapp'  },
+  { id: 'paypal',  svg: svgGlobe,  label: 'PayPal',    defaultMethod: 'paypal'   },
+  { id: 'wire',    svg: svgWire,   label: 'Wire',      defaultMethod: 'wire'     },
+  { id: 'cod',     svg: svgBox,    label: 'COD',       defaultMethod: 'cod'      },
 ]
 
 const walletOptions = [
   { id: 'applepay',  svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a5.5 5.5 0 0 1 4 1.5A5.5 5.5 0 0 1 12 5a5.5 5.5 0 0 1-4-1.5A5.5 5.5 0 0 1 12 2z"/><path d="M20 17c0 3-3.5 5-8 5s-8-2-8-5c0-3.5 2-7 4-9.5 1 1.5 2.5 2.5 4 2.5s3-1 4-2.5c2 2.5 4 6 4 9.5z"/></svg>', name: 'Apple Pay'  },
-  { id: 'googlepay', svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>',  name: 'Google Pay' },
+  { id: 'googlepay', svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>', name: 'Google Pay' },
 ]
-
 const p2pOptions = [
-  { id: 'cashapp', svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>',  name: 'Cash App' },
-  { id: 'venmo',   svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 4v2c0 6-4 12-9 14L4 22"/><path d="M4 4l6 8 4-8"/></svg>', name: 'Venmo'    },
-  { id: 'zelle',   svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', name: 'Zelle'    },
+  { id: 'cashapp', svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>', name: 'Cash App' },
+  { id: 'venmo',   svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 4v2c0 6-4 12-9 14L4 22"/><path d="M4 4l6 8 4-8"/></svg>', name: 'Venmo' },
+  { id: 'zelle',   svg: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', name: 'Zelle' },
 ]
 
-// ── Computed ──
+const formatPrice = (p) => {
+  if (typeof p === 'string') return parseFloat(p.replace(/[^0-9.]/g, '')) || 0
+  return Number(p) || 0
+}
+
+// Subtotal: sum of all items
 const subtotal = computed(() =>
-  cartStore.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0).toFixed(2)
+  cartStore.items.reduce((s, i) => s + formatPrice(i.price) * i.quantity, 0)
 )
-const totalQty = computed(() => cartStore.items.reduce((s, i) => s + i.quantity, 0))
+
+const totalQty = computed(() =>
+  cartStore.items.reduce((s, i) => s + i.quantity, 0)
+)
+
+// Shipping: cart subtotal >= free_shipping_above → FREE
+// (Admin ne product page pe jo free_shipping_above set kiya, woh yahan check hoga)
 const shipping = computed(() => {
-  const qty = totalQty.value
-  const sub = parseFloat(subtotal.value)
-  if (qty > 3)   return 0
-  if (qty === 3) return parseFloat((sub * 0.10).toFixed(2))
-  return 19
+  const sub = subtotal.value
+  let total = 0
+  for (const item of cartStore.items) {
+    if (!item.shipping_enabled) continue
+    const cost      = formatPrice(item.shipping_cost || 0)
+    const freeAbove = item.free_shipping_above ? formatPrice(item.free_shipping_above) : null
+    // ✅ Agar cart ka TOTAL subtotal free_shipping_above se zyada ya barabar ho → FREE
+    if (freeAbove !== null && sub >= freeAbove) continue
+    total += cost * item.quantity
+  }
+  return parseFloat(total.toFixed(2))
 })
+
+// Label shown in summary
 const shippingLabel = computed(() => {
-  if (totalQty.value > 3)   return 'FREE'
-  if (totalQty.value === 3) return `+10% ($${shipping.value.toFixed(2)})`
+  if (shipping.value === 0) return 'FREE'
   return `$${shipping.value.toFixed(2)}`
 })
-const totalAmount = computed(() => (parseFloat(subtotal.value) + shipping.value).toFixed(2))
 
-// ── Stripe Setup ──
-const loadStripe = () => {
-  return new Promise((resolve) => {
-    if (window.Stripe) { resolve(window.Stripe); return }
-    const s = document.createElement('script')
-    s.src = 'https://js.stripe.com/v3/'
-    s.onload = () => resolve(window.Stripe)
-    document.head.appendChild(s)
-  })
-}
+// Sabse chhoti free_shipping_above threshold (progress bar ke liye)
+const freeShippingThreshold = computed(() => {
+  let lowest = null
+  for (const item of cartStore.items) {
+    if (item.shipping_enabled && item.free_shipping_above) {
+      const t = formatPrice(item.free_shipping_above)
+      if (lowest === null || t < lowest) lowest = t
+    }
+  }
+  return lowest
+})
+
+// Kitna aur lagega free shipping ke liye
+const amountToFreeShipping = computed(() => {
+  if (!freeShippingThreshold.value) return null
+  const diff = freeShippingThreshold.value - subtotal.value
+  return diff > 0 ? parseFloat(diff.toFixed(2)) : null
+})
+
+// Progress percentage (0-100) for free shipping bar
+const freeShippingProgress = computed(() => {
+  if (!freeShippingThreshold.value) return 0
+  const pct = (subtotal.value / freeShippingThreshold.value) * 100
+  return Math.min(Math.round(pct), 100)
+})
+
+const totalAmount = computed(() =>
+  (subtotal.value + shipping.value).toFixed(2)
+)
+
+const loadStripe = () => new Promise((resolve) => {
+  if (window.Stripe) { resolve(window.Stripe); return }
+  const s = document.createElement('script')
+  s.src = 'https://js.stripe.com/v3/'
+  s.onload = () => resolve(window.Stripe)
+  document.head.appendChild(s)
+})
 
 const mountStripeElements = async () => {
   await nextTick()
   const mountPoint = document.getElementById('stripe-card-element')
   if (!mountPoint) return
-
-  // Destroy old element if exists (prevents duplicate mount on tab switch)
-  if (cardElement) {
-    cardElement.destroy()
-    cardElement = null
-  }
-
-  // Load Stripe once
-  if (!stripe) {
-    const StripeJS = await loadStripe()
-    stripe = StripeJS(STRIPE_PK)
-  }
-
+  if (cardElement) { cardElement.destroy(); cardElement = null }
+  if (!stripe) { const S = await loadStripe(); stripe = S(STRIPE_PK) }
   const elements = stripe.elements()
-
   cardElement = elements.create('card', {
     hidePostalCode: true,
     style: {
-      base: {
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '14px',
-        color: '#111111',
-        letterSpacing: '0.02em',
-        '::placeholder': { color: '#aaaaaa' },
-      },
+      base: { fontFamily: "'Sora', sans-serif", fontSize: '14px', color: '#111', letterSpacing: '0.02em', '::placeholder': { color: '#bbb' } },
       invalid: { color: '#e53e3e', iconColor: '#e53e3e' },
     }
   })
-
   cardElement.mount('#stripe-card-element')
-  cardElement.on('change', e => {
-    stripeError.value = e.error ? e.error.message : ''
-  })
+  cardElement.on('change', e => { stripeError.value = e.error ? e.error.message : '' })
 }
 
-// ── Lifecycle ──
 onMounted(() => {
   if (currentStep.value === 3 && activeGroup.value === 'card') mountStripeElements()
 })
-
 watch(currentStep, (v) => {
   if (v === 3 && activeGroup.value === 'card') setTimeout(mountStripeElements, 100)
 })
 
-// ── Methods ──
 const switchPaymentGroup = (g) => {
   activeGroup.value = g.id
   form.value.paymentMethod = g.defaultMethod
@@ -522,7 +545,6 @@ const validateStep1 = () => {
   if (!form.value.phone.trim()) { errors.value.phone = 'Phone number is required'; ok = false }
   if (ok) currentStep.value = 2
 }
-
 const validateStep2 = () => {
   errors.value = { name: '', phone: '', address: '', city: '' }
   let ok = true
@@ -532,6 +554,9 @@ const validateStep2 = () => {
 }
 
 const increaseQty = (item) => {
+  // ✅ Respect stock_quantity limit (same as product page)
+  const maxQty = item.stock_quantity ? Number(item.stock_quantity) : null
+  if (maxQty !== null && item.quantity >= maxQty) return
   const idx = cartStore.items.findIndex(i => i.id === item.id && i.size === item.size)
   if (idx !== -1) {
     typeof cartStore.updateQuantity === 'function'
@@ -560,51 +585,32 @@ const removeItem = (item) => {
 const placeOrder = async () => {
   stripeError.value = ''
   loading.value = true
-
   try {
     let paymentToken = null
-
-    // ── Stripe card flow ──
     if (activeGroup.value === 'card') {
       const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
+        type: 'card', card: cardElement,
         billing_details: { name: form.value.name, phone: form.value.phone }
       })
-      if (error) {
-        stripeError.value = error.message
-        loading.value = false
-        return
-      }
+      if (error) { stripeError.value = error.message; loading.value = false; return }
       paymentToken = paymentMethod.id
     }
-
     const res = await axios.post('/api/orders', {
       cart: cartStore.items,
       checkout: {
-        name:          form.value.name,
-        email:         form.value.email,
-        phone:         form.value.phone,
-        address:       form.value.address,
-        city:          form.value.city,
-        postalCode:    form.value.postalCode,
-        province:      form.value.province,
-        country:       form.value.country,
-        deliveryDays:  form.value.deliveryDays,
+        name: form.value.name, email: form.value.email, phone: form.value.phone,
+        address: form.value.address, city: form.value.city, postalCode: form.value.postalCode,
+        province: form.value.province, country: form.value.country,
+        deliveryDays: form.value.deliveryDays,
         paymentMethod: activeGroup.value === 'card' ? 'stripe' : form.value.paymentMethod,
-        stripeToken:   paymentToken,
+        stripeToken: paymentToken,
       }
-    }, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
-    })
-
+    }, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } })
     alert(`✅ Order placed! ID: ${res.data.order_id || 'N/A'}`)
     cartStore.clearCart()
     router.push('/')
-
   } catch (e) {
-    const msg = e.response?.data?.message || 'Something went wrong. Please try again.'
-    alert('❌ ' + msg)
+    alert('❌ ' + (e.response?.data?.message || 'Something went wrong. Please try again.'))
   } finally {
     loading.value = false
   }
@@ -612,297 +618,382 @@ const placeOrder = async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 .checkout-page {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Sora', sans-serif;
   min-height: 100vh;
-  background: #f5f5f7;
-  padding: 24px 20px 60px;
+  background: #F2F2F7;
+  padding: 28px 24px 80px;
   color: #111;
 }
 
-/* ── Empty Cart ── */
+/* Empty */
 .empty-cart {
-  text-align: center; padding: 100px 20px;
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 120px 20px; gap: 14px; text-align: center;
 }
-.empty-icon { width: 80px; height: 80px; background: #fff; border-radius: 50%; border: 1px solid #e4e4e7; display: flex; align-items: center; justify-content: center; color: #ccc; }
-.empty-cart h3 { font-size: 20px; font-weight: 700; }
-.empty-cart p  { font-size: 13px; color: #888; }
-.btn-shop { display: inline-block; padding: 11px 26px; background: #111; color: #fff; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; margin-top: 6px; }
+.empty-icon {
+  width: 88px; height: 88px; background: #fff; border-radius: 50%;
+  border: 1.5px solid #E5E5EA; display: flex; align-items: center;
+  justify-content: center; color: #C7C7CC;
+}
+.empty-cart h3 { font-size: 22px; font-weight: 700; }
+.empty-cart p  { font-size: 13px; color: #8E8E93; }
+.btn-shop {
+  display: inline-block; padding: 12px 28px; background: #111;
+  color: #fff; border-radius: 10px; font-size: 13px; font-weight: 600;
+  text-decoration: none; margin-top: 8px; transition: background .2s;
+}
 .btn-shop:hover { background: #333; }
 
-/* ── Wrapper ── */
-.checkout-wrapper { max-width: 1160px; margin: 0 auto; }
+/* Wrapper */
+.checkout-wrapper { max-width: 1200px; margin: 0 auto; }
 
-/* ── Header ── */
-.page-header {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+/* Top bar */
+.top-bar {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
 }
-.page-header h1 { font-size: 20px; font-weight: 700; flex: 1; }
 .btn-back {
-  width: 36px; height: 36px; background: #fff; border: 1px solid #e4e4e7;
-  border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: #555; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 38px; padding: 0 14px; background: #fff;
+  border: 1.5px solid #E5E5EA; border-radius: 10px;
+  font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600;
+  color: #555; cursor: pointer; transition: all .2s;
 }
-.btn-back:hover { background: #f4f4f5; color: #111; }
+.btn-back:hover { background: #f7f7f7; color: #111; border-color: #ccc; }
+.logo-area { flex: 1; }
+.logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
 .secure-badge {
   display: flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 600; color: #666;
-  background: #fff; border: 1px solid #e4e4e7; border-radius: 20px;
-  padding: 5px 10px;
+  font-size: 11px; font-weight: 600; color: #48BB78;
+  background: #F0FFF4; border: 1.5px solid #C6F6D5;
+  border-radius: 20px; padding: 5px 12px;
 }
 
-/* ── Body grid ── */
-.checkout-body {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 20px;
-  align-items: start;
+/* Progress */
+.progress-bar {
+  display: flex; flex-direction: row; align-items: center;
+  background: #fff; border-radius: 16px;
+  border: 1.5px solid #E5E5EA;
+  padding: 18px 28px; margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
 }
-@media (max-width: 900px) {
-  .checkout-body { grid-template-columns: 1fr; }
+.prog-step { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.prog-circle {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #E5E5EA; color: #8E8E93;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+  transition: all .3s;
+}
+.prog-step.active .prog-circle { background: #111; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+.prog-step.done .prog-circle   { background: #111; color: #fff; cursor: pointer; }
+.prog-label { font-size: 13px; font-weight: 600; color: #C7C7CC; transition: color .3s; white-space: nowrap; }
+.prog-step.active .prog-label,
+.prog-step.done .prog-label   { color: #111; }
+.prog-line {
+  flex: 1; height: 2px; background: #E5E5EA;
+  margin: 0 14px; border-radius: 2px; transition: background .4s;
+  min-width: 40px;
+}
+.prog-line.filled { background: #111; }
+
+/* Main grid */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px; align-items: start;
+}
+@media (max-width: 940px) {
+  .main-grid { grid-template-columns: 1fr; }
   .right-col { order: -1; }
 }
 
-/* ── Step bar ── */
-.step-bar-wrap {
-  display: flex; align-items: center;
-  background: #fff; border: 1px solid #e4e4e7; border-radius: 12px;
-  padding: 14px 22px; margin-bottom: 14px;
+/* Panel */
+.panel {
+  background: #fff;
+  border: 1.5px solid #E5E5EA;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
 }
-.step { display: flex; align-items: center; gap: 8px; }
-.step-circle {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: #e4e4e7; color: #999;
+
+.panel-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 22px 28px; border-bottom: 1.5px solid #F2F2F7;
+  background: #FAFAFA;
+}
+.panel-icon {
+  width: 42px; height: 42px; background: #F2F2F7;
+  border-radius: 12px; border: 1.5px solid #E5E5EA;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700;
-  transition: all .3s; flex-shrink: 0;
+  color: #555; flex-shrink: 0;
 }
-.step.active .step-circle, .step.done .step-circle { background: #111; color: #fff; }
-.step.done { cursor: pointer; }
-.step-label { font-size: 12px; font-weight: 600; color: #aaa; white-space: nowrap; transition: color .3s; }
-.step.active .step-label, .step.done .step-label { color: #111; }
-.step-line { flex: 1; height: 2px; background: #e4e4e7; margin: 0 10px; border-radius: 2px; transition: background .4s; }
-.step-line.filled { background: #111; }
+.panel-header h2 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.panel-header p  { font-size: 12px; color: #8E8E93; }
 
-/* ── Card ── */
-.card { background: #fff; border: 1px solid #e4e4e7; border-radius: 12px; overflow: hidden; }
-.card-head { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid #f0f0f0; }
-.card-head h2 { font-size: 13px; font-weight: 700; }
-.card-head svg { color: #888; flex-shrink: 0; }
+.panel-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; }
+.pay-body   { padding: 20px 28px; }
 
-/* ── Fields ── */
-.fields { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
-.field { display: flex; flex-direction: column; gap: 4px; }
-.field label { font-size: 10.5px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .7px; }
-.req { color: #e53e3e; }
+.panel-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 28px; border-top: 1.5px solid #F2F2F7;
+  background: #FAFAFA;
+}
+
+/* Fields */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 11px; font-weight: 700; color: #8E8E93;
+  text-transform: uppercase; letter-spacing: .8px;
+}
+.req { color: #FF3B30; }
 .field input, .field select, .field textarea {
-  height: 40px; padding: 0 12px;
-  border: 1px solid #e4e4e7; border-radius: 7px;
-  font-family: 'DM Sans', sans-serif; font-size: 13px; color: #111;
-  background: #fafafa; transition: all .2s; width: 100%;
+  height: 46px; padding: 0 14px;
+  border: 1.5px solid #E5E5EA; border-radius: 12px;
+  font-family: 'Sora', sans-serif; font-size: 14px;
+  color: #111; background: #FAFAFA;
+  transition: all .2s; width: 100%;
 }
-.field textarea { height: auto; padding: 10px 12px; resize: none; }
+.field textarea { height: auto; padding: 12px 14px; resize: none; }
 .field input:focus, .field select:focus, .field textarea:focus {
   outline: none; border-color: #111; background: #fff;
-  box-shadow: 0 0 0 3px rgba(17,17,17,.06);
+  box-shadow: 0 0 0 4px rgba(17,17,17,.06);
 }
-.field input.error, .field textarea.error { border-color: #e53e3e; }
-.err-msg { font-size: 11px; color: #e53e3e; margin-top: 2px; }
-.field-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field input.error, .field textarea.error { border-color: #FF3B30; }
+.err-msg { font-size: 11px; color: #FF3B30; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-
-
-/* ── Footer ── */
-.card-footer {
-  padding: 14px 20px; border-top: 1px solid #f0f0f0;
-  display: flex; justify-content: space-between; align-items: center;
-}
-
-/* ── Buttons ── */
+/* Buttons */
 .btn-primary {
-  display: inline-flex; align-items: center; gap: 7px;
-  height: 40px; padding: 0 18px;
-  background: #111; color: #fff; border: none; border-radius: 7px;
-  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 46px; padding: 0 22px;
+  background: #111; color: #fff;
+  border: none; border-radius: 12px;
+  font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: all .2s;
 }
-.btn-primary:hover:not(:disabled) { background: #2d2d2d; }
-.btn-primary:disabled { opacity: .35; cursor: not-allowed; }
-.btn-place { height: 44px; padding: 0 22px; }
+.btn-primary:hover { background: #2c2c2c; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.15); }
 .btn-ghost {
-  display: inline-flex; align-items: center; gap: 7px;
-  height: 40px; padding: 0 15px;
-  background: #fff; color: #555; border: 1px solid #e4e4e7; border-radius: 7px;
-  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 46px; padding: 0 18px;
+  background: #fff; color: #555;
+  border: 1.5px solid #E5E5EA; border-radius: 12px;
+  font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600;
   cursor: pointer; transition: all .2s;
 }
-.btn-ghost:hover { background: #f9f9f9; color: #111; }
+.btn-ghost:hover { background: #f7f7f7; color: #111; border-color: #ccc; }
+.btn-place {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 50px; padding: 0 28px;
+  background: #111; color: #fff;
+  border: none; border-radius: 14px;
+  font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .2s; letter-spacing: -.1px;
+}
+.btn-place:hover:not(:disabled) {
+  background: #222;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+}
+.btn-place:disabled { opacity: .35; cursor: not-allowed; }
 .spin {
-  width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.3);
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.3);
   border-top-color: #fff; border-radius: 50%;
-  animation: spin .7s linear infinite; display: inline-block;
+  animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Payment panel ── */
-.pay-panel {
-  display: grid; grid-template-columns: 170px 1fr;
-  border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;
+/* Payment chips */
+.pay-tabs-row {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 16px 28px; border-bottom: 1.5px solid #F2F2F7;
+  background: #FAFAFA;
 }
-.pay-nav {
-  background: #fafafa; border-right: 1px solid #f0f0f0;
-  display: flex; flex-direction: column;
+.pay-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 14px;
+  background: #fff; border: 1.5px solid #E5E5EA;
+  border-radius: 10px; cursor: pointer; color: #555;
+  font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600;
+  transition: all .18s;
 }
-.pay-tab {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 11px; background: none; border: none;
-  border-bottom: 1px solid #f0f0f0; border-left: 2.5px solid transparent;
-  cursor: pointer; color: #777; transition: all .18s;
-}
-.pay-tab:last-child { border-bottom: none; }
-.pay-tab:hover { background: #f1f1f1; color: #111; }
-.pay-tab.active { background: #fff; border-left-color: #111; color: #111; }
-.tab-icon { display: flex; flex-shrink: 0; }
-.tab-text { flex: 1; font-size: 11px; font-weight: 500; line-height: 1.3; text-align: left; }
-.tab-arr { color: #ddd; flex-shrink: 0; transition: color .2s; }
-.pay-tab.active .tab-arr { color: #111; }
-
-.pay-content { padding: 18px; background: #fff; min-height: 240px; }
-.pay-section {}
+.pay-chip:hover { border-color: #bbb; color: #111; }
+.pay-chip.active { background: #111; color: #fff; border-color: #111; }
 
 /* Stripe */
-.card-brands { display: flex; align-items: center; gap: 7px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; }
-.brand-logo { height: 24px; width: 40px; }
-.stripe-badge {
-  display: flex; align-items: center; gap: 4px;
-  margin-left: auto; font-size: 10px; font-weight: 600; color: #635bff;
-  background: #f4f3ff; border-radius: 4px; padding: 3px 7px;
+.brand-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px; padding-bottom: 16px;
+  border-bottom: 1.5px solid #F2F2F7; flex-wrap: wrap;
 }
-/* Stripe single card element */
-.stripe-element-single {
-  padding: 11px 12px;
-  border: 1px solid #e4e4e7;
-  border-radius: 7px;
-  background: #fafafa;
-  transition: all .2s;
-  min-height: 42px;
+.brand-svg { height: 28px; width: 46px; }
+.stripe-pill {
+  display: flex; align-items: center; gap: 5px;
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  color: #635bff; background: #EEF2FF;
+  border-radius: 6px; padding: 4px 9px;
 }
-.stripe-element-single.StripeElement--focus {
-  border-color: #111;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(17,17,17,.06);
+.stripe-box {
+  padding: 13px 14px; border: 1.5px solid #E5E5EA;
+  border-radius: 12px; background: #FAFAFA;
+  transition: all .2s; min-height: 46px;
+}
+.stripe-box.StripeElement--focus {
+  border-color: #111; background: #fff;
+  box-shadow: 0 0 0 4px rgba(17,17,17,.06);
 }
 .stripe-err {
-  display: flex; align-items: center; gap: 6px;
-  color: #e53e3e; font-size: 12px; margin-top: 10px;
-  background: #fff5f5; border: 1px solid #fed7d7; border-radius: 6px; padding: 8px 10px;
+  display: flex; align-items: center; gap: 7px;
+  color: #FF3B30; font-size: 12px; margin-top: 12px;
+  background: #FFF5F5; border: 1.5px solid #FED7D7;
+  border-radius: 10px; padding: 10px 12px;
 }
 
-/* Wallets / P2P */
-.pay-desc { font-size: 12px; color: #666; margin-bottom: 10px; line-height: 1.5; }
-.wallet-list { display: flex; flex-direction: column; gap: 6px; }
-.wallet-item {
-  display: flex; align-items: center; gap: 9px;
-  padding: 9px 11px; border: 1px solid #e4e4e7; border-radius: 7px;
-  background: #fafafa; cursor: pointer; font-family: 'DM Sans', sans-serif;
-  font-size: 12px; font-weight: 500; color: #444; transition: all .18s;
+/* Options */
+.pay-hint { font-size: 12.5px; color: #8E8E93; margin-bottom: 12px; line-height: 1.6; }
+.option-list { display: flex; flex-direction: column; gap: 8px; }
+.option-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 16px; border: 1.5px solid #E5E5EA;
+  border-radius: 12px; background: #FAFAFA;
+  cursor: pointer; font-family: 'Sora', sans-serif;
+  font-size: 13px; font-weight: 500; color: #444;
+  transition: all .18s; text-align: left;
 }
-.wallet-item:hover { border-color: #111; background: #fff; color: #111; }
-.wallet-item.selected { border-color: #111; background: #fff; font-weight: 700; color: #111; }
-.w-name { flex: 1; text-align: left; }
+.option-item:hover { border-color: #aaa; background: #fff; color: #111; }
+.option-item.selected { border-color: #111; background: #fff; font-weight: 700; color: #111; }
+.opt-name { flex: 1; }
+.opt-check { color: #111; }
 .info-note {
-  display: flex; align-items: flex-start; gap: 6px;
-  background: #f9f9f9; border: 1px solid #e4e4e7; border-radius: 7px;
-  padding: 9px 10px; font-size: 11px; color: #666; line-height: 1.5; margin-top: 10px;
+  padding: 10px 14px; background: #F8F8F8;
+  border: 1.5px solid #E5E5EA; border-radius: 10px;
+  font-size: 11.5px; color: #666; line-height: 1.6; margin-top: 12px;
 }
 
 /* PayPal */
-.redir-block { padding: 6px 0; }
-.redir-block p { font-size: 12px; color: #555; line-height: 1.6; margin-top: 10px; }
+.paypal-block { padding: 10px 0; }
+.paypal-block p { font-size: 12.5px; color: #555; line-height: 1.7; margin-top: 12px; }
 
 /* Wire */
-.wire-table { display: flex; flex-direction: column; gap: 5px; }
+.wire-grid { display: flex; flex-direction: column; gap: 6px; }
 .wire-row {
-  display: flex; justify-content: space-between;
-  font-size: 12px; padding: 8px 10px;
-  background: #fafafa; border: 1px solid #e4e4e7; border-radius: 6px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 14px; background: #FAFAFA;
+  border: 1.5px solid #E5E5EA; border-radius: 10px;
+  font-size: 13px;
 }
-.wire-row span { color: #999; }
-.wire-row strong { font-weight: 700; color: #111; font-family: 'DM Mono', monospace; font-size: 11px; }
+.wire-row span { color: #8E8E93; font-size: 12px; }
+.wire-row strong { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; color: #111; }
 
 /* COD */
-.cod-block { text-align: center; padding: 20px 10px; }
-.cod-icon { width: 64px; height: 64px; background: #f5f5f7; border-radius: 50%; border: 1px solid #e4e4e7; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
-.cod-block h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-.cod-block p { font-size: 12px; color: #666; line-height: 1.6; }
+.cod-block { text-align: center; padding: 28px 16px; }
+.cod-icon {
+  width: 72px; height: 72px; background: #F2F2F7;
+  border-radius: 50%; border: 1.5px solid #E5E5EA;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px; color: #555;
+}
+.cod-block h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.cod-block p  { font-size: 13px; color: #666; line-height: 1.7; }
 
-/* ── Transitions ── */
-.slide-enter-active, .slide-leave-active { transition: all .2s ease; }
-.slide-enter-from { opacity: 0; transform: translateY(8px); }
-.slide-leave-to   { opacity: 0; transform: translateY(-5px); }
+/* Transitions */
+.fade-up-enter-active, .fade-up-leave-active { transition: all .22s ease; }
+.fade-up-enter-from { opacity: 0; transform: translateY(10px); }
+.fade-up-leave-to   { opacity: 0; transform: translateY(-6px); }
 
-/* ── RIGHT COLUMN: Summary ── */
+/* Summary panel */
 .right-col { position: sticky; top: 22px; }
-
-.summary-card {
-  background: #fff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 18px;
+.summary-panel {
+  background: #fff; border: 1.5px solid #E5E5EA;
+  border-radius: 20px; padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
 }
-.sum-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+.summary-panel h3 { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
 
-.sum-items { display: flex; flex-direction: column; gap: 12px; }
-.sum-item  { display: flex; align-items: flex-start; gap: 10px; }
+.sum-items { display: flex; flex-direction: column; gap: 16px; }
+.sum-item  { display: flex; align-items: flex-start; gap: 12px; }
 
-.sum-thumb { position: relative; flex-shrink: 0; }
-.sum-thumb img {
-  width: 52px; height: 52px; border-radius: 8px; object-fit: contain;
-  border: 1px solid #e4e4e7; background: #fafafa; padding: 3px;
+.thumb-wrap { position: relative; flex-shrink: 0; }
+.thumb-wrap img {
+  width: 60px; height: 60px; border-radius: 12px;
+  object-fit: contain; border: 1.5px solid #E5E5EA;
+  background: #FAFAFA; padding: 4px;
 }
-.sum-qty-badge {
-  position: absolute; top: -5px; right: -5px;
-  width: 16px; height: 16px; background: #111; color: #fff;
+.qty-badge {
+  position: absolute; top: -6px; right: -6px;
+  width: 18px; height: 18px; background: #111; color: #fff;
   border-radius: 50%; font-size: 9px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
 
-.sum-info { flex: 1; min-width: 0; }
-.sum-name { font-size: 11.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-.sum-meta { font-size: 10px; color: #aaa; margin-bottom: 6px; }
+.item-info { flex: 1; min-width: 0; }
+.item-name {
+  font-size: 12.5px; font-weight: 600; margin-bottom: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.item-size { font-size: 10.5px; color: #C7C7CC; margin-bottom: 4px; }
+.item-stock { font-size: 10px; color: #FF9F0A; font-weight: 600; margin-bottom: 6px; }
 
-.qty-ctrl {
-  display: flex; align-items: center;
-  border: 1px solid #e4e4e7; border-radius: 5px; width: fit-content; overflow: hidden;
+.qty-row {
+  display: inline-flex; align-items: center;
+  border: 1.5px solid #E5E5EA; border-radius: 8px; overflow: hidden;
 }
 .qty-btn {
-  width: 22px; height: 22px; background: #fff; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; color: #555; transition: background .15s;
+  width: 26px; height: 26px; background: #fff; border: none;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; color: #555; transition: background .15s;
 }
-.qty-btn:hover:not(:disabled) { background: #f4f4f5; }
+.qty-btn:hover:not(:disabled) { background: #F2F2F7; }
 .qty-btn:disabled { opacity: .3; cursor: not-allowed; }
-.qty-ctrl span {
-  width: 24px; text-align: center; font-size: 11px; font-weight: 600;
-  border-left: 1px solid #e4e4e7; border-right: 1px solid #e4e4e7; line-height: 22px;
+.qty-row span {
+  width: 28px; text-align: center; font-size: 12px; font-weight: 600;
+  border-left: 1.5px solid #E5E5EA; border-right: 1.5px solid #E5E5EA;
+  line-height: 26px;
 }
 
-.sum-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
-.sum-price { font-size: 12px; font-weight: 700; }
-.del-btn { background: none; border: none; cursor: pointer; color: #ccc; display: flex; transition: color .15s; padding: 0; }
-.del-btn:hover { color: #e53e3e; }
+.item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.item-price { font-size: 13px; font-weight: 700; }
+.del-btn { background: none; border: none; cursor: pointer; color: #C7C7CC; display: flex; transition: color .15s; padding: 0; }
+.del-btn:hover { color: #FF3B30; }
 
-.sum-divider { height: 1px; background: #f0f0f0; margin: 12px 0; }
-.sum-rows { display: flex; flex-direction: column; gap: 7px; }
-.sum-row { display: flex; justify-content: space-between; font-size: 12px; color: #555; }
-.tag-free     { color: #16a34a; font-weight: 700; }
-.tag-discount { color: #d97706; font-weight: 700; }
-.ship-note { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #aaa; margin-top: 3px; }
-.ship-note.free-note { color: #16a34a; font-weight: 600; }
-.sum-total { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; }
+.divider { height: 1.5px; background: #F2F2F7; margin: 16px 0; }
 
-.trust-badges { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f0f0f0; }
-.trust-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #999; }
-.trust-item svg { color: #bbb; flex-shrink: 0; }
+.sum-rows { display: flex; flex-direction: column; gap: 9px; }
+.sum-row { display: flex; justify-content: space-between; font-size: 13px; color: #555; }
+.tag-free { color: #000000; font-weight: 700; }
+.tag-disc  { color: #FF9F0A; font-weight: 700; }
+.ship-note { font-size: 11px; color: #8E8E93; margin-top: 2px; }
+.ship-note.free { color: #000000; font-weight: 600; }
+
+/* Free Shipping Progress Bar */
+.free-ship-bar-wrap { margin-top: 10px; }
+.free-ship-bar-track {
+  width: 100%; height: 6px; background: #E5E5EA;
+  border-radius: 99px; overflow: hidden; margin-bottom: 7px;
+}
+.free-ship-bar-fill {
+  height: 100%; background: linear-gradient(90deg, #000000, #000000);
+  border-radius: 99px; transition: width .5s ease;
+}
+.free-ship-msg {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: #8E8E93; font-weight: 500;
+}
+.free-ship-msg strong { color: #111; font-weight: 700; }
+.free-ship-msg svg { color: #8E8E93; flex-shrink: 0; }
+.free-ship-msg.unlocked { color: #000000; font-weight: 700; }
+.free-ship-msg.unlocked svg { color: #000000; }
+
+.sum-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 17px; }
+.sum-total span  { font-weight: 600; }
+.sum-total strong { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+
+.trust-list { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1.5px solid #F2F2F7; }
+.trust-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #8E8E93; }
+.trust-item svg { color: #C7C7CC; flex-shrink: 0; }
 </style>

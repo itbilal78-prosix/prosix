@@ -93,7 +93,8 @@
                     <!-- Cart Icon → opens purchase modal -->
                     <button
                       class="model-cart-btn"
-                      @click.stop="router.push(`/product/${model.id}`)"
+                      @click.stop="router.push(`/product/${model.id}?type=model`)
+"
 title="View Product"
 
                     >

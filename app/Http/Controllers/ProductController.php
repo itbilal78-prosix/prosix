@@ -33,28 +33,23 @@ class ProductController extends Controller
     // ════════════════════════════════════════
     // CREATE
     // ════════════════════════════════════════
-    public function create()
-    {
-        $categories = Category::with('subcategories')
-            ->whereNull('parent_id')
-            ->where('status', 1)
-            ->get();
+   public function create()
+{
+    $categories  = Category::with('subcategories')->get();
+    $navigations = \App\Models\Navigation::where('status', 1)->orderBy('position')->get();
 
-        return view('products.create', compact('categories'));
-    }
+    return view('products.create', compact('categories', 'navigations'));
+}
 
     // ════════════════════════════════════════
     // EDIT
     // ════════════════════════════════════════
-    public function edit(Product $product)
-    {
-        $categories = Category::with('subcategories')
-            ->whereNull('parent_id')
-            ->where('status', 1)
-            ->get();
-
-        return view('products.edit', compact('product', 'categories'));
-    }
+  public function edit(Product $product)
+{
+    $categories  = Category::with('subcategories')->get();
+    $navigations = \App\Models\Navigation::where('status', 1)->orderBy('position')->get();
+    return view('products.edit', compact('product', 'categories', 'navigations'));
+}
 
     // ─────────────────────────────────────────────────────────────
     //  STORE

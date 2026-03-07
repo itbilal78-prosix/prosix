@@ -187,7 +187,7 @@ Route::get('/products/featured', [ProductController::class, 'featured'])
 Route::post('/categories/reorder', [CategoryController::class, 'reorder'])
     ->name('categories.reorder');
 
-
+Route::post('admin/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('admin.orders.cancel');
 // Storage files directly serve karo
 Route::get('/storage/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);

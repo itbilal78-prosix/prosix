@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
@@ -46,7 +47,7 @@ class OrderController extends Controller
 
             $totalQty = collect($request->cart)->sum(fn($i) => (int) $i['quantity']);
 
-            // Shipping logic (matches frontend)
+            // Shipping logic
             if ($totalQty > 3) {
                 $shipping = 0;
             } elseif ($totalQty === 3) {
@@ -58,8 +59,8 @@ class OrderController extends Controller
             $total = $subtotal + $shipping;
 
             // ── Stripe Payment Processing ──
-            $stripePaymentId     = null;
-            $stripeClientSecret  = null;
+            $stripePaymentId    = null;
+            $stripeClientSecret = null;
 
             if ($request->input('checkout.paymentMethod') === 'stripe') {
                 $stripeToken = $request->input('checkout.stripeToken');
@@ -72,31 +73,29 @@ class OrderController extends Controller
 
                 Stripe::setApiKey(config('services.stripe.secret'));
 
-                // Create PaymentIntent (amount in cents)
                 $paymentIntent = PaymentIntent::create([
                     'amount'               => (int) round($total * 100),
                     'currency'             => 'usd',
                     'payment_method'       => $stripeToken,
                     'confirm'              => true,
                     'automatic_payment_methods' => [
-                        'enabled'          => true,
-                        'allow_redirects'  => 'never',
+                        'enabled'         => true,
+                        'allow_redirects' => 'never',
                     ],
                     'description'          => 'Order from ' . $request->input('checkout.name'),
                     'metadata'             => [
-                        'customer_name'    => $request->input('checkout.name'),
-                        'customer_phone'   => $request->input('checkout.phone'),
-                        'customer_email'   => $request->input('checkout.email', ''),
+                        'customer_name'   => $request->input('checkout.name'),
+                        'customer_phone'  => $request->input('checkout.phone'),
+                        'customer_email'  => $request->input('checkout.email', ''),
                     ],
                 ]);
 
-                // Handle requires_action (3D Secure)
                 if ($paymentIntent->status === 'requires_action') {
                     return response()->json([
-                        'success'       => false,
+                        'success'         => false,
                         'requires_action' => true,
-                        'client_secret' => $paymentIntent->client_secret,
-                        'message'       => '3D Secure authentication required.',
+                        'client_secret'   => $paymentIntent->client_secret,
+                        'message'         => '3D Secure authentication required.',
                     ], 200);
                 }
 
@@ -128,9 +127,6 @@ class OrderController extends Controller
                 'items'                => $request->cart,
             ]);
 
-            // Optional: queue email notification
-            // Mail::to('admin@yourstore.com')->queue(new NewOrderMail($order));
-
             return response()->json([
                 'success'  => true,
                 'message'  => 'Order placed successfully!',
@@ -138,7 +134,6 @@ class OrderController extends Controller
             ], 201);
 
         } catch (CardException $e) {
-            // Stripe card declined
             return response()->json([
                 'success' => false,
                 'message' => $e->getError()->message ?? 'Your card was declined.',
@@ -182,5 +177,39 @@ class OrderController extends Controller
     {
         $order = Order::with('user')->findOrFail($id);
         return view('admin.orders.show', compact('order'));
+    }
+
+    // ── Admin: Cancel Order ──
+    public function cancel($id)
+    {
+        $order = Order::findOrFail($id);
+
+        // Already cancelled check
+        if ($order->status === 'cancelled') {
+            return redirect()
+                ->route('admin.orders.show', $id)
+                ->with('error', 'Yeh order pehle se cancel ho chuka hai.');
+        }
+
+        // Update status
+        $order->update(['status' => 'cancelled']);
+
+        // ── Customer ko Email notification ──
+        $customerEmail = $order->shipping_email ?? null;
+
+        if ($customerEmail) {
+            try {
+                Mail::send('emails.order-cancelled', ['order' => $order], function ($mail) use ($order, $customerEmail) {
+                    $mail->to($customerEmail, $order->shipping_name)
+                         ->subject('Aapka Order Cancel Ho Gaya - Order #' . $order->id);
+                });
+            } catch (\Exception $e) {
+                Log::error('Cancel email send failed', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return redirect()
+            ->route('admin.orders.show', $id)
+            ->with('success', 'Order #' . $id . ' cancel ho gaya. Customer ko notification bhej di gayi.');
     }
 }
