@@ -606,36 +606,43 @@ const formatPrice = (p) => {
 
 // ── Load product ─────────────────────────────────────────────────
 const loadProduct = async () => {
-  let loadedAsModel = false
+  let loadedAsProduct = false
+
+  // ✅ PEHLE product try karo
   try {
-    const res = await axios.get(`/api/models/${route.params.id}`)
-    const m = res.data
-    if (m && m.id) {
-      loadedAsModel = true; isModel.value = true
-      product.value = {
-        id: m.id, name: m.title, type: 'Custom Model', price: m.price || 0,
-        description: m.description || '', image: m.thumbnail || m.views?.front?.svg || '',
-        is_new: false, in_stock: true, stock_quantity: null, shipping_enabled: false,
-        sizes: [], colors: [], gallery_images: [], size_chart_image: null,
-        category_id: m.category_id || null, subcategory_id: m.subcategory_id || null
-      }
+    const res = await axios.get(`/api/products/${route.params.id}`)
+    if (res.data && res.data.id) {
+      loadedAsProduct = true
+      isModel.value = false
+      product.value = res.data
+      selectedColorIdx.value = -1
+      activeThumbIdx.value = 0
       nextTick(() => loadReviews())
     }
   } catch {}
 
-  if (!loadedAsModel) {
+  // ✅ Agar product nahi mila TAB model try karo
+  if (!loadedAsProduct) {
     try {
-      const res = await axios.get(`/api/products/${route.params.id}`)
-      isModel.value = false
-      product.value = res.data
-      // ✅ Always start with no color selected → main image shows first
-      selectedColorIdx.value = -1
-      activeThumbIdx.value   = 0
-      nextTick(() => loadReviews())
-    } catch (err) { console.error('Product load failed:', err) }
+      const res = await axios.get(`/api/models/${route.params.id}`)
+      const m = res.data
+      if (m && m.id) {
+        isModel.value = true
+        product.value = {
+          id: m.id, name: m.title, type: 'Custom Model', price: m.price || 0,
+          description: m.description || '',
+          image: m.thumbnail || m.views?.front?.svg || '',
+          is_new: false, in_stock: true, stock_quantity: null,
+          shipping_enabled: false, sizes: [], colors: [],
+          gallery_images: [], size_chart_image: null,
+          category_id: m.category_id || null,
+          subcategory_id: m.subcategory_id || null
+        }
+        nextTick(() => loadReviews())
+      }
+    } catch (err) { console.error('Load failed:', err) }
   }
 }
-
 const fetchRelated = async () => {
   relatedLoading.value = true; relatedItems.value = []
   try {
