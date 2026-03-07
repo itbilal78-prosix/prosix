@@ -129,23 +129,7 @@ Route::patch('categories/{category}/toggle-status',
     [App\Http\Controllers\CategoryController::class, 'toggleStatus']
 )->name('categories.toggle-status');
 
-/*
-|--------------------------------------------------------------------------
-| Frontend / User Routes
-|--------------------------------------------------------------------------
-*/
 
-// User registration/login/OTP page (view routes)
-
-// =============================================
-// File: routes/web.php  mein add karo yeh lines
-// =============================================
-
-// -----------------------------------------------
-// ADMIN ROUTES (middleware auth lagao apne hisaab se)
-// -----------------------------------------------
-
-// routes/web.php
 
 Route::post('/banners/reorder', [BannerController::class, 'reorder'])->name('banners.reorder');
 
