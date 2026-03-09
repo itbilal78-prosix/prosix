@@ -51,14 +51,12 @@ app.component('dashboard-sidebar', DashboardSidebar);
 import DashboardOverview from './user-dashboard/Components/DashboardOverview.vue';
 app.component('dashboard-overview', DashboardOverview);
 
-import PropertiesTab from './user-dashboard/Components/PropertiesTab.vue';
-app.component('properties-tab', PropertiesTab);
+
 
 import ProfileTab from './user-dashboard/Components/ProfileTab.vue';
 app.component('profile-tab', ProfileTab);
 
-import AnalyticsTab from './user-dashboard/Components/AnalyticsTab.vue';
-app.component('analytics-tab', AnalyticsTab);
+
 
 // Mount app
 app.mount('#app');

@@ -1,5 +1,16 @@
 <template>
-  <aside class="dash-sidebar" :class="{ collapsed: isMobileOpen }">
+  <aside class="dash-sidebar">
+
+    <!-- Back to Website -->
+    <div class="back-to-site">
+      <router-link to="/" class="back-btn">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        Back
+      </router-link>
+    </div>
+
     <!-- Brand Header -->
     <div class="sidebar-header">
       <div class="user-avatar">{{ userInitials }}</div>
@@ -20,7 +31,6 @@
       >
         <span class="nav-icon" v-html="item.icon"></span>
         <span class="nav-label">{{ item.label }}</span>
-        <span v-if="item.badge !== undefined" class="nav-badge">{{ item.badge }}</span>
       </button>
     </nav>
 
@@ -59,20 +69,9 @@ const navItems = computed(() => [
     icon: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`
   },
   {
-    tab: 'properties',
-    label: 'My Properties',
-    badge: props.dashboardStats?.total_properties ?? 0,
-    icon: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
-  },
-  {
     tab: 'profile',
     label: 'Profile Settings',
     icon: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
-  },
-  {
-    tab: 'analytics',
-    label: 'Analytics',
-    icon: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`
   }
 ])
 </script>
@@ -80,15 +79,44 @@ const navItems = computed(() => [
 <style scoped>
 .dash-sidebar {
   width: 260px;
-  min-height: calc(100vh - 64px);
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 64px;
-  height: calc(100vh - 64px);
-  box-shadow: 2px 0 12px rgba(0,0,0,0.04);
+  overflow: hidden;
+  background: #0a0a0a;
+  border-right: 1px solid #1f1f1f;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.4);
+}
+
+.back-to-site {
+  padding: 12px;
+  border-bottom: 1px solid #1f1f1f;
+  flex-shrink: 0;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.back-btn:hover {
+  background: rgba(255,255,255,0.13);
+  color: #fff;
+  border-color: rgba(255,255,255,0.22);
 }
 
 .sidebar-header {
@@ -96,33 +124,27 @@ const navItems = computed(() => [
   align-items: center;
   gap: 12px;
   padding: 20px 20px 16px;
-  border-bottom: 1px solid #f3f4f6;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-bottom: 1px solid #1f1f1f;
+  background: #0a0a0a;
+  flex-shrink: 0;
 }
-
 .user-avatar {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.25);
-  backdrop-filter: blur(10px);
-  color: white;
+  background: #ffffff;
+  color: #000000;
   font-weight: 700;
   font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(255,255,255,0.3);
   flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.15);
 }
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
+.user-info { display: flex; flex-direction: column; min-width: 0; }
 .user-name {
-  color: white;
+  color: #ffffff;
   font-weight: 600;
   font-size: 0.9rem;
   white-space: nowrap;
@@ -130,8 +152,8 @@ const navItems = computed(() => [
   text-overflow: ellipsis;
 }
 .user-email {
-  color: rgba(255,255,255,0.75);
-  font-size: 0.75rem;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.72rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -139,12 +161,15 @@ const navItems = computed(() => [
 
 .sidebar-nav {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  overflow-y: auto;
 }
+.sidebar-nav::-webkit-scrollbar { width: 3px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
 
 .nav-btn {
   display: flex;
@@ -154,47 +179,25 @@ const navItems = computed(() => [
   border-radius: 10px;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: rgba(255,255,255,0.5);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
   width: 100%;
-  position: relative;
-}
-.nav-btn:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-.nav-btn.active {
-  background: linear-gradient(135deg, #ede9fe, #e0e7ff);
-  color: #4f46e5;
-  font-weight: 600;
-}
-.nav-icon {
-  display: flex;
-  align-items: center;
   flex-shrink: 0;
 }
+.nav-btn:hover { background: rgba(255,255,255,0.07); color: #ffffff; }
+.nav-btn.active { background: #ffffff; color: #000000; font-weight: 700; }
+.nav-icon { display: flex; align-items: center; flex-shrink: 0; }
 .nav-label { flex: 1; }
-.nav-badge {
-  background: #4f46e5;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 20px;
-  min-width: 20px;
-  text-align: center;
-}
-.nav-btn.active .nav-badge { background: #4f46e5; }
 
 .sidebar-footer {
   padding: 16px 12px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid #1f1f1f;
+  flex-shrink: 0;
 }
-
 .logout-btn {
   display: flex;
   align-items: center;
@@ -203,18 +206,17 @@ const navItems = computed(() => [
   width: 100%;
   padding: 10px 14px;
   border-radius: 10px;
-  border: 1.5px solid #fecaca;
-  background: #fff5f5;
-  color: #dc2626;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: #ffffff;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .logout-btn:hover:not(:disabled) {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: white;
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.35);
 }
-.logout-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.logout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

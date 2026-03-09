@@ -1,4 +1,5 @@
 <template>
+    
   <div id="fb-show" v-if="book">
 
     <!-- Loader -->

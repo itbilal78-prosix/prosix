@@ -15,7 +15,7 @@
 
         {{-- DASHBOARD (SABKO) --}}
         <li class="nav-item">
-            <a class="nav-link text-light d-flex align-items-center px-3 py-2" href="#">
+            <a class="nav-link text-light d-flex align-items-center px-3 py-2" href="{{ route('admin.dashboard') }}">
                 <i class="bi bi-speedometer2 me-2"></i>
                 <span class="flex-grow-1">Dashboard</span>
             </a>
@@ -39,7 +39,6 @@
                 <li>
                     <a class="nav-link text-light py-1 d-flex align-items-center gap-2"
                        href="{{ route('admin.flipbooks.index') }}">
-                        <i class="bi bi-book-half"></i>
                         <span>Flip Books</span>
                     </a>
                 </li>
@@ -77,7 +76,6 @@
                     </a>
                 </li>
                 <li><a class="nav-link text-light py-1" href="{{ route('products.index') }}">All Products</a></li>
-                <li><a class="nav-link text-light py-1" href="{{ route('products.create') }}">Add Product</a></li>
             </ul>
         </li>
         @endif

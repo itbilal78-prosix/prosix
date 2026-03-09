@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-root">
-    <nav-component />
     <div class="dashboard-layout">
       <dashboard-sidebar
         :user="user"
@@ -25,17 +24,7 @@
             :dashboard-stats="dashboardStats"
             :recent-properties="recentProperties"
             :user="user"
-            @navigate-to-list="$router.push('/list-property')"
             key="overview"
-          />
-          <properties-tab
-            v-else-if="!isLoading && activeTab === 'properties'"
-            :properties="properties"
-            @navigate-to-list="$router.push('/list-property')"
-            @filter-change="handleFilterChange"
-            @edit-property="editProperty"
-            @toggle-status="togglePropertyStatus"
-            key="properties"
           />
           <profile-tab
             v-else-if="!isLoading && activeTab === 'profile'"
@@ -43,12 +32,6 @@
             :is-updating-profile="isUpdatingProfile"
             @update-profile="updateProfile"
             key="profile"
-          />
-          <analytics-tab
-            v-else-if="!isLoading && activeTab === 'analytics'"
-            :dashboard-stats="dashboardStats"
-            :recent-properties="recentProperties"
-            key="analytics"
           />
         </transition>
       </main>
@@ -63,14 +46,13 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
-const activeTab = ref('overview')
-const properties = ref([])
-const user = ref({})
-const dashboardStats = ref({})
-const recentProperties = ref([])
-const isLoading = ref(true)
-const isLoggingOut = ref(false)
-const isUpdatingProfile = ref(false)
+const activeTab          = ref('overview')
+const user               = ref({})
+const dashboardStats     = ref({})
+const recentProperties   = ref([])
+const isLoading          = ref(true)
+const isLoggingOut       = ref(false)
+const isUpdatingProfile  = ref(false)
 
 const checkAuth = () => {
   const token = localStorage.getItem('auth_token')
@@ -78,7 +60,6 @@ const checkAuth = () => {
   return token
 }
 
-// ✅ FIXED: Removed axios, using only fetch consistently
 const fetchUserData = async () => {
   const token = checkAuth()
   if (!token) return
@@ -91,7 +72,7 @@ const fetchUserData = async () => {
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.success) user.value = d.data
+      if (d.status) user.value = d.data   // ✅ 'status' not 'success'
     } else if (res.status === 401) {
       handleAuthError()
     }
@@ -110,26 +91,9 @@ const fetchDashboardStats = async () => {
     if (res.ok) {
       const d = await res.json()
       if (d.success) {
-        dashboardStats.value = d.data.stats
+        dashboardStats.value   = d.data.stats
         recentProperties.value = d.data.recent_properties
       }
-    } else if (res.status === 401) handleAuthError()
-  } catch (e) { console.error(e) }
-}
-
-const fetchUserProperties = async (propertyType = '', status = '') => {
-  const token = checkAuth()
-  if (!token) return
-  try {
-    const params = new URLSearchParams()
-    if (propertyType) params.append('type', propertyType)
-    if (status) params.append('status', status)
-    const res = await fetch(`${API_BASE_URL}/user/properties?${params}`, {
-      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
-    })
-    if (res.ok) {
-      const d = await res.json()
-      if (d.success) properties.value = d.data
     } else if (res.status === 401) handleAuthError()
   } catch (e) { console.error(e) }
 }
@@ -138,27 +102,6 @@ const handleAuthError = () => {
   localStorage.removeItem('auth_token')
   alert('Session expired. Please login again.')
   router.push('/user-login')
-}
-
-const handleFilterChange = (t, s) => fetchUserProperties(t, s)
-const editProperty = (p) => router.push(`/edit-property/${p.id}`)
-
-const togglePropertyStatus = async (property) => {
-  const token = checkAuth()
-  if (!token) return
-  try {
-    const res = await fetch(`${API_BASE_URL}/user/properties/${property.id}/toggle-status`, {
-      method: 'PATCH',
-      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
-    })
-    if (res.ok) {
-      const d = await res.json()
-      if (d.success) {
-        property.is_active = !property.is_active
-        await fetchDashboardStats()
-      }
-    } else if (res.status === 401) handleAuthError()
-  } catch (e) { console.error(e) }
 }
 
 const updateProfile = async (profileData) => {
@@ -177,8 +120,7 @@ const updateProfile = async (profileData) => {
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.success) {
-        // ✅ Update user object with new data from server or local form
+      if (d.status) {
         user.value = { ...user.value, ...profileData }
         alert('Profile updated successfully!')
       }
@@ -221,7 +163,7 @@ onMounted(async () => {
   if (checkAuth()) {
     isLoading.value = true
     try {
-      await Promise.all([fetchUserData(), fetchDashboardStats(), fetchUserProperties()])
+      await Promise.all([fetchUserData(), fetchDashboardStats()])
     } finally {
       isLoading.value = false
     }
@@ -237,14 +179,14 @@ onMounted(async () => {
 }
 .dashboard-layout {
   display: flex;
-  min-height: calc(100vh - 64px);
-  margin-top: 64px;
+  min-height: 100vh;
+  padding-left: 260px; /* sidebar width */
 }
 .dashboard-main {
   flex: 1;
   overflow-x: hidden;
   padding: 2rem;
-  min-height: 100%;
+  min-height: 100vh;
 }
 .loading-screen {
   display: flex;

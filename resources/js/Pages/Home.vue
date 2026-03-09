@@ -830,7 +830,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 /* Deals */
 .deals-section { background-color: #e0e0e0; }
-.deal-banner-box { width: 90%; height: 530px; border-radius: 18px; overflow: hidden; }
+.deal-banner-box { width: 90%; height: 550px; border-radius: 18px; overflow: hidden; }
 .banner-img { width: 100%; height: 100%; object-fit: cover; }
 .deal-card { position: relative; height: 260px; border-radius: 14px; overflow: hidden; transition: 0.3s ease; }
 @media (max-width: 991px) { .deal-card { height: 200px !important; } }

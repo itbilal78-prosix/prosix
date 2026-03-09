@@ -97,6 +97,12 @@ const routes = [
     component: () => import('@/Pages/Artworkform.vue'),
     meta: { breadcrumb: 'Artwork' }
   },
+  {
+    path: '/placeorder',
+    name: 'PlaceOrder',
+    component: () => import('@/Pages/PlaceOrder.vue'),
+    meta: { breadcrumb: 'PlaceOrder' }
+  },
 ]
 
 const router = createRouter({

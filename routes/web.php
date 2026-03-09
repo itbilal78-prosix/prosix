@@ -43,6 +43,9 @@ Route::middleware(['auth:admin'])
     ->name('admin.')   // 👈 yeh add karo
     ->group(function () {
 
+
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+
         Route::resource('admins', \App\Http\Controllers\AdminManagerController::class);
 
         Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('memberships');
@@ -183,8 +186,6 @@ Route::post('/admin/membership/download-pdf', [MembershipRequestController::clas
 Route::post('/models/bulk-destroy',   [CustomizerModelController::class, 'bulkDestroy'])->name('models.bulkDestroy');
 Route::post('/models/bulk-duplicate', [CustomizerModelController::class, 'bulkDuplicate'])->name('models.bulkDuplicate');
 Route::get('/api/search', [App\Http\Controllers\SearchController::class, 'search']);
-
-
 
 
 Route::get('/{any}', function () {

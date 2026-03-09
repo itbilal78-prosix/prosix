@@ -1,20 +1,22 @@
 <template>
   <div class="overview-root">
 
-    <!-- Page Header with user name -->
+    <!-- Page Header -->
     <div class="page-header">
       <div>
         <h1 class="page-title">
-          Welcome back, {{ user?.name ? user.name.split(' ')[0] : 'there' }}! 👋
+          Welcome back, {{ user?.name ? user.name.split(' ')[0] : 'there' }}!
         </h1>
-        <p class="page-sub">Here's what's happening with your properties.</p>
+        <p class="page-sub">Here's your store activity at a glance.</p>
       </div>
-      <button class="add-property-btn" @click="$emit('navigate-to-list')">
+      <router-link to="/shop" class="add-property-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
         </svg>
-        Add Property
-      </button>
+        Visit Store
+      </router-link>
     </div>
 
     <!-- Stats Cards -->
@@ -31,98 +33,133 @@
       </div>
     </div>
 
-    <!-- Recent Properties -->
+    <!-- Recent Orders -->
     <div class="section-card">
       <div class="section-header">
-        <h2 class="section-title">Recent Properties</h2>
-        <button v-if="recentProperties && recentProperties.length" class="view-all-link" @click="$emit('navigate-to-list')">View All</button>
+        <h2 class="section-title">Recent Orders</h2>
+        <router-link to="#" class="view-all-link">View All</router-link>
       </div>
 
-      <div v-if="!recentProperties || recentProperties.length === 0" class="empty-state">
+      <div v-if="!recentOrders || recentOrders.length === 0" class="empty-state">
         <div class="empty-icon">
           <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
           </svg>
         </div>
-        <h3>No properties listed yet</h3>
-        <p>Start by adding your first property listing.</p>
-        <button class="cta-btn" @click="$emit('navigate-to-list')">List Your First Property</button>
+        <h3>No orders yet</h3>
+        <p>Your recent orders will appear here.</p>
+        <router-link to="/" class="cta-btn">Start Shopping</router-link>
       </div>
 
-      <div v-else class="property-list">
-        <div class="property-row" v-for="property in recentProperties" :key="property.id">
-          <div class="prop-img-wrap">
-            <img
-              :src="property.images && property.images.length ? property.images[0] : '/placeholder-property.jpg'"
-              :alt="property.title"
-              class="prop-img"
-            />
+      <div v-else class="order-list">
+        <div class="order-row" v-for="order in recentOrders" :key="order.id">
+          <!-- Order Icon -->
+          <div class="order-icon-wrap">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
           </div>
-          <div class="prop-details">
-            <h4 class="prop-title">{{ property.title }}</h4>
-            <p class="prop-location">
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              {{ property.location }}
-            </p>
+
+          <!-- Order Details -->
+          <div class="order-details">
+            <h4 class="order-id">Order #{{ order.id }}</h4>
+            <p class="order-items">{{ order.items_count || 0 }} item(s)</p>
           </div>
-          <div class="prop-meta">
-            <span class="prop-price">{{ formatPrice(property.price) }}</span>
-            <span class="prop-status" :class="property.is_active ? 'status-active' : 'status-inactive'">
-              {{ property.is_active ? 'Active' : 'Inactive' }}
+
+          <!-- Status & Price -->
+          <div class="order-meta">
+            <span class="order-price">{{ formatPrice(order.total) }}</span>
+            <span class="order-status" :class="statusClass(order.status)">
+              {{ order.status || 'Pending' }}
             </span>
           </div>
-          <div class="prop-date">{{ formatDate(property.created_at) }}</div>
+
+          <!-- Date -->
+          <div class="order-date">{{ formatDate(order.created_at) }}</div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({
   dashboardStats: Object,
-  recentProperties: Array,
-  // ✅ Added user prop to show name in welcome message
   user: { type: Object, default: () => ({}) }
 })
-defineEmits(['navigate-to-list'])
 
+// ── Fetch recent orders ──
+const recentOrders = ref([])
+
+const token = () => localStorage.getItem('auth_token')
+
+const fetchRecentOrders = async () => {
+  try {
+    const res = await fetch('/api/user/orders?limit=5', {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token()}`
+      }
+    })
+    if (res.ok) {
+      const d = await res.json()
+      if (d.status) recentOrders.value = d.data
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+onMounted(fetchRecentOrders)
+
+// ── Helpers ──
 const formatPrice = (price) =>
-  new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(price || 0)
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(price || 0)
 
 const formatDate = (d) =>
-  new Date(d).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' })
+  new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 
+const statusClass = (status) => {
+  const s = (status || '').toLowerCase()
+  if (s === 'delivered' || s === 'completed') return 'status-delivered'
+  if (s === 'shipped' || s === 'processing') return 'status-shipped'
+  if (s === 'cancelled') return 'status-cancelled'
+  return 'status-pending'
+}
+
+// ── Stat Cards ──
 const statCards = computed(() => [
   {
-    label: 'Total Properties',
-    value: props.dashboardStats?.total_properties ?? 0,
+    label: 'Total Orders',
+    value: props.dashboardStats?.total_orders ?? 0,
     color: '#1a1a2e',
     light: '#e8e8f0',
-    icon: `<svg width="22" height="22" fill="none" stroke="#1a1a2e" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`
+    icon: `<svg width="22" height="22" fill="none" stroke="#1a1a2e" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`
   },
   {
-    label: 'Active Listings',
-    value: props.dashboardStats?.active_properties ?? 0,
+    label: 'Pending Orders',
+    value: props.dashboardStats?.pending_orders ?? 0,
+    color: '#d97706',
+    light: '#fef3c7',
+    icon: `<svg width="22" height="22" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
+  },
+  {
+    label: 'Delivered',
+    value: props.dashboardStats?.delivered_orders ?? 0,
     color: '#059669',
     light: '#d1fae5',
     icon: `<svg width="22" height="22" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
   },
   {
-    label: 'Total Views',
-    value: props.dashboardStats?.total_views ?? 0,
-    color: '#d97706',
-    light: '#fef3c7',
-    icon: `<svg width="22" height="22" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
-  },
-  {
-    label: 'Total Value',
-    value: formatPrice(props.dashboardStats?.total_value ?? 0),
+    label: 'Total Spent',
+    value: formatPrice(props.dashboardStats?.total_spent ?? 0),
     color: '#0f3460',
     light: '#dce8f5',
     icon: `<svg width="22" height="22" fill="none" stroke="#0f3460" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
@@ -133,6 +170,7 @@ const statCards = computed(() => [
 <style scoped>
 .overview-root { display: flex; flex-direction: column; gap: 1.5rem; }
 
+/* ── Header ── */
 .page-header {
   display: flex;
   align-items: center;
@@ -147,7 +185,7 @@ const statCards = computed(() => [
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  background: #0a0a0a;
   color: white;
   border: none;
   padding: 10px 18px;
@@ -155,17 +193,18 @@ const statCards = computed(() => [
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
+  text-decoration: none;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(15,52,96,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-.add-property-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(15,52,96,0.4); }
+.add-property-btn:hover { background: #1f1f1f; transform: translateY(-1px); }
 
+/* ── Stats Grid ── */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
 }
-
 .stat-card {
   background: white;
   border-radius: 16px;
@@ -181,30 +220,21 @@ const statCards = computed(() => [
 }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
 .stat-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 48px; height: 48px; border-radius: 12px;
   background: var(--light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; z-index: 1;
 }
 .stat-info { z-index: 1; }
 .stat-label { font-size: 0.78rem; color: #9ca3af; margin: 0 0 4px; font-weight: 500; }
 .stat-value { font-size: 1.35rem; font-weight: 700; color: #111827; margin: 0; }
 .stat-bg-circle {
-  position: absolute;
-  right: -20px;
-  top: -20px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--light);
-  opacity: 0.5;
+  position: absolute; right: -20px; top: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--light); opacity: 0.5;
 }
 
+/* ── Section Card ── */
 .section-card {
   background: white;
   border-radius: 16px;
@@ -213,93 +243,73 @@ const statCards = computed(() => [
   overflow: hidden;
 }
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px 16px;
   border-bottom: 1px solid #f9fafb;
 }
 .section-title { font-size: 1rem; font-weight: 700; color: #111827; margin: 0; }
 .view-all-link {
-  background: none;
-  border: none;
-  color: #0f3460;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0;
+  color: #0a0a0a; font-weight: 600; font-size: 0.85rem;
+  text-decoration: none; transition: opacity 0.2s;
 }
+.view-all-link:hover { opacity: 0.6; }
 
+/* ── Empty State ── */
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 48px 20px;
-  gap: 8px;
-  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 20px; gap: 8px; text-align: center;
 }
 .empty-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
+  width: 72px; height: 72px; border-radius: 50%;
   background: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-  color: #9ca3af;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px; color: #9ca3af;
 }
 .empty-state h3 { font-size: 1rem; font-weight: 600; color: #374151; margin: 0; }
-.empty-state p { color: #9ca3af; font-size: 0.875rem; margin: 0; }
+.empty-state p  { color: #9ca3af; font-size: 0.875rem; margin: 0; }
 .cta-btn {
   margin-top: 12px;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(15,52,96,0.3);
+  background: #0a0a0a; color: white;
+  border: none; padding: 10px 24px; border-radius: 10px;
+  font-weight: 600; font-size: 0.875rem; cursor: pointer;
+  text-decoration: none; display: inline-block;
   transition: transform 0.2s;
 }
 .cta-btn:hover { transform: translateY(-1px); }
 
-.property-list { padding: 8px 0; }
-.property-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* ── Order List ── */
+.order-list { padding: 8px 0; }
+.order-row {
+  display: flex; align-items: center; gap: 16px;
   padding: 14px 24px;
   transition: background 0.15s;
 }
-.property-row:hover { background: #fafafa; }
-.property-row + .property-row { border-top: 1px solid #f9fafb; }
+.order-row:hover { background: #fafafa; }
+.order-row + .order-row { border-top: 1px solid #f9fafb; }
 
-.prop-img-wrap { flex-shrink: 0; }
-.prop-img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; }
-
-.prop-details { flex: 1; min-width: 0; }
-.prop-title { font-weight: 600; font-size: 0.9rem; color: #111827; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.prop-location {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #9ca3af;
-  font-size: 0.78rem;
-  margin: 0;
+.order-icon-wrap {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: #f3f4f6; color: #6b7280;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 
-.prop-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.prop-price { font-weight: 700; font-size: 0.9rem; color: #059669; }
-.prop-status {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 20px;
+.order-details { flex: 1; min-width: 0; }
+.order-id   { font-weight: 600; font-size: 0.9rem; color: #111827; margin: 0 0 3px; }
+.order-items { color: #9ca3af; font-size: 0.78rem; margin: 0; }
+
+.order-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.order-price { font-weight: 700; font-size: 0.9rem; color: #111827; }
+
+.order-status {
+  font-size: 0.72rem; font-weight: 600;
+  padding: 2px 10px; border-radius: 20px;
+  text-transform: capitalize;
 }
-.status-active { background: #d1fae5; color: #059669; }
-.status-inactive { background: #f3f4f6; color: #6b7280; }
-.prop-date { color: #d1d5db; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0; }
+.status-delivered { background: #d1fae5; color: #059669; }
+.status-shipped   { background: #dbeafe; color: #2563eb; }
+.status-pending   { background: #fef3c7; color: #d97706; }
+.status-cancelled { background: #fee2e2; color: #dc2626; }
+
+.order-date { color: #d1d5db; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0; }
 </style>
