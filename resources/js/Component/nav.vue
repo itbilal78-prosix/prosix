@@ -43,12 +43,14 @@
                             :to="nav.route"
                         >{{ nav.title }}</router-link>
 
-                        <a
-                            v-else
-                            class="nav-link dropdown-toggle"
-                            href="#"
-                            @click.prevent="goToMenu(nav.slug)"
-                        >{{ nav.title }}</a>
+                      <a
+  v-else
+  class="nav-link dropdown-toggle"
+  href="#"
+  @click.prevent="nav.clickable ? goToMenu(nav.slug) : null"
+>
+  {{ nav.title }}
+</a>
 
                         <!-- DROPDOWN MENU -->
                         <div

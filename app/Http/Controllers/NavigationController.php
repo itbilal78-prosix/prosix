@@ -34,6 +34,7 @@ class NavigationController extends Controller
     // Checkbox values
     $validated['status'] = $request->has('status');         // true if checked
     $validated['has_dropdown'] = $request->has('has_dropdown');
+    $validated['clickable'] = $request->has('clickable');
 
     Navigation::create($validated);
 
@@ -60,6 +61,7 @@ class NavigationController extends Controller
 
     $validated['status'] = $request->has('status');
     $validated['has_dropdown'] = $request->has('has_dropdown');
+    $validated['clickable'] = $request->has('clickable');
 
     $navigation->update($validated);
 
