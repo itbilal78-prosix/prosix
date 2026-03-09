@@ -368,11 +368,19 @@ public function products($id)
         return response()->json(['error' => 'Category not found'], 404);
     }
 
+    // 🔐 PASSWORD CHECK
+    if ($category->password && !session()->get('category_unlocked_'.$id)) {
+        return response()->json([
+            'locked' => true,
+            'message' => 'Password required'
+        ], 403);
+    }
+
     $isSubcategory = !is_null($category->parent_id);
 
     $query = Product::query()
         ->select('id', 'name', 'price', 'image')
-        ->where('show_in_category', true); // ✅ SIRF YEH DIKHAO JO ADMIN NE ASSIGN KIYE
+        ->where('show_in_category', true);
 
     if ($isSubcategory) {
         $query->where('subcategory_id', $id);
@@ -411,12 +419,16 @@ public function products($id)
             return response()->json(['success' => true]);
         }
 
-        if (! \Hash::check($request->password, $category->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid password',
-            ], 401);
-        }
+       if (! \Hash::check($request->password, $category->password)) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Invalid password',
+    ], 401);
+}
+
+session(['category_unlocked_'.$id => true]);
+
+return response()->json(['success' => true]);
 
         return response()->json(['success' => true]);
     }
