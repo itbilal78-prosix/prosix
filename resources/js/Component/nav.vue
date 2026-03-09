@@ -622,7 +622,7 @@ onUnmounted(() => {
 .nav-link {
   color: #fff !important;
   font-weight: 600;
-  font-size: clamp(0.70rem, 0.95vw, 0.88rem);
+  font-size: clamp(0.85rem, 1.1vw, 1.05rem);
   white-space: nowrap;
   padding: 6px 2px !important;
 }
@@ -769,7 +769,8 @@ onUnmounted(() => {
 .dropdown-menu:not(.two-col) { flex-direction: column !important; }
 .dropdown-col { display: flex; flex-direction: column; min-width: 200px; }
 .dropdown-col-right { border-left: 1px solid rgba(255,255,255,0.08); }
-.dropdown-item { padding: 8px 16px; color: #fff !important; transition: all 0.15s; font-size: clamp(0.78rem, 0.9vw, 0.9rem); white-space: nowrap; }
+.dropdown-item { padding: 8px 16px; color: #fff !important; transition: all 0.15s; font-size: clamp(0.88rem, 1vw, 1rem);
+         white-space: nowrap; }
 .dropdown-item:hover { background-color: #222 !important; }
 
 .dropdown-submenu { position: relative; }
@@ -843,7 +844,7 @@ onUnmounted(() => {
 /* ── Responsive ── */
 @media (max-width: 1200px) {
   .nav-items-list { gap: clamp(4px, 0.7vw, 14px); }
-  .nav-link { font-size: clamp(0.66rem, 0.8vw, 0.8rem); }
+  .nav-link { font-size: clamp(0.80rem, 0.95vw, 0.95rem); }
 }
 @media (max-width: 991px) {
   .custom-navbar { height: 56px; background: #000 !important; }

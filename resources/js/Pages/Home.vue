@@ -721,6 +721,16 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 /* HERO */
 .hero-carousel { position: relative; height: 100vh; min-height: 100vh; overflow: hidden; }
 .carousel-container { position: relative; height: 100%; }
+/* .carousel-slide {
+  height: 100vh;
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+} */
+
 .carousel-slide {
   height: 100vh;
   position: absolute;
@@ -729,6 +739,24 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   background-position: center center;
   background-repeat: no-repeat;
   animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@media (max-width: 1400px) {
+  .carousel-slide {
+    background-position: 70% center;
+  }
+}
+
+@media (max-width: 1100px) {
+  .carousel-slide {
+    background-position: 75% center;
+  }
+}
+
+@media (max-width: 900px) {
+  .carousel-slide {
+    background-position: 80% center;
+  }
 }
 .carousel-overlay {
   position: absolute;

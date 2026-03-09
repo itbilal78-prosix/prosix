@@ -11,9 +11,27 @@ html, body * { font-family: 'Smooch Sans', sans-serif !important;
    GLOBAL FULL WIDTH - Poori website ke liye
    ============================================ */
 
-html, body {
+/* ============================================
+   FONT - Smooch Sans
+   @import hatao - blade.php se load hota hai
+   ============================================ */
+
+html {
+  font-size: clamp(16px, 1vw, 20px);
   overflow-x: hidden !important;
   max-width: 100vw !important;
+}
+
+body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  font-family: 'Smooch Sans', sans-serif !important;
+}
+
+html, body * {
+  font-family: 'Smooch Sans', sans-serif !important;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .container,
@@ -23,30 +41,20 @@ html, body {
 .container-xl,
 .container-xxl {
   max-width: 100% !important;
-  padding-left: 40px !important;
-  padding-right: 40px !important;
+  padding-left: clamp(16px, 3vw, 80px) !important;
+  padding-right: clamp(16px, 3vw, 80px) !important;
+}
+/* ✅ NAVBAR FONT - Sab screens pe sahi size */
+.nav-link {
+  font-size: clamp(0.85rem, 1.1vw, 1.05rem) !important;
 }
 
-@media (max-width: 768px) {
-  .container,
-  .container-sm,
-  .container-md,
-  .container-lg,
-  .container-xl,
-  .container-xxl {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-  }
+.dropdown-item {
+  font-size: clamp(0.88rem, 1vw, 1rem) !important;
 }
 
-@media (min-width: 2000px) {
-  .container,
-  .container-sm,
-  .container-md,
-  .container-lg,
-  .container-xl,
-  .container-xxl {
-    padding-left: 80px !important;
-    padding-right: 80px !important;
+@media (max-width: 1200px) {
+  .nav-link {
+    font-size: clamp(0.80rem, 0.95vw, 0.95rem) !important;
   }
 }

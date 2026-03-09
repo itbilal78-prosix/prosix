@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>Admin Dashboard</title>
+
+    <!-- ✅ Smooch Sans Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Smooch+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link rel="stylesheet" href="/assets/global.css">
+    <link rel="stylesheet" href="/assets/global.css">
+
     <style>
         body { transition: background-color 0.3s, color 0.3s; }
         #sidebar { min-width: 250px; max-width: 250px; height: 100vh; position: fixed; top:0; left:0; transition: all 0.3s; overflow-y:auto; }
@@ -26,7 +32,6 @@
             #content { margin-left:0; }
         }
 
-        /* Dark mode */
         [data-bs-theme="dark"] body { background-color:#121212; color:#fff; }
         [data-bs-theme="dark"] #sidebar { background-color:#1f1f1f; border-right:1px solid #333; }
         [data-bs-theme="dark"] .navbar, [data-bs-theme="dark"] .card { background-color:#1f1f1f; color:#fff; }
@@ -54,7 +59,6 @@ const overlay = document.getElementById('overlay');
 const modeToggle = document.getElementById('modeToggle');
 const modeIcon = document.getElementById('modeIcon');
 
-// Sidebar toggle
 sidebarToggleTop.addEventListener('click', ()=>{
     if(window.innerWidth >= 768) sidebar.classList.toggle('collapsed');
     else { sidebar.classList.add('show'); overlay.classList.add('active'); }
@@ -62,7 +66,6 @@ sidebarToggleTop.addEventListener('click', ()=>{
 sidebarClose.addEventListener('click', ()=>{ sidebar.classList.remove('show'); overlay.classList.remove('active'); });
 overlay.addEventListener('click', ()=>{ sidebar.classList.remove('show'); overlay.classList.remove('active'); });
 
-// Dark/Light Mode
 const savedTheme = localStorage.getItem('theme') || 'light';
 document.documentElement.setAttribute('data-bs-theme', savedTheme);
 modeIcon.className = savedTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
