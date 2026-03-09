@@ -16,7 +16,7 @@
 
       <div v-else>
         <!-- ===== NORMAL PRODUCTS with color variants ===== -->
-        <div class="row g-4 mb-5" v-if="products && products.length > 0">
+        <div class="row g-4 mb-5" v-if="products.length > 0">
           <div
             v-for="product in products"
             :key="product.id"
@@ -72,7 +72,7 @@
         </div>
 
         <!-- ===== CUSTOMIZER MODELS - GROUPED BY model_name ===== -->
-        <div v-if="groupedModels && Object.keys(groupedModels).length > 0">
+        <div v-if="Object.keys(groupedModels).length > 0">
           <div
             v-for="(groupModels, modelName) in groupedModels"
             :key="modelName"
@@ -305,7 +305,6 @@ const products       = ref([])
 const models         = ref([])
 const loading        = ref(true)
 const showLoginModal = ref(false)
-const showPasswordModal = ref(false)
 const pendingModelId = ref(null)
 
 // ── Color variant active index per product
@@ -421,24 +420,11 @@ const loadModels = async () => {
 // ── Load products
 const fetchProducts = async () => {
   try {
-
     const res = await axios.get(`/api/category/${route.params.id}/products`)
-
-   products.value = res.data.products || []
-category.value = res.data.category || null
-
-  } catch (err) {
-
-    if (err.response && err.response.status === 403) {
-
-      // 🔒 PASSWORD REQUIRED
-      showPasswordModal.value = true
-      return
-
-    }
-
-    console.error('Products error:', err)
-
+    products.value = res.data
+    console.log("Loaded:", products.value)
+  } catch (e) {
+    console.error('Products error:', e)
   } finally {
     loading.value = false
   }
