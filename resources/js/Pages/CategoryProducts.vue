@@ -420,11 +420,24 @@ const loadModels = async () => {
 // ── Load products
 const fetchProducts = async () => {
   try {
+
     const res = await axios.get(`/api/category/${route.params.id}/products`)
-    products.value = res.data
-    console.log("Loaded:", products.value)
-  } catch (e) {
-    console.error('Products error:', e)
+
+    products.value = res.data.products
+    category.value = res.data.category
+
+  } catch (err) {
+
+    if (err.response && err.response.status === 403) {
+
+      // 🔒 PASSWORD REQUIRED
+      showPasswordModal.value = true
+      return
+
+    }
+
+    console.error('Products error:', err)
+
   } finally {
     loading.value = false
   }
