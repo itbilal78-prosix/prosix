@@ -20,6 +20,7 @@ use App\Http\Controllers\SocialMediaController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\DashboardController;
 
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -44,8 +45,8 @@ Route::middleware(['auth:admin'])
     ->group(function () {
 
 
-    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::resource('admins', \App\Http\Controllers\AdminManagerController::class);
 
         Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('memberships');
