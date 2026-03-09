@@ -271,7 +271,7 @@ canvas { max-height: 220px; }
                 <a href="{{ route('banners.index') }}"           class="quick-link"><i class="bi bi-image me-2"></i> Manage Banners</a>
                 <a href="{{ route('deals.index') }}"             class="quick-link"><i class="bi bi-gift me-2"></i> Deals & Offers</a>
                 <a href="{{ route('blogs.index') }}"             class="quick-link"><i class="bi bi-newspaper me-2"></i> Blog / News</a>
-                <a href="{{ route('admin.flipbooks.index') }}"   class="quick-link"><i class="bi bi-book-half me-2"></i> Flip Books</a>
+                <a href="{{ route('admin.flipbooks.index') }}"   class="quick-link"><i class="bi bi-book-half me-2"></i> Flipp Books</a>
                 <a href="{{ route('admin.users.index') }}"       class="quick-link"><i class="bi bi-people me-2"></i> All Users</a>
                 <a href="{{ route('admin.admins.index') }}"      class="quick-link"><i class="bi bi-person-gear me-2"></i> Manage Admins</a>
             </div>
