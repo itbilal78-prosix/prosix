@@ -41,17 +41,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 Route::middleware(['auth:admin'])
     ->prefix('admin')
-    ->name('admin.')   // 👈 yeh add karo
+    ->name('admin.')
     ->group(function () {
 
+        // ✅ SAHI JAGAH — PREFIX + NAME ALREADY SET HAI
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-
+        Route::resource('admins', \App\Http\Controllers\AdminManagerController::class);
         Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('memberships');
-
         Route::resource('flipbooks', FlipbookController::class);
-
     });
 Route::get('/artwork-requests', [ArtworkRequestController::class, 'index'])
     ->name('admin.artwork');
