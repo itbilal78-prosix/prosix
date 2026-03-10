@@ -76,36 +76,37 @@
       </section>
 
       <!-- Deals Section -->
-      <section class="deals-section py-5">
-        <div class="full-container" v-if="deal">
-          <div class="text-center mb-5">
-            <h2 class="fw-bold display-5 text-black">{{ deal.title }}</h2>
-            <p class="lead text-black">{{ deal.subtitle }}</p>
-          </div>
-          <div class="row align-items-stretch">
-            <div class="col-lg-5 mb-4 mb-lg-0">
-              <div v-if="deal.banners?.length" class="deal-banner-box">
-                <Transition name="fade" mode="out-in">
-                  <img :key="currentBanner" :src="deal.banners[currentBanner].image_path" class="banner-img" alt="Banner" />
-                </Transition>
-              </div>
-            </div>
-            <div class="col-lg-7">
-              <div class="row g-4">
-                <div v-for="img in deal.images" :key="img.id" class="col-6 col-md-3">
-                  <div class="deal-card">
-                    <div v-if="img.label" class="deal-ribbon">{{ img.label }}</div>
-                    <img :src="img.image_path" class="deal-card-img" />
-                    <div class="deal-overlay">
-                      <a :href="img.link || '#'" class="btn btn-light btn-sm">View More</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
+   <!-- Deals Section -->
+<section class="deals-section py-5">
+  <div class="full-container" v-if="deal">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold display-5 text-black">{{ deal.title }}</h2>
+      <p class="lead text-black">{{ deal.subtitle }}</p>
+    </div>
+    <div class="deals-layout">
+      <!-- LEFT: Banner -->
+      <div class="deals-banner-col">
+        <div v-if="deal.banners?.length" class="deal-banner-box">
+          <Transition name="fade" mode="out-in">
+            <img :key="currentBanner" :src="deal.banners[currentBanner].image_path" class="banner-img" alt="Banner" />
+          </Transition>
+        </div>
+      </div>
+      <!-- RIGHT: Cards -->
+      <div class="deals-cards-col">
+        <div class="deals-cards-grid">
+          <div v-for="img in deal.images" :key="img.id" class="deal-card">
+            <div v-if="img.label" class="deal-ribbon">{{ img.label }}</div>
+            <img :src="img.image_path" class="deal-card-img" />
+            <div class="deal-overlay">
+              <a :href="img.link || '#'" class="btn btn-light btn-sm">View More</a>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       <!-- Featured Products -->
       <section class="featured-products py-5">
@@ -741,6 +742,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+/* ✅ ADD KARO - Laptop/tablet pe right side show karo */
 @media (max-width: 1400px) {
   .carousel-slide {
     background-position: 70% center;
@@ -852,22 +854,155 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @keyframes rotateDotted { from { transform: scale(0.92) rotate(0deg); } to { transform: scale(0.92) rotate(360deg); } }
 
 /* Ribbons */
-.left-ribbon { position: relative; display: inline-block; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
-.left-ribbon span { position: relative; z-index: 2; }
+.left-ribbon { position: relative; display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; text-align: center; }
+.left-ribbon span { position: relative; z-index: 2; display: block; text-align: center; }
 .left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 14px 40px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
 
 /* Deals */
+/* DEALS SECTION */
 .deals-section { background-color: #e0e0e0; }
-.deal-banner-box { width: 90%; height: 550px; border-radius: 18px; overflow: hidden; }
-.banner-img { width: 100%; height: 100%; object-fit: cover; }
-.deal-card { position: relative; height: 260px; border-radius: 14px; overflow: hidden; transition: 0.3s ease; }
-@media (max-width: 991px) { .deal-card { height: 200px !important; } }
-@media (max-width: 767px) { .deal-card { height: 160px !important; } .deal-ribbon { font-size: 11px !important; padding: 2px 32px !important; } }
-@media (max-width: 575px) { .deal-banner-box { width: 100% !important; height: 220px !important; margin-bottom: 16px !important; } .deal-card { height: 130px !important; } .deals-section .row.g-4 > [class*="col-"] { padding: 4px !important; } }.deal-card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s ease; }
+
+.deals-layout {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* LEFT banner column */
+.deals-banner-col {
+  flex: 0 0 42%;
+  max-width: 42%;
+}
+
+.deal-banner-box {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* RIGHT cards column */
+.deals-cards-col {
+  flex: 1;
+}
+
+.deals-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  height: 100%;
+}
+
+/* Deal card - aspect ratio trick */
+.deal-card {
+  position: relative;
+  width: 100%;
+  padding-bottom: 110%;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: 0.3s ease;
+}
+
+.deal-card-img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: 0.4s ease;
+}
+
 .deal-card:hover .deal-card-img { transform: scale(1.08); }
+
+.deal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: 0.3s ease;
+}
+
+.deal-card:hover .deal-overlay { opacity: 1; }
+
+.deal-ribbon {
+  position: absolute;
+  top: 15px;
+  left: -35px;
+  background: #000;
+  color: #fff;
+  padding: 2px 40px;
+  font-size: 13px;
+  font-weight: 700;
+  transform: rotate(-45deg);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  z-index: 5;
+  letter-spacing: 1px;
+}
+
+/* Tablet */
+@media (max-width: 991px) {
+  .deals-layout {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .deals-banner-col {
+    flex: none;
+    max-width: 100%;
+  }
+  .deal-banner-box {
+    height: 320px;
+    min-height: 320px;
+  }
+  .deals-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .deal-card {
+    padding-bottom: 100%;
+  }
+  .deal-ribbon { font-size: 11px; padding: 2px 32px; }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .deal-banner-box { height: 240px; min-height: 240px; }
+  .deals-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .deal-card { padding-bottom: 95%; }
+  .deal-ribbon { font-size: 10px; padding: 2px 28px; top: 12px; left: -28px; }
+}
+
+/* Small mobile */
+@media (max-width: 575px) {
+  .deals-layout { gap: 12px; }
+  .deal-banner-box { height: 200px; min-height: 200px; border-radius: 12px; }
+  .deals-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .deal-card { padding-bottom: 100%; border-radius: 10px; }
+  .deal-ribbon { font-size: 10px; padding: 2px 26px; top: 10px; left: -26px; }
+}
+/* .deal-card:hover .deal-card-img { transform: scale(1.08); }
 .deal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s ease; }
 .deal-card:hover .deal-overlay { opacity: 1; }
-.deal-ribbon { position: absolute; top: 15px; left: -35px; background: #000000; color: #fff; padding: 2px 40px; font-size: 13px; font-weight: 700; transform: rotate(-45deg); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; letter-spacing: 1px; }
+.deal-ribbon { position: absolute; top: 15px; left: -35px; background: #000000; color: #fff; padding: 2px 40px; font-size: 13px; font-weight: 700; transform: rotate(-45deg); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; letter-spacing: 1px; } */
+
 .fade-enter-active, .fade-leave-active { transition: all 0.7s ease; }
 .fade-enter-from { opacity: 0; filter: blur(15px); transform: scale(1.1); }
 .fade-leave-to { opacity: 0; filter: blur(10px); }
