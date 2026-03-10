@@ -341,15 +341,24 @@ const showLoginModal = ref(false)
 const pendingModelId = ref(null)
 
 // ============================================================
-// UNIVERSAL INFINITE CAROUSEL — hamesha chain loop, kabhi na ruke
+// UNIVERSAL INFINITE CAROUSEL
+// Rule: 1500px+ => loop only if items > itemsPerView (5)
+//       <1500px  => loop always if items > 1
 // ============================================================
 function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   const index = ref(0)
   const isTransitioning = ref(false)
   const transitionVal = ref('transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)')
 
-  // Hamesha loop chahe 2 items hon ya 100
-  const shouldLoop = computed(() => items.value.length > 1)
+  const shouldLoop = computed(() => {
+    if (typeof window === 'undefined') return false
+    if (window.innerWidth >= 1500) {
+      // Desktop: sirf tab loop karo jab items > currently visible cards
+      return items.value.length > itemsPerView.value
+    }
+    // Mobile/tablet: hamesha loop (2+ items)
+    return items.value.length > 1
+  })
 
   const infinite = computed(() => {
     if (items.value.length === 0) return []
@@ -388,8 +397,13 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   }
 
   let autoTimer = null
-  // Auto hamesha chale — koi condition nahi
-  const startAuto = () => { stopAuto(); autoTimer = setInterval(() => { next() }, autoSpeed) }
+  // Auto sirf tab chale jab shouldLoop true ho
+  const startAuto = () => {
+    stopAuto()
+    autoTimer = setInterval(() => {
+      if (shouldLoop.value) next()
+    }, autoSpeed)
+  }
   const stopAuto = () => { if (autoTimer) { clearInterval(autoTimer); autoTimer = null } }
 
   return { trackStyle, infinite, next, prev, startAuto, stopAuto }
@@ -502,7 +516,11 @@ const showScrollTop = ref(false)
 const handleScroll = () => { showScrollTop.value = window.scrollY > 400 }
 const scrollToTop = () => { window.scrollTo({ top: 0, behavior: 'smooth' }) }
 const openTawkTo = () => { if (window.Tawk_API && window.Tawk_API.maximize) window.Tawk_API.maximize() }
-const handleResize = () => { updateMobile() }
+const handleResize = () => {
+  updateMobile()
+  // Restart auto so shouldLoop re-evaluates on resize
+  startFeaturedAuto(); startApparelAuto(); startVideoAuto(); startTestimonialAuto(); startBenefitAuto()
+}
 const goToProduct = (product) => { router.push(`/product/${product.id}`) }
 const goToCustomizer = (product) => {
   const token = localStorage.getItem('auth_token')
@@ -725,28 +743,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .play-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6)); display: flex; align-items: center; justify-content: center; }
 .play-button { width: 70px; height: 70px; background: rgba(255,255,255,0.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-size: 2.2rem; transition: all 0.4s; box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
 .video-thumbnail:hover .play-button { transform: scale(1.15); background: black; color: white; }
-.video-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: auto;
-  height: auto;
-  background: transparent; /* background removed */
-  color: #000; /* icon color */
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  cursor: pointer;
-  z-index: 10;
-  transition: transform 0.3s;
-}
-
-.video-arrow:hover {
-  transform: translateY(-50%) scale(1.2);
-}
-
+.video-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: #000; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; z-index: 10; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+.video-arrow:hover { background: #333; transform: translateY(-50%) scale(1.1); }
 .video-arrow.prev-arrow { left: 5px; }
 .video-arrow.next-arrow { right: 5px; }
 .video-title-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); color: white; padding: 20px 15px 15px; font-size: 1rem; font-weight: 600; text-align: center; opacity: 0; transition: opacity 0.3s; }
@@ -760,25 +758,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .testimonials-section { background-color: #eeecec; padding: 100px 0; }
 .testimonial-card, .testimonial-text, .author-name, .author-position, .stars-rating { user-select: none; -webkit-user-select: none; }
 .testimonials-outer-wrapper { display: flex; align-items: center; width: 100%; gap: 0; }
-.t-arrow {
-  flex-shrink: 0;
-  width: auto;
-  height: auto;
-  background: transparent;
-  color: #000;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.t-arrow:hover {
-  transform: scale(1.2);
-}
-
+.t-arrow { flex-shrink: 0; width: 48px; height: 48px; background: #000; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.3s; }
+.t-arrow:hover { background: #333; transform: scale(1.1); }
 .t-arrow-left { margin-right: 16px; }
 .t-arrow-right { margin-left: 16px; }
 .testimonials-carousel-inner { flex: 1; overflow: hidden; padding-top: 46px; }
@@ -846,7 +827,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .benefits-desktop { display: none !important; }
   .benefits-mobile-carousel { display: block !important; }
   .text-and-image-wrapper { max-width: 100% !important; width: 100% !important; height: 88vh !important; margin-top: 0 !important; display: flex !important; flex-direction: column !important; justify-content: flex-end !important; padding-bottom: 20px !important; gap: 10px !important; }
-  .main_title { width: 100% !important; font-size: 5rem !important; text-align: center !important; order: 1 !important; }
+  .main_title { width: 100% !important; font-size: 2.4rem !important; text-align: center !important; order: 1 !important; }
   .button-wrapper { margin-top: 0 !important; align-self: center !important; order: 2 !important; }
   .image-content { order: 3 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
   .hero-png { max-height: 45vh !important; max-width: 90% !important; }
@@ -870,7 +851,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; }
   .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
   .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; }
-  .main_title { width: 100% !important; font-size: 3rem !important; text-align: center !important; padding: 0 10px !important; }
+  .main_title { width: 100% !important; font-size: 2.4rem !important; text-align: center !important; padding: 0 10px !important; }
   .button-wrapper { margin-top: 0 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
   .single-line-btn { font-size: 1rem !important; padding: 12px 35px !important; }
   .lead { font-size: 1rem !important; text-align: center !important; padding: 0 20px !important; }
@@ -949,7 +930,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .blog-meta { display: none !important; }
   .blog-excerpt { display: none !important; }
   .blog-title { font-size: 0.9rem !important; margin-bottom: 8px !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
-  .read-more { font-size: 0.85rem !important; color: #000000 !important; font-weight: 700 !important; }
+  .read-more { font-size: 0.85rem !important; color: #dc3545 !important; font-weight: 700 !important; }
   .left-ribbon { font-size: 1.4rem !important; padding: 8px 24px 8px 20px !important; margin-left: -20px !important; }
   .left2-ribbon { font-size: 1.4rem !important; padding: 8px 24px !important; margin-left: -20px !important; }
   .scroll-top-btn { bottom: 80px !important; }
