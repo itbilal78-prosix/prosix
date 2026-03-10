@@ -1,7 +1,6 @@
 <template>
   <div class="d-flex flex-column min-vh-100" :class="{ 'dark-mode': isDarkMode }">
 
-    <!-- ✅ Scroll Top - CENTER bottom -->
     <button class="scroll-top-btn" :class="{ visible: showScrollTop }" @click="scrollToTop" title="Back to Top">
       <i class="bi bi-arrow-up"></i>
     </button>
@@ -13,36 +12,18 @@
         <section class="hero-carousel" id="hero">
           <div class="carousel-container">
             <Transition name="slide" mode="out-in">
-              <div
-                :key="currentSlide"
-                class="carousel-slide active"
-:style="{
-  backgroundImage: `url(${
-    isMobile && safeSlides[currentSlide].mobileBackgroundImage
-      ? safeSlides[currentSlide].mobileBackgroundImage
-      : safeSlides[currentSlide].backgroundImage
-  })`
-}">
+              <div :key="currentSlide" class="carousel-slide active"
+                :style="{ backgroundImage: `url(${isMobile && safeSlides[currentSlide].mobileBackgroundImage ? safeSlides[currentSlide].mobileBackgroundImage : safeSlides[currentSlide].backgroundImage})` }">
                 <div class="carousel-overlay">
                   <div class="carousel-content d-flex align-items-center justify-content-start h-100">
                     <div class="text-and-image-wrapper d-flex flex-column align-items-start text-start">
                       <div class="title-button-row d-flex align-items-start gap-4 mb-3">
-                        <h1 class="display-3 fw-bold main_title italic-title animate-from-top">
-                          {{ safeSlides[currentSlide].title }}
-                        </h1>
+                        <h1 class="display-3 fw-bold main_title italic-title animate-from-top">{{ safeSlides[currentSlide].title }}</h1>
                         <div class="button-wrapper flex-shrink-0 animate-from-top delayed">
-                          <button
-                            v-if="safeSlides[currentSlide].buttonText"
-                            class="btn btn-md px-4 single-line-btn"
-                            @click="handleBuy(safeSlides[currentSlide].buttonLink)"
-                          >
-                            {{ safeSlides[currentSlide].buttonText }}
-                          </button>
+                          <button v-if="safeSlides[currentSlide].buttonText" class="btn btn-md px-4 single-line-btn" @click="handleBuy(safeSlides[currentSlide].buttonLink)">{{ safeSlides[currentSlide].buttonText }}</button>
                         </div>
                       </div>
-                      <p v-if="safeSlides[currentSlide].subtitle" class="lead text-white mt-2 mb-4 animate-from-top delayed-more">
-                        {{ safeSlides[currentSlide].subtitle }}
-                      </p>
+                      <p v-if="safeSlides[currentSlide].subtitle" class="lead text-white mt-2 mb-4 animate-from-top delayed-more">{{ safeSlides[currentSlide].subtitle }}</p>
                       <div class="image-content mt-0" v-if="safeSlides[currentSlide].pngImage">
                         <img :src="safeSlides[currentSlide].pngImage" :alt="safeSlides[currentSlide].title" class="hero-png img-fluid animate-from-left" />
                       </div>
@@ -67,72 +48,68 @@
       <section class="sports-icons-section">
         <div class="icons-track" :class="{ 'scrolling': isMobile || sportsIcons.length > 12 }">
           <div class="icon-item" v-for="(icon, index) in scrollingIcons" :key="index" @click="selectTeam(icon.teamId)" :class="{ active: activeTeam === icon.teamId }">
-            <div class="icon-circle">
-              <img :src="icon.highlight_image || icon.image" :alt="icon.name" class="icon-image" />
-            </div>
+            <div class="icon-circle"><img :src="icon.highlight_image || icon.image" :alt="icon.name" class="icon-image" /></div>
             <div class="icon-name">{{ icon.name }}</div>
           </div>
         </div>
       </section>
 
       <!-- Deals Section -->
-   <!-- Deals Section -->
-<section class="deals-section ">
-  <div class="full-container" v-if="deal">
-    <div class="text-center mb-5">
-      <h2 class="fw-bold display-5 text-black">{{ deal.title }}</h2>
-      <p class="lead text-black">{{ deal.subtitle }}</p>
-    </div>
-    <div class="deals-layout">
-      <!-- LEFT: Banner -->
-      <div class="deals-banner-col">
-        <div v-if="deal.banners?.length" class="deal-banner-box">
-          <Transition name="fade" mode="out-in">
-            <img :key="currentBanner" :src="deal.banners[currentBanner].image_path" class="banner-img" alt="Banner" />
-          </Transition>
-        </div>
-      </div>
-      <!-- RIGHT: Cards -->
-      <div class="deals-cards-col">
-        <div class="deals-cards-grid">
-          <div v-for="img in deal.images" :key="img.id" class="deal-card">
-            <div v-if="img.label" class="deal-ribbon">{{ img.label }}</div>
-            <img :src="img.image_path" class="deal-card-img" />
-            <div class="deal-overlay">
-              <a :href="img.link || '#'" class="btn btn-light btn-sm">View More</a>
+      <section class="deals-section py-5">
+        <div class="full-container" v-if="deal">
+          <div class="text-center mb-5">
+            <h2 class="fw-bold display-5 text-black">{{ deal.title }}</h2>
+            <p class="lead text-black">{{ deal.subtitle }}</p>
+          </div>
+          <div class="deals-layout">
+            <div class="deals-banner-col">
+              <div v-if="deal.banners?.length" class="deal-banner-box">
+                <Transition name="fade" mode="out-in">
+                  <img :key="currentBanner" :src="deal.banners[currentBanner].image_path" class="banner-img" alt="Banner" />
+                </Transition>
+              </div>
+            </div>
+            <div class="deals-cards-col">
+              <div class="deals-cards-grid">
+                <div v-for="img in deal.images" :key="img.id" class="deal-card">
+                  <div v-if="img.label" class="deal-ribbon">{{ img.label }}</div>
+                  <img :src="img.image_path" class="deal-card-img" />
+                  <div class="deal-overlay"><a :href="img.link || '#'" class="btn btn-light btn-sm">View More</a></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
       <!-- Featured Products -->
       <section class="featured-products py-5">
         <div class="full-container">
-          <div class="featured-header d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3">
-            <div class="left-ribbon"><span>Trending Now</span></div>
-            <div class="tabs d-flex gap-2">
-              <button v-for="tab in tabs" :key="tab.value" class="tab-btn px-4 py-2" :class="{ active: activeTab === tab.value }" @click="setTab(tab.value)">{{ tab.label }}</button>
+          <div class="featured-header">
+            <div class="left-ribbon featured-ribbon"><span>Trending Now</span></div>
+            <div class="tabs">
+              <button v-for="tab in tabs" :key="tab.value" class="tab-btn" :class="{ active: activeTab === tab.value }" @click="setTab(tab.value)">{{ tab.label }}</button>
             </div>
           </div>
           <div class="carousel-wrapper position-relative overflow-hidden">
             <div class="products-track d-flex" :style="featuredTrackStyle">
-              <div v-for="(product, idx) in infiniteFeatured" :key="idx" class="product-card flex-shrink-0 px-2">
+              <div v-for="(product, idx) in infiniteFeatured" :key="idx" class="product-card flex-shrink-0">
                 <div class="product-card-inner bg-white rounded shadow-sm text-center">
-                  <img :src="product.image" :alt="product.name" class="product-img img-fluid" loading="lazy" />
+                  <div class="home-card-img-wrap">
+                    <button v-if="product.type === 'model'" class="home-cart-icon-btn" @click.stop="router.push(`/product/${product.id}?type=model`)" title="View Product">
+                      <i class="bi bi-cart" style="transform:scaleX(-1);display:inline-block;"></i>
+                    </button>
+                    <img :src="product.image" :alt="product.name" class="product-img img-fluid" loading="lazy" />
+                  </div>
                   <div class="product-meta-row">
                     <h5 class="product-title">{{ product.name }}</h5>
                     <p class="product-price">${{ product.price.toFixed(2) }}</p>
                   </div>
-                  <button v-if="product.type === 'product'" class="add-cart-btn btn btn-dark w-100 py-2" @click="addToCart(product)">ADD TO CART</button>
-                  <button v-else-if="product.type === 'model'" class="add-cart-btn btn btn-dark w-100 py-2" @click="goToCustomizer(product)">CUSTOMIZE</button>
+                  <button v-if="product.type === 'product'" class="add-cart-btn btn btn-dark w-100 py-2" @click="goToProduct(product)">View &amp; Buy</button>
+                  <button v-else-if="product.type === 'model'" class="add-cart-btn btn btn-dark w-100 py-2" @click="goToCustomizer(product)">Customize</button>
                 </div>
               </div>
-              <div v-if="displayedProducts.length === 0" class="w-100 text-center py-5">
-                <p class="text-muted fs-4">No products found in this category...</p>
-              </div>
+              <div v-if="displayedProducts.length === 0" class="w-100 text-center py-5"><p class="text-muted fs-4">No products found in this category...</p></div>
             </div>
             <button class="carousel-btn carousel-btn-prev" @click="prevProduct"><i class="bi bi-chevron-left"></i></button>
             <button class="carousel-btn carousel-btn-next" @click="nextProduct"><i class="bi bi-chevron-right"></i></button>
@@ -144,23 +121,23 @@
       <section class="benefits-section py-5">
         <div class="full-container">
           <div class="benefits-desktop d-flex flex-wrap justify-content-between" style="gap: 20px;">
-            <div class="benefit-card text-center p-4 flex-grow-1" style="max-width: 32%;"><div class="icon mb-4"><i class="bi bi-truck fs-1"></i></div><h4 class="mb-3">Free Shipping Delivery & Returns</h4><p class="mb-0">Shop with confidence and have your favorite Furniture delivered right to your doorstep without any additional cost.</p></div>
+            <div class="benefit-card text-center p-4 flex-grow-1" style="max-width: 32%;"><div class="icon mb-4"><i class="bi bi-truck fs-1"></i></div><h4 class="mb-3">Free Shipping Delivery &amp; Returns</h4><p class="mb-0">Shop with confidence and have your favorite Furniture delivered right to your doorstep without any additional cost.</p></div>
             <div class="benefit-card text-center p-4 flex-grow-1" style="max-width: 32%;"><div class="icon mb-4"><i class="bi bi-heart fs-1"></i></div><h4 class="mb-3">30 Days Money Back Guarantee</h4><p class="mb-0">We Guarantee to rectify any unsatisfactory experience you may have with your purchase. No Queries posed.</p></div>
             <div class="benefit-card text-center p-4 flex-grow-1" style="max-width: 32%;"><div class="icon mb-4"><i class="bi bi-headset fs-1"></i></div><h4 class="mb-3">Online free custom support 24/7</h4><p class="mb-0">Need help with your electronics? Get in touch with us anytime, anywhere and let's get your tech sorted.</p></div>
           </div>
+          <!-- Mobile chain carousel for benefits -->
           <div class="benefits-mobile-carousel">
-            <div class="benefits-track-wrapper">
-              <div class="benefits-track" :style="{ transform: `translateX(-${benefitIndex * 100}%)` }">
-                <div class="benefit-slide"><div class="benefit-card text-center p-4"><div class="icon mb-4"><i class="bi bi-truck fs-1"></i></div><h4 class="mb-3">Free Shipping Delivery & Returns</h4><p class="mb-0">Shop with confidence and have your favorite Furniture delivered right to your doorstep without any additional cost.</p></div></div>
-                <div class="benefit-slide"><div class="benefit-card text-center p-4"><div class="icon mb-4"><i class="bi bi-heart fs-1"></i></div><h4 class="mb-3">30 Days Money Back Guarantee</h4><p class="mb-0">We Guarantee to rectify any unsatisfactory experience you may have with your purchase. No Queries posed.</p></div></div>
-                <div class="benefit-slide"><div class="benefit-card text-center p-4"><div class="icon mb-4"><i class="bi bi-headset fs-1"></i></div><h4 class="mb-3">Online free custom support 24/7</h4><p class="mb-0">Need help with your electronics? Get in touch with us anytime, anywhere and let's get your tech sorted.</p></div></div>
+            <div class="benefits-chain-track" :style="benefitChainStyle">
+              <div class="benefit-chain-slide" v-for="(item, idx) in infiniteBenefits" :key="idx">
+                <div class="benefit-card text-center p-4">
+                  <div class="icon mb-4"><i :class="item.icon + ' fs-1'"></i></div>
+                  <h4 class="mb-3">{{ item.title }}</h4>
+                  <p class="mb-0">{{ item.text }}</p>
+                </div>
               </div>
             </div>
-            <button class="benefit-btn benefit-btn-prev" @click="benefitIndex = Math.max(0, benefitIndex - 1)" :disabled="benefitIndex === 0"><i class="bi bi-chevron-left"></i></button>
-            <button class="benefit-btn benefit-btn-next" @click="benefitIndex = Math.min(2, benefitIndex + 1)" :disabled="benefitIndex === 2"><i class="bi bi-chevron-right"></i></button>
-            <div class="benefit-dots">
-              <span v-for="n in 3" :key="n" class="bdot" :class="{ active: benefitIndex === n-1 }" @click="benefitIndex = n-1"></span>
-            </div>
+            <button class="benefit-btn benefit-btn-prev" @click="prevBenefit"><i class="bi bi-chevron-left"></i></button>
+            <button class="benefit-btn benefit-btn-next" @click="nextBenefit"><i class="bi bi-chevron-right"></i></button>
           </div>
         </div>
       </section>
@@ -200,17 +177,20 @@
           <h2 class="left2-ribbon text-start mb-5 fw-bold">Premium Showcase</h2>
           <div class="carousel-wrapper position-relative overflow-hidden">
             <div class="products-track d-flex" :style="apparelTrackStyle">
-              <div v-for="(product, idx) in infiniteApparel" :key="idx" class="product-card flex-shrink-0 px-2">
+              <div v-for="(product, idx) in infiniteApparel" :key="idx" class="product-card flex-shrink-0">
                 <div class="product-card-inner apparel-card-inner text-center">
-                  <div class="product-image-wrapper">
+                  <div class="product-image-wrapper home-card-img-wrap">
+                    <button v-if="product.type === 'model'" class="home-cart-icon-btn apparel-cart-icon" @click.stop="router.push(`/product/${product.id}?type=model`)" title="View Product">
+                      <i class="bi bi-cart" style="transform:scaleX(-1);display:inline-block;"></i>
+                    </button>
                     <img :src="product.image" :alt="product.name" class="product-img img-fluid" loading="lazy" />
                   </div>
                   <div class="product-meta-row apparel-meta-row">
                     <h5 class="product-name text-white fw-semibold">{{ product.name }}</h5>
                     <p class="product-price text-white fw-bold">${{ product.price.toFixed(2) }}</p>
                   </div>
-                  <button v-if="product.type === 'product'" class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn" @click="addToCart(product)">ADD TO CART</button>
-                  <button v-else-if="product.type === 'model'" class="btn button-apperal w-100 py-2 fw-bold add-to-cart-btn" @click="goToCustomizer(product)">CUSTOMIZE</button>
+                  <button v-if="product.type === 'product'" class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn" @click="goToProduct(product)">View &amp; Buy</button>
+                  <button v-else-if="product.type === 'model'" class="btn button-apperal w-100 py-2 fw-bold add-to-cart-btn" @click="goToCustomizer(product)">Customize</button>
                 </div>
               </div>
               <div v-if="apparelProducts.length === 0" class="w-100 text-center py-5 text-white"><h4>No Apparel Products Found</h4></div>
@@ -289,33 +269,44 @@
     <component :is="'script'" v-once></component>
     <footer-component />
 
- <!-- LEFT SIDE: WhatsApp -->
-<div class="float-icons-left">
-
-  <div class="float-icon-wrap">
-    <a href="https://wa.me/19292104402" target="_blank" class="float-icon-btn wa-icon-btn">
-      <i class="bi bi-whatsapp"></i>
-    </a>
-    <div class="float-icon-pulse wa-pulse"></div>
-    <div class="float-icon-tooltip">WhatsApp</div>
-  </div>
-
-</div>
-
-
-<!-- RIGHT SIDE: Live Chat -->
-<div class="float-icons-right">
-
-  <div class="float-icon-wrap" @click="openTawkTo" title="Live Chat">
-    <div class="float-icon-btn">
-      <i class="bi bi-headset"></i>
+    <div class="float-icons-left">
+      <div class="float-icon-wrap">
+        <a href="https://wa.me/19292104402" target="_blank" class="float-icon-btn wa-icon-btn"><i class="bi bi-whatsapp"></i></a>
+        <div class="float-icon-pulse wa-pulse"></div>
+        <div class="float-icon-tooltip">WhatsApp</div>
+      </div>
     </div>
-    <div class="float-icon-pulse"></div>
-    <div class="float-icon-tooltip">Live Chat</div>
-  </div>
+    <div class="float-icons-right">
+      <div class="float-icon-wrap" @click="openTawkTo" title="Live Chat">
+        <div class="float-icon-btn"><i class="bi bi-headset"></i></div>
+        <div class="float-icon-pulse"></div>
+        <div class="float-icon-tooltip">Live Chat</div>
+      </div>
+    </div>
 
-</div>
-
+    <div v-if="showLoginModal" class="modal fade show" style="display: block" @click.self="showLoginModal = false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow-lg border-0">
+          <div class="text-center pt-4 pb-2">
+            <div class="login-icon-wrap mx-auto">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="modal-body text-center px-5 pb-2">
+            <h5 class="fw-bold mb-2">Login Required</h5>
+            <p class="text-muted mb-0">To use the Customizer, you must first log in to your account.</p>
+          </div>
+          <div class="modal-footer justify-content-center border-0 px-5 pb-4 gap-3">
+            <button class="btn btn-outline-secondary rounded-pill px-4" @click="showLoginModal = false">Cancel</button>
+            <router-link :to="{ path: '/user-login', query: { redirect: `/models/${pendingModelId}` } }" class="btn btn-dark rounded-pill px-4" @click="showLoginModal = false">Login</router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if="showLoginModal" class="modal-backdrop fade show" @click="showLoginModal = false"></div>
   </div>
 </template>
 
@@ -326,10 +317,10 @@ import axios from 'axios'
 import { useCartStore } from '@/store/cart'
 
 const cartStore = useCartStore()
+const router = useRouter()
 
 const activeTeam = ref(null)
 const activeTab = ref('all')
-const router = useRouter()
 const currentSlide = ref(0)
 let carouselInterval
 const showVideoModal = ref(false)
@@ -341,24 +332,24 @@ const updateMobile = () => { isMobile.value = window.innerWidth < 992 }
 const showAllBlogs = ref(false)
 const visibleBlogs = computed(() => showAllBlogs.value ? blogs.value : blogs.value.slice(0, 4))
 const toggleAllBlogs = () => { showAllBlogs.value = !showAllBlogs.value }
-const benefitIndex = ref(0)
 const slides = ref([])
 const safeSlides = computed(() => slides.value.filter(s => s && typeof s.backgroundImage === 'string' && s.backgroundImage.trim() !== ''))
 const sportsIcons = ref([])
 const currentBanner = ref(0)
 let bannerInterval = null
+const showLoginModal = ref(false)
+const pendingModelId = ref(null)
 
-// ============================================
-// SMART CAROUSEL
-// ============================================
-
+// ============================================================
+// UNIVERSAL INFINITE CAROUSEL — hamesha chain loop, kabhi na ruke
+// ============================================================
 function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   const index = ref(0)
   const isTransitioning = ref(false)
   const transitionVal = ref('transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)')
 
-  // 5 se zyada ho tab hi loop chalega
-  const shouldLoop = computed(() => items.value.length > 5)
+  // Hamesha loop chahe 2 items hon ya 100
+  const shouldLoop = computed(() => items.value.length > 1)
 
   const infinite = computed(() => {
     if (items.value.length === 0) return []
@@ -368,75 +359,49 @@ function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
 
   const trackStyle = computed(() => {
     const pct = 100 / itemsPerView.value
-    const translateX = shouldLoop.value
-      ? (index.value + items.value.length) * pct
-      : index.value * pct
-    return {
-      transform: `translateX(-${translateX}%)`,
-      transition: transitionVal.value
-    }
+    const translateX = shouldLoop.value ? (index.value + items.value.length) * pct : index.value * pct
+    return { transform: `translateX(-${translateX}%)`, transition: transitionVal.value }
   })
 
   const next = () => {
-    if (!shouldLoop.value) {
-      // 5 ya kam: sirf aage tak jao, loop nahi
-      const maxIdx = Math.max(0, items.value.length - itemsPerView.value)
-      if (index.value < maxIdx) index.value++
-      return
-    }
+    if (!shouldLoop.value) { const maxIdx = Math.max(0, items.value.length - itemsPerView.value); if (index.value < maxIdx) index.value++; return }
     if (isTransitioning.value) return
     isTransitioning.value = true
     transitionVal.value = 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)'
     index.value++
     setTimeout(() => {
-      if (index.value >= items.value.length) {
-        transitionVal.value = 'none'
-        index.value = 0
-        nextTick(() => { isTransitioning.value = false })
-      } else {
-        isTransitioning.value = false
-      }
+      if (index.value >= items.value.length) { transitionVal.value = 'none'; index.value = 0; nextTick(() => { isTransitioning.value = false }) }
+      else { isTransitioning.value = false }
     }, 460)
   }
 
   const prev = () => {
-    if (!shouldLoop.value) {
-      // 5 ya kam: sirf peeche tak jao, loop nahi
-      if (index.value > 0) index.value--
-      return
-    }
+    if (!shouldLoop.value) { if (index.value > 0) index.value--; return }
     if (isTransitioning.value) return
     isTransitioning.value = true
     transitionVal.value = 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)'
     index.value--
     setTimeout(() => {
-      if (index.value < 0) {
-        transitionVal.value = 'none'
-        index.value = items.value.length - 1
-        nextTick(() => { isTransitioning.value = false })
-      } else {
-        isTransitioning.value = false
-      }
+      if (index.value < 0) { transitionVal.value = 'none'; index.value = items.value.length - 1; nextTick(() => { isTransitioning.value = false }) }
+      else { isTransitioning.value = false }
     }, 460)
   }
 
   let autoTimer = null
-  const startAuto = () => {
-    stopAuto()
-    autoTimer = setInterval(() => {
-      // Auto-play sirf tab jab 5 se zyada items hon
-      if (shouldLoop.value) next()
-    }, autoSpeed)
-  }
-  const stopAuto = () => {
-    if (autoTimer) { clearInterval(autoTimer); autoTimer = null }
-  }
+  // Auto hamesha chale — koi condition nahi
+  const startAuto = () => { stopAuto(); autoTimer = setInterval(() => { next() }, autoSpeed) }
+  const stopAuto = () => { if (autoTimer) { clearInterval(autoTimer); autoTimer = null } }
 
   return { trackStyle, infinite, next, prev, startAuto, stopAuto }
 }
-// Featured Products
+
+// ── Featured Products ──────────────────────────────────────
 const featuredProducts = ref([])
-const tabs = ref([{ label: 'All', value: 'all' }, { label: 'New Arrivals', value: 'new' }, { label: 'Best Sellers', value: 'bestsellers' }])
+const tabs = ref([
+  { label: 'All', value: 'all' },
+  { label: 'New Arrivals', value: 'new' },
+  { label: 'Best Sellers', value: 'bestsellers' }
+])
 const fetchFeaturedProducts = async () => {
   try { const res = await axios.get('/api/featured-products'); featuredProducts.value = res.data || [] } catch (e) { console.error(e) }
 }
@@ -450,33 +415,30 @@ const displayedProducts = computed(() => {
 
 const featuredItemsPerView = computed(() => {
   if (typeof window === 'undefined') return 5
-  if (window.innerWidth < 576) return 1
-  if (window.innerWidth < 768) return 2
-  if (window.innerWidth < 992) return 3
+  if (window.innerWidth < 576)  return 2
+  if (window.innerWidth < 768)  return 2
+  if (window.innerWidth < 992)  return 3
   if (window.innerWidth < 1400) return 4
   return 5
 })
-
 const { trackStyle: featuredTrackStyle, infinite: infiniteFeatured, next: nextProduct, prev: prevProduct, startAuto: startFeaturedAuto, stopAuto: stopFeaturedAuto } = useInfiniteCarousel(displayedProducts, featuredItemsPerView, 2500)
 
-// Apparel
+// ── Apparel ────────────────────────────────────────────────
 const apparelProducts = ref([])
 const fetchApparelProducts = async () => {
   try { const res = await axios.get('/api/apparel-products'); apparelProducts.value = res.data || [] } catch (e) { console.error(e) }
 }
-
 const apparelItemsPerView = computed(() => {
   if (typeof window === 'undefined') return 5
-  if (window.innerWidth < 576) return 1
-  if (window.innerWidth < 768) return 2
-  if (window.innerWidth < 992) return 3
+  if (window.innerWidth < 576)  return 2
+  if (window.innerWidth < 768)  return 2
+  if (window.innerWidth < 992)  return 3
   if (window.innerWidth < 1400) return 4
   return 5
 })
-
 const { trackStyle: apparelTrackStyle, infinite: infiniteApparel, next: nextApparel, prev: prevApparel, startAuto: startApparelAuto, stopAuto: stopApparelAuto } = useInfiniteCarousel(apparelProducts, apparelItemsPerView, 2500)
 
-// Videos
+// ── Videos ─────────────────────────────────────────────────
 const sportsVideos = ref([])
 const videoItemsPerView = computed(() => { if (window.innerWidth < 576) return 1; if (window.innerWidth < 992) return 2; return 3 })
 const fetchVideos = async () => { try { const res = await axios.get('/api/videos'); sportsVideos.value = res.data || [] } catch (e) { console.error(e) } }
@@ -484,7 +446,7 @@ const { trackStyle: videoTrackStyle, infinite: infiniteVideos, next: nextVideo, 
 const playVideo = (video) => { currentVideoUrl.value = video.video_url; showVideoModal.value = true; stopVideoAuto() }
 const closeVideo = () => { showVideoModal.value = false; currentVideoUrl.value = ''; startVideoAuto() }
 
-// Testimonials
+// ── Testimonials ───────────────────────────────────────────
 const testimonials = ref([])
 const loadingTestimonials = ref(true)
 const testimonialsError = ref(null)
@@ -499,34 +461,36 @@ const fetchTestimonials = async () => {
 }
 const { trackStyle: testimonialTrackStyle, infinite: infiniteTestimonials, next: nextTestimonial, prev: prevTestimonial, startAuto: startTestimonialAuto } = useInfiniteCarousel(testimonials, testimonialItemsPerView, 3500)
 
-// Categories / Icons
-const fetchCategories = async () => {
-  try { const res = await axios.get('/api/highlighted'); if (!Array.isArray(res.data)) { sportsIcons.value = []; return }; sportsIcons.value = res.data.map(cat => ({ teamId: cat.id, name: cat.name, image: cat.icon_image, highlight_image: cat.highlight_image })) } catch { sportsIcons.value = [] }
-}
-const scrollingIcons = computed(() => { if (isMobile.value || sportsIcons.value.length > 12) return [...sportsIcons.value, ...sportsIcons.value]; return sportsIcons.value })
+// ── Benefits mobile chain carousel ────────────────────────
+const benefitsData = ref([
+  { icon: 'bi bi-truck',   title: 'Free Shipping Delivery & Returns', text: 'Shop with confidence and have your favorite Furniture delivered right to your doorstep without any additional cost.' },
+  { icon: 'bi bi-heart',   title: '30 Days Money Back Guarantee',      text: 'We Guarantee to rectify any unsatisfactory experience you may have with your purchase. No Queries posed.' },
+  { icon: 'bi bi-headset', title: 'Online free custom support 24/7',   text: "Need help with your electronics? Get in touch with us anytime, anywhere and let's get your tech sorted." }
+])
+const benefitItemsPerView = computed(() => 1)
+const { trackStyle: benefitChainStyle, infinite: infiniteBenefits, next: nextBenefit, prev: prevBenefit, startAuto: startBenefitAuto, stopAuto: stopBenefitAuto } = useInfiniteCarousel(benefitsData, benefitItemsPerView, 3000)
 
-// Deal
+// ── Categories ─────────────────────────────────────────────
+const fetchCategories = async () => {
+  try {
+    const res = await axios.get('/api/highlighted')
+    if (!Array.isArray(res.data)) { sportsIcons.value = []; return }
+    sportsIcons.value = res.data.map(cat => ({ teamId: cat.id, name: cat.name, image: cat.icon_image, highlight_image: cat.highlight_image }))
+  } catch { sportsIcons.value = [] }
+}
+const scrollingIcons = computed(() => {
+  if (isMobile.value || sportsIcons.value.length > 12) return [...sportsIcons.value, ...sportsIcons.value]
+  return sportsIcons.value
+})
+
 const deal = ref(null)
 const fetchDeal = async () => { try { const res = await axios.get('/api/latest-deal'); deal.value = res.data } catch (e) { console.error(e) } }
-
-// Blogs
 const blogs = ref([])
 const fetchBlogs = async () => { try { const res = await axios.get('/api/blogs'); blogs.value = res.data } catch (e) { console.error(e) } }
-
-// Slides
 const fetchSlides = async () => {
   try {
     const res = await axios.get('/api/banners')
-    slides.value = (res.data || []).map(s => ({
-      ...s,
-      backgroundImage: s.backgroundImage
-        ? (s.backgroundImage.startsWith('http') ? s.backgroundImage : `${window.location.origin}${s.backgroundImage}`)
-        : '',
-      // ✅ نیا
-      mobileBackgroundImage: s.mobileBackgroundImage
-        ? (s.mobileBackgroundImage.startsWith('http') ? s.mobileBackgroundImage : `${window.location.origin}${s.mobileBackgroundImage}`)
-        : ''
-    }))
+    slides.value = (res.data || []).map(s => ({ ...s, backgroundImage: s.backgroundImage ? (s.backgroundImage.startsWith('http') ? s.backgroundImage : `${window.location.origin}${s.backgroundImage}`) : '', mobileBackgroundImage: s.mobileBackgroundImage ? (s.mobileBackgroundImage.startsWith('http') ? s.mobileBackgroundImage : `${window.location.origin}${s.mobileBackgroundImage}`) : '' }))
   } catch { slides.value = [] }
 }
 const nextSlide = () => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }
@@ -539,8 +503,13 @@ const handleScroll = () => { showScrollTop.value = window.scrollY > 400 }
 const scrollToTop = () => { window.scrollTo({ top: 0, behavior: 'smooth' }) }
 const openTawkTo = () => { if (window.Tawk_API && window.Tawk_API.maximize) window.Tawk_API.maximize() }
 const handleResize = () => { updateMobile() }
+const goToProduct = (product) => { router.push(`/product/${product.id}`) }
+const goToCustomizer = (product) => {
+  const token = localStorage.getItem('auth_token')
+  if (token) { router.push(`/models/${product.id}`) }
+  else { pendingModelId.value = product.id; showLoginModal.value = true }
+}
 const addToCart = (product) => { cartStore.addItem(product) }
-const goToCustomizer = (product) => { router.push({ name: 'Customizer', params: { id: product.id } }) }
 
 onMounted(async () => {
   updateMobile()
@@ -550,23 +519,17 @@ onMounted(async () => {
   fetchDeal(); fetchBlogs(); fetchVideos(); fetchFeaturedProducts(); fetchTestimonials()
   await fetchApparelProducts()
   await fetchSlides()
-  startFeaturedAuto(); startApparelAuto(); startVideoAuto(); startTestimonialAuto()
+  startFeaturedAuto(); startApparelAuto(); startVideoAuto(); startTestimonialAuto(); startBenefitAuto()
   setTimeout(() => {
-    carouselInterval = setInterval(() => {
-      if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length
-    }, 4000)
+    carouselInterval = setInterval(() => { if (slides.value.length) currentSlide.value = (currentSlide.value + 1) % slides.value.length }, 4000)
   }, 3000)
-  bannerInterval = setInterval(() => {
-    if (deal.value?.banners?.length) {
-      currentBanner.value = (currentBanner.value + 1) % deal.value.banners.length
-    }
-  }, 3000)
+  bannerInterval = setInterval(() => { if (deal.value?.banners?.length) currentBanner.value = (currentBanner.value + 1) % deal.value.banners.length }, 3000)
 })
 
 onUnmounted(() => {
   if (carouselInterval) clearInterval(carouselInterval)
   if (bannerInterval) clearInterval(bannerInterval)
-  stopFeaturedAuto(); stopApparelAuto(); stopVideoAuto()
+  stopFeaturedAuto(); stopApparelAuto(); stopVideoAuto(); stopBenefitAuto()
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('scroll', handleScroll)
 })
@@ -583,225 +546,42 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @media (max-width: 575px) { .full-container { padding: 0 12px; } }
 .dark-mode { background: #0a0a0a; color: #fff; }
 
-/* ✅ SCROLL TOP - CENTER bottom */
-.scroll-top-btn {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px) scale(0.8);
-  z-index: 9997;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #000;
-  color: #fff;
-  border: 2px solid #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s;
-}
-.scroll-top-btn.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0) scale(1);
-  pointer-events: auto;
-}
-.scroll-top-btn:hover {
-  background: #fff;
-  color: #000;
-  transform: translateX(-50%) translateY(-3px) scale(1.08);
-}
+.scroll-top-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px) scale(0.8); z-index: 9997; width: 52px; height: 52px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); opacity: 0; pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s; }
+.scroll-top-btn.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
+.scroll-top-btn:hover { background: #fff; color: #000; transform: translateX(-50%) translateY(-3px) scale(1.08); }
 
-/* ✅ LEFT SIDE: Two floating icon buttons stacked vertically */
-.float-icons-left {
-  position: fixed;
-  bottom: 30px;
-  left: 20px;
-  z-index: 99990;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: flex-start;
-  font-family: 'Poppins', sans-serif;
-}
+.float-icons-left { position: fixed; bottom: 30px; left: 20px; z-index: 99990; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; font-family: 'Poppins', sans-serif; }
+.float-icon-wrap { position: relative; display: flex; align-items: center; cursor: pointer; }
+.float-icon-btn { width: 54px; height: 54px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 2.5px solid #fff; box-shadow: 0 6px 22px rgba(0,0,0,0.35); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.2s; position: relative; z-index: 2; text-decoration: none; cursor: pointer; }
+.float-icon-btn:hover { background: #222; color: #fff; transform: scale(1.12); }
+.wa-icon-btn { background: #fff !important; color: #000 !important; border: 2.5px solid #000 !important; box-shadow: 0 6px 22px rgba(0,0,0,0.2) !important; }
+.wa-icon-btn:hover { background: #f0f0f0 !important; color: #000 !important; transform: scale(1.12); }
+.float-icon-pulse { position: absolute; left: 0; top: 0; width: 54px; height: 54px; border-radius: 50%; background: rgba(0,0,0,0.12); animation: floatPulse 2.6s ease-out infinite; pointer-events: none; z-index: 1; }
+.wa-pulse { background: rgba(0,0,0,0.08) !important; }
+@keyframes floatPulse { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(2.1); opacity: 0; } }
+.float-icon-tooltip { position: absolute; left: 64px; top: 50%; transform: translateY(-50%) translateX(-6px); background: #000; color: #fff; font-size: 0.75rem; font-weight: 600; padding: 5px 12px; border-radius: 20px; white-space: nowrap; opacity: 0; transition: all 0.25s; pointer-events: none; }
+.float-icon-wrap:hover .float-icon-tooltip { opacity: 1; transform: translateY(-50%) translateX(0); }
+.float-icons-right { position: fixed; bottom: 30px; right: 20px; z-index: 99990; display: flex; flex-direction: column; gap: 14px; align-items: flex-end; }
+.float-icons-right .float-icon-tooltip { left: auto; right: 64px; transform: translateY(-50%) translateX(6px); }
+.float-icons-right .float-icon-wrap:hover .float-icon-tooltip { opacity: 1; transform: translateY(-50%) translateX(0); }
 
-/* Each icon wrapper */
-.float-icon-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-/* The circular button - BLACK style */
-.float-icon-btn {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: #000;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  border: 2.5px solid #fff;
-  box-shadow: 0 6px 22px rgba(0,0,0,0.35);
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.2s;
-  position: relative;
-  z-index: 2;
-  text-decoration: none;
-  cursor: pointer;
-}
-.float-icon-btn:hover {
-  background: #222;
-  color: #fff;
-  transform: scale(1.12);
-}
-
-/* WhatsApp button - WHITE style (black icon on white) */
-.wa-icon-btn {
-  background: #fff !important;
-  color: #000 !important;
-  border: 2.5px solid #000 !important;
-  box-shadow: 0 6px 22px rgba(0,0,0,0.2) !important;
-}
-.wa-icon-btn:hover {
-  background: #f0f0f0 !important;
-  color: #000 !important;
-  transform: scale(1.12);
-}
-
-/* Pulse ring */
-.float-icon-pulse {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.12);
-  animation: floatPulse 2.6s ease-out infinite;
-  pointer-events: none;
-  z-index: 1;
-}
-.wa-pulse {
-  background: rgba(0,0,0,0.08) !important;
-}
-@keyframes floatPulse {
-  0% { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(2.1); opacity: 0; }
-}
-
-/* Tooltip - appears to the right of icon */
-.float-icon-tooltip {
-  position: absolute;
-  left: 64px;
-  top: 50%;
-  transform: translateY(-50%) translateX(-6px);
-  background: #000;
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 20px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: all 0.25s;
-  pointer-events: none;
-}
-.float-icon-wrap:hover .float-icon-tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-
-/* HERO */
 .hero-carousel { position: relative; height: 100vh; min-height: 100vh; overflow: hidden; }
 .carousel-container { position: relative; height: 100%; }
-/* .carousel-slide {
-  height: 100vh;
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-} */
-
-.carousel-slide {
-  height: 100vh;
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-/* ✅ ADD KARO - Laptop/tablet pe right side show karo */
-@media (max-width: 1400px) {
-  .carousel-slide {
-    background-position: 70% center;
-  }
-}
-
-@media (max-width: 1100px) {
-  .carousel-slide {
-    background-position: 75% center;
-  }
-}
-
-@media (max-width: 900px) {
-  .carousel-slide {
-    background-position: 80% center;
-  }
-}
-.carousel-overlay {
-  position: absolute;
-  height: 100%;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  background: linear-gradient(to right, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 60%, transparent 100%);
-}
+.carousel-slide { height: 100vh; position: absolute; inset: 0; background-size: cover; background-position: center center; background-repeat: no-repeat; animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+@media (max-width: 1400px) { .carousel-slide { background-position: 70% center; } }
+@media (max-width: 1100px) { .carousel-slide { background-position: 75% center; } }
+@media (max-width: 900px)  { .carousel-slide { background-position: 80% center; } }
+@media (max-width: 991px)  { .carousel-slide { background-position: center center !important; background-size: cover !important; } }
+.carousel-overlay { position: absolute; height: 100%; inset: 0; z-index: 2; display: flex; align-items: center; background: linear-gradient(to right, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 60%, transparent 100%); }
 .carousel-content { max-width: 100%; margin: 0 5%; width: 90%; height: 100%; }
 .text-and-image-wrapper { max-width: 60%; text-align: center; margin-top: 12%; }
 .title-button-row { width: 100%; display: flex; align-items: flex-start; flex-wrap: nowrap; justify-content: space-between; }
-.float-icons-right {
-  position: fixed;
-  bottom: 30px;
-  right: 20px;
-  z-index: 99990;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: flex-end;
-}
-.float-icons-right .float-icon-tooltip {
-  left: auto;
-  right: 64px;
-  transform: translateY(-50%) translateX(6px);
-}
-
-.float-icons-right .float-icon-wrap:hover .float-icon-tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-/* ✅ INCREASED font sizes */
 .main_title { width: 60%; font-size: 4.5rem; line-height: 0.9; font-weight: 800; font-style: italic; text-align: left; margin: 0; padding: 0; word-break: break-word; flex-shrink: 0; color: black; }
 .button-wrapper { margin-top: 50px; flex-shrink: 0; align-self: flex-start; }
 .single-line-btn { white-space: nowrap; display: inline-block; text-align: center; line-height: 1.2; padding: 12px 34px; background: black; color: white; border-radius: 20px; font-size: 1.2rem; letter-spacing: 1px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; }
 .single-line-btn:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.4); transform: translateY(-2px); }
 .hero-png { max-width: 110%; max-height: 850px; height: auto; animation: float 6s ease-in-out infinite; }
-
-/* ✅ INCREASED lead font */
 .lead { color: #000; font-size: 1.2rem; }
-
 .animate-from-left { opacity: 0; transform: translateX(-150%); animation: slideInFromLeft 1.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.4s; }
 .animate-from-top { opacity: 0; transform: translate(-100%, -100%); animation: slideInFromTopLeft 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.2s; }
 .delayed { opacity: 0; transform: translate(-100%, 100%); animation: slideInFromBottomLeft 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.6s; }
@@ -821,7 +601,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: rgba(0,0,0,0.4); border: none; padding: 0; cursor: pointer; transition: all 0.3s; }
 .dot.active { background: #000; width: 20px; border-radius: 10px; }
 
-/* Sports Icons */
 .sports-icons-section { background: black; padding: 25px 0; overflow: hidden; position: relative; }
 .sports-icons-section::before, .sports-icons-section::after { content: ''; position: absolute; top: 0; bottom: 0; width: 70px; z-index: 2; }
 .sports-icons-section::before { left: 0; background: linear-gradient(to right, black, transparent); }
@@ -835,261 +614,66 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon-item:hover .icon-circle::after, .icon-item.active .icon-circle::after { opacity: 1; transform: scale(1); animation: rotateDotted 8s linear infinite; }
 .icon-item:hover .icon-circle, .icon-item.active .icon-circle { transform: scale(1.08); }
 .icon-image { width: 90%; height: 90%; object-fit: cover; }
-
-/* ✅ INCREASED icon name font */
-.icon-name {
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: center;
-
-  max-width: 110px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}.icon-circle { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; background: black; border-radius: 50%; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
+.icon-name { color: white; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icon-circle { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; background: black; border-radius: 50%; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
 .icon-circle::after { content: ''; position: absolute; inset: 0; border: 3px dotted #fff; border-radius: 50%; opacity: 0; transition: opacity 0.35s, transform 0.35s; transform: scale(0.92); pointer-events: none; }
 @keyframes rotateDotted { from { transform: scale(0.92) rotate(0deg); } to { transform: scale(0.92) rotate(360deg); } }
 
-/* Ribbons */
 .left-ribbon { position: relative; display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; text-align: center; }
 .left-ribbon span { position: relative; z-index: 2; display: block; text-align: center; }
 .left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 14px 40px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
 
-/* Deals */
-/* DEALS SECTION */
-.deals-section {
-     background-color: #e0e0e0;
-     padding-top: 60px;
-    }
-
-.deals-layout {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;
-}
-
-/* LEFT banner column */
-.deals-banner-col {
-  flex: 0 0 42%;
-  max-width: 42%;
-}
-
-.deal-banner-box {
-  width: 100%;
-  height: 100%;
-  min-height: 420px;
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-.banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-/* RIGHT cards column */
-.deals-cards-col {
-  flex: 1;
-}
-
-.deals-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  height: 100%;
-}
-
-/* Deal card - aspect ratio trick */
-.deal-card {
-  position: relative;
-  width: 100%;
-  padding-bottom: 110%;
-  border-radius: 14px;
-  overflow: hidden;
-  transition: 0.3s ease;
-}
-
-.deal-card-img {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  transition: 0.4s ease;
-}
-
+.deals-section { background-color: #e0e0e0; }
+.deals-layout { display: flex; gap: 50px; align-items: stretch; }
+.deals-banner-col { flex: 0 0 42%; max-width: 42%; }
+.deal-banner-box { width: 100%; height: 100%; min-height: 420px; border-radius: 18px; overflow: hidden; }
+.banner-img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+.deals-cards-col { flex: 1; }
+.deals-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; height: 100%; }
+.deal-card { position: relative; width: 100%; padding-bottom: 110%; border-radius: 14px; overflow: hidden; transition: 0.3s ease; }
+.deal-card-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: 0.4s ease; }
 .deal-card:hover .deal-card-img { transform: scale(1.08); }
-
-.deal-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: 0.3s ease;
-}
-
-.deal-card:hover .deal-overlay { opacity: 1; }
-
-.deal-ribbon {
-  position: absolute;
-  top: 15px;
-  left: -35px;
-  background: #000;
-  color: #fff;
-  padding: 2px 40px;
-  font-size: 13px;
-  font-weight: 700;
-  transform: rotate(-45deg);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  z-index: 5;
-  letter-spacing: 1px;
-}
-
-/* Tablet */
-@media (max-width: 991px) {
-  .deals-layout {
-    flex-direction: column;
-    gap: 16px;
-    min-height: auto;
-  }
-
-  .deals-banner-col {
-    flex: none;
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .deal-banner-box {
-    height: 320px;
-    min-height: 320px;
-    width: 100%;
-    display: block;
-  }
-
-  .banner-img {
-    height: 320px;
-    width: 100%;
-    object-fit: cover;
-  }
-
-  .deals-cards-grid {
-    grid-template-columns: repeat(4, 1fr);
-    height: auto;
-    gap: 10px;
-  }
-
-  .deal-card {
-    height: 0 !important;
-    padding-bottom: 90% !important;
-    min-height: unset;
-  }
-}
-
-/* Mobile */
-@media (max-width: 767px) {
-  .deal-banner-box { height: 240px; min-height: 240px; }
-  .deals-cards-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-  }
-  .deal-card { padding-bottom: 95%; }
-  .deal-ribbon { font-size: 10px; padding: 2px 28px; top: 12px; left: -28px; }
-}
-
-/* Small mobile */
-@media (max-width: 575px) {
-  .deals-layout {
-    flex-direction: column;
-    gap: 12px;
-    min-height: auto;
-    padding: 0;
-  }
-
-  .deals-banner-col {
-    flex: none;
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .deal-banner-box {
-    width: 100%;
-    height: 280px !important;
-    min-height: 280px !important;
-    border-radius: 10px;
-    display: block;
-  }
-
-  .banner-img {
-    width: 100%;
-    height: 270px !important;
-    object-fit: cover;
-    display: block;
-  }
-
-  .deals-cards-col {
-    width: 100%;
-  }
-
-  .deals-cards-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    grid-template-rows: auto !important;
-    gap: 8px;
-    height: auto !important;
-  }
-
-  .deal-card {
-    width: 100%;
-    height: 0 !important;
-    padding-bottom: 100% !important;
-    min-height: unset !important;
-    border-radius: 10px;
-  }
-
-  .deal-card-img {
-    position: absolute !important;
-    top: 0; left: 0;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    object-position: center top !important;
-  }
-}
-/* .deal-card:hover .deal-card-img { transform: scale(1.08); }
 .deal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s ease; }
 .deal-card:hover .deal-overlay { opacity: 1; }
-.deal-ribbon { position: absolute; top: 15px; left: -35px; background: #000000; color: #fff; padding: 2px 40px; font-size: 13px; font-weight: 700; transform: rotate(-45deg); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; letter-spacing: 1px; } */
-
+.deal-ribbon { position: absolute; top: 15px; left: -35px; background: #000; color: #fff; padding: 2px 40px; font-size: 13px; font-weight: 700; transform: rotate(-45deg); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 5; letter-spacing: 1px; }
 .fade-enter-active, .fade-leave-active { transition: all 0.7s ease; }
 .fade-enter-from { opacity: 0; filter: blur(15px); transform: scale(1.1); }
 .fade-leave-to { opacity: 0; filter: blur(10px); }
 
-/* Featured Products */
 .featured-products { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .featured-products::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .featured-products > * { position: relative; z-index: 2; }
-.featured-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 3rem; }
-.tabs { display: flex; gap: 10px; flex-wrap: wrap; }
-.tab-btn { padding: 10px 22px; border: 2px solid #000; background: #fff; color: #000; font-weight: 600; cursor: pointer; transition: all 0.3s; border-radius: 4px; font-size: 0.95rem; }
+
+/* ── Featured header — always one row ── */
+.featured-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 10px;
+  margin-bottom: 3rem;
+}
+.featured-ribbon {
+  margin-bottom: 0 !important;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.tabs { display: flex; gap: 8px; flex-wrap: nowrap; align-items: center; }
+.tab-btn { padding: 10px 22px; border: 2px solid #000; background: #fff; color: #000; font-weight: 600; cursor: pointer; transition: all 0.3s; border-radius: 4px; font-size: 0.95rem; white-space: nowrap; }
 .tab-btn:hover, .tab-btn.active { background: #000; color: #fff; }
+
 .carousel-wrapper { position: relative; overflow: hidden; padding: 0 55px; }
 .products-track { display: flex; will-change: transform; }
-.product-card { min-width: 20%; padding: 0 8px; box-sizing: border-box; }
-.product-card-inner { background: #fff; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; }
+.home-card-img-wrap { position: relative; overflow: hidden; margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; background: #f8f8f8; }
+.home-cart-icon-btn { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; background: rgba(255,255,255,0.92); border: 1px solid #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 12px; transition: 0.2s; color: #333; flex-shrink: 0; }
+.home-cart-icon-btn:hover { background: #000; color: #fff; border-color: #000; }
+.apparel-cart-icon { background: rgba(50,50,51,0.85) !important; border-color: rgba(255,255,255,0.25) !important; color: #fff !important; }
+.apparel-cart-icon:hover { background: #fff !important; color: #000 !important; }
+.product-card { padding: 0 4px; box-sizing: border-box; }
+.product-card-inner { background: #fff; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.product-img { width: 100%; height: 240px; object-fit: contain;  margin-bottom: 12px; border-radius: 8px; }
+.product-img { width: 100%; height: 240px; object-fit: contain; margin-bottom: 8px; border-radius: 0; display: block; }
 .product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
-
-/* ✅ INCREASED product title/price fonts */
 .product-title { font-size: 0.88rem; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .product-price { color: #000; font-weight: 800; font-size: 1rem; margin: 0; white-space: nowrap; flex-shrink: 0; }
 .add-cart-btn { background: #000; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s; margin-top: auto; font-size: 0.85rem; }
@@ -1100,28 +684,33 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-btn-next { right: 5px; }
 .carousel-btn:hover { background: #222; transform: translateY(-50%) scale(1.05); }
 
-/* Apparel */
-.apparel-card-inner { background:#323233; border: 1px solid #444; border-radius: 12px; padding: 16px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; }
-.product-image-wrapper { margin-bottom: 12px; }
+.apparel-card-inner { background:#323233; border: 1px solid #444; border-radius: 12px; padding: 10px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.product-image-wrapper { margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; overflow: hidden; background: #222; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-name { font-size: 0.88rem; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .add-to-cart-btn { margin-top: auto; font-size: 0.85rem; }
+.button-apperal { background-color: #000; color: white; }
 
-/* Benefits */
+/* Benefits desktop */
 .benefits-section { background: #111; }
 .benefit-card { background: white; border: 1px solid #333; transition: all 0.3s; color: black; border-radius: 8px; }
 .benefit-card:hover { background: black; color: white; transform: translateY(-8px); }
 .benefit-card:hover .icon, .benefit-card:hover h4, .benefit-card:hover p { color: white !important; }
 .icon { color: black; line-height: 1; transition: all 0.3s; }
-
-/* ✅ INCREASED benefit card fonts */
 .benefit-card h4 { font-size: 1.1rem; font-weight: 700; }
 .benefit-card p { font-size: 0.95rem; }
-
 .benefits-desktop { display: flex; }
 .benefits-mobile-carousel { display: none; }
 
-/* Videos */
+/* Benefits mobile chain */
+.benefits-mobile-carousel { position: relative; overflow: hidden; padding: 0 46px; }
+.benefits-chain-track { display: flex; will-change: transform; }
+.benefit-chain-slide { flex-shrink: 0; width: 100%; padding: 0 8px; box-sizing: border-box; }
+.benefit-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 2px solid #fff; color: #000; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; z-index: 5; transition: all 0.3s; }
+.benefit-btn:hover { background: #ddd; }
+.benefit-btn-prev { left: 2px; }
+.benefit-btn-next { right: 2px; }
+
 .latest-videos-section { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .latest-videos-section::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .latest-videos-section > * { position: relative; z-index: 2; }
@@ -1136,8 +725,28 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .play-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6)); display: flex; align-items: center; justify-content: center; }
 .play-button { width: 70px; height: 70px; background: rgba(255,255,255,0.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; font-size: 2.2rem; transition: all 0.4s; box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
 .video-thumbnail:hover .play-button { transform: scale(1.15); background: black; color: white; }
-.video-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: #000; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; z-index: 10; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
-.video-arrow:hover { background: #333; transform: translateY(-50%) scale(1.1); }
+.video-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  height: auto;
+  background: transparent; /* background removed */
+  color: #000; /* icon color */
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.3s;
+}
+
+.video-arrow:hover {
+  transform: translateY(-50%) scale(1.2);
+}
+
 .video-arrow.prev-arrow { left: 5px; }
 .video-arrow.next-arrow { right: 5px; }
 .video-title-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); color: white; padding: 20px 15px 15px; font-size: 1rem; font-weight: 600; text-align: center; opacity: 0; transition: opacity 0.3s; }
@@ -1148,26 +757,40 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .close-video-btn { position: absolute; top: 20px; right: 20px; z-index: 10000; width: 50px; height: 50px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; color: #000; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
 .close-video-btn:hover { background: black; color: white; transform: scale(1.1) rotate(90deg); }
 
-/* Testimonials */
 .testimonials-section { background-color: #eeecec; padding: 100px 0; }
 .testimonial-card, .testimonial-text, .author-name, .author-position, .stars-rating { user-select: none; -webkit-user-select: none; }
 .testimonials-outer-wrapper { display: flex; align-items: center; width: 100%; gap: 0; }
-.t-arrow { flex-shrink: 0; width: 48px; height: 48px; background: #000; color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.3s; }
-.t-arrow:hover { background: #333; transform: scale(1.1); }
+.t-arrow {
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  background: transparent;
+  color: #000;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.t-arrow:hover {
+  transform: scale(1.2);
+}
+
 .t-arrow-left { margin-right: 16px; }
 .t-arrow-right { margin-left: 16px; }
 .testimonials-carousel-inner { flex: 1; overflow: hidden; padding-top: 46px; }
 .testimonials-carousel { display: flex; will-change: transform; }
 .testimonial-item { flex: 0 0 33.333%; padding: 0 12px; box-sizing: border-box; }
 .t-card-wrapper { position: relative; padding-top: 38px; }
-.quote-float { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 5.5rem; line-height: 1; color: #000; pointer-events: none; }
+.quote-float { position: absolute; top: -38px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 8rem; line-height: 1; color: #000; pointer-events: none; }
 .testimonial-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; min-height: auto; position: relative; transition: all 0.35s; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
 .testimonial-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); border-color: #333; }
 .stars-rating { font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 12px; text-align: left; }
 .stars-rating .bi-star-fill { color: #000 !important; }
 .stars-rating .bi-star { color: #ccc !important; }
-
-/* ✅ INCREASED testimonial text fonts */
 .testimonial-text { font-size: 1rem; line-height: 1.75; color: #444; margin-bottom: 20px; }
 .testimonial-author { display: flex; align-items: center; gap: 15px; }
 .author-image { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 3px solid #f0f0f0; flex-shrink: 0; }
@@ -1175,7 +798,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .author-name { font-size: 1.1rem; font-weight: 700; color: #111; margin: 0; }
 .author-position { font-size: 0.88rem; color: #777; margin: 4px 0 0; text-transform: uppercase; letter-spacing: 0.8px; }
 
-/* Blog */
 .recent-blog-section { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .recent-blog-section::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .recent-blog-section * { position: relative; z-index: 2; }
@@ -1189,17 +811,21 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .blog-title { font-size: 1.4rem; font-weight: 700; color: #000; margin-bottom: 12px; line-height: 1.3; }
 .blog-excerpt { font-size: 1rem; color: #555; line-height: 1.6; margin-bottom: 18px; }
 .read-more { color: #000; font-weight: 600; text-decoration: none; transition: color 0.3s; font-size: 0.95rem; }
-.read-more:hover { color: #000000; }
 .btn-view-all { background: #000; color: white; padding: 14px 40px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; font-size: 1rem; }
 .btn-view-all:hover { background: #333; transform: translateY(-3px); }
+.login-icon-wrap { width: 72px; height: 72px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-/* ============================================
-   RESPONSIVE BREAKPOINTS
-   ============================================ */
-@media (min-width: 992px) and (max-width: 1399px) { .product-card { min-width: 25% !important; } }
-
+/* ===========================================================
+   RESPONSIVE
+   =========================================================== */
+@media (min-width: 1400px) {
+  .featured-products .product-card, .apparel-products .product-card { min-width: 20% !important; }
+}
+@media (min-width: 992px) and (max-width: 1399px) {
+  .featured-products .product-card, .apparel-products .product-card { min-width: 25% !important; }
+}
 @media (min-width: 768px) and (max-width: 991px) {
-  .product-card { min-width: 33.333% !important; }
+  .featured-products .product-card, .apparel-products .product-card { min-width: 33.333% !important; }
   .video-card { width: 50% !important; }
   .testimonial-item { flex: 0 0 50% !important; }
   .t-arrow { width: 38px !important; height: 38px !important; }
@@ -1214,47 +840,37 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .video-thumbnail { height: 280px !important; }
   .blog-card { flex-direction: row !important; }
   .blog-image { flex: 0 0 40% !important; height: auto !important; }
-  /* Slightly smaller icons on tablet */
   .float-icon-btn { width: 50px; height: 50px; font-size: 1.4rem; }
 }
-
 @media (max-width: 991px) {
   .benefits-desktop { display: none !important; }
-  .benefits-mobile-carousel { display: block; position: relative; padding: 0 55px; }
-  .benefits-track-wrapper { overflow: hidden; }
-  .benefits-track { display: flex; transition: transform 0.5s ease; }
-  .benefit-slide { flex-shrink: 0; width: 100%; padding: 0 10px; box-sizing: border-box; }
-  .benefit-btn { position: absolute; top: 45%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 2px solid #000; color: #000; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; z-index: 5; transition: all 0.3s; }
-  .benefit-btn:hover:not(:disabled) { background: #000; color: #fff; }
-  .benefit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .benefit-btn-prev { left: 5px; }
-  .benefit-btn-next { right: 5px; }
-  .benefit-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
-  .bdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.3s; }
-  .bdot.active { background: #fff; width: 20px; border-radius: 10px; }
+  .benefits-mobile-carousel { display: block !important; }
+  .text-and-image-wrapper { max-width: 100% !important; width: 100% !important; height: 88vh !important; margin-top: 0 !important; display: flex !important; flex-direction: column !important; justify-content: flex-end !important; padding-bottom: 20px !important; gap: 10px !important; }
+  .main_title { width: 100% !important; font-size: 5rem !important; text-align: center !important; order: 1 !important; }
+  .button-wrapper { margin-top: 0 !important; align-self: center !important; order: 2 !important; }
+  .image-content { order: 3 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
+  .hero-png { max-height: 45vh !important; max-width: 90% !important; }
+  .title-button-row { flex-direction: column !important; align-items: center !important; gap: 10px !important; order: 1 !important; }
+  .carousel-slide { background-position: center center !important; background-size: cover !important; }
 }
-
 @media (max-width: 767px) {
-  .product-card { min-width: 50% !important; }
+  .featured-products .product-card, .apparel-products .product-card { min-width: 50% !important; max-width: 50% !important; padding: 0 4px !important; }
   .video-card { width: 50% !important; }
   .testimonial-item { flex: 0 0 100% !important; }
-  .product-img { height: 220px !important; }
+  .product-img { height: 180px !important; }
   .video-thumbnail { height: 260px !important; }
-  /* Smaller icons on mobile */
   .float-icons-left { bottom: 20px; left: 12px; gap: 10px; }
   .float-icon-btn { width: 46px !important; height: 46px !important; font-size: 1.3rem !important; }
   .float-icon-pulse { width: 46px !important; height: 46px !important; }
 }
 
+/* ── max 575px: Mobile ────────────────────────────────────── */
 @media (max-width: 575px) {
-    .deal-card-img { width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center !important; }
-.deals-section .col-6 { padding-left: 4px !important; padding-right: 4px !important; }
-.deals-section .row.g-4 { --bs-gutter-x: 0.5rem !important; --bs-gutter-y: 0.5rem !important; }
   .hero-carousel { height: 100vh !important; min-height: 600px !important; }
   .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; }
   .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
   .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; }
-  .main_title { width: 100% !important; font-size: 2.4rem !important; text-align: center !important; padding: 0 10px !important; }
+  .main_title { width: 100% !important; font-size: 3rem !important; text-align: center !important; padding: 0 10px !important; }
   .button-wrapper { margin-top: 0 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
   .single-line-btn { font-size: 1rem !important; padding: 12px 35px !important; }
   .lead { font-size: 1rem !important; text-align: center !important; padding: 0 20px !important; }
@@ -1264,14 +880,52 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .icon-circle { width: 60px !important; height: 60px !important; }
   .icon-name { font-size: 10px !important; max-width: 65px !important; }
   .featured-products { padding: 40px 0 !important; }
-  .featured-header { flex-direction: column !important; align-items: flex-start !important; }
-  .tabs { width: 100%; flex-wrap: wrap !important; }
-  .tab-btn { font-size: 0.85rem !important; padding: 8px 15px !important; flex: 1; min-width: 80px; }
-  .carousel-wrapper { padding: 0 44px !important; }
-  .product-card { min-width: 100% !important; padding: 0 8px !important; }
-  .product-img { height: 200px !important; }
-  .carousel-btn { width: 35px !important; height: 35px !important; }
-  .carousel-btn i { font-size: 16px !important; }
+
+  /* ✅ FIX 1: Trending Now + Tabs ek row mein, clearly visible */
+  .featured-header {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-bottom: 1rem !important;
+    overflow: visible !important;
+  }
+  .featured-ribbon {
+    font-size: 0.78rem !important;
+    padding: 5px 12px 5px 10px !important;
+    margin-left: -12px !important;
+    margin-bottom: 0 !important;
+    letter-spacing: 0 !important;
+    border-radius: 0 14px 14px 0 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    line-height: 1.4 !important;
+  }
+  .tabs {
+    flex-wrap: nowrap !important;
+    gap: 3px !important;
+    justify-content: flex-end !important;
+    flex: 1 !important;
+    overflow: visible !important;
+  }
+  .tab-btn {
+    font-size: 0.62rem !important;
+    padding: 4px 6px !important;
+    min-width: unset !important;
+    white-space: nowrap !important;
+    border-width: 1.5px !important;
+    border-radius: 3px !important;
+  }
+
+  .carousel-wrapper { padding: 0 38px !important; }
+  .featured-products .product-card, .apparel-products .product-card { min-width: 50% !important; max-width: 50% !important; padding: 0 3px !important; }
+  .product-card-inner { padding: 8px !important; }
+  .product-img { height: 160px !important; }
+  .product-meta-row { gap: 4px !important; }
+  .product-title { font-size: 0.78rem !important; }
+  .product-price { font-size: 0.85rem !important; }
+  .add-cart-btn, .add-to-cart-btn { font-size: 0.75rem !important; padding: 7px 4px !important; }
+  .carousel-btn { width: 30px !important; height: 30px !important; }
+  .carousel-btn i { font-size: 13px !important; }
   .latest-videos-section { padding: 40px 0 !important; }
   .videos-carousel-wrapper { padding: 0 44px !important; }
   .video-card { width: 100% !important; padding: 0 6px !important; }
@@ -1285,7 +939,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .t-arrow-left { margin-right: 6px !important; }
   .t-arrow-right { margin-left: 6px !important; }
   .testimonials-carousel-inner { padding-top: 30px !important; }
-.quote-float { font-size: 4.2rem !important; top: -24px !important; }
+  .quote-float { font-size: 6rem !important; top: -32px !important; }
   .recent-blog-section { padding: 40px 0 !important; }
   .col-6.col-lg-6 { padding-left: 6px !important; padding-right: 6px !important; }
   .blog-card { flex-direction: column !important; box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important; }
@@ -1295,30 +949,49 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .blog-meta { display: none !important; }
   .blog-excerpt { display: none !important; }
   .blog-title { font-size: 0.9rem !important; margin-bottom: 8px !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
-  .read-more { font-size: 0.85rem !important; color: #dc3545 !important; font-weight: 700 !important; }
+  .read-more { font-size: 0.85rem !important; color: #000000 !important; font-weight: 700 !important; }
   .left-ribbon { font-size: 1.4rem !important; padding: 8px 24px 8px 20px !important; margin-left: -20px !important; }
   .left2-ribbon { font-size: 1.4rem !important; padding: 8px 24px !important; margin-left: -20px !important; }
-  /* Keep scroll top centered on mobile */
   .scroll-top-btn { bottom: 80px !important; }
+  .deals-layout { flex-direction: column; gap: 12px; min-height: auto; padding: 0; }
+  .deals-banner-col { flex: none; max-width: 100%; width: 100%; }
+  .deal-banner-box { width: 100%; height: 300px !important; min-height: 300px !important; border-radius: 10px; display: block; }
+  .banner-img { width: 100%; height: auto !important; object-fit: cover; display: block; }
+  .deals-cards-col { width: 100%; }
+  .deals-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; height: auto !important; }
+  .deal-card { width: 100%; height: 0 !important; padding-bottom: 100% !important; min-height: unset !important; border-radius: 10px; }
+  .deals-section .text-center { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; text-align: left !important; margin-bottom: 22px !important; gap: 10px; }
+  .deals-section .text-center h2 { font-size: 1.4rem !important; margin-bottom: 0 !important; flex: 1; text-align: left !important; }
+  .deals-section .text-center p.lead { font-size: 1rem !important; margin-bottom: 0 !important; flex: 1; text-align: right !important; }
+  .deal-card-img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 }
 
+@media (min-width: 768px) and (max-width: 991px) {
+  .deals-layout { flex-direction: column; gap: 16px; min-height: auto; }
+  .deals-banner-col { flex: none; max-width: 100%; width: 100%; }
+  .deal-banner-box { height: 500px !important; min-height: 500px !important; }
+  .deals-cards-grid { grid-template-columns: repeat(4, 1fr); height: auto; gap: 10px; }
+  .deal-card { height: 0 !important; padding-bottom: 90% !important; min-height: unset; }
+}
+@media (max-width: 767px) {
+  .deal-banner-box { height: 240px; min-height: 240px; }
+  .deals-cards-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .deal-card { padding-bottom: 95%; }
+  .deal-ribbon { font-size: 10px; padding: 2px 28px; top: 12px; left: -28px; }
+}
 @media (orientation: landscape) and (max-height: 600px) {
   .hero-carousel { height: 100vh !important; }
   .text-and-image-wrapper { margin-top: 3% !important; }
   .main_title { font-size: 2.5rem !important; }
   .hero-png { max-height: 500px !important; }
 }
-
 @media (min-width: 2000px) {
-  .product-card { min-width: 20% !important; }
+  .featured-products .product-card, .apparel-products .product-card { min-width: 20% !important; }
   .video-card { width: 20% !important; }
   .testimonial-item { flex: 0 0 25% !important; }
   .product-img { height: 320px !important; }
 }
-.button-apperal{
-    background-color: #000;
-    color: white;
-}
+
 img { max-width: 100%; height: auto; }
 *:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
 #tawk-bubble-container, .tawk-min-container, iframe[title="chat widget"] { display: none !important; }

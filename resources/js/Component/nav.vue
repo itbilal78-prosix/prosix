@@ -44,10 +44,11 @@
                         >{{ nav.title }}</router-link>
 
                       <a
-  v-else
+ v-else
   class="nav-link dropdown-toggle"
   href="#"
   @click.prevent="nav.clickable ? goToMenu(nav.slug) : null"
+  :style="nav.clickable ? 'cursor:pointer' : 'cursor:default'"
 >
   {{ nav.title }}
 </a>
@@ -282,7 +283,7 @@
                         <span>{{ nav.title }}</span><i class="bi bi-arrow-right text-white opacity-50"></i>
                     </router-link>
                     <div v-else class="d-flex align-items-center justify-content-between drawer-link-row">
-                        <span class="drawer-link drawer-link-text px-4 py-3 flex-grow-1" @click="goToMenu(nav.slug); closeDrawer()">{{ nav.title }}</span>
+<span class="drawer-link drawer-link-text px-4 py-3 flex-grow-1" @click="nav.clickable ? (goToMenu(nav.slug), closeDrawer()) : null">{{ nav.title }}</span>
                         <button class="drawer-toggle-icon px-3 py-3" @click="toggleAccordion(nav.id)">
                             <i class="bi fs-6 transition-icon" :class="openAccordion === nav.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                         </button>
@@ -847,7 +848,7 @@ onUnmounted(() => {
   .nav-link { font-size: clamp(0.80rem, 0.95vw, 0.95rem); }
 }
 @media (max-width: 991px) {
-  .custom-navbar { height: 56px; background: #000 !important; }
+  .custom-navbar { height: 80px; background: #000 !important; }
   .custom-navbar::before { display: none; }
   .navbar-logo { height: 28px; margin-top: 0; filter: brightness(0) invert(1); }
   .logo-small { margin-bottom: 0; }
