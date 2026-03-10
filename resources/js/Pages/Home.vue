@@ -77,7 +77,7 @@
 
       <!-- Deals Section -->
    <!-- Deals Section -->
-<section class="deals-section py-5">
+<section class="deals-section ">
   <div class="full-container" v-if="deal">
     <div class="text-center mb-5">
       <h2 class="fw-bold display-5 text-black">{{ deal.title }}</h2>
@@ -860,7 +860,10 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 /* Deals */
 /* DEALS SECTION */
-.deals-section { background-color: #e0e0e0; }
+.deals-section {
+     background-color: #e0e0e0;
+     padding-top: 60px;
+    }
 
 .deals-layout {
   display: flex;
@@ -957,23 +960,39 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .deals-layout {
     flex-direction: column;
     gap: 16px;
+    min-height: auto;
   }
+
   .deals-banner-col {
     flex: none;
     max-width: 100%;
+    width: 100%;
   }
+
   .deal-banner-box {
     height: 320px;
     min-height: 320px;
+    width: 100%;
+    display: block;
   }
+
+  .banner-img {
+    height: 320px;
+    width: 100%;
+    object-fit: cover;
+  }
+
   .deals-cards-grid {
     grid-template-columns: repeat(4, 1fr);
+    height: auto;
     gap: 10px;
   }
+
   .deal-card {
-    padding-bottom: 100%;
+    height: 0 !important;
+    padding-bottom: 90% !important;
+    min-height: unset;
   }
-  .deal-ribbon { font-size: 11px; padding: 2px 32px; }
 }
 
 /* Mobile */
@@ -989,14 +1008,61 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 /* Small mobile */
 @media (max-width: 575px) {
-  .deals-layout { gap: 12px; }
-  .deal-banner-box { height: 200px; min-height: 200px; border-radius: 12px; }
-  .deals-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+  .deals-layout {
+    flex-direction: column;
+    gap: 12px;
+    min-height: auto;
+    padding: 0;
   }
-  .deal-card { padding-bottom: 100%; border-radius: 10px; }
-  .deal-ribbon { font-size: 10px; padding: 2px 26px; top: 10px; left: -26px; }
+
+  .deals-banner-col {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .deal-banner-box {
+    width: 100%;
+    height: 280px !important;
+    min-height: 280px !important;
+    border-radius: 10px;
+    display: block;
+  }
+
+  .banner-img {
+    width: 100%;
+    height: 270px !important;
+    object-fit: cover;
+    display: block;
+  }
+
+  .deals-cards-col {
+    width: 100%;
+  }
+
+  .deals-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: auto !important;
+    gap: 8px;
+    height: auto !important;
+  }
+
+  .deal-card {
+    width: 100%;
+    height: 0 !important;
+    padding-bottom: 100% !important;
+    min-height: unset !important;
+    border-radius: 10px;
+  }
+
+  .deal-card-img {
+    position: absolute !important;
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+  }
 }
 /* .deal-card:hover .deal-card-img { transform: scale(1.08); }
 .deal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s ease; }
