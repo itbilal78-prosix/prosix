@@ -341,68 +341,76 @@ const showLoginModal = ref(false)
 const pendingModelId = ref(null)
 
 // ============================================================
-// UNIVERSAL INFINITE CAROUSEL
-// Rule: 1500px+ => loop only if items > itemsPerView (5)
-//       <1500px  => loop always if items > 1
+// UNIVERSAL INFINITE CAROUSEL — FIXED
+// Hamesha items ko repeat karo jab tak track full na ho
+// Sports icons ki tarah seamless infinite scroll
 // ============================================================
 function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   const index = ref(0)
   const isTransitioning = ref(false)
   const transitionVal = ref('transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)')
 
-  const shouldLoop = computed(() => {
-    if (typeof window === 'undefined') return false
-    if (window.innerWidth >= 1500) {
-      // Desktop: sirf tab loop karo jab items > currently visible cards
-      return items.value.length > itemsPerView.value
+  // Items ko itna repeat karo ke kam se kam itemsPerView * 3 ho jayen
+  const paddedItems = computed(() => {
+    if (items.value.length === 0) return []
+const needed = Math.max(itemsPerView.value * 20, 60)
+    let result = []
+    while (result.length < needed) {
+      result = [...result, ...items.value]
     }
-    // Mobile/tablet: hamesha loop (2+ items)
-    return items.value.length > 1
+    return result
   })
 
+  // Infinite ke liye teen copies
   const infinite = computed(() => {
-    if (items.value.length === 0) return []
-    if (!shouldLoop.value) return [...items.value]
-    return [...items.value, ...items.value, ...items.value]
+    if (paddedItems.value.length === 0) return []
+    return [...paddedItems.value, ...paddedItems.value, ...paddedItems.value]
   })
+
+  const chunkSize = computed(() => paddedItems.value.length)
 
   const trackStyle = computed(() => {
     const pct = 100 / itemsPerView.value
-    const translateX = shouldLoop.value ? (index.value + items.value.length) * pct : index.value * pct
+    const translateX = (index.value + chunkSize.value) * pct
     return { transform: `translateX(-${translateX}%)`, transition: transitionVal.value }
   })
 
   const next = () => {
-    if (!shouldLoop.value) { const maxIdx = Math.max(0, items.value.length - itemsPerView.value); if (index.value < maxIdx) index.value++; return }
     if (isTransitioning.value) return
     isTransitioning.value = true
     transitionVal.value = 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)'
     index.value++
     setTimeout(() => {
-      if (index.value >= items.value.length) { transitionVal.value = 'none'; index.value = 0; nextTick(() => { isTransitioning.value = false }) }
-      else { isTransitioning.value = false }
+      if (index.value >= chunkSize.value) {
+        transitionVal.value = 'none'
+        index.value = 0
+        nextTick(() => { isTransitioning.value = false })
+      } else {
+        isTransitioning.value = false
+      }
     }, 460)
   }
 
   const prev = () => {
-    if (!shouldLoop.value) { if (index.value > 0) index.value--; return }
     if (isTransitioning.value) return
     isTransitioning.value = true
     transitionVal.value = 'transform 0.45s cubic-bezier(0.4, 0, 0.2, 1)'
     index.value--
     setTimeout(() => {
-      if (index.value < 0) { transitionVal.value = 'none'; index.value = items.value.length - 1; nextTick(() => { isTransitioning.value = false }) }
-      else { isTransitioning.value = false }
+      if (index.value < 0) {
+        transitionVal.value = 'none'
+        index.value = chunkSize.value - 1
+        nextTick(() => { isTransitioning.value = false })
+      } else {
+        isTransitioning.value = false
+      }
     }, 460)
   }
 
   let autoTimer = null
-  // Auto sirf tab chale jab shouldLoop true ho
   const startAuto = () => {
     stopAuto()
-    autoTimer = setInterval(() => {
-      if (shouldLoop.value) next()
-    }, autoSpeed)
+    autoTimer = setInterval(() => { next() }, autoSpeed)
   }
   const stopAuto = () => { if (autoTimer) { clearInterval(autoTimer); autoTimer = null } }
 
