@@ -1060,10 +1060,7 @@ height: calc(97vh - 60px);
 
 
         /* Selected SVG part highlight */
-        .selected {
-            stroke: #000000;
-            stroke-width: 4;
-        }
+        
 
         .svg-hoverable:hover {
             filter: invert(0.35) brightness(1.1) contrast(1.2);
