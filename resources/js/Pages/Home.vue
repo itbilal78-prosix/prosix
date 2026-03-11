@@ -697,7 +697,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .apparel-cart-icon:hover { background: #fff !important; color: #000 !important; }
 .product-card { padding: 0 4px; box-sizing: border-box; }
 .product-card-inner { background: #fff; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-.product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+/* .product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); } */
 .product-img { width: 100%; height: 240px; object-fit: contain; margin-bottom: 8px; border-radius: 0; display: block; }
 .product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-title { font-size: 0.88rem; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -835,7 +835,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .benefits-desktop { display: none !important; }
   .benefits-mobile-carousel { display: block !important; }
   .text-and-image-wrapper { max-width: 100% !important; width: 100% !important; height: 88vh !important; margin-top: 0 !important; display: flex !important; flex-direction: column !important; justify-content: flex-end !important; padding-bottom: 20px !important; gap: 10px !important; }
-  .main_title { width: 100% !important; font-size: 2.4rem !important; text-align: center !important; order: 1 !important; }
+  .main_title { width: 100% !important; font-size: 3.7rem !important; text-align: center !important; order: 1 !important; }
   .button-wrapper { margin-top: 0 !important; align-self: center !important; order: 2 !important; }
   .image-content { order: 3 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
   .hero-png { max-height: 45vh !important; max-width: 90% !important; }

@@ -1,9 +1,9 @@
 <template>
   <div>
     <nav-component />
-        <breadcrumb-component />
+    <breadcrumb-component />
 
-    <div class="container ">
+    <div class="container">
       <!-- Heading -->
       <div class="text-center mb-5">
         <h1 class="fw-bold">{{ category?.name }}</h1>
@@ -20,14 +20,10 @@
           <div
             v-for="product in products"
             :key="product.id"
-            class="col-lg-2 col-md-4 col-sm-6 col-6"
+            class="col-lg-5col col-md-4 col-sm-6 col-6"
           >
             <div class="card product-card h-100 shadow-sm">
-
-              <!-- Product inner: color strip LEFT + image RIGHT -->
               <div class="product-inner">
-
-                <!-- LEFT: Color variant small boxes (only if color_variants exist) -->
                 <div
                   class="color-strip"
                   v-if="product.color_variants && product.color_variants.length > 1"
@@ -45,7 +41,6 @@
                   </div>
                 </div>
 
-                <!-- RIGHT: Main product image (changes on color click) -->
                 <div class="product-img-wrapper flex-grow-1">
                   <transition name="color-swap" mode="out-in">
                     <img
@@ -58,8 +53,8 @@
               </div>
 
               <div class="card-body text-center">
-                <h6 class="fw-bold mb-1">{{ product.name }}</h6>
-                <p class="text-muted mb-2">$ {{ product.price }}</p>
+                <h6 class="fw-bold mb-1" style="font-size:16px;">{{ product.name }}</h6>
+                <p class="text-muted mb-2" style="font-size:16px; font-weight:700;">$ {{ product.price }}</p>
                 <router-link
                   :to="`/product/${product.id}`"
                   class="btn btn-dark btn-sm w-100"
@@ -86,17 +81,14 @@
               <div
                 v-for="model in groupModels"
                 :key="model.id"
-                class="col-lg-2 col-md-4 col-sm-6 col-6"
+                class="col-lg-5col col-md-4 col-sm-6 col-6"
               >
                 <div class="card model-card">
                   <div class="card-image-wrapper">
-                    <!-- Cart Icon → opens purchase modal -->
                     <button
                       class="model-cart-btn"
-                      @click.stop="router.push(`/product/${model.id}?type=model`)
-"
-title="View Product"
-
+                      @click.stop="router.push(`/product/${model.id}?type=model`)"
+                      title="View Product"
                     >
                       <i class="bi bi-cart" style="transform: scaleX(-1); display:inline-block;"></i>
                     </button>
@@ -141,7 +133,7 @@ title="View Product"
       </div>
     </div>
 
-    <!-- ===== PURCHASE MODAL (model cart click) ===== -->
+    <!-- ===== PURCHASE MODAL ===== -->
     <transition name="modal-pop">
       <div
         v-if="showPurchaseModal"
@@ -149,13 +141,11 @@ title="View Product"
         @click.self="showPurchaseModal = false"
       >
         <div class="pm-box">
-          <!-- Close -->
           <button class="pm-close" @click="showPurchaseModal = false">
             <i class="bi bi-x-lg"></i>
           </button>
 
           <div class="pm-layout">
-            <!-- Model Image -->
             <div class="pm-img-side">
               <img v-if="pmModel.thumbnail" :src="pmModel.thumbnail" class="pm-main-img" />
               <template v-else>
@@ -165,13 +155,11 @@ title="View Product"
               </template>
             </div>
 
-            <!-- Info & Size -->
             <div class="pm-info-side">
               <h4 class="pm-title">{{ pmModel.title }}</h4>
               <p class="pm-price">${{ pmModel.price || '0.00' }}</p>
               <hr class="pm-hr" />
 
-              <!-- Size Selection -->
               <div class="pm-group">
                 <label class="pm-label">Select Size *</label>
                 <div class="pm-sizes">
@@ -189,7 +177,6 @@ title="View Product"
                   >Other +</button>
                 </div>
 
-                <!-- Custom size input -->
                 <div v-if="pmSize === '__other__'" class="pm-custom-row">
                   <input
                     v-model="pmCustom"
@@ -205,7 +192,6 @@ title="View Product"
                 </p>
               </div>
 
-              <!-- Quantity -->
               <div class="pm-group">
                 <label class="pm-label">Quantity</label>
                 <div class="pm-qty">
@@ -217,7 +203,6 @@ title="View Product"
 
               <p v-if="!pmEffectiveSize" class="pm-warn">⚠ Please select or confirm a size first</p>
 
-              <!-- Action Buttons -->
               <div class="pm-actions">
                 <button class="pm-cart-btn" @click="addModelToCart" :disabled="!pmEffectiveSize">
                   <i class="bi bi-cart-plus"></i> Add to Cart
@@ -251,24 +236,15 @@ title="View Product"
           </div>
           <div class="modal-body text-center px-5 pb-2">
             <h5 class="fw-bold mb-2">Login Required</h5>
-            <p class="text-muted mb-0">
-To use the Customizer, you must first log in to your account.
-            </p>
+            <p class="text-muted mb-0">To use the Customizer, you must first log in to your account.</p>
           </div>
           <div class="modal-footer justify-content-center border-0 px-5 pb-4 gap-3">
-            <button
-              class="btn btn-outline-secondary rounded-pill px-4"
-              @click="showLoginModal = false"
-            >
-              Cancel
-            </button>
+            <button class="btn btn-outline-secondary rounded-pill px-4" @click="showLoginModal = false">Cancel</button>
             <router-link
               :to="{ path: '/user-login', query: { redirect: `/models/${pendingModelId}` } }"
               class="btn btn-dark rounded-pill px-4"
               @click="showLoginModal = false"
-            >
-              Login
-            </router-link>
+            >Login</router-link>
           </div>
         </div>
       </div>
@@ -422,7 +398,6 @@ const fetchProducts = async () => {
   try {
     const res = await axios.get(`/api/category/${route.params.id}/products`)
     products.value = res.data
-    console.log("Loaded:", products.value)
   } catch (e) {
     console.error('Products error:', e)
   } finally {
@@ -430,13 +405,46 @@ const fetchProducts = async () => {
   }
 }
 
+// ── Load category name
+const fetchCategory = async () => {
+  try {
+    const res = await axios.get(`/api/categories/${categoryId}`)
+    category.value = res.data
+  } catch (e) {
+    console.error('Category error:', e)
+  }
+}
+
 onMounted(() => {
+  fetchCategory()
   fetchProducts()
   loadModels()
 })
 </script>
 
 <style scoped>
+/* ===== 5 PER ROW ===== */
+.col-lg-5col {
+  width: 20%;
+  padding: 0 6px;
+  flex: 0 0 20%;
+  max-width: 20%;
+}
+@media (max-width: 992px) {
+  .col-lg-5col {
+    width: 50%;
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+@media (max-width: 576px) {
+  .col-lg-5col {
+    width: 50%;
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
 /* ===== PRODUCT CARDS ===== */
 .product-card {
   border-radius: 14px;
@@ -448,13 +456,11 @@ onMounted(() => {
   box-shadow: 0 12px 22px rgba(0,0,0,.15);
 }
 
-/* Product inner: color strip + image side by side */
 .product-inner {
   display: flex;
-  height: 150px;
+  height: 250px;
 }
 
-/* ── Left color strip ── */
 .color-strip {
   display: flex;
   flex-direction: column;
@@ -491,7 +497,6 @@ onMounted(() => {
   border: 1px solid rgba(0,0,0,.2);
 }
 
-/* ── Image area ── */
 .product-img-wrapper {
   background: #fff;
   display: flex;
@@ -501,12 +506,11 @@ onMounted(() => {
   flex: 1;
 }
 .product-img {
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: 95%;
   object-fit: contain;
 }
 
-/* Color swap animation */
 .color-swap-enter-active, .color-swap-leave-active { transition: opacity .18s ease; }
 .color-swap-enter-from, .color-swap-leave-to { opacity: 0; }
 
@@ -563,25 +567,29 @@ onMounted(() => {
   border-radius: 14px;
   background: #fff;
   overflow: hidden;
-  height: 90%;
+  height: auto;
   transition: .35s ease;
 }
 .model-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 14px 28px rgba(0,0,0,.18);
 }
+
+/* ===== IMAGE HEIGHT (Image 2 jaisi) ===== */
 .card-image-wrapper {
   height: 250px;
   background: #fff;
   position: relative;
   overflow: hidden;
 }
+
 .model-thumb {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 90%;
+  height: 95%;
+  width: 90%;
   object-fit: contain;
 }
 .img-layer {
@@ -589,15 +597,16 @@ onMounted(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 90%;
+  height: 95%;
+  width: 90%;
   object-fit: contain;
 }
 .black { z-index: 3; mix-blend-mode: screen; }
 .white { z-index: 2; mix-blend-mode: multiply; }
 .svg   { z-index: 1; }
 
-.card-title  { font-size: 13px; font-weight: 600; }
-.card-price  { font-size: 13px; font-weight: 700; }
+.card-title  { font-size: 16px; font-weight: 700; }
+.card-price  { font-size: 16px; font-weight: 700; }
 
 .model-footer {
   padding: 10px;
@@ -710,11 +719,7 @@ onMounted(() => {
 .pm-other { background: #f5f5f5; border-style: dashed; }
 .pm-other.selected { background: #000; color: #fff; border-style: solid; }
 
-.pm-custom-row {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-}
+.pm-custom-row { display: flex; gap: 6px; margin-top: 10px; }
 .pm-custom-input {
   flex: 1;
   height: 38px;
@@ -793,12 +798,10 @@ onMounted(() => {
 .pm-buy-btn:hover:not(:disabled)  { background: #000; color: #fff; }
 .pm-cart-btn:disabled, .pm-buy-btn:disabled { opacity: .35; cursor: not-allowed; }
 
-/* Modal transition */
 .modal-pop-enter-active, .modal-pop-leave-active { transition: all .28s ease; }
 .modal-pop-enter-from, .modal-pop-leave-to { opacity: 0; }
 .modal-pop-enter-from .pm-box { transform: scale(.96) translateY(12px); }
 
-/* ===== LOGIN MODAL ===== */
 .login-icon-wrap {
   width: 72px;
   height: 72px;
@@ -809,7 +812,6 @@ onMounted(() => {
   justify-content: center;
 }
 
-/* Toast */
 .cat-toast {
   position: fixed;
   bottom: 28px;

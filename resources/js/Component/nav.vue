@@ -327,8 +327,9 @@
     </transition>
 
     <!-- ===== CART SIDEBAR ===== -->
-    <div v-if="showCartSidebar" class="cart-sidebar position-fixed top-0 end-0 h-100 bg-white shadow-lg p-4" style="width:400px;z-index:1050">
-        <h4 class="mb-4">Your Cart</h4>
+<div v-if="showCartSidebar"
+class="cart-sidebar position-fixed end-0 bg-white shadow-lg p-4"
+style="width:400px; z-index:1050; top:50px; height:calc(100% - 50px);">        <h4 class="mb-4">Your Cart</h4>
         <button class="btn-close position-absolute top-0 end-0 m-3" @click="showCartSidebar = false"></button>
         <div v-if="cartStore.items.length === 0"><p>Cart is empty</p></div>
         <div v-else>

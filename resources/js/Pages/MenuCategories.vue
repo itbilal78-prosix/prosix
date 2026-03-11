@@ -158,9 +158,9 @@ watch(() => route.params.slug, loadData)
   margin-bottom: 10px;
 }
 .hero-desc {
-  font-size: 15px;
-  color: #777;
-  max-width: 500px;
+  font-size: 16px;
+  color: #5f5f5f;
+  max-width: 600px;
   margin: 0 auto;
   line-height: 1.7;
 }
