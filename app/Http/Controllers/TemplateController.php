@@ -97,4 +97,7 @@ class TemplateController extends Controller
             'template' => $template
         ]);
     }
+    public function apiList() {
+    return response()->json(\App\Models\Template::latest()->get());
+}
 }

@@ -38,6 +38,8 @@ app.use(pinia);
 app.use(router);
 
 // Global components (nav, footer, dashboard waghera)
+import MyRequestsTab from './user-dashboard/Components/Myrequeststab.vue'
+app.component('my-requests-tab', MyRequestsTab)
 import nav from './Component/nav.vue';
 app.component('nav-component', nav);
 import Breadcrumb from './Component/Breadcrumb.vue';

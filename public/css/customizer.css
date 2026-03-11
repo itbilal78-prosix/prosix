@@ -152,7 +152,7 @@ height: calc(97vh - 60px);
     border-color: #575757;
     color: white;
     background: #000000;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+
 }
 
 .layer-number {
@@ -236,15 +236,13 @@ height: calc(97vh - 60px);
 
 .app-type-card:hover {
     border-color: #000000;
-    background: #f0f7ff;
+    background: #707070;
     transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.15);
 }
 
 .app-type-card.selected {
     border-color: #000000;
-    background: #e7f3ff;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+    background: #727272;
 }
 
 .app-icon {
@@ -289,7 +287,6 @@ height: calc(97vh - 60px);
 
 .perspective-btn:hover {
     border-color: #000000;
-    background: #f0f7ff;
     color: #000000;
 }
 
@@ -297,7 +294,6 @@ height: calc(97vh - 60px);
     border-color: #000000;
     background: #000000;
     color: #fff;
-    box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
 }
 
 /* Part Grid */
@@ -325,7 +321,7 @@ height: calc(97vh - 60px);
 
 .part-btn:hover {
     border-color: #000000;
-    background: #f0f7ff;
+    background: #7c7c7c;
     color: #000000;
 }
 
@@ -363,7 +359,7 @@ height: calc(97vh - 60px);
 .control-group select:focus {
     outline: none;
     border-color: #000000;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    box-shadow: 0 0 0 3px rgb(255, 0, 0);
 }
 
 .control-group input[type="range"] {
@@ -1067,7 +1063,6 @@ height: calc(97vh - 60px);
         .selected {
             stroke: #000000;
             stroke-width: 4;
-            filter: brightness(1.3);
         }
 
         .svg-hoverable:hover {

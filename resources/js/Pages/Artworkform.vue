@@ -301,7 +301,9 @@ export default {
         formData.append('teamColor', this.form.selectedColors.map(c => c.name).join(', '));
         this.images.forEach(img => formData.append("images[]", img));
 
-        await axios.post('/api/artwork-request', formData);
+const token = localStorage.getItem('auth_token');
+const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+await axios.post('/api/artwork-request', formData, config);
         const modal = new bootstrap.Modal(document.getElementById("successModal"));
         modal.show();
       } catch (err) {

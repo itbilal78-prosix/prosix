@@ -2667,17 +2667,15 @@ el.dataset.partName = el.getAttribute('inkscape:label')
         }
 
         // 1. Clear previous selection
-        document.querySelectorAll('.selected').forEach(e => {
-            e.classList.remove('selected');
-            e.style.filter = '';
-            e.style.stroke = '';
-        });
+     document.querySelectorAll('.selected').forEach(e => {
+    e.classList.remove('selected');
+
+});
 
         // 2. Set new selection
         window.selectedSvgElement = el;
-        el.classList.add('selected');
-        el.style.filter = 'brightness(1.15)';
-        el.style.stroke = 'none';
+el.classList.add('selected');
+
 
         const partId = el.id;
         const activeTab = document.querySelector('.tab-btn.active');

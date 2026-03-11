@@ -9,19 +9,11 @@ class MembershipRequest extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'email',
-        'address',
-        'organization',
-        'state',
-        'zip',
-        'phone',
-        'role',
-        'sports',
-        'level'
-    ];
-
+   protected $fillable = [
+    'user_id',      // ✅ NAYA
+    'name', 'email', 'address', 'organization',
+    'state', 'zip', 'phone', 'role', 'sports', 'level',
+];
    protected $casts = [
     'sports' => 'array',
 ];

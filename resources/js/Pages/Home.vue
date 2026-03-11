@@ -538,6 +538,36 @@ const goToCustomizer = (product) => {
 const addToCart = (product) => { cartStore.addItem(product) }
 
 onMounted(async () => {
+    // ── Disable Inspect / DevTools ─────────────────────────────
+// Right Click disable
+document.addEventListener('contextmenu', e => e.preventDefault())
+
+// F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U disable
+document.addEventListener('keydown', e => {
+  if (
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+    (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+    (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase())) // Mac
+  ) {
+    e.preventDefault()
+    e.stopPropagation()
+    return false
+  }
+})
+
+// DevTools open detection — redirect or warn
+const devToolsCheck = () => {
+  const threshold = 160
+  if (
+    window.outerWidth - window.innerWidth > threshold ||
+    window.outerHeight - window.innerHeight > threshold
+  ) {
+    document.body.innerHTML = '<h1 style="text-align:center;margin-top:20%;font-family:sans-serif;">Access Denied</h1>'
+  }
+}
+window.addEventListener('resize', devToolsCheck)
+setInterval(devToolsCheck, 1000)
   updateMobile()
   window.addEventListener('resize', handleResize)
   window.addEventListener('scroll', handleScroll)
@@ -558,6 +588,7 @@ onUnmounted(() => {
   stopFeaturedAuto(); stopApparelAuto(); stopVideoAuto(); stopBenefitAuto()
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', devToolsCheck)
 })
 </script>
 

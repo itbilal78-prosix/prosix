@@ -21,6 +21,7 @@ use App\Http\Controllers\ArtworkRequestController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\FlipbookController;
+use App\Http\Controllers\UserRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -136,6 +137,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/profile',           [UserController::class, 'profile']);
     Route::put('/profile',                [UserController::class, 'updateProfile']);   // ✅ already tha
     Route::post('/user/change-password',  [UserController::class, 'changePassword']); // ✅ naya add karo
+        Route::get('/user/my-requests', [UserRequestController::class, 'index']);
+
 });
 
 
@@ -178,8 +181,8 @@ Route::get('/colors', [\App\Http\Controllers\ColorController::class, 'apiIndex']
 
 Route::post('/membership-request', [MembershipRequestController::class, 'store']);
 
-Route::post('/artwork-request', [ArtworkRequestController::class, 'store']);
-
+Route::post('/artwork-request', [ArtworkRequestController::class, 'store'])
+    ->middleware('auth:sanctum')->withoutMiddleware('auth:sanctum');
 Route::post('/create-payment-intent', [StripeController::class, 'createPaymentIntent']);
 Route::fallback(function () {
     return response()->json(['error' => 'API endpoint not found'], 404);

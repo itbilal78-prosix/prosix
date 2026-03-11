@@ -601,8 +601,14 @@ font-weight:600;
 </div>
 
 <style>
+    body {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
     .accent-card:hover {
-        border-color: #007bff !important;
+        border-color: #000000 !important;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
@@ -610,6 +616,31 @@ font-weight:600;
     .text-custom-tab:hover {
         background: #f8f9fa;
     }
+    /* Remove blue focus outline */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+div:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove click highlight */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove blue selection border */
+:focus-visible {
+    outline: none !important;
+}
+.app-type-card:focus,
+.part-btn:focus,
+.perspective-btn:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
 </style>
 <script>
     window.backendFonts = @json($fonts ?? []);

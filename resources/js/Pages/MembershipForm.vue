@@ -385,7 +385,9 @@ const submitForm = async () => {
   loading.value = true
 
   try {
-    const response = await axios.post('/api/membership-request', form.value)
+const token = localStorage.getItem('auth_token');
+const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+await axios.post('/api/membership-request', form.value, config);
     const modal = new bootstrap.Modal(document.getElementById('successModal'))
     modal.show()
   } catch (err) {

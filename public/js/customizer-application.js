@@ -20,7 +20,14 @@
         outline2: '#666666',
         shadow: '#333333'
     };
-
+document.addEventListener("contextmenu", function(e){
+    e.preventDefault();
+});
+document.addEventListener("keydown", function(e){
+    if(e.ctrlKey && (e.key === 'c' || e.key === 'u')){
+        e.preventDefault();
+    }
+});
     // =================== SIDEBAR TOGGLE ===================
 
     window.toggleApplicationsSidebar = function () {
@@ -707,114 +714,112 @@ window.showHideColorPickers = function (style) {
         console.log('✅ Application added:', layer);
     };
 
-    // =================== ADD TO SVG ===================
 
-    // window.addApplicationToSvg = function (layer) {
+// window.addApplicationToSvg = function (layer) {
+
+//     const mainSvg = window.getMainSvg();
+//     if (!mainSvg) {
+//         setTimeout(() => addApplicationToSvg(layer), 300);
+//         return;
+//     }
+
+//     // ✅ DUPLICATE CHECK
+//     if (mainSvg.querySelector(`#${layer.id}`)) {
+//         console.log('⚠ Layer already exists, skipping:', layer.id);
+//         return;
+//     }
+
+//     // ================= CREATE DEFS =================
+//     let defs = mainSvg.querySelector('defs');
+//     if (!defs) {
+//         defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+//         mainSvg.insertBefore(defs, mainSvg.firstChild);
+//     }
+
+//     const partElement = mainSvg.querySelector(`#${layer.partId}`);
+//     if (!partElement) {
+//         console.warn('Part not found', layer.partId);
+//         return;
+//     }
+
+//     // ================= CREATE CLIP PATH =================
+//     const clipId = `clip-${layer.partId}`;
+
+//     if (!defs.querySelector(`#${clipId}`)) {
+//         const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+//         clip.setAttribute('id', clipId);
+//         const clone = partElement.cloneNode(true);
+//         clone.removeAttribute('id');
+//         clip.appendChild(clone);
+//         defs.appendChild(clip);
+//     }
+
+//     // ================= APPLICATION GROUP =================
+//     let appGroup = mainSvg.querySelector('#application-group');
+//     if (!appGroup) {
+//         appGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+//         appGroup.setAttribute('id', 'application-group');
+//         mainSvg.appendChild(appGroup);
+//     }
+
+//     appGroup.setAttribute('clip-path', `url(#${clipId})`);
+
+//     // ================= CENTER OF PART =================
+//     const bbox = partElement.getBBox();
+//     const cx = bbox.x + bbox.width / 2;
+//     const cy = bbox.y + bbox.height / 2;
+
+//     // ================= CREATE TEXT =================
+//     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+//     text.setAttribute('id', layer.id);
+//     text.setAttribute('x', cx + layer.x);
+//     text.setAttribute('y', cy + layer.y);
+//     text.setAttribute('font-size', layer.fontSize);
+//     text.style.fontFamily = layer.fontFamily;
+//     text.setAttribute('fill', layer.fill);
+//     text.setAttribute('stroke', layer.stroke);
+//     text.setAttribute('stroke-width', layer.strokeWidth);
+//     text.setAttribute('text-anchor', 'middle');
+//     text.setAttribute('dominant-baseline', 'middle');
+//     text.setAttribute('paint-order', 'stroke fill');
+//     text.setAttribute('stroke-linejoin', 'round');
+//     text.style.cursor = 'move';
+//     text.textContent = layer.text;
+
+//     if (layer.rotation) {
+//         text.setAttribute(
+//             'transform',
+//             `rotate(${layer.rotation} ${cx + layer.x} ${cy + layer.y})`
+//         );
+//     }
+
+//     appGroup.appendChild(text);
+
+//     // ================= DRAG =================
+//     makeDraggable(text, layer);
+
+//     text.addEventListener('click', e => {
+//         e.stopPropagation();
+//         selectApplicationLayer(layer.id);
+//     });
+
+//     // ================= OUTLINE =================
+//     if (layer.outlineStyle) {
+//         window.currentOutlineStyle = layer.outlineStyle;
+//         if (layer.outlineColors) {
+//             window.outlineColors = { ...layer.outlineColors };
+//         }
+//         applyOutlineStyleToText(layer.id);
+//     }
+
+//     console.log('✅ Application added WITH CLIP:', layer.id);
+// };
+
+    // =================== MAKE DRAGGABLE ===================
 
 
 
-    //     const mainSvg = window.getMainSvg();
-    //     if (!mainSvg) return;
-
-    //     if (mainSvg.querySelector(`#${layer.id}`)) {
-    //         console.log('⚠ Layer already exists, skipping:', layer.id);
-    //         return;
-    //     }
-
-    //     // ================= CREATE DEFS =================
-    //     let defs = mainSvg.querySelector('defs');
-    //     if (!defs) {
-    //         defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    //         mainSvg.insertBefore(defs, mainSvg.firstChild);
-    //     }
-
-    //     const partElement = mainSvg.querySelector(`#${layer.partId}`);
-    //     if (!partElement) {
-    //         console.warn('Part not found', layer.partId);
-    //         return;
-    //     }
-
-    //     // ================= CREATE CLIP PATH =================
-    //     const clipId = `clip-${layer.partId}`;
-
-    //     if (!defs.querySelector(`#${clipId}`)) {
-    //         const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-    //         clip.setAttribute('id', clipId);
-
-    //         const clone = partElement.cloneNode(true);
-    //         clone.removeAttribute('id');
-
-    //         clip.appendChild(clone);
-    //         defs.appendChild(clip);
-    //     }
-
-    //     // ================= APPLICATION GROUP =================
-    //     let appGroup = mainSvg.querySelector('#application-group');
-    //     if (!appGroup) {
-    //         appGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    //         appGroup.setAttribute('id', 'application-group');
-    //         mainSvg.appendChild(appGroup);
-    //     }
-
-    //     // APPLY CLIP TO GROUP
-    //     appGroup.setAttribute('clip-path', `url(#${clipId})`);
-
-    //     // ================= CENTER OF PART =================
-    //     const bbox = partElement.getBBox();
-    //     const cx = bbox.x + bbox.width / 2;
-    //     const cy = bbox.y + bbox.height / 2;
-
-    //     // ================= CREATE TEXT =================
-    //     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-
-    //     text.setAttribute('id', layer.id);
-    //     text.setAttribute('x', cx + layer.x);
-    //     text.setAttribute('y', cy + layer.y);
-    //     text.setAttribute('font-size', layer.fontSize);
-    //     text.style.fontFamily = layer.fontFamily;
-
-    //     text.setAttribute('fill', layer.fill);
-    //     text.setAttribute('stroke', layer.stroke);
-    //     text.setAttribute('stroke-width', layer.strokeWidth);
-
-    //     text.setAttribute('text-anchor', 'middle');
-    //     text.setAttribute('dominant-baseline', 'middle');
-    //     text.setAttribute('paint-order', 'stroke fill');
-    //     text.setAttribute('stroke-linejoin', 'round');
-
-    //     text.style.cursor = 'move';
-    //     text.textContent = layer.text;
-
-    //     if (layer.rotation) {
-    //         text.setAttribute(
-    //             'transform',
-    //             `rotate(${layer.rotation} ${cx + layer.x} ${cy + layer.y})`
-    //         );
-    //     }
-
-    //     appGroup.appendChild(text);
-
-    //     // ================= DRAG =================
-    //     makeDraggable(text, layer);
-
-    //     text.addEventListener('click', e => {
-    //         e.stopPropagation();
-    //         selectApplicationLayer(layer.id);
-    //     });
-
-    //     // ================= OUTLINE / PATTERN =================
-    //     if (layer.outlineStyle) {
-    //         window.currentOutlineStyle = layer.outlineStyle;
-    //         if (layer.outlineColors) {
-    //             window.outlineColors = { ...layer.outlineColors };
-    //         }
-    //         applyOutlineStyleToText(layer.id);
-    //     }
-
-    //     console.log('✅ Application added WITH CLIP:', layer.id);
-    // };
 window.addApplicationToSvg = function (layer) {
-
     const mainSvg = window.getMainSvg();
     if (!mainSvg) {
         setTimeout(() => addApplicationToSvg(layer), 300);
@@ -840,8 +845,10 @@ window.addApplicationToSvg = function (layer) {
         return;
     }
 
-    // ================= CREATE CLIP PATH =================
-    const clipId = `clip-${layer.partId}`;
+    // ================= CLIP PATH — unique per LAYER, not per part =================
+    // 🔥 FIX: clip-${layer.id} instead of clip-${layer.partId}
+    // Pehle sab layers ek hi clip share karte the — ab har layer ka apna clip hai
+    const clipId = `clip-${layer.id}`;
 
     if (!defs.querySelector(`#${clipId}`)) {
         const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
@@ -852,15 +859,17 @@ window.addApplicationToSvg = function (layer) {
         defs.appendChild(clip);
     }
 
-    // ================= APPLICATION GROUP =================
-    let appGroup = mainSvg.querySelector('#application-group');
-    if (!appGroup) {
-        appGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        appGroup.setAttribute('id', 'application-group');
-        mainSvg.appendChild(appGroup);
+    // ================= INDIVIDUAL GROUP PER LAYER =================
+    // 🔥 FIX: har layer ka apna group — shared #application-group nahi
+    // Pehle ek hi group tha aur clip-path baar baar overwrite hoti thi
+    const layerGroupId = `app-group-${layer.id}`;
+    let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+    if (!layerGroup) {
+        layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        layerGroup.setAttribute('id', layerGroupId);
+        layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+        mainSvg.appendChild(layerGroup);
     }
-
-    appGroup.setAttribute('clip-path', `url(#${clipId})`);
 
     // ================= CENTER OF PART =================
     const bbox = partElement.getBBox();
@@ -891,7 +900,7 @@ window.addApplicationToSvg = function (layer) {
         );
     }
 
-    appGroup.appendChild(text);
+    layerGroup.appendChild(text);
 
     // ================= DRAG =================
     makeDraggable(text, layer);
@@ -910,10 +919,8 @@ window.addApplicationToSvg = function (layer) {
         applyOutlineStyleToText(layer.id);
     }
 
-    console.log('✅ Application added WITH CLIP:', layer.id);
+    console.log('✅ Application added with individual clip group:', layer.id);
 };
-
-    // =================== MAKE DRAGGABLE ===================
 
     window.makeDraggable = function (element, layer) {
         let isDragging = false;
@@ -2167,7 +2174,7 @@ border:2px solid #ddd;
     };
 
     // Override to prevent "Please select a part" error for text mascots
-    const originalOpenMascotTemplateModal = window.openMascotTemplateModal;
+    // const originalOpenMascotTemplateModal = window.openMascotTemplateModal;
     window.openMascotTemplateModal = function () {
         // If opening for text, skip part check
         if (window.selectingMascotForText) {
@@ -2455,42 +2462,80 @@ border:2px solid #ddd;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    window.removeApplicationLayer = function (layerId, event) {
-        if (event) event.stopPropagation();
+    // window.removeApplicationLayer = function (layerId, event) {
+    //     if (event) event.stopPropagation();
 
-        Object.keys(window.applicationsApplied).forEach(view => {
-            Object.keys(window.applicationsApplied[view]).forEach(partId => {
-                window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
+    //     Object.keys(window.applicationsApplied).forEach(view => {
+    //         Object.keys(window.applicationsApplied[view]).forEach(partId => {
+    //             window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
 
-                if (window.applicationsApplied[view][partId].length === 0) {
-                    delete window.applicationsApplied[view][partId];
-                }
-            });
-        });
+    //             if (window.applicationsApplied[view][partId].length === 0) {
+    //                 delete window.applicationsApplied[view][partId];
+    //             }
+    //         });
+    //     });
 
-        const textEl = document.getElementById(layerId);
-        if (textEl) textEl.remove();
+    //     const textEl = document.getElementById(layerId);
+    //     if (textEl) textEl.remove();
 
-        const outlines = document.querySelectorAll(`[data-outline-for="${layerId}"]`);
-        outlines.forEach(outline => outline.remove());
+    //     const outlines = document.querySelectorAll(`[data-outline-for="${layerId}"]`);
+    //     outlines.forEach(outline => outline.remove());
 
-        if (window.currentApplicationLayer === layerId) {
-            window.currentApplicationLayer = null;
-            document.getElementById('applicationLayerControls').style.display = 'none';
-        }
+    //     if (window.currentApplicationLayer === layerId) {
+    //         window.currentApplicationLayer = null;
+    //         document.getElementById('applicationLayerControls').style.display = 'none';
+    //     }
 
-        updateApplicationLayersList();
+    //     updateApplicationLayersList();
 
-        if (window.saveCustomizations) window.saveCustomizations();
+    //     if (window.saveCustomizations) window.saveCustomizations();
 
-        console.log('✅ Application removed:', layerId);
-
-
+    //     console.log('✅ Application removed:', layerId);
 
 
-    };
+
+
+    // };
 
     // =================== HELPER FUNCTIONS ===================
+
+
+window.removeApplicationLayer = function (layerId, event) {
+    if (event) event.stopPropagation();
+
+    Object.keys(window.applicationsApplied).forEach(view => {
+        Object.keys(window.applicationsApplied[view]).forEach(partId => {
+            window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
+            if (window.applicationsApplied[view][partId].length === 0) {
+                delete window.applicationsApplied[view][partId];
+            }
+        });
+    });
+
+    // ✅ NEW: Individual group remove karo
+    const layerGroup = document.getElementById(`app-group-${layerId}`);
+    if (layerGroup) layerGroup.remove();
+
+    // ✅ NEW: Clip path bhi remove karo
+    const mainSvg = window.getMainSvg();
+    if (mainSvg) {
+        const clip = mainSvg.querySelector(`#clip-${layerId}`);
+        if (clip) clip.remove();
+    }
+
+    // Purana code (outlines ke liye)
+    const outlines = document.querySelectorAll(`[data-outline-for="${layerId}"]`);
+    outlines.forEach(outline => outline.remove());
+
+    if (window.currentApplicationLayer === layerId) {
+        window.currentApplicationLayer = null;
+        document.getElementById('applicationLayerControls').style.display = 'none';
+    }
+
+    updateApplicationLayersList();
+    if (window.saveCustomizations) window.saveCustomizations();
+};
+
 
     window.findLayerById = function (layerId) {
         let found = null;

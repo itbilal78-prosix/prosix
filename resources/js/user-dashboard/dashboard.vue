@@ -6,7 +6,7 @@
         :active-tab="activeTab"
         :dashboard-stats="dashboardStats"
         :is-logging-out="isLoggingOut"
-        @tab-change="activeTab = $event"
+        @tab-change="onTabChange"
         @logout="logout"
       />
 
@@ -33,6 +33,13 @@
             @update-profile="updateProfile"
             key="profile"
           />
+          <!-- ✅ NAYA TAB -->
+          <my-requests-tab
+            v-else-if="!isLoading && activeTab === 'my-requests'"
+            :requests="myRequests"
+            :is-loading="requestsLoading"
+            key="my-requests"
+          />
         </transition>
       </main>
     </div>
@@ -46,13 +53,17 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
-const activeTab          = ref('overview')
-const user               = ref({})
-const dashboardStats     = ref({})
-const recentProperties   = ref([])
-const isLoading          = ref(true)
-const isLoggingOut       = ref(false)
-const isUpdatingProfile  = ref(false)
+const activeTab         = ref('overview')
+const user              = ref({})
+const dashboardStats    = ref({})
+const recentProperties  = ref([])
+const isLoading         = ref(true)
+const isLoggingOut      = ref(false)
+const isUpdatingProfile = ref(false)
+
+// ✅ My Requests state
+const myRequests      = ref([])
+const requestsLoading = ref(false)
 
 const checkAuth = () => {
   const token = localStorage.getItem('auth_token')
@@ -60,25 +71,26 @@ const checkAuth = () => {
   return token
 }
 
+// ✅ Tab change — my-requests tab pe click karo toh data fetch ho
+const onTabChange = (tab) => {
+  activeTab.value = tab
+  if (tab === 'my-requests' && myRequests.value.length === 0) {
+    fetchMyRequests()
+  }
+}
+
 const fetchUserData = async () => {
   const token = checkAuth()
   if (!token) return
   try {
     const res = await fetch(`${API_BASE_URL}/user/profile`, {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.status) user.value = d.data   // ✅ 'status' not 'success'
-    } else if (res.status === 401) {
-      handleAuthError()
-    }
-  } catch (e) {
-    console.error('Error fetching user data:', e)
-  }
+      if (d.status) user.value = d.data
+    } else if (res.status === 401) handleAuthError()
+  } catch (e) { console.error(e) }
 }
 
 const fetchDashboardStats = async () => {
@@ -91,11 +103,28 @@ const fetchDashboardStats = async () => {
     if (res.ok) {
       const d = await res.json()
       if (d.success) {
-        dashboardStats.value   = d.data.stats
+        dashboardStats.value  = d.data.stats
         recentProperties.value = d.data.recent_properties
       }
     } else if (res.status === 401) handleAuthError()
   } catch (e) { console.error(e) }
+}
+
+// ✅ Logged-in user ki requests fetch karo
+const fetchMyRequests = async () => {
+  const token = checkAuth()
+  if (!token) return
+  requestsLoading.value = true
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/my-requests`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
+    })
+    if (res.ok) {
+      const d = await res.json()
+      myRequests.value = d.data || []
+    }
+  } catch (e) { console.error(e) }
+  finally { requestsLoading.value = false }
 }
 
 const handleAuthError = () => {
@@ -111,29 +140,16 @@ const updateProfile = async (profileData) => {
     isUpdatingProfile.value = true
     const res = await fetch(`${API_BASE_URL}/user/profile`, {
       method: 'PUT',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(profileData)
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.status) {
-        user.value = { ...user.value, ...profileData }
-        alert('Profile updated successfully!')
-      }
+      if (d.status) { user.value = { ...user.value, ...profileData }; alert('Profile updated successfully!') }
     } else if (res.status === 401) handleAuthError()
-    else {
-      const d = await res.json()
-      alert(d.message || 'Failed to update profile')
-    }
-  } catch (e) {
-    alert('Failed to update profile')
-  } finally {
-    isUpdatingProfile.value = false
-  }
+    else { const d = await res.json(); alert(d.message || 'Failed to update profile') }
+  } catch (e) { alert('Failed to update profile') }
+  finally { isUpdatingProfile.value = false }
 }
 
 const logout = async () => {
@@ -143,86 +159,35 @@ const logout = async () => {
     if (token) {
       await fetch(`${API_BASE_URL}/user/user_logout`, {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
       })
     }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    localStorage.removeItem('auth_token')
-    router.push('/')
-    isLoggingOut.value = false
-  }
+  } catch (e) { console.error(e) }
+  finally { localStorage.removeItem('auth_token'); router.push('/'); isLoggingOut.value = false }
 }
 
 onMounted(async () => {
   if (checkAuth()) {
     isLoading.value = true
-    try {
-      await Promise.all([fetchUserData(), fetchDashboardStats()])
-    } finally {
-      isLoading.value = false
-    }
+    try { await Promise.all([fetchUserData(), fetchDashboardStats()]) }
+    finally { isLoading.value = false }
   }
 })
 </script>
 
 <style scoped>
-.dashboard-root {
-  min-height: 100vh;
-  background: #f0f2f8;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-}
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  padding-left: 260px; /* sidebar width */
-}
-.dashboard-main {
-  flex: 1;
-  overflow-x: hidden;
-  padding: 2rem;
-  min-height: 100vh;
-}
-.loading-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
-  gap: 1.5rem;
-}
-.loader-ring {
-  display: inline-block;
-  position: relative;
-  width: 64px;
-  height: 64px;
-}
-.loader-ring div {
-  box-sizing: border-box;
-  display: block;
-  position: absolute;
-  width: 52px;
-  height: 52px;
-  margin: 6px;
-  border: 5px solid transparent;
-  border-radius: 50%;
-  animation: ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  border-top-color: #4f46e5;
-}
-.loader-ring div:nth-child(1) { animation-delay: -0.45s; }
-.loader-ring div:nth-child(2) { animation-delay: -0.3s; }
-.loader-ring div:nth-child(3) { animation-delay: -0.15s; }
-@keyframes ring {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.loading-text { color: #6b7280; font-size: 0.95rem; }
-.tab-fade-enter-active, .tab-fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
-.tab-fade-enter-from { opacity: 0; transform: translateY(10px); }
-.tab-fade-leave-to { opacity: 0; transform: translateY(-6px); }
+.dashboard-root { min-height:100vh; background:#f0f2f8; font-family:'Segoe UI',system-ui,sans-serif; }
+.dashboard-layout { display:flex; min-height:100vh; padding-left:260px; }
+.dashboard-main { flex:1; overflow-x:hidden; padding:2rem; min-height:100vh; }
+.loading-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; gap:1.5rem; }
+.loader-ring { display:inline-block; position:relative; width:64px; height:64px; }
+.loader-ring div { box-sizing:border-box; display:block; position:absolute; width:52px; height:52px; margin:6px; border:5px solid transparent; border-radius:50%; animation:ring 1.2s cubic-bezier(0.5,0,0.5,1) infinite; border-top-color:#4f46e5; }
+.loader-ring div:nth-child(1) { animation-delay:-0.45s; }
+.loader-ring div:nth-child(2) { animation-delay:-0.3s; }
+.loader-ring div:nth-child(3) { animation-delay:-0.15s; }
+@keyframes ring { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+.loading-text { color:#6b7280; font-size:0.95rem; }
+.tab-fade-enter-active,.tab-fade-leave-active { transition:opacity 0.2s ease,transform 0.2s ease; }
+.tab-fade-enter-from { opacity:0; transform:translateY(10px); }
+.tab-fade-leave-to { opacity:0; transform:translateY(-6px); }
 </style>

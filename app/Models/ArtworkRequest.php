@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ArtworkRequest extends Model
 {
-    protected $fillable = [
+   protected $fillable = [
+    'user_id',      // ✅ NAYA
     'full_name', 'email', 'phone', 'instagram', 'address',
     'team_name', 'role', 'quantity', 'team_color', 'home_away',
     'design_style', 'material', 'products', 'additional', 'source',

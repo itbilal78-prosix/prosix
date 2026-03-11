@@ -45,12 +45,33 @@
                 <li><a class="nav-link text-light py-1" href="{{ route('blogs.index') }}">Blog / News</a></li>
                 <li><a class="nav-link text-light py-1" href="{{ route('testimonials.index') }}">Testimonials</a></li>
                 <li><a class="nav-link text-light py-1" href="#">Media Library</a></li>
-                <li><a class="nav-link text-light py-1" href="{{ route('admin.memberships') }}">Memberships</a></li>
-                <li><a class="nav-link text-light py-1" href="{{ route('admin.artwork') }}">Artwork Requests</a></li>
             </ul>
         </li>
         @endif
+{{-- FORMS MANAGEMENT --}}
+<li class="nav-item">
+    <a class="nav-link text-light d-flex align-items-center px-3 py-2"
+       data-bs-toggle="collapse" href="#formsSubmenu"
+       role="button" aria-expanded="false">
+        <i class="bi bi-ui-checks-grid me-2"></i>
+        <span class="flex-grow-1">Forms</span>
+        <i class="bi bi-chevron-right ms-auto"></i>
+    </a>
 
+    <ul class="collapse list-unstyled ps-4" id="formsSubmenu">
+        <li>
+            <a class="nav-link text-light py-1" href="{{ route('admin.artwork') }}">
+                Artwork Requests
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link text-light py-1" href="{{ route('admin.memberships') }}">
+                Memberships
+            </a>
+        </li>
+    </ul>
+</li>
         {{-- PRODUCT MANAGEMENT --}}
         @if($admin->is_super_admin || $admin->can_products)
         <li class="nav-item">

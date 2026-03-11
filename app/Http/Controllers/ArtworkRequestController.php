@@ -24,16 +24,30 @@ public function store(Request $request)
         'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240',
     ]);
 
+    // ✅ Logged-in user ka ID nikalo (guest ke liye null)
+   $userId = null;
+$token = $request->bearerToken();
+\Log::info('Artwork Token: ' . ($token ?? 'NULL'));
+
+if ($token) {
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    \Log::info('Artwork User ID: ' . ($pat ? $pat->tokenable_id : 'NOT FOUND'));
+    if ($pat) {
+        $userId = $pat->tokenable_id;
+    }
+}
+
     $imagePaths = [];
     if ($request->hasFile('images')) {
         foreach ($request->file('images') as $image) {
-            $filename = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('uploads/artwork'), $filename);
             $imagePaths[] = $filename;
         }
     }
 
     $artworkRequest = ArtworkRequest::create([
+        'user_id'      => $userId,   // ✅ yeh add hua
         'full_name'    => $request->fullName,
         'email'        => $request->email,
         'phone'        => $request->phone ?? null,
@@ -52,7 +66,6 @@ public function store(Request $request)
         'artwork_file' => json_encode($imagePaths),
     ]);
 
-    // TRY CATCH HATAYA - directly error dikhega
     Mail::to('designs@prosix.com')->send(new ArtworkRequestMail($artworkRequest));
     Mail::to($artworkRequest->email)->send(new ArtworkRequestMail($artworkRequest));
 
