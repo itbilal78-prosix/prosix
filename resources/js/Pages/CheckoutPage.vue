@@ -191,16 +191,34 @@
                     <div class="brand-row">
                       <svg viewBox="0 0 50 30" class="brand-svg"><rect width="50" height="30" rx="4" fill="#fff" stroke="#e8e8e8"/><circle cx="19" cy="15" r="8" fill="#EB001B" opacity=".9"/><circle cx="31" cy="15" r="8" fill="#F79E1B" opacity=".9"/><path d="M25 8.6A8 8 0 0 1 28 15a8 8 0 0 1-3 6.4A8 8 0 0 1 22 15a8 8 0 0 1 3-6.4z" fill="#FF5F00"/></svg>
                       <svg viewBox="0 0 60 30" class="brand-svg"><rect width="60" height="30" rx="4" fill="#fff" stroke="#e8e8e8"/><text x="7" y="21" font-family="Arial" font-weight="900" font-size="14" fill="#1A1F71">VISA</text></svg>
-                      <svg viewBox="0 0 60 30" class="brand-svg"><rect width="60" height="30" rx="4" fill="#fff" stroke="#e8e8e8"/><text x="5" y="13" font-family="Arial" font-weight="700" font-size="7" fill="#006FCF">AMERICAN</text><text x="5" y="22" font-family="Arial" font-weight="700" font-size="7" fill="#006FCF">EXPRESS</text></svg>
                       <div class="stripe-pill">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#635bff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         Powered by Stripe
                       </div>
                     </div>
+
+                    <!-- ✅ STRIPE CARD ELEMENT -->
                     <div class="field">
-                      <label>Card Information <span class="req">*</span></label>
-                      <div id="stripe-card-element" class="stripe-box"></div>
+                      <label>Card Number <span class="req">*</span></label>
+                      <div id="stripe-card-number" class="stripe-box"></div>
                     </div>
+                    <div class="field-row" style="margin-top:12px">
+                      <div class="field">
+                        <label>Expiry Date <span class="req">*</span></label>
+                        <div id="stripe-card-expiry" class="stripe-box"></div>
+                      </div>
+                      <div class="field">
+                        <label>CVC <span class="req">*</span></label>
+                        <div id="stripe-card-cvc" class="stripe-box"></div>
+                      </div>
+                    </div>
+
+                    <!-- Card type indicator -->
+                    <div class="card-type-row" v-if="detectedCardBrand">
+                      <span class="card-brand-tag">{{ detectedCardBrand }}</span>
+                      <span class="card-brand-label">detected</span>
+                    </div>
+
                     <div v-if="stripeError" class="stripe-err">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                       {{ stripeError }}
@@ -208,74 +226,14 @@
                   </div>
                 </transition>
 
-                <!-- WALLETS -->
+                <!-- COMING SOON — Wallets, P2P, PayPal, Wire, COD -->
                 <transition name="fade-up" mode="out-in">
-                  <div v-if="activeGroup === 'wallets'" key="wallets">
-                    <p class="pay-hint">Select your preferred digital wallet.</p>
-                    <div class="option-list">
-                      <button v-for="w in walletOptions" :key="w.id"
-                              :class="['option-item', { selected: form.paymentMethod === w.id }]"
-                              @click="form.paymentMethod = w.id">
-                        <span v-html="w.svg"></span>
-                        <span class="opt-name">{{ w.name }}</span>
-                        <span class="opt-check" v-if="form.paymentMethod === w.id">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        </span>
-                      </button>
+                  <div v-if="['wallets','p2p','paypal','wire','cod'].includes(activeGroup)" :key="activeGroup" class="coming-soon-block">
+                    <div class="cs-icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
-                    <div class="info-note">You'll be redirected to complete payment securely.</div>
-                  </div>
-                </transition>
-
-                <!-- P2P -->
-                <transition name="fade-up" mode="out-in">
-                  <div v-if="activeGroup === 'p2p'" key="p2p">
-                    <p class="pay-hint">Choose a peer-to-peer payment service.</p>
-                    <div class="option-list">
-                      <button v-for="w in p2pOptions" :key="w.id"
-                              :class="['option-item', { selected: form.paymentMethod === w.id }]"
-                              @click="form.paymentMethod = w.id">
-                        <span v-html="w.svg"></span>
-                        <span class="opt-name">{{ w.name }}</span>
-                        <span class="opt-check" v-if="form.paymentMethod === w.id">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        </span>
-                      </button>
-                    </div>
-                    <div class="info-note">Payment details sent after order confirmation.</div>
-                  </div>
-                </transition>
-
-                <!-- PAYPAL -->
-                <transition name="fade-up" mode="out-in">
-                  <div v-if="activeGroup === 'paypal'" key="paypal" class="paypal-block">
-                    <svg width="100" height="28" viewBox="0 0 88 26"><text x="0" y="22" font-family="Arial" font-weight="900" font-size="22" fill="#003087">Pay</text><text x="42" y="22" font-family="Arial" font-weight="900" font-size="22" fill="#009cde">Pal</text></svg>
-                    <p>You'll be securely redirected to PayPal. After completing payment, you'll return here automatically.</p>
-                  </div>
-                </transition>
-
-                <!-- WIRE -->
-                <transition name="fade-up" mode="out-in">
-                  <div v-if="activeGroup === 'wire'" key="wire">
-                    <p class="pay-hint">Transfer directly to our bank account.</p>
-                    <div class="wire-grid">
-                      <div class="wire-row"><span>Bank</span><strong>Chase Bank</strong></div>
-                      <div class="wire-row"><span>Account Name</span><strong>Your Store LLC</strong></div>
-                      <div class="wire-row"><span>Account No.</span><strong>•••• 4521</strong></div>
-                      <div class="wire-row"><span>Routing No.</span><strong>021000021</strong></div>
-                    </div>
-                    <div class="info-note" style="margin-top:14px">Include order number as reference. Ships 1–2 days after clearance.</div>
-                  </div>
-                </transition>
-
-                <!-- COD -->
-                <transition name="fade-up" mode="out-in">
-                  <div v-if="activeGroup === 'cod'" key="cod" class="cod-block">
-                    <div class="cod-icon">
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                    </div>
-                    <h4>Cash on Delivery</h4>
-                    <p>Pay in cash when your order arrives. No card or pre-payment needed.</p>
+                    <h4>Coming Soon</h4>
+                    <p>This payment method is not available yet.<br/>Please use <strong>Card</strong> to complete your order.</p>
                   </div>
                 </transition>
 
@@ -336,9 +294,8 @@
               <div class="sum-row"><span>Subtotal</span><span>${{ subtotal.toFixed(2) }}</span></div>
               <div class="sum-row">
                 <span>Shipping</span>
-                <span :class="shipping === 0 ? 'tag-free' : totalQty === 3 ? 'tag-disc' : ''">{{ shippingLabel }}</span>
+                <span :class="shipping === 0 ? 'tag-free' : ''">{{ shippingLabel }}</span>
               </div>
-              <!-- Free Shipping Progress Bar -->
               <div v-if="freeShippingThreshold" class="free-ship-bar-wrap">
                 <div class="free-ship-bar-track">
                   <div class="free-ship-bar-fill" :style="{ width: freeShippingProgress + '%' }"></div>
@@ -349,7 +306,7 @@
                 </div>
                 <div v-else class="free-ship-msg unlocked">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                   Free shipping unlocked!
+                  Free shipping unlocked!
                 </div>
               </div>
             </div>
@@ -387,14 +344,19 @@ import { useRouter } from 'vue-router'
 const cartStore = useCartStore()
 const router    = useRouter()
 
+// ✅ Apni live key yahan hai — real payments chalenge
 const STRIPE_PK = 'pk_live_51Me8FHImWDOcEyespCiF4IVvemDbUaKUlQk5U3UY5QBgR0Z3bcDrVCJbjfG2rYwNaMS5Dou34Oe7GAMwREHGGs6P000VDG7j3M'
-const loading     = ref(false)
-const currentStep = ref(1)
-const activeGroup = ref('card')
-const stripeError = ref('')
 
-let stripe = null
-let cardElement = null
+const loading          = ref(false)
+const currentStep      = ref(1)
+const activeGroup      = ref('card')
+const stripeError      = ref('')
+const detectedCardBrand = ref('')  // ✅ Real-time card brand detection
+
+let stripe       = null
+let cardNumber   = null
+let cardExpiry   = null
+let cardCvc      = null
 
 const steps = ['Contact', 'Shipping', 'Payment']
 
@@ -414,12 +376,12 @@ const svgWire   = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" s
 const svgBox    = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
 
 const paymentGroups = [
-  { id: 'card',    svg: svgCard,   label: 'Card',      defaultMethod: 'stripe'   },
-  { id: 'wallets', svg: svgWallet, label: 'Wallets',   defaultMethod: 'applepay' },
-  { id: 'p2p',     svg: svgDollar, label: 'P2P',       defaultMethod: 'cashapp'  },
-  { id: 'paypal',  svg: svgGlobe,  label: 'PayPal',    defaultMethod: 'paypal'   },
-  { id: 'wire',    svg: svgWire,   label: 'Wire',      defaultMethod: 'wire'     },
-  { id: 'cod',     svg: svgBox,    label: 'COD',       defaultMethod: 'cod'      },
+  { id: 'card',    svg: svgCard,   label: 'Card',    defaultMethod: 'stripe'   },
+  { id: 'wallets', svg: svgWallet, label: 'Wallets', defaultMethod: 'applepay' },
+  { id: 'p2p',     svg: svgDollar, label: 'P2P',     defaultMethod: 'cashapp'  },
+  { id: 'paypal',  svg: svgGlobe,  label: 'PayPal',  defaultMethod: 'paypal'   },
+  { id: 'wire',    svg: svgWire,   label: 'Wire',    defaultMethod: 'wire'     },
+  { id: 'cod',     svg: svgBox,    label: 'COD',     defaultMethod: 'cod'      },
 ]
 
 const walletOptions = [
@@ -437,17 +399,12 @@ const formatPrice = (p) => {
   return Number(p) || 0
 }
 
-// Subtotal: sum of all items
 const subtotal = computed(() =>
   cartStore.items.reduce((s, i) => s + formatPrice(i.price) * i.quantity, 0)
 )
-
 const totalQty = computed(() =>
   cartStore.items.reduce((s, i) => s + i.quantity, 0)
 )
-
-// Shipping: cart subtotal >= free_shipping_above → FREE
-// (Admin ne product page pe jo free_shipping_above set kiya, woh yahan check hoga)
 const shipping = computed(() => {
   const sub = subtotal.value
   let total = 0
@@ -455,20 +412,12 @@ const shipping = computed(() => {
     if (!item.shipping_enabled) continue
     const cost      = formatPrice(item.shipping_cost || 0)
     const freeAbove = item.free_shipping_above ? formatPrice(item.free_shipping_above) : null
-    // ✅ Agar cart ka TOTAL subtotal free_shipping_above se zyada ya barabar ho → FREE
     if (freeAbove !== null && sub >= freeAbove) continue
     total += cost * item.quantity
   }
   return parseFloat(total.toFixed(2))
 })
-
-// Label shown in summary
-const shippingLabel = computed(() => {
-  if (shipping.value === 0) return 'FREE'
-  return `$${shipping.value.toFixed(2)}`
-})
-
-// Sabse chhoti free_shipping_above threshold (progress bar ke liye)
+const shippingLabel = computed(() => shipping.value === 0 ? 'FREE' : `$${shipping.value.toFixed(2)}`)
 const freeShippingThreshold = computed(() => {
   let lowest = null
   for (const item of cartStore.items) {
@@ -479,25 +428,18 @@ const freeShippingThreshold = computed(() => {
   }
   return lowest
 })
-
-// Kitna aur lagega free shipping ke liye
 const amountToFreeShipping = computed(() => {
   if (!freeShippingThreshold.value) return null
   const diff = freeShippingThreshold.value - subtotal.value
   return diff > 0 ? parseFloat(diff.toFixed(2)) : null
 })
-
-// Progress percentage (0-100) for free shipping bar
 const freeShippingProgress = computed(() => {
   if (!freeShippingThreshold.value) return 0
-  const pct = (subtotal.value / freeShippingThreshold.value) * 100
-  return Math.min(Math.round(pct), 100)
+  return Math.min(Math.round((subtotal.value / freeShippingThreshold.value) * 100), 100)
 })
+const totalAmount = computed(() => (subtotal.value + shipping.value).toFixed(2))
 
-const totalAmount = computed(() =>
-  (subtotal.value + shipping.value).toFixed(2)
-)
-
+// ✅ Stripe load helper
 const loadStripe = () => new Promise((resolve) => {
   if (window.Stripe) { resolve(window.Stripe); return }
   const s = document.createElement('script')
@@ -506,35 +448,73 @@ const loadStripe = () => new Promise((resolve) => {
   document.head.appendChild(s)
 })
 
+// ✅ Mount SPLIT elements (number + expiry + cvc separately) for real-time feedback
 const mountStripeElements = async () => {
   await nextTick()
-  const mountPoint = document.getElementById('stripe-card-element')
-  if (!mountPoint) return
-  if (cardElement) { cardElement.destroy(); cardElement = null }
-  if (!stripe) { const S = await loadStripe(); stripe = S(STRIPE_PK) }
-  const elements = stripe.elements()
-  cardElement = elements.create('card', {
-    hidePostalCode: true,
-    style: {
-      base: { fontFamily: "'Sora', sans-serif", fontSize: '14px', color: '#111', letterSpacing: '0.02em', '::placeholder': { color: '#bbb' } },
-      invalid: { color: '#e53e3e', iconColor: '#e53e3e' },
+  if (!document.getElementById('stripe-card-number')) return
+
+  // Destroy old if exists
+  if (cardNumber) { try { cardNumber.destroy() } catch(e) {} cardNumber = null }
+  if (cardExpiry) { try { cardExpiry.destroy() } catch(e) {} cardExpiry = null }
+  if (cardCvc)    { try { cardCvc.destroy()    } catch(e) {} cardCvc    = null }
+
+  if (!stripe) {
+    const S = await loadStripe()
+    stripe = S(STRIPE_PK)
+  }
+
+  const elements = stripe.elements({
+    fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Sora:wght@400;500&display=swap' }]
+  })
+
+  const style = {
+    base: {
+      fontFamily: "'Sora', sans-serif",
+      fontSize: '14px',
+      color: '#111',
+      letterSpacing: '0.02em',
+      '::placeholder': { color: '#bbb' }
+    },
+    invalid: { color: '#e53e3e', iconColor: '#e53e3e' }
+  }
+
+  cardNumber = elements.create('cardNumber', { style, showIcon: true }) // ✅ showIcon = card brand icon
+  cardExpiry = elements.create('cardExpiry', { style })
+  cardCvc    = elements.create('cardCvc',    { style })
+
+  cardNumber.mount('#stripe-card-number')
+  cardExpiry.mount('#stripe-card-expiry')
+  cardCvc.mount('#stripe-card-cvc')
+
+  // ✅ Real-time card brand detection
+  cardNumber.on('change', (e) => {
+    stripeError.value = e.error ? e.error.message : ''
+    if (e.brand && e.brand !== 'unknown') {
+      const brands = {
+        visa: 'Visa', mastercard: 'Mastercard', amex: 'Amex',
+        discover: 'Discover', jcb: 'JCB', diners: 'Diners',
+        unionpay: 'UnionPay'
+      }
+      detectedCardBrand.value = brands[e.brand] || e.brand
+    } else {
+      detectedCardBrand.value = ''
     }
   })
-  cardElement.mount('#stripe-card-element')
-  cardElement.on('change', e => { stripeError.value = e.error ? e.error.message : '' })
+  cardExpiry.on('change', (e) => { if (e.error) stripeError.value = e.error.message })
+  cardCvc.on('change',    (e) => { if (e.error) stripeError.value = e.error.message })
 }
 
 onMounted(() => {
   if (currentStep.value === 3 && activeGroup.value === 'card') mountStripeElements()
 })
 watch(currentStep, (v) => {
-  if (v === 3 && activeGroup.value === 'card') setTimeout(mountStripeElements, 100)
+  if (v === 3 && activeGroup.value === 'card') setTimeout(mountStripeElements, 150)
 })
 
 const switchPaymentGroup = (g) => {
   activeGroup.value = g.id
   form.value.paymentMethod = g.defaultMethod
-  if (g.id === 'card') setTimeout(mountStripeElements, 100)
+  if (g.id === 'card') setTimeout(mountStripeElements, 150)
 }
 
 const validateStep1 = () => {
@@ -553,7 +533,6 @@ const validateStep2 = () => {
 }
 
 const increaseQty = (item) => {
-  // ✅ Respect stock_quantity limit (same as product page)
   const maxQty = item.stock_quantity ? Number(item.stock_quantity) : null
   if (maxQty !== null && item.quantity >= maxQty) return
   const idx = cartStore.items.findIndex(i => i.id === item.id && i.size === item.size)
@@ -586,12 +565,23 @@ const placeOrder = async () => {
   loading.value = true
   try {
     let paymentToken = null
+
     if (activeGroup.value === 'card') {
+      // ✅ Use cardNumber element (split elements ka main element)
       const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: 'card', card: cardElement,
-        billing_details: { name: form.value.name, phone: form.value.phone }
+        type: 'card',
+        card: cardNumber,  // ← cardNumber element use karo
+        billing_details: {
+          name:  form.value.name,
+          phone: form.value.phone,
+          email: form.value.email || undefined,
+        }
       })
-      if (error) { stripeError.value = error.message; loading.value = false; return }
+      if (error) {
+        stripeError.value = error.message
+        loading.value = false
+        return
+      }
       paymentToken = paymentMethod.id
     }
 
@@ -606,14 +596,14 @@ const placeOrder = async () => {
       })),
       checkout: {
         name:          form.value.name,
-        email:         form.value.email         || '',
+        email:         form.value.email       || '',
         phone:         form.value.phone,
         address:       form.value.address,
         city:          form.value.city,
-        postalCode:    form.value.postalCode     || '',
-        province:      form.value.province       || '',
-        country:       form.value.country        || '',
-        deliveryDays:  form.value.deliveryDays   || 'standard',
+        postalCode:    form.value.postalCode  || '',
+        province:      form.value.province    || '',
+        country:       form.value.country     || '',
+        deliveryDays:  form.value.deliveryDays || 'standard',
         paymentMethod: activeGroup.value === 'card' ? 'stripe' : form.value.paymentMethod,
         stripeToken:   paymentToken,
         total:         totalAmount.value,
@@ -621,10 +611,10 @@ const placeOrder = async () => {
       }
     }
 
-    console.log('Order payload:', orderPayload) // ✅ Check karo console mein kya ja raha hai
-
     const res = await axios.post('/api/orders', orderPayload, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token') || ''}` }
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token') || ''}`
+      }
     })
 
     alert(`✅ Order placed! ID: ${res.data.order_id || 'N/A'}`)
@@ -632,16 +622,12 @@ const placeOrder = async () => {
     router.push('/')
 
   } catch (e) {
-    // ✅ Full error details dikhao
     const errData = e.response?.data
-    console.error('Order error full:', errData)
-
+    console.error('Order error:', errData)
     if (errData?.errors) {
-      // Laravel validation errors
-      const msgs = Object.values(errData.errors).flat().join('\n')
-      alert('❌ Validation errors:\n' + msgs)
+      alert('❌ Validation:\n' + Object.values(errData.errors).flat().join('\n'))
     } else {
-      alert('❌ ' + (errData?.message || 'Something went wrong. Please try again.'))
+      alert('❌ ' + (errData?.message || 'Something went wrong.'))
     }
   } finally {
     loading.value = false
@@ -654,12 +640,21 @@ const placeOrder = async () => {
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ✅ MacBook full-screen fix */
 .checkout-page {
   font-family: 'Sora', sans-serif;
-  min-height: 100vh;
+  min-height: calc(100vh - 110px);
   background: #F2F2F7;
-  padding: 28px 24px 80px;
+  padding: 20px 20px 60px;
   color: #111;
+}
+
+/* Full width wrapper */
+.checkout-wrapper {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* Empty */
@@ -681,12 +676,9 @@ const placeOrder = async () => {
 }
 .btn-shop:hover { background: #333; }
 
-/* Wrapper */
-.checkout-wrapper { max-width: 1200px; margin: 0 auto; }
-
 /* Top bar */
 .top-bar {
-  display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
 }
 .btn-back {
   display: inline-flex; align-items: center; gap: 6px;
@@ -710,7 +702,7 @@ const placeOrder = async () => {
   display: flex; flex-direction: row; align-items: center;
   background: #fff; border-radius: 16px;
   border: 1.5px solid #E5E5EA;
-  padding: 18px 28px; margin-bottom: 20px;
+  padding: 16px 32px; margin-bottom: 18px;
   box-shadow: 0 1px 4px rgba(0,0,0,.04);
 }
 .prog-step { display: flex; flex-direction: row; align-items: center; gap: 10px; }
@@ -718,8 +710,7 @@ const placeOrder = async () => {
   width: 36px; height: 36px; border-radius: 50%;
   background: #E5E5EA; color: #8E8E93;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; flex-shrink: 0;
-  transition: all .3s;
+  font-size: 12px; font-weight: 700; flex-shrink: 0; transition: all .3s;
 }
 .prog-step.active .prog-circle { background: #111; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
 .prog-step.done .prog-circle   { background: #111; color: #fff; cursor: pointer; }
@@ -728,34 +719,35 @@ const placeOrder = async () => {
 .prog-step.done .prog-label   { color: #111; }
 .prog-line {
   flex: 1; height: 2px; background: #E5E5EA;
-  margin: 0 14px; border-radius: 2px; transition: background .4s;
-  min-width: 40px;
+  margin: 0 14px; border-radius: 2px; transition: background .4s; min-width: 40px;
 }
 .prog-line.filled { background: #111; }
 
-/* Main grid */
+/* ✅ Main grid — MacBook optimized */
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 20px; align-items: start;
+  grid-template-columns: 1fr 400px;
+  gap: 20px;
+  align-items: start;
+  width: 100%;
 }
-@media (max-width: 940px) {
+@media (max-width: 1100px) {
+  .main-grid { grid-template-columns: 1fr 340px; }
+}
+@media (max-width: 900px) {
   .main-grid { grid-template-columns: 1fr; }
   .right-col { order: -1; }
 }
 
 /* Panel */
 .panel {
-  background: #fff;
-  border: 1.5px solid #E5E5EA;
-  border-radius: 20px;
-  overflow: hidden;
+  background: #fff; border: 1.5px solid #E5E5EA;
+  border-radius: 20px; overflow: hidden;
   box-shadow: 0 2px 12px rgba(0,0,0,.05);
 }
-
 .panel-header {
   display: flex; align-items: center; gap: 14px;
-  padding: 22px 28px; border-bottom: 1.5px solid #F2F2F7;
+  padding: 20px 28px; border-bottom: 1.5px solid #F2F2F7;
   background: #FAFAFA;
 }
 .panel-icon {
@@ -766,14 +758,11 @@ const placeOrder = async () => {
 }
 .panel-header h2 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
 .panel-header p  { font-size: 12px; color: #8E8E93; }
-
-.panel-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; }
-.pay-body   { padding: 20px 28px; }
-
+.panel-body { padding: 22px 28px; display: flex; flex-direction: column; gap: 16px; }
+.pay-body   { padding: 18px 28px; }
 .panel-footer {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 18px 28px; border-top: 1.5px solid #F2F2F7;
-  background: #FAFAFA;
+  padding: 16px 28px; border-top: 1.5px solid #F2F2F7; background: #FAFAFA;
 }
 
 /* Fields */
@@ -787,8 +776,7 @@ const placeOrder = async () => {
   height: 46px; padding: 0 14px;
   border: 1.5px solid #E5E5EA; border-radius: 12px;
   font-family: 'Sora', sans-serif; font-size: 14px;
-  color: #111; background: #FAFAFA;
-  transition: all .2s; width: 100%;
+  color: #111; background: #FAFAFA; transition: all .2s; width: 100%;
 }
 .field textarea { height: auto; padding: 12px 14px; resize: none; }
 .field input:focus, .field select:focus, .field textarea:focus {
@@ -827,8 +815,7 @@ const placeOrder = async () => {
   cursor: pointer; transition: all .2s; letter-spacing: -.1px;
 }
 .btn-place:hover:not(:disabled) {
-  background: #222;
-  transform: translateY(-1px);
+  background: #222; transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(0,0,0,.18);
 }
 .btn-place:disabled { opacity: .35; cursor: not-allowed; }
@@ -843,8 +830,7 @@ const placeOrder = async () => {
 /* Payment chips */
 .pay-tabs-row {
   display: flex; flex-wrap: wrap; gap: 8px;
-  padding: 16px 28px; border-bottom: 1.5px solid #F2F2F7;
-  background: #FAFAFA;
+  padding: 14px 28px; border-bottom: 1.5px solid #F2F2F7; background: #FAFAFA;
 }
 .pay-chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -857,7 +843,7 @@ const placeOrder = async () => {
 .pay-chip:hover { border-color: #bbb; color: #111; }
 .pay-chip.active { background: #111; color: #fff; border-color: #111; }
 
-/* Stripe */
+/* ✅ Stripe split elements */
 .brand-row {
   display: flex; align-items: center; gap: 8px;
   margin-bottom: 18px; padding-bottom: 16px;
@@ -879,6 +865,19 @@ const placeOrder = async () => {
   border-color: #111; background: #fff;
   box-shadow: 0 0 0 4px rgba(17,17,17,.06);
 }
+
+/* ✅ Card brand tag */
+.card-type-row {
+  display: flex; align-items: center; gap: 6px; margin-top: 12px;
+}
+.card-brand-tag {
+  background: #111; color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: 6px;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+.card-brand-label { font-size: 11px; color: #8E8E93; }
+
 .stripe-err {
   display: flex; align-items: center; gap: 7px;
   color: #FF3B30; font-size: 12px; margin-top: 12px;
@@ -894,8 +893,7 @@ const placeOrder = async () => {
   padding: 13px 16px; border: 1.5px solid #E5E5EA;
   border-radius: 12px; background: #FAFAFA;
   cursor: pointer; font-family: 'Sora', sans-serif;
-  font-size: 13px; font-weight: 500; color: #444;
-  transition: all .18s; text-align: left;
+  font-size: 13px; font-weight: 500; color: #444; transition: all .18s; text-align: left;
 }
 .option-item:hover { border-color: #aaa; background: #fff; color: #111; }
 .option-item.selected { border-color: #111; background: #fff; font-weight: 700; color: #111; }
@@ -907,38 +905,27 @@ const placeOrder = async () => {
   font-size: 11.5px; color: #666; line-height: 1.6; margin-top: 12px;
 }
 
-/* PayPal */
-.paypal-block { padding: 10px 0; }
-.paypal-block p { font-size: 12.5px; color: #555; line-height: 1.7; margin-top: 12px; }
-
-/* Wire */
-.wire-grid { display: flex; flex-direction: column; gap: 6px; }
-.wire-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 11px 14px; background: #FAFAFA;
-  border: 1.5px solid #E5E5EA; border-radius: 10px;
-  font-size: 13px;
+/* Coming Soon Block */
+.coming-soon-block {
+  text-align: center; padding: 36px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
 }
-.wire-row span { color: #8E8E93; font-size: 12px; }
-.wire-row strong { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; color: #111; }
-
-/* COD */
-.cod-block { text-align: center; padding: 28px 16px; }
-.cod-icon {
-  width: 72px; height: 72px; background: #F2F2F7;
-  border-radius: 50%; border: 1.5px solid #E5E5EA;
+.cs-icon {
+  width: 64px; height: 64px; background: #F2F2F7;
+  border: 1.5px solid #E5E5EA; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 16px; color: #555;
+  color: #8E8E93; margin-bottom: 4px;
 }
-.cod-block h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-.cod-block p  { font-size: 13px; color: #666; line-height: 1.7; }
+.coming-soon-block h4 { font-size: 17px; font-weight: 800; color: #111; letter-spacing: -.3px; }
+.coming-soon-block p  { font-size: 13px; color: #8E8E93; line-height: 1.7; }
+.coming-soon-block p strong { color: #111; }
 
 /* Transitions */
 .fade-up-enter-active, .fade-up-leave-active { transition: all .22s ease; }
 .fade-up-enter-from { opacity: 0; transform: translateY(10px); }
 .fade-up-leave-to   { opacity: 0; transform: translateY(-6px); }
 
-/* Summary panel */
+/* Summary */
 .right-col { position: sticky; top: 22px; }
 .summary-panel {
   background: #fff; border: 1.5px solid #E5E5EA;
@@ -946,10 +933,8 @@ const placeOrder = async () => {
   box-shadow: 0 2px 12px rgba(0,0,0,.05);
 }
 .summary-panel h3 { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
-
 .sum-items { display: flex; flex-direction: column; gap: 16px; }
 .sum-item  { display: flex; align-items: flex-start; gap: 12px; }
-
 .thumb-wrap { position: relative; flex-shrink: 0; }
 .thumb-wrap img {
   width: 60px; height: 60px; border-radius: 12px;
@@ -962,15 +947,13 @@ const placeOrder = async () => {
   border-radius: 50%; font-size: 9px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
-
 .item-info { flex: 1; min-width: 0; }
 .item-name {
   font-size: 12.5px; font-weight: 600; margin-bottom: 3px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.item-size { font-size: 10.5px; color: #C7C7CC; margin-bottom: 4px; }
+.item-size  { font-size: 10.5px; color: #C7C7CC; margin-bottom: 4px; }
 .item-stock { font-size: 10px; color: #FF9F0A; font-weight: 600; margin-bottom: 6px; }
-
 .qty-row {
   display: inline-flex; align-items: center;
   border: 1.5px solid #E5E5EA; border-radius: 8px; overflow: hidden;
@@ -984,32 +967,25 @@ const placeOrder = async () => {
 .qty-btn:disabled { opacity: .3; cursor: not-allowed; }
 .qty-row span {
   width: 28px; text-align: center; font-size: 12px; font-weight: 600;
-  border-left: 1.5px solid #E5E5EA; border-right: 1.5px solid #E5E5EA;
-  line-height: 26px;
+  border-left: 1.5px solid #E5E5EA; border-right: 1.5px solid #E5E5EA; line-height: 26px;
 }
-
 .item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
 .item-price { font-size: 13px; font-weight: 700; }
 .del-btn { background: none; border: none; cursor: pointer; color: #C7C7CC; display: flex; transition: color .15s; padding: 0; }
 .del-btn:hover { color: #FF3B30; }
-
 .divider { height: 1.5px; background: #F2F2F7; margin: 16px 0; }
-
 .sum-rows { display: flex; flex-direction: column; gap: 9px; }
 .sum-row { display: flex; justify-content: space-between; font-size: 13px; color: #555; }
-.tag-free { color: #000000; font-weight: 700; }
-.tag-disc  { color: #FF9F0A; font-weight: 700; }
-.ship-note { font-size: 11px; color: #8E8E93; margin-top: 2px; }
-.ship-note.free { color: #000000; font-weight: 600; }
+.tag-free { color: #000; font-weight: 700; }
 
-/* Free Shipping Progress Bar */
+/* Free shipping bar */
 .free-ship-bar-wrap { margin-top: 10px; }
 .free-ship-bar-track {
   width: 100%; height: 6px; background: #E5E5EA;
   border-radius: 99px; overflow: hidden; margin-bottom: 7px;
 }
 .free-ship-bar-fill {
-  height: 100%; background: linear-gradient(90deg, #000000, #000000);
+  height: 100%; background: #000;
   border-radius: 99px; transition: width .5s ease;
 }
 .free-ship-msg {
@@ -1017,14 +993,10 @@ const placeOrder = async () => {
   font-size: 11px; color: #8E8E93; font-weight: 500;
 }
 .free-ship-msg strong { color: #111; font-weight: 700; }
-.free-ship-msg svg { color: #8E8E93; flex-shrink: 0; }
-.free-ship-msg.unlocked { color: #000000; font-weight: 700; }
-.free-ship-msg.unlocked svg { color: #000000; }
-
+.free-ship-msg.unlocked { color: #000; font-weight: 700; }
 .sum-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 17px; }
-.sum-total span  { font-weight: 600; }
+.sum-total span   { font-weight: 600; }
 .sum-total strong { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
-
 .trust-list { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1.5px solid #F2F2F7; }
 .trust-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #8E8E93; }
 .trust-item svg { color: #C7C7CC; flex-shrink: 0; }

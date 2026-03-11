@@ -16,13 +16,13 @@
                     alert.style.opacity = '0';
                     setTimeout(() => alert.remove(), 500);
                 }
-            }, 3000); 
+            }, 3000);
         </script>
     @endif
 
     <div class="row">
         @foreach($patterns as $pattern)
-        <div class="col-md-3 mb-4">
+<div class="col-md-2 mb-4">
             <div class="card shadow-sm h-100">
                 <img src="{{ asset('storage/' . $pattern->svg_path) }}" class="card-img-top p-3" style="height:150px; object-fit: contain;" alt="SVG">
 
@@ -43,8 +43,6 @@
         @endforeach
     </div>
 
-    <div class="mt-3">
-        {{ $patterns->links() }}
-    </div>
+
 </div>
 @endsection

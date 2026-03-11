@@ -476,4 +476,5 @@ class CustomizerModelController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Models updated successfully']);
     }
+
 }

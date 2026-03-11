@@ -10,7 +10,7 @@ class PatternController extends Controller
 {
     public function index()
     {
-        $patterns = Pattern::latest()->paginate(10);
+$patterns = Pattern::latest()->get();
         return view('patterns.index', compact('patterns'));
     }
 
@@ -75,5 +75,5 @@ class PatternController extends Controller
             ->with('success', 'Pattern deleted successfully!');
     }
 
- 
+
 }

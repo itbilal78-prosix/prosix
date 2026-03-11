@@ -24,19 +24,42 @@
               </div>
             </div>
 
-            <div :class="['main-image-wrapper', { 'is-model': isModel }]" ref="imageContainer">
+            <div
+              :class="['main-image-wrapper', { 'is-model': isModel }]"
+              ref="imageContainer"
+              @mousemove="handleZoomMove"
+              @mouseenter="onZoomEnter"
+              @mouseleave="onZoomLeave"
+            >
               <span class="badge-new" v-if="product.is_new">NEW</span>
 
               <div class="oos-overlay" v-if="!isModel && !stockAvailable">
                 <span>Out of Stock</span>
               </div>
 
+              <!-- Zoom Lens Overlay -->
+              <div
+                v-if="zoomActive && (displayImage || product.image)"
+                class="zoom-lens"
+                :style="{
+                  backgroundImage: `url(${isModel ? product.image : displayImage})`,
+                  backgroundPosition: zoomBgPos,
+                  backgroundSize: zoomBgSize,
+                }"
+              ></div>
+
               <template v-if="isModel">
-                <img :src="product.image" class="main-product-image" alt="Product" />
+                <img :src="product.image" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
               </template>
               <template v-else>
                 <transition name="img-fade" mode="out-in">
-                  <img :key="displayImage" :src="displayImage" class="main-product-image" alt="Product" />
+                  <img
+                    :key="displayImage"
+                    :src="displayImage"
+                    class="main-product-image"
+                    :class="{ 'zoomed-hidden': zoomActive }"
+                    alt="Product"
+                  />
                 </transition>
               </template>
 
@@ -469,6 +492,34 @@ const displayImage = computed(() => {
   return product.value.image || ''
 })
 
+// ══════════════════════════════════════════
+// ZOOM FEATURE
+// ══════════════════════════════════════════
+const zoomActive  = ref(false)
+const zoomBgPos   = ref('50% 50%')
+const zoomBgSize  = ref('300%')
+
+const onZoomEnter = () => {
+  zoomActive.value = true
+}
+
+const onZoomLeave = () => {
+  zoomActive.value = false
+}
+
+const handleZoomMove = (e) => {
+  const el = imageContainer.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const x = ((e.clientX - rect.left) / rect.width)  * 100
+  const y = ((e.clientY - rect.top)  / rect.height) * 100
+  const cx = Math.min(100, Math.max(0, x))
+  const cy = Math.min(100, Math.max(0, y))
+  zoomBgPos.value  = `${cx}% ${cy}%`
+  zoomBgSize.value = '150%'
+}
+// ══════════════════════════════════════════
+
 const previewImage       = ref(null)
 const previewProductId   = ref(null)
 const previewProductName = ref('')
@@ -716,9 +767,10 @@ watch(() => route.params.id, async (newId) => {
 .thumb.active{border-color:#000;box-shadow:0 0 0 2px rgba(0,0,0,.15)}
 .thumb img{width:100%;height:100%;object-fit:contain;padding:4px}
 .thumb-dot{position:absolute;bottom:4px;right:4px;width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8)}
-.main-image-wrapper{flex:1;position:relative;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.main-image-wrapper{flex:1;position:relative;background:#ffffff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center}
 .main-image-wrapper.is-model{background:#fff}
-.main-product-image{width:100%;height:100%;object-fit:contain;padding:16px}
+.main-product-image{width:100%;height:100%;object-fit:contain;padding:16px;transition:opacity 0.15s ease}
+.main-product-image.zoomed-hidden{opacity:0}
 .oos-overlay{position:absolute;inset:0;background:rgba(255,255,255,.78);display:flex;align-items:center;justify-content:center;z-index:5}
 .oos-overlay span{background:#e53e3e;color:#fff;font-size:16px;font-weight:800;padding:10px 24px;border-radius:6px;letter-spacing:.5px;text-transform:uppercase}
 .img-fade-enter-active,.img-fade-leave-active{transition:opacity .2s ease,transform .2s ease}
@@ -728,6 +780,18 @@ watch(() => route.params.id, async (newId) => {
 .img-action-btn{position:absolute;top:14px;width:44px;height:44px;background:#fff;border:1px solid #e0e0e0;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:.2s;color:#666;z-index:10}
 .img-action-btn:hover,.img-action-btn.active{background:#000;color:#fff;border-color:#000}
 .wishlist-btn{right:14px}.share-btn{right:66px}
+
+/* ══ ZOOM LENS ══ */
+.zoom-lens {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  cursor: crosshair;
+  z-index: 20;
+  border-radius: 10px;
+}
 
 /* ── Product Info ── */
 .product-info{padding-top:8px}

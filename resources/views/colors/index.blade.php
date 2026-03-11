@@ -16,9 +16,9 @@
 
     <div class="row">
         @forelse($colors as $color)
-            <div class="col-md-3 mb-4">
-                <div class="card text-center shadow-sm" style="position: relative; overflow: hidden;">
-                    
+<div class="col-md-2 mb-4">
+                    <div class="card text-center shadow-sm" style="position: relative; overflow: hidden;">
+
                     {{-- Color Block --}}
                     <div style="width: 100%; height: 100px; background-color: {{ $color->code }};"></div>
 
@@ -31,7 +31,7 @@
                     {{-- Edit & Delete Buttons --}}
                     <div class="card-footer d-flex justify-content-between bg-transparent border-top-0 p-2">
                         <!-- Edit -->
-                        <a href="{{ route('colors.edit', $color->id) }}" 
+                        <a href="{{ route('colors.edit', $color->id) }}"
                            class="btn btn-sm d-flex align-items-center justify-content-center w-45 p-1 edit-btn"
                            title="Edit">
                             <i class="bi bi-pencil me-1"></i> Edit
@@ -41,7 +41,7 @@
                         <form action="{{ route('colors.destroy', $color->id) }}" method="POST" class="w-45">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" 
+                            <button type="submit"
                                     class="btn btn-sm d-flex align-items-center justify-content-center w-100 p-1 delete-btn"
                                     title="Delete">
                                 <i class="bi bi-trash me-1"></i> Delete
@@ -73,24 +73,25 @@ document.addEventListener('DOMContentLoaded', function(){
 {{-- Button color based on background --}}
 <style>
 /* Base styles for buttons */
-.card-footer .edit-btn, 
+.card-footer .edit-btn,
 .card-footer .delete-btn {
     border: 1px solid;
     font-weight: 500;
+
 }
 
 /* Detect dark/light mode using prefers-color-scheme */
 @media (prefers-color-scheme: dark) {
-    .card-footer .edit-btn, 
+    .card-footer .edit-btn,
     .card-footer .delete-btn {
-        color: white;
-        border-color: white;
+        color: rgb(0, 0, 0);
+        border-color: rgb(0, 0, 0);
         background: transparent;
     }
 }
 
 @media (prefers-color-scheme: light) {
-    .card-footer .edit-btn, 
+    .card-footer .edit-btn,
     .card-footer .delete-btn {
         color: rgb(140, 133, 133);
         border-color:  rgb(140, 133, 133);

@@ -60,24 +60,33 @@
             <!-- CONTACT INFO — col 3 on desktop, col 2 on mobile (right) -->
        <div class="col-6 col-md-3 mb-4 mb-md-0 order-2 order-md-4 text-md-end">
 
-  <div class="contact-info text-start d-inline-block">
+<div class="contact-info text-start d-inline-block">
 
-    <h3 class="footer-title mb-3">CONTACT INFO</h3>
+  <h3 class="footer-title mb-3">CONTACT INFO</h3>
 
-    <a href="tel:+19292104402" class="contact-link mb-2 d-block">
-      +1 929 210 4402
-    </a>
+  <a href="tel:+19292104402" class="contact-link mb-2 d-block">
+    <i class="bi bi-telephone-fill me-2"></i>
+    +1 929 210 4402
+  </a>
 
-    <p class="mb-2">
-      2604 Whittier Place Wilmington <br>
-      Delaware 19808 U.S.A
-    </p>
+  <p class="mb-2">
+    <i class="bi bi-geo-alt-fill me-2"></i>
+    2604 Whittier Place Wilmington <br>
+    Delaware 19808 U.S.A
+  </p>
 
-    <a href="mailto:sales@prosix.com" class="contact-link">
-      sales@prosix.com
-    </a>
+  <p class="mb-2">
+    <i class="bi bi-geo-alt-fill me-2"></i>
+    5556 E Kings Canyon Rd <br>
+    Fresno, CA 93727
+  </p>
 
-  </div>
+  <a href="mailto:sales@prosix.com" class="contact-link">
+    <i class="bi bi-envelope-fill me-2"></i>
+    sales@prosix.com
+  </a>
+
+</div>
 
 </div>
 

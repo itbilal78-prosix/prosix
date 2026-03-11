@@ -306,9 +306,9 @@
             alert('Please select at least 2 colors');
             return;
         }
-    selectedColors = paletteSelectedColors.map(c => c.toUpperCase());
-updateColorWheel();
-initGradientFromWheel();  // 🔥 gradient sync with wheel
+        selectedColors = paletteSelectedColors.map(c => c.toUpperCase());
+        updateColorWheel();
+        initGradientFromWheel();  // 🔥 gradient sync with wheel
 
         // ─── 2. Agar koi part select nahi to bas band kar do ───
         if (!selectedSvgElement) {
@@ -379,9 +379,9 @@ initGradientFromWheel();  // 🔥 gradient sync with wheel
         // 🔥 color wheel only solid mode
         document.querySelector('.color-wheel-container').style.display =
             type === 'solid' ? 'block' : 'none';
-if(type === 'gradient'){
-    initGradientFromWheel();   // 🔥 wheel → gradient
- }
+        if (type === 'gradient') {
+            initGradientFromWheel();   // 🔥 wheel → gradient
+        }
     };
 
 
@@ -433,32 +433,42 @@ if(type === 'gradient'){
 
     window.addGradientStop = function () {
 
-        if (!selectedSvgElement) {
-            alert('Select part first');
+        if (!window.selectedSvgElement) {
+            alert('Select a part first');
             return;
         }
 
+        // Pick next wheel color (cycle through selectedColors)
+        const usedColors = gradientStops.map(s => s.color.toUpperCase());
+        let nextColor = '#FF0000'; // fallback
+
+        if (selectedColors && selectedColors.length > 0) {
+            // Find first wheel color not already used, else just cycle
+            const unused = selectedColors.find(c => !usedColors.includes(c.toUpperCase()));
+            nextColor = unused || selectedColors[gradientStops.length % selectedColors.length];
+        }
+
         gradientStops.push({
-            color: '#ff0000',
+            color: nextColor,
             position: 50
         });
 
         normalizeStops();
 
-        // sync gradient data
-        gradientChanges[currentView][selectedSvgElement.id] = {
+        // Sync gradient data
+        if (!window.gradientChanges[window.currentView]) window.gradientChanges[window.currentView] = {};
+        window.gradientChanges[window.currentView][window.selectedSvgElement.id] = {
             type: currentGradientType,
             angle: Number(document.getElementById('gradAngle')?.value || 90),
             stops: JSON.parse(JSON.stringify(gradientStops))
         };
 
-        // 🔥 REAL TIME APPLY
+        // Real-time apply + UI update
         applyGradientRealtime();
-
-        // 🔥 REAL TIME UI
         renderGradientStops();
         updateGradientPreview();
     };
+
 
     function normalizeStops() {
         const step = 100 / (gradientStops.length - 1);
@@ -491,59 +501,141 @@ if(type === 'gradient'){
         gradientStops.sort((a, b) => a.position - b.position);
 
         gradientStops.forEach((stop, index) => {
+            const isSelected = (index === window.currentGradientStopIndex);
+
             const stopDiv = document.createElement('div');
-            stopDiv.className = 'gradient-stop-item';
-            stopDiv.innerHTML = `
-            <div class="stop-color" style="background:${stop.color}"
-                 onclick="selectGradientStopColor(${index})"
-                 title="Click to change color"></div>
+            stopDiv.className = 'gradient-stop-item' + (isSelected ? ' active' : '');
+            stopDiv.dataset.index = index;
 
-            <input type="number"
-                   min="0"
-                   max="100"
-                   value="${stop.position}"
-                   class="stop-position-input"
-                   onchange="updateStopPositionInput(${index}, this.value)"
-                   title="Position %">
+            // ── Wheel color swatches row ──────────────────────────
+            const swatchRow = document.createElement('div');
+            swatchRow.style.cssText = 'display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex:1;';
 
-            <span style="font-size:12px;color:#666;">%</span>
+            (selectedColors || []).forEach((wColor) => {
+                const swatch = document.createElement('div');
+                const isActive = wColor.toUpperCase() === stop.color.toUpperCase();
 
-            ${gradientStops.length > 2 ?
-                    `<button onclick="removeGradientStop(${index})" class="remove-stop-btn" title="Remove">×</button>`
-                    : '<div style="width:28px;"></div>'}
-        `;
+                swatch.style.cssText = `
+                width: 26px;
+                height: 26px;
+                border-radius: 5px;
+                background: ${wColor};
+                cursor: pointer;
+                border: ${isActive ? '3px solid #000' : '2px solid #ddd'};
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: bold;
+                color: ${getContrastColorLocal(wColor)};
+                transition: transform .15s;
+                box-sizing: border-box;
+            `;
+
+                if (isActive) {
+                    swatch.innerHTML = '✓';
+                }
+
+                swatch.title = wColor;
+
+                swatch.onmouseenter = () => swatch.style.transform = 'scale(1.15)';
+                swatch.onmouseleave = () => swatch.style.transform = 'scale(1)';
+
+                swatch.onclick = () => {
+                    gradientStops[index].color = wColor.toUpperCase();
+                    window.currentGradientStopIndex = index;
+                    renderGradientStops();
+                    updateGradientPreview();
+                    applyGradientRealtime();
+                };
+
+                swatchRow.appendChild(swatch);
+            });
+
+            // ── Position input ────────────────────────────────────
+            const posInput = document.createElement('input');
+            posInput.type = 'number';
+            posInput.min = 0;
+            posInput.max = 100;
+            posInput.value = stop.position;
+            posInput.className = 'stop-position-input';
+            posInput.title = 'Position %';
+            posInput.style.width = '50px';
+            posInput.onchange = () => updateStopPositionInput(index, posInput.value);
+
+            // ── % label ──────────────────────────────────────────
+            const pctLabel = document.createElement('span');
+            pctLabel.textContent = '%';
+            pctLabel.style.cssText = 'font-size:12px;color:#666;';
+
+            // ── Remove button ─────────────────────────────────────
+            const removeBtn = document.createElement('button');
+            if (gradientStops.length > 2) {
+                removeBtn.className = 'remove-stop-btn';
+                removeBtn.title = 'Remove';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => removeGradientStop(index);
+            } else {
+                removeBtn.style.width = '28px';
+                removeBtn.style.visibility = 'hidden';
+            }
+
+            // ── Assemble ──────────────────────────────────────────
+            stopDiv.appendChild(swatchRow);
+            stopDiv.appendChild(posInput);
+            stopDiv.appendChild(pctLabel);
+            stopDiv.appendChild(removeBtn);
+
             container.appendChild(stopDiv);
         });
 
-        // Update markers on preview
         updateStopMarkers();
-    }
+    };
 
     // Update stop markers on preview thumbnail
     window.updateStopMarkers = function () {
 
         const bar = document.getElementById('gradientPreview');
         const markers = document.getElementById('stopMarkers');
+        if (!markers || !bar) return;
 
         markers.innerHTML = '';
 
         gradientStops.forEach((stop, index) => {
 
+            const isSelected = (index === window.currentGradientStopIndex);
+
             const m = document.createElement('div');
-            m.className = 'stop-marker';
+            m.className = 'stop-marker' + (isSelected ? ' selected' : '');
             m.style.background = stop.color;
             m.style.left = stop.position + '%';
 
-            m.onmousedown = function (e) {
+            // Show tick on selected marker
+            if (isSelected) {
+                m.innerHTML = `<span style="
+                position:absolute;inset:0;display:flex;align-items:center;
+                justify-content:center;font-size:10px;font-weight:bold;
+                color:${getContrastColorLocal(stop.color)};
+                pointer-events:none;transform:rotate(-45deg);
+            ">✓</span>`;
+            }
 
+            m.onclick = () => {
+                window.currentGradientStopIndex = index;
+                renderGradientStops();
+                updateStopMarkers();
+            };
+
+            m.onmousedown = function (e) {
                 e.preventDefault();
+                window.currentGradientStopIndex = index;
+                renderGradientStops();
 
                 document.onmousemove = function (ev) {
-
                     const rect = bar.getBoundingClientRect();
                     let x = ev.clientX - rect.left;
                     let percent = (x / rect.width) * 100;
-
                     percent = Math.max(0, Math.min(100, percent));
 
                     gradientStops[index].position = Math.round(percent);
@@ -561,28 +653,12 @@ if(type === 'gradient'){
 
             markers.appendChild(m);
         });
-    }
+    };
 
 
     window.selectGradientStopColor = function (stopIndex) {
         window.currentGradientStopIndex = stopIndex;
-
-        const modal = document.getElementById('colorPaletteModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            modal.dataset.gradientMode = 'true';
-
-            // Optional: title change kar sakte ho taake user ko pata chale
-            const title = modal.querySelector('.modal-title');
-            if (title) title.textContent = `🎨 Pick Color for Stop #${stopIndex + 1}`;
-        }
-
-        // Reset previous selection
-        paletteSelectedColors = [];
-        document.querySelectorAll('.color-box').forEach(box => {
-            box.classList.remove('selected');
-            box.innerHTML = '';
-        });
+        renderGradientStops(); // re-render to show active state
     };
     // Update stop position from input
     window.updateStopPositionInput = function (index, value) {
@@ -731,11 +807,16 @@ if(type === 'gradient'){
 
     /* ================= HELPER FUNCTIONS ================= */
 
-    function getContrastColor(hex) {
-        const rgb = hexToRgb(hex);
-        if (!rgb) return '#000';
-        const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-        return brightness > 128 ? '#000' : '#fff';
+    function getContrastColorLocal(hex) {
+        try {
+            const h = hex.replace('#', '');
+            const r = parseInt(h.substr(0, 2), 16);
+            const g = parseInt(h.substr(2, 2), 16);
+            const b = parseInt(h.substr(4, 2), 16);
+            return ((r * 299 + g * 587 + b * 114) / 1000) > 128 ? '#000' : '#fff';
+        } catch (e) {
+            return '#000';
+        }
     }
 
     function hexToRgb(hex) {
