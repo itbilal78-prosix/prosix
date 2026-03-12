@@ -176,6 +176,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
+Route::get('/mascot-templates', [TemplateController::class, 'apiList']);
 
 Route::get('/colors', [\App\Http\Controllers\ColorController::class, 'apiIndex']);
 

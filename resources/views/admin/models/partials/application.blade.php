@@ -642,6 +642,8 @@ div:focus {
     box-shadow: none !important;
 }
 </style>
+@include('admin.models.partials.mascot-select-modal')
+
 <script>
     window.backendFonts = @json($fonts ?? []);
 </script>

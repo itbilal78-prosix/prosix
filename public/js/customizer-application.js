@@ -662,160 +662,86 @@ window.showHideColorPickers = function (style) {
     };
 
     // =================== CONFIRM ADD APPLICATION ===================
+window.confirmAddApplication = function () {
 
-    window.confirmAddApplication = function () {
-        if (!window.selectedApplicationPart) {
-            alert('Please select a part!');
-            return;
+    if (!window.selectedApplicationPart) {
+        alert('Please select a part!');
+        return;
+    }
+
+    const layerId = `app-${Date.now()}`;
+    const view = window.selectedApplicationView;
+    const partId = window.selectedApplicationPart;
+
+    // 🔥 MASCOT CASE
+   if (window.selectedApplicationType === 'mascot') {
+
+    closeApplicationModal();
+
+    const layerId = `app-${Date.now()}`;
+    window.currentApplicationLayer = layerId;
+
+    // DEBUG
+    console.log("Checking mascot modal:", window.openMascotSelectModal);
+
+    if (typeof window.openMascotSelectModal === "function") {
+        window.openMascotSelectModal(layerId);
+    } else {
+        // fallback open
+        const modal = document.getElementById("mascotSelectModal");
+        if (modal) {
+            modal.style.display = "flex";
+        } else {
+            console.error("Mascot modal not found in DOM");
         }
+    }
 
-        let defaultText = '00';
-        if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
-        if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
-        if (window.selectedApplicationType === 'mascot') defaultText = '🦅';
+    return;
+}
 
-        const layerId = `app-${Date.now()}`;
-        const view = window.selectedApplicationView;
-        const partId = window.selectedApplicationPart;
+    // ================= NORMAL APPLICATION =================
 
-        const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
+    let defaultText = '00';
+    if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
+    if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
 
-        const layer = {
-            id: layerId,
-            type: window.selectedApplicationType,
-            view: view,
-            partId: partId,
-            text: defaultText,
-            fontSize: 2000,  // 🔥 MUCH LARGER DEFAULT SIZE
-            fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
-            fill: globalColors[0] || '#FFFFFF',
-            stroke: globalColors[1] || '#000000',
-            strokeWidth: 5,  // Thicker stroke for larger text
-            x: 0,
-            y: 0,
-            rotation: 0,
-            outlineStyle: window.currentOutlineStyle,
-            outlineColors: { ...window.outlineColors }
-        };
+    const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
 
-        if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
-        if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
-
-        window.applicationsApplied[view][partId].push(layer);
-
-        addApplicationToSvg(layer);
-        updateApplicationLayersList();
-        closeApplicationModal();
-        openApplicationsSidebar();
-        selectApplicationLayer(layerId);
-
-        if (window.saveCustomizations) window.saveCustomizations();
-
-        console.log('✅ Application added:', layer);
+    const layer = {
+        id: layerId,
+        type: window.selectedApplicationType,
+        view: view,
+        partId: partId,
+        text: defaultText,
+        fontSize: 2000,
+        fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
+        fill: globalColors[0] || '#FFFFFF',
+        stroke: globalColors[1] || '#000000',
+        strokeWidth: 5,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        outlineStyle: window.currentOutlineStyle,
+        outlineColors: { ...window.outlineColors }
     };
 
+    if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+    if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
 
-// window.addApplicationToSvg = function (layer) {
+    window.applicationsApplied[view][partId].push(layer);
 
-//     const mainSvg = window.getMainSvg();
-//     if (!mainSvg) {
-//         setTimeout(() => addApplicationToSvg(layer), 300);
-//         return;
-//     }
+    addApplicationToSvg(layer);
+    updateApplicationLayersList();
+    closeApplicationModal();
+    openApplicationsSidebar();
+    selectApplicationLayer(layerId);
 
-//     // ✅ DUPLICATE CHECK
-//     if (mainSvg.querySelector(`#${layer.id}`)) {
-//         console.log('⚠ Layer already exists, skipping:', layer.id);
-//         return;
-//     }
+    if (window.saveCustomizations) window.saveCustomizations();
 
-//     // ================= CREATE DEFS =================
-//     let defs = mainSvg.querySelector('defs');
-//     if (!defs) {
-//         defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-//         mainSvg.insertBefore(defs, mainSvg.firstChild);
-//     }
+    console.log('✅ Application added:', layer);
+};
 
-//     const partElement = mainSvg.querySelector(`#${layer.partId}`);
-//     if (!partElement) {
-//         console.warn('Part not found', layer.partId);
-//         return;
-//     }
 
-//     // ================= CREATE CLIP PATH =================
-//     const clipId = `clip-${layer.partId}`;
-
-//     if (!defs.querySelector(`#${clipId}`)) {
-//         const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-//         clip.setAttribute('id', clipId);
-//         const clone = partElement.cloneNode(true);
-//         clone.removeAttribute('id');
-//         clip.appendChild(clone);
-//         defs.appendChild(clip);
-//     }
-
-//     // ================= APPLICATION GROUP =================
-//     let appGroup = mainSvg.querySelector('#application-group');
-//     if (!appGroup) {
-//         appGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-//         appGroup.setAttribute('id', 'application-group');
-//         mainSvg.appendChild(appGroup);
-//     }
-
-//     appGroup.setAttribute('clip-path', `url(#${clipId})`);
-
-//     // ================= CENTER OF PART =================
-//     const bbox = partElement.getBBox();
-//     const cx = bbox.x + bbox.width / 2;
-//     const cy = bbox.y + bbox.height / 2;
-
-//     // ================= CREATE TEXT =================
-//     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-//     text.setAttribute('id', layer.id);
-//     text.setAttribute('x', cx + layer.x);
-//     text.setAttribute('y', cy + layer.y);
-//     text.setAttribute('font-size', layer.fontSize);
-//     text.style.fontFamily = layer.fontFamily;
-//     text.setAttribute('fill', layer.fill);
-//     text.setAttribute('stroke', layer.stroke);
-//     text.setAttribute('stroke-width', layer.strokeWidth);
-//     text.setAttribute('text-anchor', 'middle');
-//     text.setAttribute('dominant-baseline', 'middle');
-//     text.setAttribute('paint-order', 'stroke fill');
-//     text.setAttribute('stroke-linejoin', 'round');
-//     text.style.cursor = 'move';
-//     text.textContent = layer.text;
-
-//     if (layer.rotation) {
-//         text.setAttribute(
-//             'transform',
-//             `rotate(${layer.rotation} ${cx + layer.x} ${cy + layer.y})`
-//         );
-//     }
-
-//     appGroup.appendChild(text);
-
-//     // ================= DRAG =================
-//     makeDraggable(text, layer);
-
-//     text.addEventListener('click', e => {
-//         e.stopPropagation();
-//         selectApplicationLayer(layer.id);
-//     });
-
-//     // ================= OUTLINE =================
-//     if (layer.outlineStyle) {
-//         window.currentOutlineStyle = layer.outlineStyle;
-//         if (layer.outlineColors) {
-//             window.outlineColors = { ...layer.outlineColors };
-//         }
-//         applyOutlineStyleToText(layer.id);
-//     }
-
-//     console.log('✅ Application added WITH CLIP:', layer.id);
-// };
-
-    // =================== MAKE DRAGGABLE ===================
 
 
 

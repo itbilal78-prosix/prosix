@@ -66,8 +66,30 @@ if ($token) {
         'artwork_file' => json_encode($imagePaths),
     ]);
 
-    Mail::to('designs@prosix.com')->send(new ArtworkRequestMail($artworkRequest));
-    Mail::to($artworkRequest->email)->send(new ArtworkRequestMail($artworkRequest));
+try {
+    $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+        ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+    $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+        new \GuzzleHttp\Client(), $config
+    );
+
+    $htmlContent = view('emails.artwork-request', ['data' => $artworkRequest])->render();
+
+    $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+        'subject'     => 'New Artwork Request Received',
+        'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
+        'to'          => [
+            ['email' => 'designs@prosix.com'],
+            ['email' => $artworkRequest->email],
+        ],
+        'htmlContent' => $htmlContent,
+    ]);
+
+    $apiInstance->sendTransacEmail($email);
+} catch (\Exception $e) {
+    \Log::error('Email failed: '.$e->getMessage());
+}
 
     return response()->json(['message' => 'Artwork request saved successfully']);
 }
