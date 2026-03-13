@@ -54,13 +54,7 @@ class AuthController extends Controller
         return view('user_mangment.all_user', compact('users'));
     }
 
-public function deleteUser($id)
-{
-    $user = User::findOrFail($id);
-    $user->tokens()->delete();
-    $user->delete();
-    return back()->with('success', 'User deleted successfully.');
-}
+
     public function toggleStatus($id)
     {
         $user = \App\Models\User::findOrFail($id);
