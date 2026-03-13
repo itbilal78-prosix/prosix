@@ -71,6 +71,16 @@
                                     </form>
                                 </td>
                             </tr>
+                            <!-- Delete Button -->
+<form action="{{ route('admin.users.delete', $user->id) }}" method="POST"
+    style="display:inline;"
+    onsubmit="return confirm('Are you sure you want to delete this user?')">
+    @csrf
+    @method('DELETE')
+    <button class="btn btn-dark btn-sm">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-4">

@@ -29,10 +29,25 @@ class UserController extends Controller
         ]);
 
         // Send OTP immediately
-        \Mail::raw("Your OTP is: {$otp}", function ($message) use ($user) {
-            $message->to($user->email)
-                ->subject('Your OTP Verification Code');
-        });
+      try {
+    $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+        ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+    $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+        new \GuzzleHttp\Client(), $config
+    );
+
+    $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+        'subject' => 'Your OTP Verification Code',
+        'sender'  => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
+        'to'      => [['email' => $user->email]],
+        'htmlContent' => '<h2>Your OTP Code</h2><p style="font-size:32px;font-weight:bold;">'.$otp.'</p><p>This OTP will expire soon.</p>',
+    ]);
+
+    $apiInstance->sendTransacEmail($email);
+} catch (\Exception $e) {
+    \Log::error('OTP email failed: '.$e->getMessage());
+}
 
         return response()->json([
             'status' => true,
@@ -87,14 +102,21 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if ($user->status == 'blocked') {
-            Auth::logout();
+       if ($user->status == 'blocked') {
+    Auth::logout();
+    return response()->json([
+        'status' => false,
+        'message' => 'You are blocked. Please contact admin.',
+    ], 403);
+}
 
-            return response()->json([
-                'status' => false,
-                'message' => 'You are blocked. Please contact admin.',
-            ], 403);
-        }
+if ($user->status == 'pending') {
+    Auth::logout();
+    return response()->json([
+        'status' => false,
+        'message' => 'Please verify your OTP first.',
+    ], 403);
+}
 
         if ($user->status != 'approved') {
             Auth::logout();
