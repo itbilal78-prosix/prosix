@@ -185,6 +185,19 @@ Route::post('/models/bulk-destroy',   [CustomizerModelController::class, 'bulkDe
 Route::post('/models/bulk-duplicate', [CustomizerModelController::class, 'bulkDuplicate'])->name('models.bulkDuplicate');
 Route::get('/api/search', [App\Http\Controllers\SearchController::class, 'search']);
 
+// Mascot editor - edit existing template
+// ✅ CREATE pehle hona chahiye
+Route::middleware(['auth:admin'])
+    ->get('/admin/mascots/create', function () {
+        return view('templates.create');
+    })->name('mascots.create');
+
+// EDIT baad mein
+Route::middleware(['auth:admin'])
+    ->get('/admin/mascots/{id}/edit', function ($id) {
+        $template = \App\Models\Template::findOrFail($id);
+        return view('templates.edit', compact('template'));
+    })->name('mascots.edit');
 
 Route::get('/{any}', function () {
     return view('welcome');

@@ -524,121 +524,140 @@
     <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
     <script src="{{ asset('js/mascot.js') }}"></script>
+
+
 @if(isset($template))
 <script>
-window.addEventListener('load',function(){
+window.addEventListener('load', function() {
 
- let svg=`{!! addslashes($template->svg_data) !!}`;
- if(!svg) return;
+    var svgRaw = {!! json_encode($template->svg_data) !!};
+    var imageData = {!! json_encode($template->image_data ?? '') !!};
+    var templateTitle = {!! json_encode($template->title ?? '') !!};
 
- fabric.loadSVGFromString(svg,function(objects,options){
+    // Title set karo
+    var titleInput = document.getElementById('designTitle');
+    if (titleInput && templateTitle) titleInput.value = templateTitle;
 
-   fabricCanvas.clear();
+    // ✅ CASE 1: SVG data hai
+    if (svgRaw && svgRaw.trim().startsWith('<')) {
 
-   objects.forEach(obj=>{
+        fabric.loadSVGFromString(svgRaw, function(objects, options) {
+            fabricCanvas.clear();
 
-     // 🔥 Basic settings
-     obj.set({
-       selectable:true,
-       hasControls:true,
-       hasBorders:true,
-       objectCaching:false
-     });
+            var allColors = new Set();
 
-     // 🔥 Group-specific settings
-     if(obj.type === 'group'){
-       obj.subTargetCheck = false;
-       obj.interactive = false;
-       obj.selectable = true;
+            objects.forEach(function(obj) {
+                obj.set({
+                    selectable: true,
+                    hasControls: true,
+                    hasBorders: true,
+                    objectCaching: false
+                });
 
-       // Force all children to be non-selectable
-       if(obj._objects && obj._objects.length){
-         obj.forEachObject(function(child){
-           child.selectable = false;
-           child.evented = false;
-           child.hasControls = false;
-           child.hasBorders = false;
-           child.lockMovementX = true;
-           child.lockMovementY = true;
-         });
-       }
+                // SVG paths se colors nikalo
+                if (['path','rect','circle','polygon','ellipse'].indexOf(obj.type) !== -1) {
+                    if (obj.fill && obj.fill !== 'transparent' && obj.fill !== '' && obj.fill !== 'none') {
+                        allColors.add(obj.fill);
+                    }
+                    if (obj.stroke && obj.stroke !== 'transparent' && obj.stroke !== '' && obj.stroke !== 'none') {
+                        allColors.add(obj.stroke);
+                    }
+                }
 
-       if(obj.textShape || obj.textContent){
-         obj.textShape = obj.textShape || 'normal';
-         obj.textContent = obj.textContent || '';
-         obj.fontFamily = obj.fontFamily || 'Arial';
-         obj.fontSize = obj.fontSize || 40;
-       }
+                // Group ke andar se colors nikalo
+                if (obj.type === 'group') {
+                    obj.subTargetCheck = false;
+                    obj.interactive = false;
 
-       if(obj.colorMappings){
-         colorMappings = {...colorMappings, ...obj.colorMappings};
-       }
-     }
+                    if (obj._objects && obj._objects.length) {
+                        obj.forEachObject(function(child) {
+                            child.selectable = false;
+                            child.evented = false;
+                            child.hasControls = false;
+                            child.hasBorders = false;
 
-     if(obj.type === 'image'){
-       if(obj.colorMappings){
-         colorMappings = {...colorMappings, ...obj.colorMappings};
-       }
-     }
+                            if (child.fill && child.fill !== 'transparent' && child.fill !== '' && child.fill !== 'none') {
+                                allColors.add(child.fill);
+                            }
+                            if (child.stroke && child.stroke !== 'transparent' && child.stroke !== '' && child.stroke !== 'none') {
+                                allColors.add(child.stroke);
+                            }
+                        });
+                    }
 
-     fabricCanvas.add(obj);
-   });
+                    if (obj.colorMappings) {
+                        Object.keys(obj.colorMappings).forEach(function(k) { allColors.add(k); });
+                    }
+                }
 
-   // 🔥 Force settings after all objects added
-   setTimeout(function(){
-     fabricCanvas.getObjects().forEach(obj => {
-       if (obj.type === 'group') {
-         obj.subTargetCheck = false;
-         obj.interactive = false;
-         obj.set({
-           selectable: true,
-           objectCaching: false
-         });
-       }
-     });
-     fabricCanvas.renderAll();
-   }, 100);
+                if (obj.type === 'image' && obj.colorMappings) {
+                    Object.keys(obj.colorMappings).forEach(function(k) { allColors.add(k); });
+                }
 
-   fabricCanvas.renderAll();
+                fabricCanvas.add(obj);
+            });
 
-   fabricCanvas.getObjects().forEach(o=>{
-     o.setCoords();
-   });
+            fabricCanvas.renderAll();
 
-   currentImage = null;
+            // Colors set karo
+            if (allColors.size > 0) {
+                detectedColors = Array.from(allColors).map(function(hex) {
+                    return {
+                        hex: hex,
+                        r: parseInt(hex.slice(1,3), 16) || 0,
+                        g: parseInt(hex.slice(3,5), 16) || 0,
+                        b: parseInt(hex.slice(5,7), 16) || 0,
+                        count: 1
+                    };
+                });
+                selectedColorsForVector = Array.from(allColors);
+                allColors.forEach(function(hex) { colorMappings[hex] = hex; });
+            }
 
-   let allColors = new Set();
-   fabricCanvas.getObjects().forEach(obj=>{
-     if(obj.colorMappings){
-       Object.keys(obj.colorMappings).forEach(k=>allColors.add(k));
-     }
-   });
+            setTimeout(function() {
+                fabricCanvas.getObjects().forEach(function(obj) {
+                    if (obj.type === 'group') {
+                        obj.subTargetCheck = false;
+                        obj.set({ selectable: true, objectCaching: false });
+                    }
+                });
+                fabricCanvas.renderAll();
 
-   if(allColors.size > 0){
-     detectedColors = Array.from(allColors).map(hex=>({
-       hex:hex,
-       r:parseInt(hex.slice(1,3),16),
-       g:parseInt(hex.slice(3,5),16),
-       b:parseInt(hex.slice(5,7),16),
-       count:1
-     }));
-     selectedColorsForVector = Array.from(allColors);
-   }
+                // Pehla object select karo — colors panel khulega
+                var firstObj = fabricCanvas.getObjects()[0];
+                if (firstObj) {
+                    fabricCanvas.setActiveObject(firstObj);
+                    fabricCanvas.fire('selection:created', { selected: [firstObj] });
+                    fabricCanvas.renderAll();
+                }
+            }, 200);
 
-   undoHistory=[];
-   redoHistory=[];
-   saveStateForUndo();
+            undoHistory = [];
+            redoHistory = [];
+            saveStateForUndo();
+            updateLayers();
+            updateLayerSelection();
+        });
+    }
 
-   updateLayers();
-   updateLayerSelection();
+    // ✅ CASE 2: Sirf image hai
+    else if (imageData && imageData.length > 10) {
+        fabric.Image.fromURL(imageData, function(img) {
+            fabricCanvas.clear();
+            img.set({ selectable: true, hasControls: true, hasBorders: true });
+            fabricCanvas.add(img);
+            fabricCanvas.setActiveObject(img);
+            fabricCanvas.renderAll();
+            undoHistory = [];
+            redoHistory = [];
+            saveStateForUndo();
+            updateLayers();
+        }, { crossOrigin: 'anonymous' });
+    }
 
-   console.log("✅ Groups locked - Only whole layer selectable");
-
- });
 });
 </script>
 @endif
-
 
 
 @endsection

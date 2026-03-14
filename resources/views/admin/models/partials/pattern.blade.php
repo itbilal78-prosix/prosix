@@ -113,7 +113,9 @@
         <div style="padding:30px; text-align:center;">
             <p style="margin-bottom:20px; color:#666;">Upload your own SVG pattern or mascot logo</p>
 
-            <input type="file" id="mascotFileInput" accept=".svg,image/svg+xml" style="display:none;" onchange="handleMascotUpload(event)">
+            {{-- <input type="file" id="mascotFileInput" accept=".svg,image/svg+xml" style="display:none;" onchange="handleMascotUpload(event)"> --}}
+            <input type="file" id="mascotFileInput" accept="image/*,.svg" onchange="mascotFileSelected(this)">
+
 
             <button onclick="document.getElementById('mascotFileInput').click()" style="padding:15px 30px; background:#007bff; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:16px;">
                 📁 Choose SVG File

@@ -538,23 +538,21 @@ const goToCustomizer = (product) => {
 const addToCart = (product) => { cartStore.addItem(product) }
 
 onMounted(async () => {
-    // ── Disable Inspect / DevTools ─────────────────────────────
-// Right Click disable
-document.addEventListener('contextmenu', e => e.preventDefault())
 
-// F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U disable
-document.addEventListener('keydown', e => {
-  if (
-    e.key === 'F12' ||
-    (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-    (e.ctrlKey && e.key.toUpperCase() === 'U') ||
-    (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase())) // Mac
-  ) {
-    e.preventDefault()
-    e.stopPropagation()
-    return false
-  }
-})
+// document.addEventListener('contextmenu', e => e.preventDefault())
+
+// document.addEventListener('keydown', e => {
+//   if (
+//     e.key === 'F12' ||
+//     (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+//     (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+//     (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase())) // Mac
+//   ) {
+//     e.preventDefault()
+//     e.stopPropagation()
+//     return false
+//   }
+// })
 
 // DevTools open detection — redirect or warn
 const devToolsCheck = () => {
@@ -742,7 +740,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-btn:hover { background: #222; transform: translateY(-50%) scale(1.05); }
 
 .apparel-card-inner { background:#323233; border: 1px solid #444; border-radius: 12px; padding: 10px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-.product-image-wrapper { margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; overflow: hidden; background: #222; }
+.product-image-wrapper { margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; overflow: hidden; background: #ffffff; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-name { font-size: 0.88rem; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .add-to-cart-btn { margin-top: auto; font-size: 0.85rem; }

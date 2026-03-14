@@ -386,14 +386,13 @@ await axios.post('/api/artwork-request', formData, config);
   gap: 16px; padding: 20px; overflow-y: auto;
 }
 .color-popup-item {
-  display: flex; flex-direction: column; align-items: center; gap: 7px;
-  cursor: pointer; padding: 10px 6px; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer; padding: 7px 6px; border-radius: 12px;
   border: 2px solid transparent; transition: all 0.15s;
 }
-.color-popup-item:hover { background: #f5f5f5; }
-.color-popup-item.selected { border-color: #000; background: #f0f0f0; }
+.color-popup-item.selected { border-color: #000;  }
 .popup-swatch {
-  width: 52px; height: 52px; border-radius: 50%;
+  width: 52px; height: 52px;
   border: 2px solid rgba(0,0,0,0.1);
   display: flex; align-items: center; justify-content: center;
 }

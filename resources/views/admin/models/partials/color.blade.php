@@ -17,9 +17,10 @@
         <div class="color-wheel-outer">
             <div class="color-wheel-ring" id="colorWheelRing"></div>
             <div class="color-wheel-white-ring"></div>
-            <div class="color-wheel-center" id="selectedColorBtn" onclick="openColorPalette()">
-                SELECT<br>COLORS
-            </div>
+           <div class="color-wheel-center" id="selectedColorBtn" onclick="openColorPalette()"
+    style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8px;">
+    SELECT<br>COLORS
+</div>
         </div>
     </div>
 <div id="gradientPanel" class="tool-page" style="display:none;padding:20px;">
@@ -445,7 +446,7 @@
 }
 
 .remove-stop-btn {
-    background: #dc3545;
+    background: #000000;
     color: white;
     border: none;
     width: 28px;
@@ -460,7 +461,7 @@
 }
 
 .remove-stop-btn:hover {
-    background: #c82333;
+    background: #272727;
     transform: scale(1.1);
 }
 

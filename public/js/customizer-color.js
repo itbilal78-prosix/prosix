@@ -182,26 +182,43 @@
 
     function updateCenterColor(color) {
 
-        const btn = document.getElementById('selectedColorBtn');
-        btn.style.background = color;
+    const btn = document.getElementById('selectedColorBtn');
+    btn.style.background = color;
 
-        // Convert hex to brightness
-        const hex = color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
 
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-
-        // Light color → black text
-        if (brightness > 200) {
-            btn.style.color = '#000';
-            btn.style.textShadow = '0 0 2px #000';
-        } else {
-            btn.style.color = '#fff';
-            btn.style.textShadow = '0 0 4px rgba(0,0,0,.6)';
-        }
+    if (brightness > 200) {
+        btn.style.color = '#000';
+        btn.style.textShadow = '0 0 2px #000';
+    } else {
+        btn.style.color = '#fff';
+        btn.style.textShadow = '0 0 4px rgba(0,0,0,.6)';
     }
+
+    // ✅ Short name + Full name
+    const colorObj = window.backendColors?.find(
+        c => c.code.toUpperCase() === color.toUpperCase()
+    );
+
+    if (colorObj?.name) {
+        // Short name: pehle harf har word ka
+        const shortName = colorObj.name
+            .split(' ')
+            .map(w => w.charAt(0).toUpperCase())
+            .join('');
+
+btn.innerHTML = `
+    <span style="font-size:28px;font-weight:800;line-height:1.2;display:block;">${shortName}</span>
+    <span style="font-size:13px;font-weight:600;line-height:1.3;display:block;word-break:break-word;">${colorObj.name}</span>
+`;
+    } else {
+        btn.innerHTML = 'SELECT<br>COLORS';
+    }
+}
 
 
     /* ================= APPLY COLOR TO SELECTED PART ================= */
@@ -440,7 +457,7 @@
 
         // Pick next wheel color (cycle through selectedColors)
         const usedColors = gradientStops.map(s => s.color.toUpperCase());
-        let nextColor = '#FF0000'; // fallback
+        let nextColor = '#000000'; // fallback
 
         if (selectedColors && selectedColors.length > 0) {
             // Find first wheel color not already used, else just cycle

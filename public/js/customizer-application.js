@@ -20,14 +20,14 @@
         outline2: '#666666',
         shadow: '#333333'
     };
-document.addEventListener("contextmenu", function(e){
-    e.preventDefault();
-});
-document.addEventListener("keydown", function(e){
-    if(e.ctrlKey && (e.key === 'c' || e.key === 'u')){
+    document.addEventListener("contextmenu", function (e) {
         e.preventDefault();
-    }
-});
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'u')) {
+            e.preventDefault();
+        }
+    });
     // =================== SIDEBAR TOGGLE ===================
 
     window.toggleApplicationsSidebar = function () {
@@ -142,14 +142,7 @@ document.addEventListener("keydown", function(e){
             styleNameEl.textContent = styleNames[styleName] || styleName;
         }
 
-
-
         closeAccentsModal();
-
-
-
-
-
     };
 
 
@@ -187,7 +180,6 @@ document.addEventListener("keydown", function(e){
                 break;
 
             case 'three-color':
-                // This needs multiple text elements - simplified for preview
                 preview.style.webkitTextFillColor = colors.baseColor;
                 preview.style.webkitTextStroke = `3px ${colors.outline1}`;
                 preview.title = 'Outline 2: ' + colors.outline2;
@@ -207,98 +199,42 @@ document.addEventListener("keydown", function(e){
         }
     };
 
-    // window.showHideColorPickers = function (style) {
+    window.showHideColorPickers = function (style) {
 
-    //     // Show outline colors section
-    //     document.getElementById('outlineColorsSection').style.display = 'block';
+        document.getElementById('outlineColorsSection').style.display = 'block';
 
-    //     // Show/hide based on style
-    //     const outline1 = document.getElementById('outline1Section');
-    //     const outline2 = document.getElementById('outline2Section');
-    //     const shadow = document.getElementById('shadowSection');
+        const outline1 = document.getElementById('outline1Section');
+        const outline2 = document.getElementById('outline2Section');
+        const shadow = document.getElementById('shadowSection');
 
-    //     // Reset all
-    //     outline1.style.display = 'none';
-    //     outline2.style.display = 'none';
-    //     shadow.style.display = 'none';
+        outline1.style.display = 'none';
+        outline2.style.display = 'none';
+        shadow.style.display = 'none';
 
-    //     switch (style) {
-    //         case 'single':
-    //             // Only base color
-    //             break;
-
-    //         case 'two-color':
-    //             outline1.style.display = 'block';
-    //             break;
-
-    //         case 'two-color-shadow':
-    //             outline1.style.display = 'block';
-    //             shadow.style.display = 'block';
-    //             break;
-
-    //         case 'three-color':
-    //             outline1.style.display = 'block';
-    //             outline2.style.display = 'block';
-    //             break;
-
-    //         case 'single-shadow':
-    //             shadow.style.display = 'block';
-    //             break;
-
-    //         case 'three-color-shadow':
-    //             outline1.style.display = 'block';
-    //             outline2.style.display = 'block';
-    //             shadow.style.display = 'block';
-    //             break;
-    //     }
-    // };
-
-
-window.showHideColorPickers = function (style) {
-
-    // Show outline colors section
-    document.getElementById('outlineColorsSection').style.display = 'block';
-
-    // Show/hide based on style
-    const outline1 = document.getElementById('outline1Section');
-    const outline2 = document.getElementById('outline2Section');
-    const shadow   = document.getElementById('shadowSection');
-
-    // Reset all
-    outline1.style.display = 'none';
-    outline2.style.display = 'none';
-    shadow.style.display   = 'none';
-
-    switch (style) {
-        case 'single':
-            // Only base color
-            break;
-
-        case 'two-color':
-            outline1.style.display = 'flex';   // ✅ flex
-            break;
-
-        case 'two-color-shadow':
-            outline1.style.display = 'flex';   // ✅ flex
-            shadow.style.display   = 'flex';   // ✅ flex
-            break;
-
-        case 'three-color':
-            outline1.style.display = 'flex';   // ✅ flex
-            outline2.style.display = 'flex';   // ✅ flex
-            break;
-
-        case 'single-shadow':
-            shadow.style.display = 'flex';     // ✅ flex
-            break;
-
-        case 'three-color-shadow':
-            outline1.style.display = 'flex';   // ✅ flex
-            outline2.style.display = 'flex';   // ✅ flex
-            shadow.style.display   = 'flex';   // ✅ flex
-            break;
-    }
-};
+        switch (style) {
+            case 'single':
+                break;
+            case 'two-color':
+                outline1.style.display = 'flex';
+                break;
+            case 'two-color-shadow':
+                outline1.style.display = 'flex';
+                shadow.style.display = 'flex';
+                break;
+            case 'three-color':
+                outline1.style.display = 'flex';
+                outline2.style.display = 'flex';
+                break;
+            case 'single-shadow':
+                shadow.style.display = 'flex';
+                break;
+            case 'three-color-shadow':
+                outline1.style.display = 'flex';
+                outline2.style.display = 'flex';
+                shadow.style.display = 'flex';
+                break;
+        }
+    };
 
     window.populateOutlineColorPickers = function () {
 
@@ -308,8 +244,8 @@ window.showHideColorPickers = function (style) {
         if (!layer) return;
 
         const colors = window.selectedColors?.length
-    ? window.selectedColors
-    : ['#FFFFFF', '#000000'];
+            ? window.selectedColors
+            : ['#FFFFFF', '#000000'];
 
         function picker(id, key) {
             createColorPicker(id, colors, layer.outlineColors[key], color => {
@@ -381,59 +317,48 @@ window.showHideColorPickers = function (style) {
         // IMPORTANT: base text NEVER shadow
         textEl.style.filter = 'none';
 
-      switch (style) {
+        switch (style) {
 
-    case 'single':
+            case 'single':
+                textEl.setAttribute('fill', colors.baseColor);
+                textEl.removeAttribute('stroke');
+                textEl.removeAttribute('stroke-width');
+                textEl.style.filter = 'none';
+                break;
 
-        textEl.setAttribute('fill', colors.baseColor);
-        textEl.removeAttribute('stroke');
-        textEl.removeAttribute('stroke-width');
-        textEl.style.filter = 'none';
+            case 'single-shadow':
+                textEl.setAttribute('fill', colors.baseColor);
+                textEl.removeAttribute('stroke');
+                textEl.removeAttribute('stroke-width');
+                textEl.style.filter =
+                    `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+                break;
 
-        break;
+            case 'two-color':
+                textEl.setAttribute('fill', colors.baseColor);
+                textEl.setAttribute('stroke', colors.outline1);
+                textEl.setAttribute('stroke-width', stroke);
+                textEl.style.filter = 'none';
+                break;
 
-    case 'single-shadow':
+            case 'two-color-shadow':
+                textEl.setAttribute('fill', colors.baseColor);
+                textEl.setAttribute('stroke', colors.outline1);
+                textEl.setAttribute('stroke-width', stroke);
+                textEl.style.filter =
+                    `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+                break;
 
-        textEl.setAttribute('fill', colors.baseColor);
-        textEl.removeAttribute('stroke');
-        textEl.removeAttribute('stroke-width');
-
-        textEl.style.filter =
-            `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
-
-        break;
-
-    case 'two-color':
-
-        textEl.setAttribute('fill', colors.baseColor);
-        textEl.setAttribute('stroke', colors.outline1);
-        textEl.setAttribute('stroke-width', stroke);
-        textEl.style.filter = 'none';
-
-        break;
-
-    case 'two-color-shadow':
-
-        textEl.setAttribute('fill', colors.baseColor);
-        textEl.setAttribute('stroke', colors.outline1);
-        textEl.setAttribute('stroke-width', stroke);
-
-        textEl.style.filter =
-            `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
-
-        break;
-
-    case 'three-color':
-    case 'three-color-shadow':
-
-        createThreeColorOutline(textEl, layer, style.includes('shadow'));
-        break;
-}
+            case 'three-color':
+            case 'three-color-shadow':
+                createThreeColorOutline(textEl, layer, style.includes('shadow'));
+                break;
+        }
 
     };
 
 
-    // =================== THREE COLOR OUTLINE (EQUAL WIDTH) ===================
+    // =================== THREE COLOR OUTLINE ===================
 
     window.createThreeColorOutline = function (textEl, layer, withShadow) {
 
@@ -441,7 +366,6 @@ window.showHideColorPickers = function (style) {
         const shadow = layer.shadowOffset ?? 3;
         const stroke = layer.strokeWidth || 5;
 
-        // ===== OUTERMOST OUTLINE (ONLY THIS GETS SHADOW) =====
         const outer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         outer.setAttribute('data-outline-for', layer.id);
 
@@ -452,7 +376,7 @@ window.showHideColorPickers = function (style) {
         outer.style.fontFamily = textEl.style.fontFamily;
         outer.textContent = textEl.textContent;
 
-        outer.setAttribute('fill', colors.outline2); // shadow layer now FILLED
+        outer.setAttribute('fill', colors.outline2);
         outer.setAttribute('stroke', colors.outline2);
         outer.setAttribute('stroke-width', stroke * 2);
         outer.setAttribute('text-anchor', 'middle');
@@ -460,7 +384,6 @@ window.showHideColorPickers = function (style) {
         outer.setAttribute('stroke-linejoin', 'round');
         outer.style.pointerEvents = 'none';
 
-        // ✅ SHADOW ONLY HERE
         if (withShadow) {
             outer.style.filter = `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
         } else {
@@ -469,7 +392,6 @@ window.showHideColorPickers = function (style) {
 
         textEl.parentElement.insertBefore(outer, textEl);
 
-        // ===== INNER OUTLINE (NO SHADOW EVER) =====
         textEl.setAttribute('fill', colors.baseColor);
         textEl.setAttribute('stroke', colors.outline1);
         textEl.setAttribute('stroke-width', stroke);
@@ -642,11 +564,11 @@ window.showHideColorPickers = function (style) {
         text.classList.add('modal-preview-text');
         text.setAttribute('x', centerX);
         text.setAttribute('y', centerY);
-        text.setAttribute('font-size', '2000');  // 🔥 LARGER PREVIEW SIZE
-        text.style.fontFamily = layer?.fontFamily || 'Arial Black';
+        text.setAttribute('font-size', '2000');
+        text.style.fontFamily = 'Arial Black';
         text.setAttribute('fill', textColor);
         text.setAttribute('stroke', strokeColor);
-        text.setAttribute('stroke-width', '6');  // 🔥 THICKER STROKE
+        text.setAttribute('stroke-width', '6');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('paint-order', 'stroke fill');
@@ -662,6 +584,114 @@ window.showHideColorPickers = function (style) {
     };
 
     // =================== CONFIRM ADD APPLICATION ===================
+
+    // window.confirmAddApplication = function () {
+
+    //     if (!window.selectedApplicationPart) {
+    //         alert('Please select a part!');
+    //         return;
+    //     }
+
+    //     const view = window.selectedApplicationView;
+    //     const partId = window.selectedApplicationPart;
+
+    //     // ====================================================
+    //     // 🦅 MASCOT TYPE — Direct SVG mascot (no text layer)
+    //     // ====================================================
+    //     if (window.selectedApplicationType === 'mascot') {
+
+    //         closeApplicationModal();
+
+    //         const layerId = `app-${Date.now()}`;
+
+    //         // Mascot layer — type 'direct-mascot' to distinguish from text layers
+    //         const layer = {
+    //             id: layerId,
+    //             type: 'direct-mascot',
+    //             view: view,
+    //             partId: partId,
+    //             // No text fields needed — this is a direct SVG mascot
+    //             mascotSvg: null,
+    //             mascotId: null,
+    //             x: 0,
+    //             y: 0,
+    //             rotation: 0,
+    //             mascotScaleX: 1,
+    //             mascotScaleY: 1,
+    //             mascotOpacity: 100
+    //         };
+
+    //         if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+    //         if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+
+    //         window.applicationsApplied[view][partId].push(layer);
+
+    //         // Set current layer so mascot modal can apply to it
+    //         window.currentApplicationLayer = layerId;
+
+    //         updateApplicationLayersList();
+    //         openApplicationsSidebar();
+
+    //         // Open mascot select modal — when user picks mascot it will call applyDirectMascotToLayer
+    //         window.openMascotSelectModal(layerId);
+
+    //         if (window.saveCustomizations) window.saveCustomizations();
+
+    //         console.log('✅ Direct mascot layer created:', layerId);
+    //         return;
+    //     }
+
+    //     // ====================================================
+    //     // TEXT TYPES — number, teamname, playername
+    //     // ====================================================
+
+    //     const layerId = `app-${Date.now()}`;
+
+    //     let defaultText = '00';
+    //     if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
+    //     if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
+
+    //     const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
+
+    //     const layer = {
+    //         id: layerId,
+    //         type: window.selectedApplicationType,
+    //         view: view,
+    //         partId: partId,
+    //         text: defaultText,
+    //         fontSize: 2000,
+    //         fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
+    //         fill: globalColors[0] || '#FFFFFF',
+    //         stroke: globalColors[1] || '#000000',
+    //         strokeWidth: 5,
+    //         x: 0,
+    //         y: 0,
+    //         rotation: 0,
+    //         outlineStyle: window.currentOutlineStyle,
+    //         outlineColors: { ...window.outlineColors }
+    //     };
+
+    //     if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+    //     if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+
+    //     window.applicationsApplied[view][partId].push(layer);
+
+    //     addApplicationToSvg(layer);
+    //     updateApplicationLayersList();
+    //     closeApplicationModal();
+    //     openApplicationsSidebar();
+    //     selectApplicationLayer(layerId);
+
+    //     if (window.saveCustomizations) window.saveCustomizations();
+
+    //     console.log('✅ Text application added:', layer);
+    // };
+
+// ============================================================
+// SIRF YEH FUNCTION apni applications.js mein replace karo
+// "window.confirmAddApplication" wala poora function
+// ============================================================
+
 window.confirmAddApplication = function () {
 
     if (!window.selectedApplicationPart) {
@@ -669,65 +699,90 @@ window.confirmAddApplication = function () {
         return;
     }
 
-    const layerId = `app-${Date.now()}`;
-    const view = window.selectedApplicationView;
+    const view   = window.selectedApplicationView;
     const partId = window.selectedApplicationPart;
 
-    // 🔥 MASCOT CASE
-   if (window.selectedApplicationType === 'mascot') {
+    // ====================================================
+    // 🦅 MASCOT TYPE
+    // ====================================================
+    if (window.selectedApplicationType === 'mascot') {
 
-    closeApplicationModal();
+        const layerId = 'app-' + Date.now();
 
-    const layerId = `app-${Date.now()}`;
-    window.currentApplicationLayer = layerId;
+        const layer = {
+            id:           layerId,
+            type:         'direct-mascot',
+            view:         view,
+            partId:       partId,
+            mascotSvg:    null,
+            mascotId:     null,
+            x:            0,
+            y:            0,
+            rotation:     0,
+            mascotScaleX: 1,
+            mascotScaleY: 1,
+            mascotOpacity: 100
+        };
 
-    // DEBUG
-    console.log("Checking mascot modal:", window.openMascotSelectModal);
+        if (!window.applicationsApplied[view])        window.applicationsApplied[view] = {};
+        if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+        window.applicationsApplied[view][partId].push(layer);
 
-    if (typeof window.openMascotSelectModal === "function") {
-        window.openMascotSelectModal(layerId);
-    } else {
-        // fallback open
-        const modal = document.getElementById("mascotSelectModal");
-        if (modal) {
-            modal.style.display = "flex";
-        } else {
-            console.error("Mascot modal not found in DOM");
-        }
+        window.currentApplicationLayer = layerId;
+
+        updateApplicationLayersList();
+        openApplicationsSidebar();
+
+        if (window.saveCustomizations) window.saveCustomizations();
+
+        // ✅ Pehle application modal band karo
+        const appModal = document.getElementById('applicationModal');
+        if (appModal) appModal.style.display = 'none';
+
+        // ✅ 250ms baad mascot modal kholo (modal close animation finish ho jay)
+        setTimeout(function () {
+            if (typeof window.openMascotSelectModal === 'function') {
+                window.openMascotSelectModal(layerId);
+            } else {
+                console.error('❌ openMascotSelectModal function not found!');
+                alert('Mascot modal load nahi hua. Page reload karein.');
+            }
+        }, 250);
+
+        return;
     }
 
-    return;
-}
-
-    // ================= NORMAL APPLICATION =================
+    // ====================================================
+    // TEXT TYPES — number, teamname, playername
+    // ====================================================
+    const layerId = 'app-' + Date.now();
 
     let defaultText = '00';
-    if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
+    if (window.selectedApplicationType === 'teamname')   defaultText = 'TEAM';
     if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
 
     const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
 
     const layer = {
-        id: layerId,
-        type: window.selectedApplicationType,
-        view: view,
-        partId: partId,
-        text: defaultText,
-        fontSize: 2000,
-        fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
-        fill: globalColors[0] || '#FFFFFF',
-        stroke: globalColors[1] || '#000000',
-        strokeWidth: 5,
-        x: 0,
-        y: 0,
-        rotation: 0,
+        id:           layerId,
+        type:         window.selectedApplicationType,
+        view:         view,
+        partId:       partId,
+        text:         defaultText,
+        fontSize:     2000,
+        fontFamily:   window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
+        fill:         globalColors[0] || '#FFFFFF',
+        stroke:       globalColors[1] || '#000000',
+        strokeWidth:  5,
+        x:            0,
+        y:            0,
+        rotation:     0,
         outlineStyle: window.currentOutlineStyle,
         outlineColors: { ...window.outlineColors }
     };
 
-    if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+    if (!window.applicationsApplied[view])        window.applicationsApplied[view] = {};
     if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
-
     window.applicationsApplied[view][partId].push(layer);
 
     addApplicationToSvg(layer);
@@ -738,115 +793,319 @@ window.confirmAddApplication = function () {
 
     if (window.saveCustomizations) window.saveCustomizations();
 
-    console.log('✅ Application added:', layer);
+    console.log('✅ Text application added:', layer);
 };
+    // =================== ADD TEXT APPLICATION TO SVG ===================
+
+    window.addApplicationToSvg = function (layer) {
+
+        // Skip direct-mascot type — these are handled by applyDirectMascotToLayer
+        if (layer.type === 'direct-mascot') {
+            if (layer.mascotSvg) {
+                applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+            }
+            return;
+        }
+
+        const mainSvg = window.getMainSvg();
+        if (!mainSvg) {
+            setTimeout(() => addApplicationToSvg(layer), 300);
+            return;
+        }
+
+        // ✅ DUPLICATE CHECK
+        if (mainSvg.querySelector(`#${layer.id}`)) {
+            console.log('⚠ Layer already exists, skipping:', layer.id);
+            return;
+        }
+
+        // CREATE DEFS
+        let defs = mainSvg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            mainSvg.insertBefore(defs, mainSvg.firstChild);
+        }
+
+        const partElement = mainSvg.querySelector(`#${layer.partId}`);
+        if (!partElement) {
+            console.warn('Part not found', layer.partId);
+            return;
+        }
+
+        // CLIP PATH — unique per layer
+        const clipId = `clip-${layer.id}`;
+
+        if (!defs.querySelector(`#${clipId}`)) {
+            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+            clip.setAttribute('id', clipId);
+            const clone = partElement.cloneNode(true);
+            clone.removeAttribute('id');
+            clip.appendChild(clone);
+            defs.appendChild(clip);
+        }
+
+        // INDIVIDUAL GROUP PER LAYER
+        const layerGroupId = `app-group-${layer.id}`;
+        let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+        if (!layerGroup) {
+            layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            layerGroup.setAttribute('id', layerGroupId);
+            layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+            mainSvg.appendChild(layerGroup);
+        }
+
+        // CENTER OF PART
+        const bbox = partElement.getBBox();
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
+
+        // CREATE TEXT
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('id', layer.id);
+        text.setAttribute('x', cx + layer.x);
+        text.setAttribute('y', cy + layer.y);
+        text.setAttribute('font-size', layer.fontSize);
+        text.style.fontFamily = layer.fontFamily;
+        text.setAttribute('fill', layer.fill);
+        text.setAttribute('stroke', layer.stroke);
+        text.setAttribute('stroke-width', layer.strokeWidth);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('paint-order', 'stroke fill');
+        text.setAttribute('stroke-linejoin', 'round');
+        text.style.cursor = 'move';
+        text.textContent = layer.text;
+
+        if (layer.rotation) {
+            text.setAttribute(
+                'transform',
+                `rotate(${layer.rotation} ${cx + layer.x} ${cy + layer.y})`
+            );
+        }
+
+        layerGroup.appendChild(text);
+
+        makeDraggable(text, layer);
+
+        text.addEventListener('click', e => {
+            e.stopPropagation();
+            selectApplicationLayer(layer.id);
+        });
+
+        if (layer.outlineStyle) {
+            window.currentOutlineStyle = layer.outlineStyle;
+            if (layer.outlineColors) {
+                window.outlineColors = { ...layer.outlineColors };
+            }
+            applyOutlineStyleToText(layer.id);
+        }
+
+        console.log('✅ Text application added to SVG:', layer.id);
+    };
 
 
+    // =================== APPLY DIRECT MASCOT TO LAYER (SVG IMAGE) ===================
 
+    window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal) {
 
+        const layerId = forcedLayerId || window.currentApplicationLayer;
+        if (!layerId) return;
 
-window.addApplicationToSvg = function (layer) {
-    const mainSvg = window.getMainSvg();
-    if (!mainSvg) {
-        setTimeout(() => addApplicationToSvg(layer), 300);
-        return;
-    }
+        const layer = findLayerById(layerId);
+        if (!layer || layer.type !== 'direct-mascot') return;
 
-    // ✅ DUPLICATE CHECK
-    if (mainSvg.querySelector(`#${layer.id}`)) {
-        console.log('⚠ Layer already exists, skipping:', layer.id);
-        return;
-    }
+        const mainSvg = window.getMainSvg();
+        if (!mainSvg) return;
 
-    // ================= CREATE DEFS =================
-    let defs = mainSvg.querySelector('defs');
-    if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        mainSvg.insertBefore(defs, mainSvg.firstChild);
-    }
+        let defs = mainSvg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            mainSvg.insertBefore(defs, mainSvg.firstChild);
+        }
 
-    const partElement = mainSvg.querySelector(`#${layer.partId}`);
-    if (!partElement) {
-        console.warn('Part not found', layer.partId);
-        return;
-    }
+        const partElement = mainSvg.querySelector(`#${layer.partId}`);
+        if (!partElement) {
+            console.warn('Part not found', layer.partId);
+            return;
+        }
 
-    // ================= CLIP PATH — unique per LAYER, not per part =================
-    // 🔥 FIX: clip-${layer.id} instead of clip-${layer.partId}
-    // Pehle sab layers ek hi clip share karte the — ab har layer ka apna clip hai
-    const clipId = `clip-${layer.id}`;
+        // ===== CLIP PATH (per layer) =====
+        const clipId = `clip-${layerId}`;
+        if (!defs.querySelector(`#${clipId}`)) {
+            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+            clip.setAttribute('id', clipId);
+            const clone = partElement.cloneNode(true);
+            clone.removeAttribute('id');
+            clip.appendChild(clone);
+            defs.appendChild(clip);
+        }
 
-    if (!defs.querySelector(`#${clipId}`)) {
-        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        clip.setAttribute('id', clipId);
-        const clone = partElement.cloneNode(true);
-        clone.removeAttribute('id');
-        clip.appendChild(clone);
-        defs.appendChild(clip);
-    }
+        // ===== LAYER GROUP =====
+        const layerGroupId = `app-group-${layerId}`;
+        let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+        if (layerGroup) layerGroup.remove(); // remove old if re-applying
 
-    // ================= INDIVIDUAL GROUP PER LAYER =================
-    // 🔥 FIX: har layer ka apna group — shared #application-group nahi
-    // Pehle ek hi group tha aur clip-path baar baar overwrite hoti thi
-    const layerGroupId = `app-group-${layer.id}`;
-    let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
-    if (!layerGroup) {
         layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         layerGroup.setAttribute('id', layerGroupId);
         layerGroup.setAttribute('clip-path', `url(#${clipId})`);
         mainSvg.appendChild(layerGroup);
-    }
 
-    // ================= CENTER OF PART =================
-    const bbox = partElement.getBBox();
-    const cx = bbox.x + bbox.width / 2;
-    const cy = bbox.y + bbox.height / 2;
+        // ===== PART BBOX =====
+        const bbox = partElement.getBBox();
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
 
-    // ================= CREATE TEXT =================
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('id', layer.id);
-    text.setAttribute('x', cx + layer.x);
-    text.setAttribute('y', cy + layer.y);
-    text.setAttribute('font-size', layer.fontSize);
-    text.style.fontFamily = layer.fontFamily;
-    text.setAttribute('fill', layer.fill);
-    text.setAttribute('stroke', layer.stroke);
-    text.setAttribute('stroke-width', layer.strokeWidth);
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('paint-order', 'stroke fill');
-    text.setAttribute('stroke-linejoin', 'round');
-    text.style.cursor = 'move';
-    text.textContent = layer.text;
+        // ===== PARSE MASCOT SVG =====
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+        let mascotSvg = doc.documentElement;
 
-    if (layer.rotation) {
-        text.setAttribute(
-            'transform',
-            `rotate(${layer.rotation} ${cx + layer.x} ${cy + layer.y})`
-        );
-    }
-
-    layerGroup.appendChild(text);
-
-    // ================= DRAG =================
-    makeDraggable(text, layer);
-
-    text.addEventListener('click', e => {
-        e.stopPropagation();
-        selectApplicationLayer(layer.id);
-    });
-
-    // ================= OUTLINE =================
-    if (layer.outlineStyle) {
-        window.currentOutlineStyle = layer.outlineStyle;
-        if (layer.outlineColors) {
-            window.outlineColors = { ...layer.outlineColors };
+        if (!mascotSvg || mascotSvg.nodeName !== 'svg') {
+            alert('Mascot SVG load failed');
+            return;
         }
-        applyOutlineStyleToText(layer.id);
-    }
 
-    console.log('✅ Application added with individual clip group:', layer.id);
-};
+        mascotSvg = mascotSvg.cloneNode(true);
+
+        // ✅ Background remove
+        const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100').split(' ').map(Number);
+        mascotSvg.querySelectorAll('rect, polygon, circle, ellipse').forEach(el => {
+            const x = parseFloat(el.getAttribute('x') || 0);
+            const y = parseFloat(el.getAttribute('y') || 0);
+            const w = parseFloat(el.getAttribute('width') || 0);
+            const h = parseFloat(el.getAttribute('height') || 0);
+            const coversAll = x <= 1 && y <= 1 && w >= vb[2] * 0.7 && h >= vb[3] * 0.7;
+            if (coversAll) el.remove();
+        });
+
+        mascotSvg.querySelectorAll('*').forEach(el => {
+            const style = el.getAttribute('style') || '';
+            const fill = el.getAttribute('fill') || '';
+            const isWhite = fill === '#fff' || fill === '#ffffff' || fill === 'white' ||
+                style.includes('fill:#fff') || style.includes('fill: #fff') ||
+                style.includes('fill:white') || style.includes('fill:#ffffff');
+            const tag = el.tagName.toLowerCase();
+            if (isWhite && (tag === 'rect' || tag === 'polygon')) el.remove();
+        });
+
+        mascotSvg.style.background = 'transparent';
+
+        // Ensure viewBox
+        if (!mascotSvg.getAttribute('viewBox')) {
+            mascotSvg.setAttribute('viewBox', '0 0 100 100');
+        }
+
+        // Size mascot to fit part (maintain aspect ratio, fit inside bbox)
+        const mascotSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
+        mascotSvg.setAttribute('width', mascotSize);
+        mascotSvg.setAttribute('height', mascotSize);
+        mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+        // Position: center on part center
+        const mascotX = cx - mascotSize / 2 + (layer.x || 0);
+        const mascotY = cy - mascotSize / 2 + (layer.y || 0);
+        mascotSvg.setAttribute('x', mascotX);
+        mascotSvg.setAttribute('y', mascotY);
+        mascotSvg.setAttribute('id', layerId);
+        mascotSvg.style.cursor = 'move';
+
+        // Opacity
+        if (layer.mascotOpacity !== undefined) {
+            mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
+        }
+
+        // Rotation
+        if (layer.rotation) {
+            mascotSvg.setAttribute('transform', `rotate(${layer.rotation} ${cx} ${cy})`);
+        }
+
+        layerGroup.appendChild(mascotSvg);
+
+        // Store data on layer
+        layer.mascotSvg = svgContent;
+        layer.mascotId = layerId;
+        layer._cx = cx;
+        layer._cy = cy;
+        layer._mascotSize = mascotSize;
+
+        // Make draggable
+        makeMascotDraggable(mascotSvg, layer);
+
+        mascotSvg.addEventListener('click', e => {
+            e.stopPropagation();
+            selectApplicationLayer(layerId);
+        });
+
+        // Auto-select this layer and show mascot settings
+        window.currentApplicationLayer = layerId;
+        updateApplicationLayersList();
+        selectApplicationLayer(layerId);
+
+        if (window.saveCustomizations) window.saveCustomizations();
+
+        console.log('✅ Direct mascot applied to SVG:', layerId);
+    };
+
+
+    // =================== MAKE MASCOT DRAGGABLE ===================
+
+    window.makeMascotDraggable = function (element, layer) {
+        let isDragging = false;
+        let startX, startY, initOffX, initOffY;
+
+        element.addEventListener('mousedown', function (e) {
+            if (e.button !== 0) return;
+            isDragging = true;
+            element.style.cursor = 'grabbing';
+
+            const svg = element.ownerSVGElement || element.closest('svg');
+            const pt = svg.createSVGPoint();
+            pt.x = e.clientX; pt.y = e.clientY;
+            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+            startX = svgP.x;
+            startY = svgP.y;
+            initOffX = layer.x || 0;
+            initOffY = layer.y || 0;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+            const svg = element.ownerSVGElement || element.closest('svg');
+            const pt = svg.createSVGPoint();
+            pt.x = e.clientX; pt.y = e.clientY;
+            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+            const dx = svgP.x - startX;
+            const dy = svgP.y - startY;
+
+            layer.x = Math.round(initOffX + dx);
+            layer.y = Math.round(initOffY + dy);
+
+            const cx = layer._cx || 0;
+            const cy = layer._cy || 0;
+            const sz = layer._mascotSize || 100;
+
+            element.setAttribute('x', cx - sz / 2 + layer.x);
+            element.setAttribute('y', cy - sz / 2 + layer.y);
+        });
+
+        document.addEventListener('mouseup', function () {
+            if (!isDragging) return;
+            isDragging = false;
+            element.style.cursor = 'move';
+
+            if (window.currentApplicationLayer === layer.id) {
+                const xInput = document.getElementById('mascotDirectPosX');
+                const yInput = document.getElementById('mascotDirectPosY');
+                if (xInput) { xInput.value = layer.x; document.getElementById('mascotDirectPosXValue').textContent = layer.x; }
+                if (yInput) { yInput.value = layer.y; document.getElementById('mascotDirectPosYValue').textContent = layer.y; }
+            }
+
+            if (window.saveCustomizations) window.saveCustomizations();
+        });
+    };
+
 
     window.makeDraggable = function (element, layer) {
         let isDragging = false;
@@ -888,11 +1147,9 @@ window.addApplicationToSvg = function (layer) {
             const newX = Math.round(initialX + dx);
             const newY = Math.round(initialY + dy);
 
-
             element.setAttribute('x', newX);
             element.setAttribute('y', newY);
 
-            // Update any outline elements
             const outlines = element.parentElement.querySelectorAll(`[data-outline-for="${layer.id}"]`);
             outlines.forEach(outline => {
                 outline.setAttribute('x', newX);
@@ -925,7 +1182,6 @@ window.addApplicationToSvg = function (layer) {
                 layer.x = Math.round(currentX - centerX);
                 layer.y = Math.round(currentY - centerY);
 
-
                 if (window.currentApplicationLayer === layer.id) {
                     updateApplicationControls(layer);
                 }
@@ -952,76 +1208,51 @@ window.addApplicationToSvg = function (layer) {
         let layerNum = 1;
 
         Object.entries(window.applicationsApplied).forEach(([view, parts]) => {
-
             Object.entries(parts).forEach(([partId, layers]) => {
-
                 layers.forEach(layer => {
 
-                    const viewShort = view.charAt(0).toUpperCase(); // F B L R
-
+                    const viewShort = view.charAt(0).toUpperCase();
                     const isActive = window.currentApplicationLayer === layer.id;
+
+                    // Label for layer list
+                    const labelText = layer.type === 'direct-mascot'
+                        ? (layer.mascotTitle || (layer.mascotSvg ? 'Mascot' : 'Mascot (pending)'))
+                        : (layer.text || 'Empty');
+
+                    const typeLabel = layer.type === 'direct-mascot' ? 'mascot' : layer.type;
 
                     const item = document.createElement('div');
                     item.className = 'application-layer-item';
-
-                    // ✅ ACTIVE = BLACK
                     item.style.background = isActive ? '#000' : '#fff';
                     item.style.color = isActive ? '#fff' : '#000';
 
                     item.innerHTML = `
 <div style="display:flex;align-items:center;gap:8px;width:100%">
     <div class="layer-number">#${layerNum}</div>
-
     <div style="flex:1">
         <div style="font-weight:700">
-            ${layer.text || 'Empty'}
-            <span style="
-                background:#333;
-                color:#fff;
-                padding:2px 6px;
-                border-radius:4px;
-                font-size:10px;
-                margin-left:6px;">
-                ${viewShort}
-            </span>
+            ${labelText}
+            <span style="background:#333;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:6px;">${viewShort}</span>
         </div>
-
-        <div style="font-size:11px;opacity:.7">
-            ${layer.type} • ${partId}
-        </div>
+        <div style="font-size:11px;opacity:.7">${typeLabel} • ${partId}</div>
     </div>
-
-    <!-- DUPLICATE -->
     <div onclick="duplicateApplicationLayer('${layer.id}',event)"
         style="cursor:pointer;font-size:14px;padding:4px 6px;border-radius:4px;background:#eee;color:#000">
         ⧉ ${viewShort}
     </div>
-
-    <!-- REMOVE -->
     <div onclick="removeApplicationLayer('${layer.id}',event)"
-        style="cursor:pointer;padding:0 6px;font-weight:700">
-        ×
-    </div>
-</div>
-`;
+        style="cursor:pointer;padding:0 6px;font-weight:700">×</div>
+</div>`;
 
-                    item.onclick = function () {
-                        selectApplicationLayer(layer.id);
-                    };
-
+                    item.onclick = function () { selectApplicationLayer(layer.id); };
                     container.appendChild(item);
                     layerNum++;
                 });
-
             });
-
         });
-
     };
 
 
-
-    //=======Duplicate layer ============= //
     window.duplicateApplicationLayer = function (layerId, event) {
 
         if (event) event.stopPropagation();
@@ -1033,16 +1264,12 @@ window.addApplicationToSvg = function (layer) {
         const partId = original.partId;
 
         const copy = JSON.parse(JSON.stringify(original));
-
-        copy.id = `app-${Date.now()}`;     // new ID
-        copy.x += 20;                     // little offset
+        copy.id = `app-${Date.now()}`;
+        copy.x += 20;
         copy.y += 20;
 
-        if (!window.applicationsApplied[view])
-            window.applicationsApplied[view] = {};
-
-        if (!window.applicationsApplied[view][partId])
-            window.applicationsApplied[view][partId] = [];
+        if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+        if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
 
         window.applicationsApplied[view][partId].push(copy);
 
@@ -1060,47 +1287,122 @@ window.addApplicationToSvg = function (layer) {
     window.selectApplicationLayer = function (layerId) {
         window.currentApplicationLayer = layerId;
 
-        let foundLayer = null;
-        Object.values(window.applicationsApplied).forEach(viewData => {
-            Object.values(viewData).forEach(layers => {
-                layers.forEach(layer => {
-                    if (layer.id === layerId) foundLayer = layer;
-                });
-            });
-        });
-
+        const foundLayer = findLayerById(layerId);
         if (!foundLayer) {
             console.warn('Layer not found:', layerId);
             return;
         }
 
-        // ================= AUTO VIEW SWITCH =================
+        // AUTO VIEW SWITCH
         if (foundLayer.view && window.currentView !== foundLayer.view) {
-
-            console.log('🔁 Switching view to:', foundLayer.view);
-
-            if (window.switchView) {
-                window.switchView(foundLayer.view);
-            }
-
-            setTimeout(() => {
-                window.initializeApplicationsOnLoad();
-            }, 400);
+            if (window.switchView) window.switchView(foundLayer.view);
+            setTimeout(() => window.initializeApplicationsOnLoad(), 400);
         }
 
+        updateApplicationLayersList();
 
-        // Load the layer's outline style
-        if (foundLayer.outlineStyle) {
-            window.currentOutlineStyle = foundLayer.outlineStyle;
-            if (foundLayer.outlineColors) {
-                window.outlineColors = { ...foundLayer.outlineColors };
-            }
+        // Show controls panel
+        document.getElementById('applicationLayerControls').style.display = 'block';
 
-            // Update UI
+        // ================================================
+        // 🦅 DIRECT MASCOT LAYER — show only mascot panel
+        // ================================================
+        if (foundLayer.type === 'direct-mascot') {
+            showDirectMascotControls(foundLayer);
+            return;
+        }
+
+        // ================================================
+        // TEXT LAYER — show text controls
+        // ================================================
+        showTextLayerControls(foundLayer);
+    };
+
+
+    // =================== SHOW DIRECT MASCOT CONTROLS ===================
+
+    function showDirectMascotControls(layer) {
+
+        // Hide ALL children of applicationLayerControls except directMascotControls
+        const appControls = document.getElementById('applicationLayerControls');
+        if (appControls) {
+            Array.from(appControls.children).forEach(child => {
+                if (child.id !== 'directMascotControls') {
+                    child.style.display = 'none';
+                }
+            });
+        }
+
+        // Show direct mascot controls section
+        const directMascotControls = document.getElementById('directMascotControls');
+        if (directMascotControls) directMascotControls.style.display = 'block';
+
+        // Populate preview
+        const preview = document.getElementById('directMascotPreview');
+        if (preview && layer.mascotSvg) {
+            preview.innerHTML = layer.mascotSvg;
+            const svg = preview.querySelector('svg');
+            if (svg) { svg.style.maxWidth = '80px'; svg.style.maxHeight = '80px'; }
+        } else if (preview) {
+            preview.innerHTML = '<span style="color:#aaa;font-size:12px;">No mascot selected</span>';
+        }
+
+        // Sync sliders
+        const scaleSlider = document.getElementById('directMascotScale');
+        const scaleVal = document.getElementById('directMascotScaleValue');
+        const opSlider = document.getElementById('directMascotOpacity');
+        const opVal = document.getElementById('directMascotOpacityValue');
+        const rotSlider = document.getElementById('directMascotRotation');
+        const rotVal = document.getElementById('directMascotRotationValue');
+        const posXSlider = document.getElementById('mascotDirectPosX');
+        const posXVal = document.getElementById('mascotDirectPosXValue');
+        const posYSlider = document.getElementById('mascotDirectPosY');
+        const posYVal = document.getElementById('mascotDirectPosYValue');
+
+        if (scaleSlider) { scaleSlider.value = Math.round((layer.mascotScaleX || 1) * 100); }
+        if (scaleVal) { scaleVal.textContent = Math.round((layer.mascotScaleX || 1) * 100); }
+        if (opSlider) { opSlider.value = layer.mascotOpacity ?? 100; }
+        if (opVal) { opVal.textContent = layer.mascotOpacity ?? 100; }
+        if (rotSlider) { rotSlider.value = layer.rotation || 0; }
+        if (rotVal) { rotVal.textContent = layer.rotation || 0; }
+        if (posXSlider) { posXSlider.value = layer.x || 0; }
+        if (posXVal) { posXVal.textContent = layer.x || 0; }
+        if (posYSlider) { posYSlider.value = layer.y || 0; }
+        if (posYVal) { posYVal.textContent = layer.y || 0; }
+
+        console.log('✅ Direct mascot controls shown for:', layer.id);
+    }
+
+
+    // =================== SHOW TEXT LAYER CONTROLS ===================
+
+    function showTextLayerControls(layer) {
+
+        // Show ALL children of applicationLayerControls except directMascotControls
+        const appControls = document.getElementById('applicationLayerControls');
+        if (appControls) {
+            Array.from(appControls.children).forEach(child => {
+                if (child.id !== 'directMascotControls') {
+                    child.style.display = '';
+                }
+            });
+        }
+
+        // Hide direct mascot section
+        const directMascotControls = document.getElementById('directMascotControls');
+        if (directMascotControls) directMascotControls.style.display = 'none';
+
+        // Show text controls
+        const textControls = document.getElementById('textLayerControls');
+        if (textControls) textControls.style.display = 'block';
+
+        // Load outline style
+        if (layer.outlineStyle) {
+            window.currentOutlineStyle = layer.outlineStyle;
+            if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
+
             const displaySection = document.getElementById('currentOutlineDisplay');
-            if (displaySection) {
-                displaySection.style.display = 'block';
-            }
+            if (displaySection) displaySection.style.display = 'block';
 
             updateOutlineStylePreview();
             showHideColorPickers(window.currentOutlineStyle);
@@ -1120,68 +1422,141 @@ window.addApplicationToSvg = function (layer) {
             }
         }
 
-        updateApplicationLayersList();
-        updateApplicationControls(foundLayer);
+        updateApplicationControls(layer);
 
-        document.getElementById('applicationLayerControls').style.display = 'block';
-
-        const textEl = document.getElementById(layerId);
+        // Flash highlight
+        const textEl = document.getElementById(layer.id);
         if (textEl) {
             textEl.style.filter = 'drop-shadow(0 0 8px rgba(0,123,255,0.8))';
             setTimeout(() => {
-                if (foundLayer.outlineStyle && foundLayer.outlineStyle.includes('shadow')) {
-                    // Restore original shadow
-                    applyOutlineStyleToText(layerId);
+                if (layer.outlineStyle && layer.outlineStyle.includes('shadow')) {
+                    applyOutlineStyleToText(layer.id);
                 } else {
                     textEl.style.filter = '';
                 }
             }, 1000);
         }
 
-
-        // ================= PATTERN UI SYNC =================
-        if (foundLayer.hasPattern) {
-
+        // Pattern UI sync
+        if (layer.hasPattern) {
             document.getElementById('textPatternColorControls').style.display = 'block';
             document.getElementById('patternPlaceholder').style.display = 'none';
-
-            if (foundLayer.patternSvg) {
-                renderTextPatternPalette(foundLayer.patternSvg);
-            }
-
+            if (layer.patternSvg) renderTextPatternPalette(layer.patternSvg);
         } else {
-
             document.getElementById('textPatternColorControls').style.display = 'none';
             document.getElementById('patternPlaceholder').style.display = 'block';
         }
 
-
-
-        // ================= MASCOT UI SYNC =================
-        if (foundLayer.hasMascot) {
-
+        // Mascot UI sync (text-fill mascot)
+        if (layer.hasMascot) {
             document.getElementById('textMascotColorControls').style.display = 'block';
             document.getElementById('mascotPlaceholder').style.display = 'none';
-
         } else {
-
             document.getElementById('textMascotColorControls').style.display = 'none';
             document.getElementById('mascotPlaceholder').style.display = 'block';
         }
 
+        // Switch to colors tab by default
+        switchTextCustomizationTab('colors');
+    }
 
 
+    // =================== DIRECT MASCOT CONTROLS ===================
 
+    window.updateDirectMascotScale = function (value) {
+        if (!window.currentApplicationLayer) return;
+        const layer = findLayerById(window.currentApplicationLayer);
+        if (!layer || layer.type !== 'direct-mascot') return;
+
+        layer.mascotScaleX = value / 100;
+        layer.mascotScaleY = value / 100;
+
+        // Re-apply mascot with new scale
+        if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+
+        document.getElementById('directMascotScaleValue').textContent = value;
+        if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // =================== UPDATE CONTROLS ===================
+    window.updateDirectMascotOpacity = function (value) {
+        if (!window.currentApplicationLayer) return;
+        const layer = findLayerById(window.currentApplicationLayer);
+        if (!layer || layer.type !== 'direct-mascot') return;
+
+        layer.mascotOpacity = parseInt(value);
+
+        const el = document.getElementById(layer.id);
+        if (el) el.setAttribute('opacity', value / 100);
+
+        document.getElementById('directMascotOpacityValue').textContent = value;
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
+
+    window.updateDirectMascotRotation = function (value) {
+        if (!window.currentApplicationLayer) return;
+        const layer = findLayerById(window.currentApplicationLayer);
+        if (!layer || layer.type !== 'direct-mascot') return;
+
+        layer.rotation = parseInt(value);
+
+        const el = document.getElementById(layer.id);
+        if (el) {
+            const sz = layer._mascotSize || 100;
+            const cx = layer._cx || 0;
+            const cy = layer._cy || 0;
+
+            // ✅ Mascot ka apna center calculate karo (position + size ka center)
+            const mascotCenterX = cx + (layer.x || 0);
+            const mascotCenterY = cy + (layer.y || 0);
+
+            el.setAttribute('transform', `rotate(${value} ${mascotCenterX} ${mascotCenterY})`);
+        }
+
+        document.getElementById('directMascotRotationValue').textContent = value;
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
+
+    window.updateDirectMascotPosition = function (axis, value) {
+        if (!window.currentApplicationLayer) return;
+        const layer = findLayerById(window.currentApplicationLayer);
+        if (!layer || layer.type !== 'direct-mascot') return;
+
+        if (axis === 'x') {
+            layer.x = parseInt(value);
+            document.getElementById('mascotDirectPosXValue').textContent = value;
+        } else {
+            layer.y = parseInt(value);
+            document.getElementById('mascotDirectPosYValue').textContent = value;
+        }
+
+        const el = document.getElementById(layer.id);
+        if (el) {
+            const cx = layer._cx || 0;
+            const cy = layer._cy || 0;
+            const sz = layer._mascotSize || 100;
+            el.setAttribute('x', cx - sz / 2 + layer.x);
+            el.setAttribute('y', cy - sz / 2 + layer.y);
+        }
+
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
+
+    // Change mascot (re-open mascot select modal)
+    window.changeDirectMascot = function () {
+        if (!window.currentApplicationLayer) return;
+        window.openMascotSelectModal(window.currentApplicationLayer);
+    };
+
+
+    // =================== UPDATE CONTROLS (TEXT) ===================
 
     window.updateApplicationControls = function (layer) {
+        if (layer.type === 'direct-mascot') return; // handled separately
+
         document.getElementById('applicationText').value = layer.text || '';
         document.getElementById('fontSize').value = layer.fontSize || 2000;
         document.getElementById('fontSizeValue').textContent = layer.fontSize || 2000;
 
-        // Update outline width slider
         const outlineSlider = document.getElementById('outlineWidthSlider');
         if (outlineSlider) {
             outlineSlider.value = layer.strokeWidth || 5;
@@ -1196,26 +1571,19 @@ window.addApplicationToSvg = function (layer) {
         document.getElementById('rotationValue').textContent = layer.rotation || 0;
     };
 
-    // =================== REAL-TIME UPDATES ===================
+    // =================== REAL-TIME UPDATES (TEXT) ===================
 
     window.updateApplicationText = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
         layer.text = value;
 
         const textEl = document.getElementById(layer.id);
-        if (textEl) {
-            textEl.textContent = value;
-        }
+        if (textEl) textEl.textContent = value;
 
-        // Update outline elements too
-        const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        outlines.forEach(outline => {
-            outline.textContent = value;
-        });
+        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.textContent = value);
 
         if (window.saveCustomizations) window.saveCustomizations();
         updateApplicationLayersList();
@@ -1223,21 +1591,14 @@ window.addApplicationToSvg = function (layer) {
 
     window.updateFontSize = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
         layer.fontSize = parseInt(value);
-
         const textEl = document.getElementById(layer.id);
-        if (textEl) {
-            textEl.setAttribute('font-size', value);
-        }
+        if (textEl) textEl.setAttribute('font-size', value);
 
-        const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        outlines.forEach(outline => {
-            outline.setAttribute('font-size', value);
-        });
+        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.setAttribute('font-size', value));
 
         document.getElementById('fontSizeValue').textContent = value;
         if (window.saveCustomizations) window.saveCustomizations();
@@ -1245,28 +1606,20 @@ window.addApplicationToSvg = function (layer) {
 
     window.updateFontFamily = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
         layer.fontFamily = value;
-
         const textEl = document.getElementById(layer.id);
-        if (textEl) {
-            textEl.style.fontFamily = value;
-        }
+        if (textEl) textEl.style.fontFamily = value;
 
-        const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        outlines.forEach(outline => {
-            outline.style.fontFamily = value;
-        });
+        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.style.fontFamily = value);
 
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
     window.updatePosition = function (x, y) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
@@ -1277,15 +1630,8 @@ window.addApplicationToSvg = function (layer) {
         const centerX = bbox.x + (bbox.width / 2);
         const centerY = bbox.y + (bbox.height / 2);
 
-        if (x !== null) {
-            layer.x = parseInt(x);
-            document.getElementById('posXValue').textContent = x;
-        }
-
-        if (y !== null) {
-            layer.y = parseInt(y);
-            document.getElementById('posYValue').textContent = y;
-        }
+        if (x !== null) { layer.x = parseInt(x); document.getElementById('posXValue').textContent = x; }
+        if (y !== null) { layer.y = parseInt(y); document.getElementById('posYValue').textContent = y; }
 
         const textEl = document.getElementById(layer.id);
         if (textEl) {
@@ -1295,16 +1641,15 @@ window.addApplicationToSvg = function (layer) {
             textEl.setAttribute('x', newX);
             textEl.setAttribute('y', newY);
 
-            const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-            outlines.forEach(outline => {
-                outline.setAttribute('x', newX);
-                outline.setAttribute('y', newY);
+            document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
+                o.setAttribute('x', newX);
+                o.setAttribute('y', newY);
             });
 
             if (layer.rotation) {
                 textEl.setAttribute('transform', `rotate(${layer.rotation} ${newX} ${newY})`);
-                outlines.forEach(outline => {
-                    outline.setAttribute('transform', `rotate(${layer.rotation} ${newX} ${newY})`);
+                document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
+                    o.setAttribute('transform', `rotate(${layer.rotation} ${newX} ${newY})`);
                 });
             }
         }
@@ -1314,7 +1659,6 @@ window.addApplicationToSvg = function (layer) {
 
     window.updateRotation = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
@@ -1326,9 +1670,8 @@ window.addApplicationToSvg = function (layer) {
             const y = textEl.getAttribute('y');
             textEl.setAttribute('transform', `rotate(${value} ${x} ${y})`);
 
-            const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-            outlines.forEach(outline => {
-                outline.setAttribute('transform', `rotate(${value} ${x} ${y})`);
+            document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
+                o.setAttribute('transform', `rotate(${value} ${x} ${y})`);
             });
         }
 
@@ -1336,12 +1679,8 @@ window.addApplicationToSvg = function (layer) {
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // =================== UPDATE OUTLINE WIDTH ===================
-
     window.updateOutlineStroke = function (type, value) {
-
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
@@ -1350,405 +1689,210 @@ window.addApplicationToSvg = function (layer) {
 
         const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
 
-        if (type === 'outline1') {
-            textEl.setAttribute('stroke-width', value);
-            layer.strokeWidth = parseInt(value);
-        }
-
-        if (type === 'outline2' && outlines.length > 0) {
-            outlines[0].setAttribute('stroke-width', value);
-        }
+        if (type === 'outline1') { textEl.setAttribute('stroke-width', value); layer.strokeWidth = parseInt(value); }
+        if (type === 'outline2' && outlines.length > 0) { outlines[0].setAttribute('stroke-width', value); }
 
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-
     window.updateShadowOffset = function (val) {
-
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
         layer.shadowOffset = parseInt(val);
-
         applyOutlineStyleToText(layer.id);
-
         if (window.saveCustomizations) window.saveCustomizations();
     };
-
 
     // =================== FONT LOADING ===================
 
     function loadBackendFonts() {
-
         if (!window.backendFonts) return;
-
         window.backendFonts.forEach(font => {
-
             if (!document.getElementById('font-style-' + font.id)) {
-
                 const style = document.createElement('style');
                 style.id = 'font-style-' + font.id;
-
-                style.innerHTML = `
-@font-face {
-font-family: 'font_${font.id}';
-src: url('${font.file_url}') format('truetype');
-font-display: swap;
-}
-`;
-
+                style.innerHTML = `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); font-display: swap; }`;
                 document.head.appendChild(style);
             }
-
         });
     }
-
-
-
 
     window.openFontModal = function () {
         document.getElementById('fontModal').style.display = 'flex';
         renderFontGrid();
-    }
+    };
 
     window.closeFontModal = function () {
         document.getElementById('fontModal').style.display = 'none';
-    }
+    };
 
     function renderFontGrid() {
-
         const grid = document.getElementById('fontGrid');
         grid.innerHTML = '';
-
-        const previewText =
-            document.getElementById('applicationText')?.value || '85';
-
+        const previewText = document.getElementById('applicationText')?.value || '85';
         const currentLayer = findLayerById(window.currentApplicationLayer);
 
         window.backendFonts.forEach(f => {
-
             const div = document.createElement('div');
             div.style.cssText = 'border:2px solid #ddd;padding:20px;text-align:center;border-radius:8px;cursor:pointer;background:#fff';
+            div.innerHTML = `<div style="font-size:42px;font-family:font_${f.id}">${previewText}</div><p style="margin-top:10px;font-weight:600">${f.name}</p>`;
 
-            div.innerHTML = `
-<div style="font-size:42px;font-family:font_${f.id}">${previewText}</div>
-<p style="margin-top:10px;font-weight:600">${f.name}</p>
-`;
-
-            // ✅ SELECTED FONT STYLE
             if (currentLayer?.fontFamily === `font_${f.id}`) {
                 div.style.border = '2px solid #000';
                 div.style.background = '#8d8d8d';
             }
 
-            // ✅ HOVER EFFECT
-            div.onmouseenter = () => {
-                if (currentLayer?.fontFamily !== `font_${f.id}`)
-                    div.style.background = '#f2f2f2';
-            };
-
-            div.onmouseleave = () => {
-                if (currentLayer?.fontFamily !== `font_${f.id}`)
-                    div.style.background = '#fff';
-            };
-
-            div.onclick = () => {
-                updateFontFamily(`font_${f.id}`);
-                closeFontModal();
-            };
-
+            div.onmouseenter = () => { if (currentLayer?.fontFamily !== `font_${f.id}`) div.style.background = '#f2f2f2'; };
+            div.onmouseleave = () => { if (currentLayer?.fontFamily !== `font_${f.id}`) div.style.background = '#fff'; };
+            div.onclick = () => { updateFontFamily(`font_${f.id}`); closeFontModal(); };
             grid.appendChild(div);
-
         });
     }
 
+    // =================== PATTERN INTEGRATION ===================
 
-    // =================== PATTERN/MASCOT INTEGRATION ===================
-
-    // Sync pattern colors to tab when pattern is applied
     window.syncPatternColorsToTab = function () {
         const container = document.getElementById('patternColorPaletteInTab');
         if (!container) return;
-
-        // Get pattern color palette HTML from main pattern section
         const mainPalette = document.getElementById('patternColorPalette');
         if (mainPalette && mainPalette.innerHTML) {
             container.innerHTML = mainPalette.innerHTML;
-
-            // Show pattern controls, hide placeholder
             document.getElementById('patternColorControls').style.display = 'block';
             document.getElementById('patternPlaceholder').style.display = 'none';
         }
     };
 
-
-
-
-
-
-
-
-
-
-
-
     window.updateTextPatternColor = function (color) {
-
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer?.patternId) return;
-
         const pattern = window.getMainSvg().querySelector(`#${layer.patternId}`);
         if (!pattern) return;
-
         pattern.querySelectorAll('*').forEach(el => {
-            if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
-                el.setAttribute('fill', color);
-            }
+            if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') el.setAttribute('fill', color);
         });
-
-        console.log("🎨 Pattern recolored");
     };
 
-
-    // Apply pattern to text (wrapper for existing function)
     window.applyPatternToText = function (svgContent, forcedLayerId = null) {
-
         const layerId = forcedLayerId || window.currentApplicationLayer;
         if (!layerId) return;
 
         const layer = findLayerById(layerId);
-
         if (!layer) return;
 
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
 
         const mainSvg = window.getMainSvg();
-
         let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
+        if (!defs) { defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs'); mainSvg.insertBefore(defs, mainSvg.firstChild); }
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgContent, 'image/svg+xml');
         let patternSvg = doc.documentElement;
-
-        if (!patternSvg || patternSvg.nodeName !== 'svg') {
-            alert("Pattern SVG invalid");
-            return;
-        }
-
+        if (!patternSvg || patternSvg.nodeName !== 'svg') { alert("Pattern SVG invalid"); return; }
         patternSvg = patternSvg.cloneNode(true);
-
-        // ✅ ENSURE viewBox
-        if (!patternSvg.getAttribute('viewBox')) {
-            patternSvg.setAttribute('viewBox', '0 0 100 100');
-        }
-
-        // ✅ FORCE SIZE
+        if (!patternSvg.getAttribute('viewBox')) patternSvg.setAttribute('viewBox', '0 0 100 100');
         patternSvg.setAttribute('width', '100');
         patternSvg.setAttribute('height', '100');
 
-        // ===== CREATE PATTERN =====
         const patternId = `text-pattern-${layer.id}`;
-
         const oldPattern = defs.querySelector(`#${patternId}`);
         if (oldPattern) oldPattern.remove();
 
         const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
         pattern.setAttribute('id', patternId);
         pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-
         const bbox = textEl.getBBox();
-
         pattern.setAttribute('x', bbox.x);
         pattern.setAttribute('y', bbox.y);
         pattern.setAttribute('width', bbox.width);
         pattern.setAttribute('height', bbox.height);
-
         patternSvg.setAttribute('width', bbox.width);
         patternSvg.setAttribute('height', bbox.height);
         patternSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-
-
-
-
-
         pattern.appendChild(patternSvg);
         defs.appendChild(pattern);
 
-        // ✅ APPLY TO TEXT
         textEl.setAttribute('fill', `url(#${patternId})`);
         textEl.setAttribute('fill-opacity', '1');
-
         layer.patternId = patternId;
         layer.patternSvg = svgContent;
         layer.hasPattern = true;
         renderTextPatternPalette(svgContent);
 
-
         document.getElementById('textPatternColorControls').style.display = 'block';
         document.getElementById('patternPlaceholder').style.display = 'none';
         switchTextCustomizationTab('pattern');
 
-        console.log("✅ Pattern Applied Successfully");
-
-
-        // ---------- SHOW THUMBNAIL PREVIEW ----------
         const preview = document.getElementById('textPatternPreview');
-
         if (preview) {
             preview.innerHTML = svgContent;
-
             const svg = preview.querySelector('svg');
-            if (svg) {
-                svg.style.width = '70px';
-                svg.style.height = '70px';
-                svg.style.display = 'block';
-            }
+            if (svg) { svg.style.width = '70px'; svg.style.height = '70px'; svg.style.display = 'block'; }
         }
-
-
     };
-    function extractPatternColors(svg) {
 
+    function extractPatternColors(svg) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(svg, 'image/svg+xml');
-
         const colors = new Set();
-
         doc.querySelectorAll('[fill]').forEach(el => {
             const f = el.getAttribute('fill');
             if (f && f !== 'none') colors.add(f.toLowerCase());
         });
-
         return [...colors];
     }
 
     function renderTextPatternPalette(svg) {
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
-
         if (!layer.replacements) layer.replacements = {};
 
         const colors = extractPatternColors(svg);
         const container = document.getElementById('patternColorPaletteInTab');
         if (!container) return;
-
         container.innerHTML = '';
 
         const palette = window.backendColors.map(c => c.code);
 
         colors.forEach(patternColor => {
-
             const row = document.createElement('div');
             row.style = 'display:flex;align-items:center;gap:12px;margin-bottom:12px';
-
-            row.innerHTML = `
-<div style="width:30px;height:30px;border-radius:6px;background:${patternColor};border:2px solid #ccc"></div>
-<span style="font-weight:700;">→</span>
-<div class="text-color-row" style="display:flex;gap:6px"></div>
-`;
+            row.innerHTML = `<div style="width:30px;height:30px;border-radius:6px;background:${patternColor};border:2px solid #ccc"></div><span style="font-weight:700;">→</span><div class="text-color-row" style="display:flex;gap:6px"></div>`;
 
             const choices = row.querySelector('.text-color-row');
-
             palette.forEach(userColor => {
-
                 const box = document.createElement('div');
-                box.style = `
-width:26px;
-height:26px;
-border-radius:6px;
-background:${userColor};
-cursor:pointer;
-border:2px solid #ddd;
-`;
-
-                if (layer.replacements[patternColor?.toLowerCase()] === userColor) {
-                    box.style.outline = '2px solid #000';
-                }
-
+                box.style = `width:26px;height:26px;border-radius:6px;background:${userColor};cursor:pointer;border:2px solid #ddd;`;
+                if (layer.replacements[patternColor?.toLowerCase()] === userColor) box.style.outline = '2px solid #000';
                 box.onclick = () => {
-
                     choices.querySelectorAll('div').forEach(b => b.style.outline = 'none');
-
                     box.style.outline = '2px solid #000';
-
                     layer.replacements[patternColor.toLowerCase()] = userColor;
-
                     rebuildTextPattern(layer);
-
                 };
-
                 choices.appendChild(box);
-
             });
 
             row.appendChild(choices);
             container.appendChild(row);
-
         });
-
     }
 
-
     window.replacePatternColor = function (oldColor, newColor) {
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer?.patternId) return;
-
         const pattern = getMainSvg().querySelector(`#${layer.patternId}`);
         if (!pattern) return;
-
         pattern.querySelectorAll('[fill]').forEach(el => {
-            if (el.getAttribute('fill')?.toLowerCase() === oldColor) {
-                el.setAttribute('fill', newColor);
-            }
+            if (el.getAttribute('fill')?.toLowerCase() === oldColor) el.setAttribute('fill', newColor);
         });
-
     };
 
-    // function rebuildTextPattern(layer){
-
-    // const pattern = getMainSvg().querySelector(`#${layer.patternId}`);
-    // if(!pattern) return;
-
-    // const parser=new DOMParser();
-    // const doc=parser.parseFromString(layer.patternSvg,'image/svg+xml');
-    // const svg=doc.querySelector('svg');
-
-    // Object.entries(layer.replacements).forEach(([oldColor,newColor])=>{
-
-    // svg.querySelectorAll('[fill]').forEach(e=>{
-    //  if(e.getAttribute('fill')?.toLowerCase() === oldColor){
-    //    e.setAttribute('fill',newColor);
-    //  }
-    // });
-
-    // });
-
-    // pattern.innerHTML='';
-    // pattern.appendChild(svg);
-
-    // console.log("✅ Text pattern rebuilt");
-
-    // }
-
-
-
-
-
-    // Apply mascot to text
-
     function rebuildTextPattern(layer) {
-
         const mainSvg = getMainSvg();
         const pattern = mainSvg.querySelector(`#${layer.patternId}`);
         if (!pattern) return;
@@ -1756,233 +1900,178 @@ border:2px solid #ddd;
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
 
-        // 🔒 SAVE CURRENT SETTINGS
         const oldTransform = pattern.getAttribute('patternTransform');
         const oldX = pattern.getAttribute('x');
         const oldY = pattern.getAttribute('y');
         const oldWidth = pattern.getAttribute('width');
         const oldHeight = pattern.getAttribute('height');
 
-        // Parse original SVG
         const parser = new DOMParser();
         const doc = parser.parseFromString(layer.patternSvg, 'image/svg+xml');
         const svg = doc.querySelector('svg');
 
-        // Apply color replacements
         Object.entries(layer.replacements || {}).forEach(([oldColor, newColor]) => {
             svg.querySelectorAll('[fill]').forEach(e => {
-                if (e.getAttribute('fill')?.toLowerCase() === oldColor) {
-                    e.setAttribute('fill', newColor);
-                }
+                if (e.getAttribute('fill')?.toLowerCase() === oldColor) e.setAttribute('fill', newColor);
             });
         });
 
-        // 🔥 CLEAR & REBUILD
         pattern.innerHTML = '';
         pattern.appendChild(svg);
-
-        // 🔒 RESTORE ALL POSITION + SIZE SETTINGS
         pattern.setAttribute('x', oldX);
         pattern.setAttribute('y', oldY);
         pattern.setAttribute('width', oldWidth);
         pattern.setAttribute('height', oldHeight);
-
-        if (oldTransform) {
-            pattern.setAttribute('patternTransform', oldTransform);
-        }
-
+        if (oldTransform) pattern.setAttribute('patternTransform', oldTransform);
         svg.setAttribute('width', oldWidth);
         svg.setAttribute('height', oldHeight);
         svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-
-        console.log("✅ Pattern rebuilt WITHOUT size break");
     }
 
-
-
+    // =================== MASCOT (TEXT FILL) ===================
 
     window.applyMascotToText = function (svgContent, forcedLayerId = null) {
-
         const layerId = forcedLayerId || window.currentApplicationLayer;
         if (!layerId) return;
 
         const layer = findLayerById(layerId);
-
         if (!layer) return;
+
+        // If this is a direct-mascot layer, route to applyDirectMascotToLayer
+        if (layer.type === 'direct-mascot') {
+            applyDirectMascotToLayer(svgContent, layerId, true);
+            return;
+        }
 
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
 
-        // 🔥 CREATE MASCOT PATTERN FOR TEXT FILL
         const mainSvg = window.getMainSvg();
         let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
+        if (!defs) { defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs'); mainSvg.insertBefore(defs, mainSvg.firstChild); }
 
-        // Parse mascot SVG
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgContent, 'image/svg+xml');
         let mascotSvg = doc.documentElement;
-
-        if (!mascotSvg || mascotSvg.nodeName !== 'svg') {
-            alert("Mascot SVG load failed");
-            return;
-        }
-
+        if (!mascotSvg || mascotSvg.nodeName !== 'svg') { alert("Mascot SVG load failed"); return; }
         mascotSvg = mascotSvg.cloneNode(true);
 
-        // Remove white backgrounds
-        mascotSvg.querySelectorAll('rect,circle,path').forEach(el => {
-            const fill = el.getAttribute('fill');
-            if (fill && (fill === '#fff' || fill === '#ffffff' || fill === 'white')) {
-                el.remove();
-            }
+        // ✅ Background remove
+        const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100').split(' ').map(Number);
+        mascotSvg.querySelectorAll('rect, polygon, circle, ellipse').forEach(el => {
+            const x = parseFloat(el.getAttribute('x') || 0);
+            const y = parseFloat(el.getAttribute('y') || 0);
+            const w = parseFloat(el.getAttribute('width') || 0);
+            const h = parseFloat(el.getAttribute('height') || 0);
+            const coversAll = x <= 1 && y <= 1 && w >= vb[2] * 0.7 && h >= vb[3] * 0.7;
+            if (coversAll) el.remove();
         });
 
-        if (!mascotSvg.hasAttribute('viewBox')) {
+        mascotSvg.querySelectorAll('*').forEach(el => {
+            const style = el.getAttribute('style') || '';
+            const fill = el.getAttribute('fill') || '';
+            const isWhite = fill === '#fff' || fill === '#ffffff' || fill === 'white' ||
+                style.includes('fill:#fff') || style.includes('fill: #fff') ||
+                style.includes('fill:white') || style.includes('fill:#ffffff');
+            const tag = el.tagName.toLowerCase();
+            if (isWhite && (tag === 'rect' || tag === 'polygon')) el.remove();
+        });
+
+        mascotSvg.style.background = 'transparent';
+
+        // Ensure viewBox
+        if (!mascotSvg.getAttribute('viewBox')) {
             mascotSvg.setAttribute('viewBox', '0 0 100 100');
         }
+        mascotSvg.querySelectorAll('rect,circle,path').forEach(el => {
+            const fill = el.getAttribute('fill');
+            if (fill && (fill === '#fff' || fill === '#ffffff' || fill === 'white')) el.remove();
+        });
 
-        // Get text bounding box
+        if (!mascotSvg.hasAttribute('viewBox')) mascotSvg.setAttribute('viewBox', '0 0 100 100');
+
         const bbox = textEl.getBBox();
-
-        // Create unique mascot pattern ID
         const mascotId = `text-mascot-${layer.id}`;
-
-        // Remove old mascot if exists
         const oldMascot = defs.querySelector(`#${mascotId}`);
         if (oldMascot) oldMascot.remove();
 
-        // Create pattern element for mascot tiling
         const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
         pattern.setAttribute('id', mascotId);
         pattern.setAttribute('patternUnits', 'userSpaceOnUse');
         pattern.setAttribute('x', bbox.x);
         pattern.setAttribute('y', bbox.y);
-
-        // Tile size based on count (default 4 tiles)
         const tileSize = Math.min(bbox.width, bbox.height) / 4;
         pattern.setAttribute('width', tileSize);
         pattern.setAttribute('height', tileSize);
-
         mascotSvg.setAttribute('width', tileSize);
         mascotSvg.setAttribute('height', tileSize);
         mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
         pattern.appendChild(mascotSvg);
         defs.appendChild(pattern);
 
-        // Apply mascot as TEXT FILL
         textEl.setAttribute('fill', `url(#${mascotId})`);
         textEl.setAttribute('fill-opacity', '1');
-
-        // Store mascot data on layer
         layer.mascotSvg = svgContent;
         layer.hasMascot = true;
         layer.mascotId = mascotId;
         layer.mascotTileSize = tileSize;
-        layer.mascotSize = 100;  // Default 100%
-        layer.mascotOpacity = 100;  // Default 100%
-        layer.mascotCount = 4;  // Default 4 tiles
+        layer.mascotSize = 100;
+        layer.mascotOpacity = 100;
+        layer.mascotCount = 4;
 
-        console.log('✅ Mascot applied to TEXT:', layer.id);
-
-        // Show mascot controls
         document.getElementById('textMascotColorControls').style.display = 'block';
         document.getElementById('mascotPlaceholder').style.display = 'none';
 
-        // Update preview
         const preview = document.getElementById('textMascotPreview');
         if (preview) {
             preview.innerHTML = svgContent;
             const svg = preview.querySelector('svg');
-            if (svg) {
-                svg.style.maxWidth = '60px';
-                svg.style.maxHeight = '60px';
-            }
+            if (svg) { svg.style.maxWidth = '60px'; svg.style.maxHeight = '60px'; }
         }
 
-        // Reset sliders to default
         const sizeSlider = document.getElementById('mascotSizeTabSlider');
         const opacitySlider = document.getElementById('mascotOpacityTabSlider');
         const countSlider = document.getElementById('mascotCountTabSlider');
-
-        const sizeValue = document.getElementById('mascotSizeValueTab');
-        const opacityValue = document.getElementById('mascotOpacityValueTab');
-        const countValue = document.getElementById('mascotCountValueTab');
-
         if (sizeSlider) sizeSlider.value = 100;
-        if (sizeValue) sizeValue.textContent = '100';
-
+        if (document.getElementById('mascotSizeValueTab')) document.getElementById('mascotSizeValueTab').textContent = '100';
         if (opacitySlider) opacitySlider.value = 100;
-        if (opacityValue) opacityValue.textContent = '100';
-
+        if (document.getElementById('mascotOpacityValueTab')) document.getElementById('mascotOpacityValueTab').textContent = '100';
         if (countSlider) countSlider.value = 4;
-        if (countValue) countValue.textContent = '4';
+        if (document.getElementById('mascotCountValueTab')) document.getElementById('mascotCountValueTab').textContent = '4';
 
         if (window.saveCustomizations) window.saveCustomizations();
     };
-    //================== Letter Spacing ==================//
+
     window.updateLetterSpacing = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
-
         layer.letterSpacing = parseFloat(value);
-
         const textEl = document.getElementById(layer.id);
-        if (textEl) {
-            textEl.style.letterSpacing = value + 'px';
-        }
-
-        const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        outlines.forEach(o => {
-            o.style.letterSpacing = value + 'px';
-        });
-
+        if (textEl) textEl.style.letterSpacing = value + 'px';
+        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.style.letterSpacing = value + 'px');
         document.getElementById('letterSpacingValue').textContent = value;
-
         if (window.saveCustomizations) window.saveCustomizations();
     };
-    // ============= Width hight ============== //
-    window.updateTextScale = function (type, value) {
 
+    window.updateTextScale = function (type, value) {
         if (!window.currentApplicationLayer) return;
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
-
         if (!layer.scaleX) layer.scaleX = 1;
         if (!layer.scaleY) layer.scaleY = 1;
-
         if (type === 'x') layer.scaleX = value / 100;
         if (type === 'y') layer.scaleY = value / 100;
-
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
-
         const x = textEl.getAttribute('x');
         const y = textEl.getAttribute('y');
-
-        textEl.setAttribute(
-            'transform',
-            `translate(${x},${y}) scale(${layer.scaleX},${layer.scaleY}) translate(${-x},${-y}) rotate(${layer.rotation || 0} ${x} ${y})`
-        );
-
-        const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        outlines.forEach(o => {
-            o.setAttribute(
-                'transform',
-                `translate(${x},${y}) scale(${layer.scaleX},${layer.scaleY}) translate(${-x},${-y}) rotate(${layer.rotation || 0} ${x} ${y})`
-            );
+        textEl.setAttribute('transform', `translate(${x},${y}) scale(${layer.scaleX},${layer.scaleY}) translate(${-x},${-y}) rotate(${layer.rotation || 0} ${x} ${y})`);
+        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
+            o.setAttribute('transform', `translate(${x},${y}) scale(${layer.scaleX},${layer.scaleY}) translate(${-x},${-y}) rotate(${layer.rotation || 0} ${x} ${y})`);
         });
-
         if (window.saveCustomizations) window.saveCustomizations();
     };
-
-    // =================== DELETE LAYER ===================
 
     window.deleteCurrentApplicationLayer = function () {
         if (!window.currentApplicationLayer) return;
@@ -1990,494 +2079,251 @@ border:2px solid #ddd;
         removeApplicationLayer(window.currentApplicationLayer);
     };
 
-    // =================== TEXT PATTERN/MASCOT LIBRARIES (SEPARATE FROM PART PATTERNS) ===================
-
-    // Open pattern library specifically for TEXT filling
     window.openTextPatternLibrary = function () {
-        if (!window.currentApplicationLayer) {
-            alert('Please select a text layer first! (Go to Applications sidebar and click on a text layer)');
-            return;
-        }
-
-        // Set flag that we're selecting for TEXT, not part
+        if (!window.currentApplicationLayer) { alert('Please select a text layer first!'); return; }
         window.selectingPatternForText = true;
-
-        // Open the pattern library modal (reuse existing modal)
-        if (window.openPatternLibrary) {
-            window.openPatternLibrary();
-        } else {
-            // Fallback: open modal directly
+        if (window.openPatternLibrary) window.openPatternLibrary();
+        else {
             const modal = document.getElementById('patternLibraryModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                loadPatternsFromDB();
-            }
+            if (modal) { modal.style.display = 'flex'; loadPatternsFromDB(); }
         }
-
-        console.log('📝 Opening pattern library for TEXT fill');
     };
 
-    // Open mascot library specifically for TEXT filling
     window.openTextMascotLibrary = function () {
-        if (!window.currentApplicationLayer) {
-            alert('Please select a text layer first! (Go to Applications sidebar and click on a text layer)');
-            return;
-        }
-
-        // Set flag that we're selecting for TEXT, not part
+        if (!window.currentApplicationLayer) { alert('Please select a text layer first!'); return; }
         window.selectingMascotForText = true;
-
-        // Open the mascot template modal (reuse existing modal)
-        if (window.openMascotTemplateModal) {
-            window.openMascotTemplateModal();
-        } else {
-            // Fallback: open modal directly
+        if (window.openMascotTemplateModal) window.openMascotTemplateModal();
+        else {
             const modal = document.getElementById('mascotTemplateModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                // Load mascots
-                fetch('/api/mascot-templates')
-                    .then(r => r.json())
-                    .then(data => {
-                        let html = '<div style="border:2px dashed #999;padding:10px;border-radius:8px;text-align:center;cursor:pointer;background:#fafafa" onclick="clearTextMascot();closeMascotTemplateModal();"><div style="height:140px;display:flex;align-items:center;justify-content:center;font-weight:700;">BLANK</div></div>';
-
-                        data.forEach(t => {
-                            html += `<div style="border:1px solid #ddd;padding:10px;border-radius:8px;text-align:center;cursor:pointer" onclick="selectMascotForText('${encodeURIComponent(t.svg_data || '')}')"><img src="${t.image_data}" style="width:100%;height:140px;object-fit:contain;background:#f5f5f5"><p style="margin-top:8px;font-weight:600">${t.title}</p></div>`;
-                        });
-
-                        document.getElementById('mascotTemplateGrid').innerHTML = html;
-                    });
-            }
+            if (modal) { modal.style.display = 'flex'; }
         }
-
-        console.log('📝 Opening mascot library for TEXT fill');
     };
 
-    // Helper function for selecting mascot for text
     window.selectMascotForText = function (svg) {
-        if (svg) {
-            const decodedSvg = decodeURIComponent(svg);
-            window.applyMascotToText(decodedSvg);
-        }
-
-        // Close modal
+        if (svg) { const decodedSvg = decodeURIComponent(svg); window.applyMascotToText(decodedSvg); }
         const modal = document.getElementById('mascotTemplateModal');
         if (modal) modal.style.display = 'none';
-
-        if (window.closeMascotTemplateModal) {
-            window.closeMascotTemplateModal();
-        }
-
+        if (window.closeMascotTemplateModal) window.closeMascotTemplateModal();
         window.selectingMascotForText = false;
     };
 
-    // Modified pattern application - checks if for text or part
     window.applyPatternFromLibrary = function (svgContent) {
         if (window.selectingPatternForText && window.currentApplicationLayer) {
-            // Apply to TEXT
             window.applyPatternToText(svgContent);
             window.selectingPatternForText = false;
         } else {
-            // Apply to PART (your existing functionality)
-            if (window.applyUploadedPattern) {
-                window.applyUploadedPattern();
-            }
+            if (window.applyUploadedPattern) window.applyUploadedPattern();
         }
     };
 
-    // Modified mascot application - checks if for text or part
     window.applyMascotFromLibrary = function (svgContent) {
         if (window.selectingMascotForText && window.currentApplicationLayer) {
-            // Apply to TEXT
             window.applyMascotToText(svgContent);
             window.selectingMascotForText = false;
         } else {
-            // Apply to PART (your existing functionality)
-            if (window.applyUploadedMascot) {
-                window.applyUploadedMascot();
-            }
+            if (window.applyUploadedMascot) window.applyUploadedMascot();
         }
     };
 
-    // Override to prevent "Please select a part" error for text mascots
-    // const originalOpenMascotTemplateModal = window.openMascotTemplateModal;
     window.openMascotTemplateModal = function () {
-        // If opening for text, skip part check
         if (window.selectingMascotForText) {
             document.getElementById('mascotTemplateModal').style.display = 'flex';
-
-            fetch('/api/mascot-templates')
-                .then(r => r.json())
-                .then(data => {
-                    let html = '';
-
-                    // BLANK option
-                    html += `
-                <div style="border:2px dashed #999;padding:10px;border-radius:8px;text-align:center;cursor:pointer;background:#fafafa"
-                     onclick="clearTextMascot(); closeMascotTemplateModal();">
-                   <div style="height:140px;display:flex;align-items:center;justify-content:center;font-weight:700;">
-                     BLANK
-                   </div>
-                </div>
-                `;
-
-                    data.forEach(t => {
-                        html += `
-                    <div style="border:1px solid #ddd;padding:10px;border-radius:8px;text-align:center;cursor:pointer"
-                         onclick="selectMascotForText('${encodeURIComponent(t.svg_data || '')}')">
+            fetch('/api/mascot-templates').then(r => r.json()).then(data => {
+                let html = `<div style="border:2px dashed #999;padding:10px;border-radius:8px;text-align:center;cursor:pointer;background:#fafafa" onclick="clearTextMascot(); closeMascotTemplateModal();">
+                   <div style="height:140px;display:flex;align-items:center;justify-content:center;font-weight:700;">BLANK</div></div>`;
+                data.forEach(t => {
+                    html += `<div style="border:1px solid #ddd;padding:10px;border-radius:8px;text-align:center;cursor:pointer" onclick="selectMascotForText('${encodeURIComponent(t.svg_data || '')}')">
                         <img src="${t.image_data}" style="width:100%;height:140px;object-fit:contain;background:#f5f5f5">
-                        <p style="margin-top:8px;font-weight:600">${t.title}</p>
-                    </div>`;
-                    });
-
-                    document.getElementById('mascotTemplateGrid').innerHTML = html;
-                })
-                .catch(err => {
-                    console.error('Error loading mascots:', err);
-                    document.getElementById('mascotTemplateGrid').innerHTML =
-                        '<p style="color:#999;text-align:center;padding:40px;">Error loading mascots</p>';
+                        <p style="margin-top:8px;font-weight:600">${t.title}</p></div>`;
                 });
-        } else if (originalOpenMascotTemplateModal) {
-            // Use original function for part mascots
+                document.getElementById('mascotTemplateGrid').innerHTML = html;
+            }).catch(err => {
+                document.getElementById('mascotTemplateGrid').innerHTML = '<p style="color:#999;text-align:center;padding:40px;">Error loading mascots</p>';
+            });
+        } else if (typeof originalOpenMascotTemplateModal === 'function') {
             originalOpenMascotTemplateModal();
         }
     };
 
-    // Override pattern library open to skip part check for text
     const originalOpenPatternLibrary = window.openPatternLibrary;
     window.openPatternLibrary = function () {
-        // If opening for text, skip part check
         if (window.selectingPatternForText) {
             document.getElementById('patternLibraryModal').style.display = 'flex';
-
-            if (window.loadPatternsFromDB) {
-                window.loadPatternsFromDB();
-            } else {
-                // Fallback
-                fetch('/api/patterns')
-                    .then(res => res.json())
-                    .then(patterns => {
-                        const container = document.getElementById('patternList');
-                        container.innerHTML = '';
-
-                        // BLANK tile
-                        const blank = document.createElement('div');
-                        blank.style.cssText = 'border:2px dashed #999;border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:#fafafa';
-                        blank.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-weight:700;">BLANK</div>';
-                        blank.onclick = () => {
-                            clearTextPattern();
+            if (window.loadPatternsFromDB) { window.loadPatternsFromDB(); return; }
+            fetch('/api/patterns').then(res => res.json()).then(patterns => {
+                const container = document.getElementById('patternList');
+                container.innerHTML = '';
+                const blank = document.createElement('div');
+                blank.style.cssText = 'border:2px dashed #999;border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:#fafafa';
+                blank.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-weight:700;">BLANK</div>';
+                blank.onclick = () => { clearTextPattern(); closePatternLibrary(); };
+                container.appendChild(blank);
+                patterns.forEach(pattern => {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'border:2px solid #ddd;border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:#fff;transition:all 0.3s';
+                    div.innerHTML = `<div style="height:120px;display:flex;align-items:center;justify-content:center;"><img src="${pattern.svg_url}" style="max-width:100%;max-height:100%;"></div><p style="margin-top:8px;font-weight:600;">${pattern.name}</p>`;
+                    div.onmouseover = () => div.style.borderColor = '#007bff';
+                    div.onmouseout = () => div.style.borderColor = '#ddd';
+                    div.onclick = () => {
+                        fetch(pattern.svg_url).then(res => res.text()).then(svgContent => {
+                            window.applyPatternToText(svgContent);
                             closePatternLibrary();
-                        };
-                        container.appendChild(blank);
-
-                        patterns.forEach(pattern => {
-                            const div = document.createElement('div');
-                            div.style.cssText = 'border:2px solid #ddd;border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:#fff;transition:all 0.3s';
-                            div.innerHTML = `
-                            <div style="height:120px;display:flex;align-items:center;justify-content:center;">
-                                <img src="${pattern.svg_url}" style="max-width:100%;max-height:100%;">
-                            </div>
-                            <p style="margin-top:8px;font-weight:600;">${pattern.name}</p>
-                        `;
-                            div.onmouseover = () => div.style.borderColor = '#007bff';
-                            div.onmouseout = () => div.style.borderColor = '#ddd';
-                            div.onclick = () => {
-                                fetch(pattern.svg_url)
-                                    .then(res => res.text())
-                                    .then(svgContent => {
-                                        window.applyPatternToText(svgContent);
-                                        closePatternLibrary();
-                                        window.selectingPatternForText = false;
-                                    });
-                            };
-                            container.appendChild(div);
+                            window.selectingPatternForText = false;
                         });
-                    })
-                    .catch(err => console.error('Error loading patterns:', err));
-            }
+                    };
+                    container.appendChild(div);
+                });
+            });
         } else if (originalOpenPatternLibrary) {
-            // Use original function for part patterns
             originalOpenPatternLibrary();
         }
     };
 
-    // Clear pattern from text
     window.clearTextPattern = function () {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || !layer.hasPattern) return;
-
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
-
-        // Remove pattern from defs
         const mainSvg = window.getMainSvg();
-        if (layer.patternId) {
-            const pattern = mainSvg.querySelector(`#${layer.patternId}`);
-            if (pattern) pattern.remove();
-        }
-
-        // Reset text fill to base color
+        if (layer.patternId) { const p = mainSvg.querySelector(`#${layer.patternId}`); if (p) p.remove(); }
         const colors = layer.outlineColors || window.outlineColors;
         textEl.setAttribute('fill', colors.baseColor || '#FFFFFF');
         textEl.setAttribute('fill-opacity', '1');
-
-        // Clear layer data
-        delete layer.patternSvg;
-        delete layer.hasPattern;
-        delete layer.patternId;
-        delete layer.patternSize;
-        delete layer.patternOpacity;
-
-        // Hide controls
+        delete layer.patternSvg; delete layer.hasPattern; delete layer.patternId; delete layer.patternSize; delete layer.patternOpacity;
         document.getElementById('textPatternColorControls').style.display = 'none';
         document.getElementById('patternPlaceholder').style.display = 'block';
-
         if (window.saveCustomizations) window.saveCustomizations();
-
-        console.log('✅ Pattern cleared from text');
     };
 
-    // Clear mascot from text
     window.clearTextMascot = function () {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || !layer.hasMascot) return;
-
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
-
-        // Remove mascot pattern from defs
         const mainSvg = window.getMainSvg();
-        if (layer.mascotId) {
-            const pattern = mainSvg.querySelector(`#${layer.mascotId}`);
-            if (pattern) pattern.remove();
-        }
-
-        // Reset text fill to base color
+        if (layer.mascotId) { const p = mainSvg.querySelector(`#${layer.mascotId}`); if (p) p.remove(); }
         const colors = layer.outlineColors || window.outlineColors;
         textEl.setAttribute('fill', colors.baseColor || '#FFFFFF');
         textEl.setAttribute('fill-opacity', '1');
-
-        // Clear layer data
-        delete layer.mascotSvg;
-        delete layer.hasMascot;
-        delete layer.mascotId;
-        delete layer.mascotSize;
-        delete layer.mascotOpacity;
-        delete layer.mascotCount;
-        delete layer.mascotTileSize;
-
-        // Hide controls
+        delete layer.mascotSvg; delete layer.hasMascot; delete layer.mascotId; delete layer.mascotSize; delete layer.mascotOpacity; delete layer.mascotCount; delete layer.mascotTileSize;
         document.getElementById('textMascotColorControls').style.display = 'none';
         document.getElementById('mascotPlaceholder').style.display = 'block';
-
         if (window.saveCustomizations) window.saveCustomizations();
-
-        console.log('✅ Mascot cleared from text');
     };
 
-    // Update pattern size in text
     window.updateTextPatternSize = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || !layer.hasPattern || !layer.patternId) return;
-
         const mainSvg = window.getMainSvg();
         const pattern = mainSvg.querySelector(`#${layer.patternId}`);
         if (!pattern) return;
-
-        const scale = value / 100;  // Convert 0-100 to 0-1 scale
-        pattern.setAttribute('patternTransform', `scale(${scale})`);
-
+        pattern.setAttribute('patternTransform', `scale(${value / 100})`);
         layer.patternSize = value;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // Update pattern opacity in text
     window.updateTextPatternOpacity = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || !layer.hasPattern) return;
-
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
-
         textEl.setAttribute('fill-opacity', value / 100);
-
         layer.patternOpacity = value;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // Update mascot size in text
     window.updateTextMascotSize = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || !layer.hasMascot || !layer.mascotId) return;
-
         const mainSvg = window.getMainSvg();
         const pattern = mainSvg.querySelector(`#${layer.mascotId}`);
         if (!pattern) return;
-
         const svg = pattern.querySelector('svg');
         if (!svg) return;
-
-        const scale = value / 50;  // 50 is baseline
+        const scale = value / 50;
         const newSize = layer.mascotTileSize * scale;
-
         svg.setAttribute('width', newSize);
         svg.setAttribute('height', newSize);
-
-        // Center the mascot in tile
         svg.setAttribute('x', (layer.mascotTileSize - newSize) / 2);
         svg.setAttribute('y', (layer.mascotTileSize - newSize) / 2);
-
         layer.mascotSize = value;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // Update mascot opacity in text
     window.updateTextMascotOpacity = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || !layer.hasMascot) return;
-
         const textEl = document.getElementById(layer.id);
         if (!textEl) return;
-
         textEl.setAttribute('fill-opacity', value / 100);
-
         layer.mascotOpacity = value;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // Update mascot count (tiling) in text
     window.updateTextMascotCount = function (value) {
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || !layer.hasMascot || !layer.mascotId) return;
-
         const textEl = document.getElementById(layer.id);
         const bbox = textEl.getBBox();
-
         const mainSvg = window.getMainSvg();
         const pattern = mainSvg.querySelector(`#${layer.mascotId}`);
         if (!pattern) return;
-
-        // Recalculate tile size based on count
         const newTileSize = Math.min(bbox.width, bbox.height) / value;
-
         pattern.setAttribute('width', newTileSize);
         pattern.setAttribute('height', newTileSize);
-
         const svg = pattern.querySelector('svg');
-        if (svg) {
-            svg.setAttribute('width', newTileSize);
-            svg.setAttribute('height', newTileSize);
-        }
-
+        if (svg) { svg.setAttribute('width', newTileSize); svg.setAttribute('height', newTileSize); }
         layer.mascotTileSize = newTileSize;
         layer.mascotCount = value;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // window.removeApplicationLayer = function (layerId, event) {
-    //     if (event) event.stopPropagation();
+    window.removeApplicationLayer = function (layerId, event) {
+        if (event) event.stopPropagation();
 
-    //     Object.keys(window.applicationsApplied).forEach(view => {
-    //         Object.keys(window.applicationsApplied[view]).forEach(partId => {
-    //             window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
-
-    //             if (window.applicationsApplied[view][partId].length === 0) {
-    //                 delete window.applicationsApplied[view][partId];
-    //             }
-    //         });
-    //     });
-
-    //     const textEl = document.getElementById(layerId);
-    //     if (textEl) textEl.remove();
-
-    //     const outlines = document.querySelectorAll(`[data-outline-for="${layerId}"]`);
-    //     outlines.forEach(outline => outline.remove());
-
-    //     if (window.currentApplicationLayer === layerId) {
-    //         window.currentApplicationLayer = null;
-    //         document.getElementById('applicationLayerControls').style.display = 'none';
-    //     }
-
-    //     updateApplicationLayersList();
-
-    //     if (window.saveCustomizations) window.saveCustomizations();
-
-    //     console.log('✅ Application removed:', layerId);
-
-
-
-
-    // };
-
-    // =================== HELPER FUNCTIONS ===================
-
-
-window.removeApplicationLayer = function (layerId, event) {
-    if (event) event.stopPropagation();
-
-    Object.keys(window.applicationsApplied).forEach(view => {
-        Object.keys(window.applicationsApplied[view]).forEach(partId => {
-            window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
-            if (window.applicationsApplied[view][partId].length === 0) {
-                delete window.applicationsApplied[view][partId];
-            }
-        });
-    });
-
-    // ✅ NEW: Individual group remove karo
-    const layerGroup = document.getElementById(`app-group-${layerId}`);
-    if (layerGroup) layerGroup.remove();
-
-    // ✅ NEW: Clip path bhi remove karo
-    const mainSvg = window.getMainSvg();
-    if (mainSvg) {
-        const clip = mainSvg.querySelector(`#clip-${layerId}`);
-        if (clip) clip.remove();
-    }
-
-    // Purana code (outlines ke liye)
-    const outlines = document.querySelectorAll(`[data-outline-for="${layerId}"]`);
-    outlines.forEach(outline => outline.remove());
-
-    if (window.currentApplicationLayer === layerId) {
-        window.currentApplicationLayer = null;
-        document.getElementById('applicationLayerControls').style.display = 'none';
-    }
-
-    updateApplicationLayersList();
-    if (window.saveCustomizations) window.saveCustomizations();
-};
-
-
-    window.findLayerById = function (layerId) {
-        let found = null;
-
-        Object.values(window.applicationsApplied).forEach(viewData => {
-            Object.values(viewData).forEach(layers => {
-                layers.forEach(layer => {
-                    if (layer.id === layerId) found = layer;
-                });
+        Object.keys(window.applicationsApplied).forEach(view => {
+            Object.keys(window.applicationsApplied[view]).forEach(partId => {
+                window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
+                if (window.applicationsApplied[view][partId].length === 0) delete window.applicationsApplied[view][partId];
             });
         });
 
-        return found;
+        const layerGroup = document.getElementById(`app-group-${layerId}`);
+        if (layerGroup) layerGroup.remove();
+
+        const mainSvg = window.getMainSvg();
+        if (mainSvg) {
+            const clip = mainSvg.querySelector(`#clip-${layerId}`);
+            if (clip) clip.remove();
+        }
+
+        document.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => o.remove());
+
+        if (window.currentApplicationLayer === layerId) {
+            window.currentApplicationLayer = null;
+            document.getElementById('applicationLayerControls').style.display = 'none';
+        }
+
+        updateApplicationLayersList();
+        if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    // =================== APPLY APPLICATIONS TO SVG (FOR SAVE/PREVIEW) ===================
+    window.findLayerById = function (layerId) {
+        let found = null;
+        Object.values(window.applicationsApplied).forEach(viewData => {
+            Object.values(viewData).forEach(layers => {
+                layers.forEach(layer => { if (layer.id === layerId) found = layer; });
+            });
+        });
+        return found;
+    };
 
     window.applyApplicationsToSvg = function (svg, view) {
         if (!window.applicationsApplied[view]) return;
@@ -2492,12 +2338,17 @@ window.removeApplicationLayer = function (layerId, event) {
         Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
             const partElement = svg.querySelector(`#${partId}`);
             if (!partElement) return;
-
             const bbox = partElement.getBBox();
             const centerX = bbox.x + (bbox.width / 2);
             const centerY = bbox.y + (bbox.height / 2);
 
             layers.forEach(layer => {
+                if (layer.type === 'direct-mascot') {
+                    // Direct mascot restore
+                    if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+                    return;
+                }
+
                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 text.setAttribute('id', layer.id);
                 text.setAttribute('x', centerX + layer.x);
@@ -2512,82 +2363,33 @@ window.removeApplicationLayer = function (layerId, event) {
                 text.setAttribute('paint-order', 'stroke fill');
                 text.setAttribute('stroke-linejoin', 'round');
                 text.textContent = layer.text;
-
-                if (layer.rotation) {
-                    text.setAttribute('transform', `rotate(${layer.rotation} ${centerX + layer.x} ${centerY + layer.y})`);
-                }
-
+                if (layer.rotation) text.setAttribute('transform', `rotate(${layer.rotation} ${centerX + layer.x} ${centerY + layer.y})`);
                 appGroup.appendChild(text);
-                // 🔥 RESTORE OUTLINE
-                if (layer.outlineStyle) {
-                    window.currentOutlineStyle = layer.outlineStyle;
-                    window.outlineColors = { ...layer.outlineColors };
-                    applyOutlineStyleToText(layer.id);
-                }
 
-                // 🔥 RESTORE TEXT PATTERN
-                if (layer.hasPattern && layer.patternSvg) {
-                    applyPatternToText(layer.patternSvg);
-
-                    if (layer.patternSize)
-                        updateTextPatternSize(layer.patternSize);
-
-                    if (layer.patternOpacity)
-                        updateTextPatternOpacity(layer.patternOpacity);
-                }
-
-                // 🔥 RESTORE TEXT MASCOT
-                if (layer.hasMascot && layer.mascotSvg) {
-                    applyMascotToText(layer.mascotSvg);
-
-                    if (layer.mascotSize)
-                        updateTextMascotSize(layer.mascotSize);
-
-                    if (layer.mascotOpacity)
-                        updateTextMascotOpacity(layer.mascotOpacity);
-
-                    if (layer.mascotCount)
-                        updateTextMascotCount(layer.mascotCount);
-                }
-
+                if (layer.outlineStyle) { window.currentOutlineStyle = layer.outlineStyle; window.outlineColors = { ...layer.outlineColors }; applyOutlineStyleToText(layer.id); }
+                if (layer.hasPattern && layer.patternSvg) { applyPatternToText(layer.patternSvg); if (layer.patternSize) updateTextPatternSize(layer.patternSize); if (layer.patternOpacity) updateTextPatternOpacity(layer.patternOpacity); }
+                if (layer.hasMascot && layer.mascotSvg) { applyMascotToText(layer.mascotSvg); if (layer.mascotSize) updateTextMascotSize(layer.mascotSize); if (layer.mascotOpacity) updateTextMascotOpacity(layer.mascotOpacity); if (layer.mascotCount) updateTextMascotCount(layer.mascotCount); }
             });
         });
-
-        console.log(`✅ Applications applied to ${view}`);
     };
-
-    // =================== INITIALIZE ON LOAD ===================
-
-
 
     window.initializeApplicationsOnLoad = function () {
         if (!window.applicationsApplied) return;
-
         const view = window.currentView;
         if (!window.applicationsApplied[view]) return;
         if (Object.keys(window.applicationsApplied[view]).length === 0) return;
 
-        // Purane elements clean karo
         const svg = window.getMainSvg();
-        if (!svg) {
-            console.warn('SVG not ready yet, retrying...');
-            setTimeout(window.initializeApplicationsOnLoad, 300);
-            return;
-        }
+        if (!svg) { setTimeout(window.initializeApplicationsOnLoad, 300); return; }
 
         svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
         svg.querySelectorAll('#application-group').forEach(g => g.remove());
         svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
 
-        console.log('🎨 Initializing applications for view:', view, window.applicationsApplied[view]);
-
         Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
             layers.forEach(layer => {
-
-                // Layer ko SVG mein add karo
                 addApplicationToSvg(layer);
 
-                // ✅ Pattern restore
                 if (layer.hasPattern && layer.patternSvg) {
                     const prevLayer = window.currentApplicationLayer;
                     window.currentApplicationLayer = layer.id;
@@ -2597,7 +2399,6 @@ window.removeApplicationLayer = function (layerId, event) {
                     window.currentApplicationLayer = prevLayer;
                 }
 
-                // ✅ Mascot restore
                 if (layer.hasMascot && layer.mascotSvg) {
                     const prevLayer = window.currentApplicationLayer;
                     window.currentApplicationLayer = layer.id;
@@ -2607,27 +2408,17 @@ window.removeApplicationLayer = function (layerId, event) {
                     if (layer.mascotCount) updateTextMascotCount(layer.mascotCount);
                     window.currentApplicationLayer = prevLayer;
                 }
-
             });
         });
 
-        // Layer list update karo
         updateApplicationLayersList();
-        console.log('✅ Applications initialized for view:', view);
     };
 
-
-
-    // Auto-initialize
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(window.initializeApplicationsOnLoad, 600);
-        });
+        document.addEventListener('DOMContentLoaded', function () { setTimeout(window.initializeApplicationsOnLoad, 600); });
     } else {
         setTimeout(window.initializeApplicationsOnLoad, 600);
     }
-    document.addEventListener('DOMContentLoaded', () => {
-        loadBackendFonts();
-    });
+    document.addEventListener('DOMContentLoaded', () => { loadBackendFonts(); });
 
 })();
