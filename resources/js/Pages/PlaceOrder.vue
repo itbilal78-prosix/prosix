@@ -236,7 +236,7 @@ export default {
 const today = new Date();
 const year = today.getFullYear();
 
-const orderNum = `ORD: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
+const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
     + String(today.getMonth() + 1).padStart(2, '0')
       + String(today.getDate()).padStart(2, '0')
       + '-' + Math.floor(1000 + Math.random() * 9000);
