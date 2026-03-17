@@ -1,39 +1,43 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
-use App\Mail\PlaceOrderAdminMail;
-use App\Mail\PlaceOrderUserMail;
 use App\Models\PlaceOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class PlaceOrderController extends Controller
 {
     /**
-     * Submit place order
-     * POST /api/place-order
+     * Admin View
      */
     public function index()
-{
-    $orders = PlaceOrder::latest()->paginate(20);
-return view('admin.placeorder', compact('orders'));}
+    {
+        $orders = PlaceOrder::latest()->paginate(20);
+        return view('admin.placeorder', compact('orders'));
+    }
 
+    /**
+     * Download PDF
+     */
+    public function downloadPdf(Request $request)
+    {
+        $ids = explode(',', $request->ids);
+        $orders = PlaceOrder::whereIn('id', $ids)->get();
 
-public function downloadPdf(Request $request)
-{
-    $ids = explode(',', $request->ids);
-    $orders = PlaceOrder::whereIn('id', $ids)->get();
+        $pdf = Pdf::loadView('pdf.placeorder-pdf', compact('orders'))
+                  ->setPaper('a4');
 
- $pdf = Pdf::loadView('pdf.placeorder-pdf', compact('orders'))
-          ->setPaper('a4');
+        return $pdf->download('place_orders.pdf');
+    }
 
-    return $pdf->download('place_orders.pdf');
-}
-public function store(Request $request)
+    /**
+     * Store Order (MAIN FUNCTION)
+     */
+    public function store(Request $request)
     {
         $request->validate([
             'full_name'     => 'required|string|max:255',
@@ -52,14 +56,14 @@ public function store(Request $request)
             'quote_files.*' => 'file|max:20480',
         ]);
 
-        // ── Save files ───────────────────────────────────────
+        // Save files
         $mockupPaths = $this->saveFiles($request, 'mockup_files', 'orders/mockup');
         $rosterPaths = $this->saveFiles($request, 'roster_files', 'orders/roster');
         $quotePaths  = $this->saveFiles($request, 'quote_files',  'orders/quote');
 
-        // ── Save to DB ───────────────────────────────────────
+        // Save to DB
         $order = PlaceOrder::create([
-            'user_id'       => Auth::id(),         // null if not logged in
+            'user_id'       => Auth::id(),
             'full_name'     => $request->full_name,
             'email'         => $request->email,
             'order_number'  => $request->order_number,
@@ -74,21 +78,8 @@ public function store(Request $request)
             'status'        => 'pending',
         ]);
 
-        // ── Email to ADMIN (same as ArtworkRequest pattern) ──
-        $adminEmail = env('ADMIN_EMAIL', 'sales@prosix.com');
-        try {
-            Mail::to($adminEmail)->send(new PlaceOrderAdminMail($order));
-        } catch (\Exception $e) {
-            \Log::error('PlaceOrder Admin Mail Error: ' . $e->getMessage());
-        }
-
-        // ── Confirmation email to USER (form ki email pe) ────
-        try {
-            Mail::to($order->email)
-                ->send(new PlaceOrderUserMail($order));
-        } catch (\Exception $e) {
-            \Log::error('PlaceOrder User Mail Error: ' . $e->getMessage());
-        }
+        // 🚫 EMAIL DISABLED (SMTP ISSUE FIX)
+        // later enable when SMTP works
 
         return response()->json([
             'success'      => true,
@@ -98,8 +89,7 @@ public function store(Request $request)
     }
 
     /**
-     * User dashboard — My Requests
-     * GET /api/user/my-requests
+     * User Orders
      */
     public function myOrders()
     {
@@ -119,38 +109,54 @@ public function store(Request $request)
                 'status'        => $o->status,
                 'mockup_files'  => $o->mockup_files ?? [],
                 'roster_files'  => $o->roster_files ?? [],
-                'quote_files'   => $o->quote_files  ?? [],
+                'quote_files'   => $o->quote_files ?? [],
                 'created_at'    => $o->created_at->format('M d, Y'),
             ]);
 
-        return response()->json(['success' => true, 'data' => $orders]);
+        return response()->json([
+            'success' => true,
+            'data'    => $orders
+        ]);
     }
 
     /**
-     * Admin panel — all orders
-     * GET /api/admin/place-orders
+     * Admin API Orders
      */
     public function adminIndex()
     {
         $orders = PlaceOrder::latest()->paginate(20);
-        return response()->json(['success' => true, 'data' => $orders]);
+        return response()->json([
+            'success' => true,
+            'data'    => $orders
+        ]);
     }
 
     /**
-     * Admin — update status
-     * PUT /api/admin/place-orders/{id}/status
+     * Update Status
      */
     public function updateStatus(Request $request, $id)
     {
-        $request->validate(['status' => 'required|in:pending,processing,completed,cancelled']);
-        PlaceOrder::findOrFail($id)->update(['status' => $request->status]);
-        return response()->json(['success' => true, 'message' => 'Status updated.']);
+        $request->validate([
+            'status' => 'required|in:pending,processing,completed,cancelled'
+        ]);
+
+        PlaceOrder::findOrFail($id)->update([
+            'status' => $request->status
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated.'
+        ]);
     }
 
-    // ── Helper ───────────────────────────────────────────────
+    /**
+     * File Upload Helper
+     */
     private function saveFiles(Request $request, string $field, string $folder): array
     {
         $paths = [];
+
         if ($request->hasFile($field)) {
             foreach ($request->file($field) as $file) {
                 $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
@@ -158,6 +164,7 @@ public function store(Request $request)
                 $paths[] = $filename;
             }
         }
+
         return $paths;
     }
 }
