@@ -81,19 +81,36 @@ class PlaceOrderController extends Controller
     ]);
 
     // ✅ BREVO API EMAIL (Artwork jaisa)
-// ✅ Naya code lagao:
-try {
-    // Admin ko email
-    Mail::to('sales@prosix.com')
-        ->send(new PlaceOrderAdminMail($order));
+    try {
+        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+            ->setApiKey('api-key', env('BREVO_API_KEY'));
 
-    // User ko email
-    Mail::to($order->email)
-        ->send(new PlaceOrderUserMail($order));
+        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+            new \GuzzleHttp\Client(), $config
+        );
 
-} catch (\Exception $e) {
-    \Log::error('PlaceOrder Email Error: ' . $e->getMessage());
-}
+        $htmlContent = view('emails.place-order-admin', [
+            'order' => $order
+        ])->render();
+
+        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+            'subject' => 'New Place Order Received',
+            'sender'  => [
+                'name'  => 'Prosix Sports',
+                'email' => 'prosixsports@gmail.com'
+            ],
+            'to' => [
+                ['email' => 'sales@prosix.com'],
+                ['email' => $order->email],
+            ],
+            'htmlContent' => $htmlContent,
+        ]);
+
+        $apiInstance->sendTransacEmail($email);
+
+    } catch (\Exception $e) {
+        \Log::error('PlaceOrder Email Error: ' . $e->getMessage());
+    }
 
     return response()->json([
         'success'      => true,
