@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PlaceOrderAdminMail;
+use App\Mail\PlaceOrderUserMail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\PlaceOrder;
@@ -79,36 +81,19 @@ class PlaceOrderController extends Controller
     ]);
 
     // ✅ BREVO API EMAIL (Artwork jaisa)
-    try {
-        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-            ->setApiKey('api-key', env('BREVO_API_KEY'));
+// ✅ Naya code lagao:
+try {
+    // Admin ko email
+    Mail::to('sales@prosix.com')
+        ->send(new PlaceOrderAdminMail($order));
 
-        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-            new \GuzzleHttp\Client(), $config
-        );
+    // User ko email
+    Mail::to($order->email)
+        ->send(new PlaceOrderUserMail($order));
 
-        $htmlContent = view('emails.place-order-admin', [
-            'order' => $order
-        ])->render();
-
-        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
-            'subject' => 'New Place Order Received',
-            'sender'  => [
-                'name'  => 'Prosix Sports',
-                'email' => 'prosixsports@gmail.com'
-            ],
-            'to' => [
-                ['email' => 'sales@prosix.com'],
-                ['email' => $order->email],
-            ],
-            'htmlContent' => $htmlContent,
-        ]);
-
-        $apiInstance->sendTransacEmail($email);
-
-    } catch (\Exception $e) {
-        \Log::error('PlaceOrder Email Error: ' . $e->getMessage());
-    }
+} catch (\Exception $e) {
+    \Log::error('PlaceOrder Email Error: ' . $e->getMessage());
+}
 
     return response()->json([
         'success'      => true,
@@ -196,4 +181,19 @@ class PlaceOrderController extends Controller
 
         return $paths;
     }
+
+
+
+    /**
+ * Download Single Order PDF
+ */
+public function downloadSinglePdf($id)
+{
+    $order = PlaceOrder::findOrFail($id);
+
+    $pdf = Pdf::loadView('pdf.placeorder-pdf', ['orders' => collect([$order])])
+              ->setPaper('a4');
+
+    return $pdf->download('order-' . $order->order_number . '.pdf');
+}
 }

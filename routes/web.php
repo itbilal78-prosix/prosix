@@ -205,7 +205,8 @@ Route::middleware(['auth:admin'])
 
 Route::get('/admin/place-orders', [PlaceOrderController::class, 'index'])
     ->name('admin.placeorder');
-
+Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSinglePdf'])
+    ->name('order.download.single');
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

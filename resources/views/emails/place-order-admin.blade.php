@@ -94,7 +94,21 @@
             </div>
         </div>
 
-        <hr style="margin:25px 0;">
+<hr style="margin:25px 0;">
+
+<!-- 👇 YAHAN LGANA HAI -->
+<div style="text-align:center;margin-top:20px;">
+    <a href="{{ url('/order/download/'.$order->id) }}"
+       style="background:#000;color:#fff;padding:12px 25px;border-radius:6px;text-decoration:none;">
+       ⬇ Download Full Order (PDF)
+    </a>
+</div>
+
+
+
+
+
+
 
         <!-- MOCKUP FILES -->
         @if(!empty($order->mockup_files))
