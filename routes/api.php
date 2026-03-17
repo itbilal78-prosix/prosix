@@ -176,7 +176,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-Route::get('/mascot-templates', [TemplateController::class, 'apiList']);
+// Route::get('/mascot-templates', [TemplateController::class, 'apiList']);
+Route::post('/mascot-templates', [TemplateController::class, 'saveFromCustomizer']);
 
 Route::get('/colors', [\App\Http\Controllers\ColorController::class, 'apiIndex']);
 
@@ -190,3 +191,5 @@ Route::fallback(function () {
 });
 Route::get('/models/{id}', [CustomizerModelController::class, 'show']);
 Route::post('/api/templates/save', [TemplateController::class, 'saveFromCustomizer'])->name('templates.save.api');
+// Place Order
+Route::post('/place-order', [\App\Http\Controllers\PlaceOrderController::class, 'store']);

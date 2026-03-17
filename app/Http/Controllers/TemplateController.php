@@ -75,28 +75,53 @@ class TemplateController extends Controller
     }
 
     // API endpoint for saving from mascot customizer
-    public function saveFromCustomizer(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'svg_data' => 'required|string',
-            'image_data' => 'required|string',
-        ]);
+    // public function saveFromCustomizer(Request $request)
+    // {
+    //     $request->validate([
+    //         'title' => 'required|string|max:255',
+    //         'svg_data' => 'required|string',
+    //         'image_data' => 'required|string',
+    //     ]);
 
-        $template = Template::create([
-            'title' => $request->title,
-            'svg_data' => $request->svg_data,
-            'image_data' => $request->image_data,
-            'source' => 'mascot-customizer',
-            'box_index' => $request->box_index ?? 0
-        ]);
+    //     $template = Template::create([
+    //         'title' => $request->title,
+    //         'svg_data' => $request->svg_data,
+    //         'image_data' => $request->image_data,
+    //         'source' => 'mascot-customizer',
+    //         'box_index' => $request->box_index ?? 0
+    //     ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Template saved successfully!',
-            'template' => $template
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Template saved successfully!',
+    //         'template' => $template
+    //     ]);
+    // }
+
+
+
+public function saveFromCustomizer(Request $request)
+{
+    $request->validate([
+        'title'      => 'required|string',
+        'svg_data'   => 'required|string',
+        'image_data' => 'nullable|string',
+    ]);
+
+    $template = Template::create([
+        'title'      => $request->title,
+        'svg_data'   => $request->svg_data,
+        'image_data' => $request->image_data ?? null,
+        'source'     => 'customizer',
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'id'      => $template->id,
+        'message' => 'Template saved successfully',
+    ]);
+}
+
     public function apiList() {
     return response()->json(\App\Models\Template::latest()->get());
 }

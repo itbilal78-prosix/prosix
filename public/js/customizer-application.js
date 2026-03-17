@@ -687,114 +687,114 @@
     //     console.log('✅ Text application added:', layer);
     // };
 
-// ============================================================
-// SIRF YEH FUNCTION apni applications.js mein replace karo
-// "window.confirmAddApplication" wala poora function
-// ============================================================
+    // ============================================================
+    // SIRF YEH FUNCTION apni applications.js mein replace karo
+    // "window.confirmAddApplication" wala poora function
+    // ============================================================
 
-window.confirmAddApplication = function () {
+    window.confirmAddApplication = function () {
 
-    if (!window.selectedApplicationPart) {
-        alert('Please select a part!');
-        return;
-    }
+        if (!window.selectedApplicationPart) {
+            alert('Please select a part!');
+            return;
+        }
 
-    const view   = window.selectedApplicationView;
-    const partId = window.selectedApplicationPart;
+        const view = window.selectedApplicationView;
+        const partId = window.selectedApplicationPart;
 
-    // ====================================================
-    // 🦅 MASCOT TYPE
-    // ====================================================
-    if (window.selectedApplicationType === 'mascot') {
+        // ====================================================
+        // 🦅 MASCOT TYPE
+        // ====================================================
+        if (window.selectedApplicationType === 'mascot') {
 
+            const layerId = 'app-' + Date.now();
+
+            const layer = {
+                id: layerId,
+                type: 'direct-mascot',
+                view: view,
+                partId: partId,
+                mascotSvg: null,
+                mascotId: null,
+                x: 0,
+                y: 0,
+                rotation: 0,
+                mascotScaleX: 1,
+                mascotScaleY: 1,
+                mascotOpacity: 100
+            };
+
+            if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+            if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+            window.applicationsApplied[view][partId].push(layer);
+
+            window.currentApplicationLayer = layerId;
+
+            updateApplicationLayersList();
+            openApplicationsSidebar();
+
+            if (window.saveCustomizations) window.saveCustomizations();
+
+            // ✅ Pehle application modal band karo
+            const appModal = document.getElementById('applicationModal');
+            if (appModal) appModal.style.display = 'none';
+
+            // ✅ 250ms baad mascot modal kholo (modal close animation finish ho jay)
+            setTimeout(function () {
+                if (typeof window.openMascotSelectModal === 'function') {
+                    window.openMascotSelectModal(layerId);
+                } else {
+                    console.error('❌ openMascotSelectModal function not found!');
+                    alert('Mascot modal load nahi hua. Page reload karein.');
+                }
+            }, 250);
+
+            return;
+        }
+
+        // ====================================================
+        // TEXT TYPES — number, teamname, playername
+        // ====================================================
         const layerId = 'app-' + Date.now();
 
+        let defaultText = '00';
+        if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
+        if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
+
+        const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
+
         const layer = {
-            id:           layerId,
-            type:         'direct-mascot',
-            view:         view,
-            partId:       partId,
-            mascotSvg:    null,
-            mascotId:     null,
-            x:            0,
-            y:            0,
-            rotation:     0,
-            mascotScaleX: 1,
-            mascotScaleY: 1,
-            mascotOpacity: 100
+            id: layerId,
+            type: window.selectedApplicationType,
+            view: view,
+            partId: partId,
+            text: defaultText,
+            fontSize: 2000,
+            fontFamily: window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
+            fill: globalColors[0] || '#FFFFFF',
+            stroke: globalColors[1] || '#000000',
+            strokeWidth: 5,
+            x: 0,
+            y: 0,
+            rotation: 0,
+            outlineStyle: window.currentOutlineStyle,
+            outlineColors: { ...window.outlineColors }
         };
 
-        if (!window.applicationsApplied[view])        window.applicationsApplied[view] = {};
+        if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
         if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
         window.applicationsApplied[view][partId].push(layer);
 
-        window.currentApplicationLayer = layerId;
-
+        addApplicationToSvg(layer);
         updateApplicationLayersList();
+        closeApplicationModal();
         openApplicationsSidebar();
+        selectApplicationLayer(layerId);
 
         if (window.saveCustomizations) window.saveCustomizations();
 
-        // ✅ Pehle application modal band karo
-        const appModal = document.getElementById('applicationModal');
-        if (appModal) appModal.style.display = 'none';
-
-        // ✅ 250ms baad mascot modal kholo (modal close animation finish ho jay)
-        setTimeout(function () {
-            if (typeof window.openMascotSelectModal === 'function') {
-                window.openMascotSelectModal(layerId);
-            } else {
-                console.error('❌ openMascotSelectModal function not found!');
-                alert('Mascot modal load nahi hua. Page reload karein.');
-            }
-        }, 250);
-
-        return;
-    }
-
-    // ====================================================
-    // TEXT TYPES — number, teamname, playername
-    // ====================================================
-    const layerId = 'app-' + Date.now();
-
-    let defaultText = '00';
-    if (window.selectedApplicationType === 'teamname')   defaultText = 'TEAM';
-    if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
-
-    const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
-
-    const layer = {
-        id:           layerId,
-        type:         window.selectedApplicationType,
-        view:         view,
-        partId:       partId,
-        text:         defaultText,
-        fontSize:     2000,
-        fontFamily:   window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
-        fill:         globalColors[0] || '#FFFFFF',
-        stroke:       globalColors[1] || '#000000',
-        strokeWidth:  5,
-        x:            0,
-        y:            0,
-        rotation:     0,
-        outlineStyle: window.currentOutlineStyle,
-        outlineColors: { ...window.outlineColors }
+        console.log('✅ Text application added:', layer);
     };
-
-    if (!window.applicationsApplied[view])        window.applicationsApplied[view] = {};
-    if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
-    window.applicationsApplied[view][partId].push(layer);
-
-    addApplicationToSvg(layer);
-    updateApplicationLayersList();
-    closeApplicationModal();
-    openApplicationsSidebar();
-    selectApplicationLayer(layerId);
-
-    if (window.saveCustomizations) window.saveCustomizations();
-
-    console.log('✅ Text application added:', layer);
-};
     // =================== ADD TEXT APPLICATION TO SVG ===================
 
     window.addApplicationToSvg = function (layer) {
@@ -1193,6 +1193,69 @@ window.confirmAddApplication = function () {
 
     // =================== UPDATE LAYERS LIST ===================
 
+    //     window.updateApplicationLayersList = function () {
+
+    //         const container = document.getElementById('applicationLayersList');
+    //         if (!container) return;
+
+    //         container.innerHTML = '';
+
+    //         if (!window.applicationsApplied || Object.keys(window.applicationsApplied).length === 0) {
+    //             container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;font-size:13px;">No applications added yet</p>';
+    //             return;
+    //         }
+
+    //         let layerNum = 1;
+
+    //         Object.entries(window.applicationsApplied).forEach(([view, parts]) => {
+    //             Object.entries(parts).forEach(([partId, layers]) => {
+    //                 layers.forEach(layer => {
+
+    //                     const viewShort = view.charAt(0).toUpperCase();
+    //                     const isActive = window.currentApplicationLayer === layer.id;
+
+    //                     // Label for layer list
+    //                     const labelText = layer.type === 'direct-mascot'
+    //                         ? (layer.mascotTitle || (layer.mascotSvg ? 'Mascot' : 'Mascot (pending)'))
+    //                         : (layer.text || 'Empty');
+
+    //                     const typeLabel = layer.type === 'direct-mascot' ? 'mascot' : layer.type;
+
+    //                     const item = document.createElement('div');
+    //                     item.className = 'application-layer-item';
+    //                     item.style.background = isActive ? '#000' : '#fff';
+    //                     item.style.color = isActive ? '#fff' : '#000';
+
+    //                     item.innerHTML = `
+    // <div style="display:flex;align-items:center;gap:8px;width:100%">
+    //     <div class="layer-number">#${layerNum}</div>
+    //     <div style="flex:1">
+    //         <div style="font-weight:700">
+    //             ${labelText}
+    //             <span style="background:#333;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:6px;">${viewShort}</span>
+    //         </div>
+    //         <div style="font-size:11px;opacity:.7">${typeLabel} • ${partId}</div>
+    //     </div>
+    //     <div onclick="duplicateApplicationLayer('${layer.id}',event)"
+    //         style="cursor:pointer;font-size:14px;padding:4px 6px;border-radius:4px;background:#eee;color:#000">
+    //         ⧉ ${viewShort}
+    //     </div>
+    //     <div onclick="removeApplicationLayer('${layer.id}',event)"
+    //         style="cursor:pointer;padding:0 6px;font-weight:700">×</div>
+    // </div>`;
+
+    //                     item.onclick = function () { selectApplicationLayer(layer.id); };
+    //                     container.appendChild(item);
+    //                     layerNum++;
+    //                 });
+    //             });
+    //         });
+    //     };
+
+
+    // =================== PATCH 1: LAYER REORDERING (Drag & Drop) ===================
+    // Replace window.updateApplicationLayersList with this version
+
     window.updateApplicationLayersList = function () {
 
         const container = document.getElementById('applicationLayersList');
@@ -1209,12 +1272,11 @@ window.confirmAddApplication = function () {
 
         Object.entries(window.applicationsApplied).forEach(([view, parts]) => {
             Object.entries(parts).forEach(([partId, layers]) => {
-                layers.forEach(layer => {
+                layers.forEach((layer, index) => {
 
                     const viewShort = view.charAt(0).toUpperCase();
                     const isActive = window.currentApplicationLayer === layer.id;
 
-                    // Label for layer list
                     const labelText = layer.type === 'direct-mascot'
                         ? (layer.mascotTitle || (layer.mascotSvg ? 'Mascot' : 'Mascot (pending)'))
                         : (layer.text || 'Empty');
@@ -1223,28 +1285,111 @@ window.confirmAddApplication = function () {
 
                     const item = document.createElement('div');
                     item.className = 'application-layer-item';
-                    item.style.background = isActive ? '#000' : '#fff';
-                    item.style.color = isActive ? '#fff' : '#000';
+                    item.setAttribute('draggable', 'true');
+                    item.dataset.layerId = layer.id;
+                    item.dataset.view = view;
+                    item.dataset.partId = partId;
+                    item.dataset.index = index;
+
+                    item.style.cssText = `
+                    display:flex; align-items:center; gap:8px; width:100%;
+                    padding:10px 12px; margin-bottom:6px; border-radius:8px;
+                    background:${isActive ? '#000' : '#fff'};
+                    color:${isActive ? '#fff' : '#000'};
+                    border:2px solid ${isActive ? '#000' : '#e0e0e0'};
+                    cursor:pointer; transition:all 0.2s;
+                    user-select:none;
+                `;
 
                     item.innerHTML = `
-<div style="display:flex;align-items:center;gap:8px;width:100%">
-    <div class="layer-number">#${layerNum}</div>
-    <div style="flex:1">
-        <div style="font-weight:700">
-            ${labelText}
-            <span style="background:#333;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:6px;">${viewShort}</span>
-        </div>
-        <div style="font-size:11px;opacity:.7">${typeLabel} • ${partId}</div>
-    </div>
-    <div onclick="duplicateApplicationLayer('${layer.id}',event)"
-        style="cursor:pointer;font-size:14px;padding:4px 6px;border-radius:4px;background:#eee;color:#000">
-        ⧉ ${viewShort}
-    </div>
-    <div onclick="removeApplicationLayer('${layer.id}',event)"
-        style="cursor:pointer;padding:0 6px;font-weight:700">×</div>
-</div>`;
+                    <div class="drag-handle" style="cursor:grab; font-size:16px; opacity:0.5; padding:0 4px; flex-shrink:0;" title="Drag to reorder">⠿</div>
+                    <div class="layer-number" style="font-weight:700; font-size:13px; flex-shrink:0;">#${layerNum}</div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${labelText}
+                            <span style="background:#333;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:6px;">${viewShort}</span>
+                        </div>
+                        <div style="font-size:11px;opacity:.7">${typeLabel} • ${partId}</div>
+                    </div>
+                    <div onclick="duplicateApplicationLayer('${layer.id}',event)"
+                        style="cursor:pointer;font-size:13px;padding:4px 6px;border-radius:4px;background:#eee;color:#000;flex-shrink:0;">
+                        ⧉
+                    </div>
+                    <div onclick="removeApplicationLayer('${layer.id}',event)"
+                        style="cursor:pointer;padding:0 6px;font-weight:700;flex-shrink:0;">×</div>
+                `;
 
-                    item.onclick = function () { selectApplicationLayer(layer.id); };
+                    // Click to select
+                    item.onclick = function (e) {
+                        if (e.target.closest('.drag-handle')) return;
+                        selectApplicationLayer(layer.id);
+                    };
+
+                    // ===== DRAG & DROP EVENTS =====
+                    item.addEventListener('dragstart', function (e) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', layer.id);
+                        this.style.opacity = '0.4';
+                        window._draggingLayerId = layer.id;
+                        window._draggingView = view;
+                        window._draggingPartId = partId;
+                    });
+
+                    item.addEventListener('dragend', function () {
+                        this.style.opacity = '1';
+                        container.querySelectorAll('.application-layer-item').forEach(el => {
+                            el.style.borderColor = window.currentApplicationLayer === el.dataset.layerId ? '#000' : '#e0e0e0';
+                            el.style.transform = '';
+                        });
+                        window._draggingLayerId = null;
+                    });
+
+                    item.addEventListener('dragover', function (e) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        if (window._draggingLayerId === layer.id) return;
+                        this.style.borderColor = '#007bff';
+                        this.style.transform = 'scale(1.01)';
+                    });
+
+                    item.addEventListener('dragleave', function () {
+                        this.style.borderColor = isActive ? '#000' : '#e0e0e0';
+                        this.style.transform = '';
+                    });
+
+                    item.addEventListener('drop', function (e) {
+                        e.preventDefault();
+                        this.style.transform = '';
+
+                        const fromId = window._draggingLayerId;
+                        const fromView = window._draggingView;
+                        const fromPartId = window._draggingPartId;
+                        const toId = layer.id;
+                        const toView = view;
+                        const toPartId = partId;
+
+                        if (fromId === toId) return;
+
+                        // Only reorder within same view+part
+                        if (fromView === toView && fromPartId === toPartId) {
+                            const arr = window.applicationsApplied[fromView][fromPartId];
+                            const fromIdx = arr.findIndex(l => l.id === fromId);
+                            const toIdx = arr.findIndex(l => l.id === toId);
+
+                            if (fromIdx !== -1 && toIdx !== -1) {
+                                // Swap
+                                const [removed] = arr.splice(fromIdx, 1);
+                                arr.splice(toIdx, 0, removed);
+
+                                // Re-render SVG layer order
+                                reorderSvgLayers(fromView, fromPartId, arr);
+
+                                updateApplicationLayersList();
+                                if (window.saveCustomizations) window.saveCustomizations();
+                            }
+                        }
+                    });
+
                     container.appendChild(item);
                     layerNum++;
                 });
@@ -1370,11 +1515,369 @@ window.confirmAddApplication = function () {
         if (posYSlider) { posYSlider.value = layer.y || 0; }
         if (posYVal) { posYVal.textContent = layer.y || 0; }
 
+        _renderDirectMascotColors(layer);
+
+
         console.log('✅ Direct mascot controls shown for:', layer.id);
     }
 
 
+
+
+
+
+
+
+
+
+    function _renderDirectMascotColors(layer) {
+        var container = document.getElementById('directMascotColorSwatches');
+        if (!container) return;
+
+        // ✅ Already detected hain to reuse karo — view change pe reset nahi hoga
+        if (layer._detectedColors && layer._detectedColors.length) {
+            _buildColorSwatches(layer._detectedColors, layer, container);
+            return;
+        }
+
+        container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Detecting colors...</p>';
+
+        if (!layer.mascotSvg) {
+            container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
+            return;
+        }
+
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+        var imgTag = doc.querySelector('image');
+
+        if (imgTag) {
+            var href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || '';
+            if (href.startsWith('data:image/png')) {
+                _detectColorsFromPng(href, layer, container);
+                return;
+            }
+        }
+
+        var colorCounts = {};
+        doc.querySelectorAll('[fill]').forEach(function (el) {
+            var fill = el.getAttribute('fill') || '';
+            if (fill && fill !== 'none' && fill !== 'transparent') {
+                var hex = _normalizeColor(fill);
+                if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+            }
+        });
+        doc.querySelectorAll('[style]').forEach(function (el) {
+            var s = el.getAttribute('style') || '';
+            var m = s.match(/fill:\s*(#[0-9a-fA-F]{3,6})/);
+            if (m) {
+                var hex = _normalizeColor(m[1]);
+                if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+            }
+        });
+        var maxColors = layer._selectedColorCount || 6;
+        var detected = Object.keys(colorCounts)
+            .sort(function (a, b) { return colorCounts[b] - colorCounts[a]; })
+            .slice(0, maxColors);
+        _buildColorSwatches(detected, layer, container);
+    }
+
+
+
+    function _detectColorsFromPng(dataUrl, layer, container) {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var img = new Image();
+        img.onload = function () {
+            var SIZE = 100;
+            canvas.width = SIZE;
+            canvas.height = SIZE;
+            ctx.drawImage(img, 0, 0, SIZE, SIZE);
+            var imageData = ctx.getImageData(0, 0, SIZE, SIZE).data;
+            var colorCounts = {};
+            for (var i = 0; i < imageData.length; i += 4) {
+                var a = imageData[i + 3];
+                if (a < 30) continue;
+                var r = Math.round(imageData[i] / 32) * 32;
+                var g = Math.round(imageData[i + 1] / 32) * 32;
+                var b = Math.round(imageData[i + 2] / 32) * 32;
+                r = Math.min(r, 255); g = Math.min(g, 255); b = Math.min(b, 255);
+                if (r > 230 && g > 230 && b > 230) continue;
+                var hex = '#' + [r, g, b].map(function (v) { return v.toString(16).padStart(2, '0'); }).join('');
+                colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+            }
+            // ✅ Mascot modal ki selected count use karo
+            var maxColors = layer._selectedColorCount || 6;
+            var detected = Object.keys(colorCounts)
+                .sort(function (a, b) { return colorCounts[b] - colorCounts[a]; })
+                .slice(0, maxColors);
+            _buildColorSwatches(detected, layer, container);
+        };
+        img.onerror = function () {
+            container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Could not load image</p>';
+        };
+        img.src = dataUrl;
+    }
+
+    function _buildColorSwatches(detectedColors, layer, container) {
+        container.innerHTML = '';
+        if (!detectedColors.length) {
+            container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No colors detected</p>';
+            return;
+        }
+
+        // ✅ Save karo taake view change / scale pe reset na ho
+        layer._detectedColors = detectedColors;
+        if (!layer._colorMap) layer._colorMap = {};
+
+        var backendColors = (window.backendColors || []).map(function (c) { return c.code || c; });
+        if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000', '#FF8800', '#00FFFF'];
+
+        detectedColors.forEach(function (detectedHex) {
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:10px;';
+            var fromBox = document.createElement('div');
+            fromBox.style.cssText = 'width:26px; height:26px; border-radius:5px; border:2px solid #ccc; flex-shrink:0;';
+            fromBox.style.background = detectedHex;
+            var arrow = document.createElement('span');
+            arrow.textContent = '→';
+            arrow.style.cssText = 'font-size:13px; color:#888; flex-shrink:0;';
+            var swatchRow = document.createElement('div');
+            swatchRow.style.cssText = 'display:flex; flex-wrap:wrap; gap:4px;';
+            var currentReplacement = layer._colorMap[detectedHex.toLowerCase()] || null;
+
+            backendColors.forEach(function (hex) {
+                var isSelected = currentReplacement && hex.toLowerCase() === currentReplacement.toLowerCase();
+                var box = document.createElement('div');
+                box.style.cssText = 'width:22px; height:22px; border-radius:4px; cursor:pointer; box-sizing:border-box; position:relative; display:flex; align-items:center; justify-content:center;';
+                box.style.background = hex;
+                box.style.border = isSelected ? '3px solid #1a1a1a' : '2px solid #ddd';
+                if (isSelected) {
+                    var check = document.createElement('span');
+                    check.textContent = '✓';
+                    check.style.cssText = 'font-size:13px; font-weight:900; line-height:1;';
+                    check.style.color = _getContrastColor(hex);
+                    box.appendChild(check);
+                }
+                box.onclick = (function (dHex, nHex, b, sRow) {
+                    return function () {
+                        layer._colorMap[dHex.toLowerCase()] = nHex;
+                        sRow.querySelectorAll('div').forEach(function (x) { x.style.border = '2px solid #ddd'; x.innerHTML = ''; });
+                        b.style.border = '3px solid #1a1a1a';
+                        var ck = document.createElement('span');
+                        ck.textContent = '✓';
+                        ck.style.cssText = 'font-size:13px; font-weight:900; line-height:1;';
+                        ck.style.color = _getContrastColor(nHex);
+                        b.appendChild(ck);
+                        _applyDirectMascotColorMap(layer);
+                    };
+                })(detectedHex, hex, box, swatchRow);
+                swatchRow.appendChild(box);
+            });
+
+            row.appendChild(fromBox);
+            row.appendChild(arrow);
+            row.appendChild(swatchRow);
+            container.appendChild(row);
+        });
+    }
+
+
+
+    function _getContrastColor(hex) {
+        if (!hex) return '#000000';
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        var r = parseInt(hex.substr(0, 2), 16);
+        var g = parseInt(hex.substr(2, 2), 16);
+        var b = parseInt(hex.substr(4, 2), 16);
+        var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? '#000000' : '#ffffff';
+    }
+
+    function _normalizeColor(color) {
+        if (!color) return null;
+        color = color.trim().toLowerCase();
+        if (color.match(/^#[0-9a-f]{6}$/)) return color;
+        if (color.match(/^#[0-9a-f]{3}$/)) {
+            return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
+        }
+        return null;
+    }
+
+    function _applyDirectMascotColorMap(layer) {
+        if (!layer.mascotSvg || !layer._colorMap) return;
+
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+        var imgTag = doc.querySelector('image');
+
+        if (imgTag) {
+            var href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || '';
+            if (href.startsWith('data:image/png')) {
+                _applyColorMapToPng(href, layer);
+                return;
+            }
+        }
+
+        // Pure SVG fallback
+        Object.entries(layer._colorMap).forEach(function (entry) {
+            var oldColor = entry[0];
+            var newColor = entry[1];
+            doc.querySelectorAll('[fill]').forEach(function (el) {
+                var f = el.getAttribute('fill');
+                if (f && _normalizeColor(f) === oldColor) {
+                    el.setAttribute('fill', newColor);
+                }
+            });
+        });
+
+        var modifiedSvg = new XMLSerializer().serializeToString(doc.documentElement);
+        _replaceElementInSvg(layer, modifiedSvg);
+    }
+
+    function _applyColorMapToPng(dataUrl, layer) {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var img = new Image();
+
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var data = imageData.data;
+
+            // colorMap ko RGB mein convert karo
+            var colorMappings = [];
+            Object.entries(layer._colorMap).forEach(function (entry) {
+                var oldHex = entry[0];
+                var newHex = entry[1];
+                var oldRgb = _hexToRgb(oldHex);
+                var newRgb = _hexToRgb(newHex);
+                if (oldRgb && newRgb) {
+                    colorMappings.push({ old: oldRgb, new: newRgb });
+                }
+            });
+
+            // Har pixel check karo
+            for (var i = 0; i < data.length; i += 4) {
+                var r = data[i];
+                var g = data[i + 1];
+                var b = data[i + 2];
+                var a = data[i + 3];
+
+                if (a < 30) continue; // transparent skip
+
+                // Closest color dhundo
+                var bestMatch = null;
+                var bestDist = 60; // tolerance
+
+                colorMappings.forEach(function (mapping) {
+                    var dist = Math.sqrt(
+                        Math.pow(r - mapping.old.r, 2) +
+                        Math.pow(g - mapping.old.g, 2) +
+                        Math.pow(b - mapping.old.b, 2)
+                    );
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestMatch = mapping;
+                    }
+                });
+
+                if (bestMatch) {
+                    data[i] = bestMatch.new.r;
+                    data[i + 1] = bestMatch.new.g;
+                    data[i + 2] = bestMatch.new.b;
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+
+            // Naya PNG base64 banao
+            var newPngDataUrl = canvas.toDataURL('image/png');
+
+            // Original mascotSvg mein image href replace karo (original safe rakho)
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+            var imgEl = doc.querySelector('image');
+            if (imgEl) {
+                imgEl.setAttribute('href', newPngDataUrl);
+                if (imgEl.getAttribute('xlink:href')) {
+                    imgEl.setAttribute('xlink:href', newPngDataUrl);
+                }
+            }
+
+            var modifiedSvg = new XMLSerializer().serializeToString(doc.documentElement);
+            _replaceElementInSvg(layer, modifiedSvg);
+        };
+
+        img.onerror = function () {
+            console.error('PNG load failed');
+        };
+
+        img.src = dataUrl;
+    }
+
+    function _replaceElementInSvg(layer, modifiedSvg) {
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+        var svgEl = mainSvg.querySelector('#' + layer.id);
+        if (!svgEl) return;
+
+        var parser = new DOMParser();
+        var innerDoc = parser.parseFromString(modifiedSvg, 'image/svg+xml');
+        var newSvg = innerDoc.documentElement.cloneNode(true);
+
+        // Purani properties copy karo
+        newSvg.setAttribute('id', svgEl.getAttribute('id'));
+        newSvg.setAttribute('x', svgEl.getAttribute('x') || 0);
+        newSvg.setAttribute('y', svgEl.getAttribute('y') || 0);
+        newSvg.setAttribute('width', svgEl.getAttribute('width') || 100);
+        newSvg.setAttribute('height', svgEl.getAttribute('height') || 100);
+        newSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+        if (svgEl.getAttribute('transform')) {
+            newSvg.setAttribute('transform', svgEl.getAttribute('transform'));
+        }
+        if (svgEl.getAttribute('opacity')) {
+            newSvg.setAttribute('opacity', svgEl.getAttribute('opacity'));
+        }
+        newSvg.style.cursor = 'move';
+
+        svgEl.parentNode.replaceChild(newSvg, svgEl);
+
+        // Events dobara lagao
+        newSvg.addEventListener('click', function (e) {
+            e.stopPropagation();
+            window.selectApplicationLayer(layer.id);
+        });
+
+        if (window.makeMascotDraggable) {
+            window.makeMascotDraggable(newSvg, layer);
+        }
+
+        if (window.saveCustomizations) window.saveCustomizations();
+    }
+
     // =================== SHOW TEXT LAYER CONTROLS ===================
+
+
+
+    function _hexToRgb(hex) {
+        if (!hex) return null;
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        return {
+            r: parseInt(hex.substr(0, 2), 16),
+            g: parseInt(hex.substr(2, 2), 16),
+            b: parseInt(hex.substr(4, 2), 16)
+        };
+    }
+
+
 
     function showTextLayerControls(layer) {
 
@@ -1471,8 +1974,13 @@ window.confirmAddApplication = function () {
         layer.mascotScaleX = value / 100;
         layer.mascotScaleY = value / 100;
 
-        // Re-apply mascot with new scale
-        if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+        if (layer.mascotSvg) {
+            applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+            // ✅ Scale ke baad colorMap dobara apply karo
+            if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
+                setTimeout(function () { _applyDirectMascotColorMap(layer); }, 150);
+            }
+        }
 
         document.getElementById('directMascotScaleValue').textContent = value;
         if (window.saveCustomizations) window.saveCustomizations();
@@ -2389,7 +2897,13 @@ window.confirmAddApplication = function () {
         Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
             layers.forEach(layer => {
                 addApplicationToSvg(layer);
-
+                // ✅ Direct mascot ka colorMap restore karo
+                if (layer.type === 'direct-mascot' && layer.mascotSvg &&
+                    layer._colorMap && Object.keys(layer._colorMap).length > 0) {
+                    (function (l) {
+                        setTimeout(function () { _applyDirectMascotColorMap(l); }, 400);
+                    })(layer);
+                }
                 if (layer.hasPattern && layer.patternSvg) {
                     const prevLayer = window.currentApplicationLayer;
                     window.currentApplicationLayer = layer.id;
@@ -2420,5 +2934,913 @@ window.confirmAddApplication = function () {
         setTimeout(window.initializeApplicationsOnLoad, 600);
     }
     document.addEventListener('DOMContentLoaded', () => { loadBackendFonts(); });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // ============================================================
+    // SELECTION BOX — Text + Direct Mascot dono ke liye
+    // applications_oob_addon.js
+    // ============================================================
+
+    // =================== REORDER SVG LAYERS ===================
+    window.reorderSvgLayers = function (view, partId, orderedLayers) {
+        var mainSvg = window.getMainSvg();
+        if (!mainSvg) return;
+        orderedLayers.forEach(function (layer) {
+            var group = mainSvg.querySelector('#app-group-' + layer.id);
+            if (group) mainSvg.appendChild(group);
+        });
+    };
+
+    // =================== STATE ===================
+    window._oobState = {
+        selectedLayerId: null,
+        isDragging: false,
+        dragStartX: 0,
+        dragStartY: 0,
+        dragStartLayerX: 0,
+        dragStartLayerY: 0,
+        _layer: null
+    };
+
+    // =================== BBOX HELPER ===================
+    // SVG <text> aur <svg> (mascot) dono ke liye sahi bbox nikalta hai
+    function _getElementBbox(svgEl, mainSvg) {
+        var tagName = svgEl.tagName ? svgEl.tagName.toLowerCase() : '';
+
+        // Nested <svg> element (direct-mascot)
+        // getBoundingClientRect use karo — actual rendered size milti hai
+        // phir SVG coords mein convert karo
+        if (tagName === 'svg') {
+            try {
+                var cr = svgEl.getBoundingClientRect();
+                var svgR = mainSvg.getBoundingClientRect();
+                var vb2 = mainSvg.viewBox ? mainSvg.viewBox.baseVal : null;
+                var vbW2 = (vb2 && vb2.width) ? vb2.width : svgR.width;
+                var vbH2 = (vb2 && vb2.height) ? vb2.height : svgR.height;
+                var sx2 = vbW2 / svgR.width;
+                var sy2 = vbH2 / svgR.height;
+                var bx = (cr.left - svgR.left) * sx2;
+                var by = (cr.top - svgR.top) * sy2;
+                var bw = cr.width * sx2;
+                var bh = cr.height * sy2;
+                if (bw > 0 && bh > 0) return { x: bx, y: by, width: bw, height: bh };
+            } catch (e2) { }
+            // Fallback: x/y/width/height attributes
+            var x = parseFloat(svgEl.getAttribute('x') || 0);
+            var y = parseFloat(svgEl.getAttribute('y') || 0);
+            var w = parseFloat(svgEl.getAttribute('width') || 100);
+            var h = parseFloat(svgEl.getAttribute('height') || 100);
+            if (w > 0 && h > 0) return { x: x, y: y, width: w, height: h };
+        }
+
+        // SVG <text> — getBoundingClientRect use karo (font loaded ho ya na ho, actual size milti hai)
+        try {
+            var cr = svgEl.getBoundingClientRect();
+            var svgR = mainSvg.getBoundingClientRect();
+            var vb = mainSvg.viewBox ? mainSvg.viewBox.baseVal : null;
+            var vbW = (vb && vb.width) ? vb.width : svgR.width;
+            var vbH = (vb && vb.height) ? vb.height : svgR.height;
+            var sx = vbW / svgR.width;
+            var sy = vbH / svgR.height;
+            var bw = cr.width * sx;
+            var bh = cr.height * sy;
+            if (bw > 0 && bh > 0) {
+                return {
+                    x: (cr.left - svgR.left) * sx,
+                    y: (cr.top - svgR.top) * sy,
+                    width: bw,
+                    height: bh
+                };
+            }
+        } catch (e) { }
+
+        // Last fallback — getBBox()
+        try {
+            var bbox = svgEl.getBBox();
+            if (bbox && bbox.width > 0) return bbox;
+        } catch (e2) { }
+
+        return null;
+    }
+
+    // =================== MAIN: SHOW SELECTION BOX ===================
+    window.showSelectionBox = function (layerId) {
+        if (!layerId) { _hideSelectionBox(); return; }
+
+        var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+        if (!layer) { _hideSelectionBox(); return; }
+
+
+        if (layer.view && layer.view !== window.currentView) {
+            _hideSelectionBox();
+            return;
+        }
+
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+        var svgEl = mainSvg.querySelector('#' + layerId);
+        if (!svgEl) { _hideSelectionBox(); return; }
+
+        var partEl = mainSvg.querySelector('#' + layer.partId);
+
+        // ---- Get bounding box ----
+        var elemBbox = _getElementBbox(svgEl, mainSvg);
+        if (!elemBbox || elemBbox.width === 0) return;
+
+        // ---- Check inside/outside part ----
+        var partBbox = null;
+        var isOutside = false;
+        if (partEl) {
+            try { partBbox = partEl.getBBox(); } catch (e) { }
+            if (partBbox) {
+                isOutside = !(
+                    elemBbox.x + elemBbox.width > partBbox.x &&
+                    elemBbox.x < partBbox.x + partBbox.width &&
+                    elemBbox.y + elemBbox.height > partBbox.y &&
+                    elemBbox.y < partBbox.y + partBbox.height
+                );
+            }
+        }
+
+        // ---- SVG coords → screen coords ----
+        var svgRect = mainSvg.getBoundingClientRect();
+        var vb = mainSvg.viewBox ? mainSvg.viewBox.baseVal : null;
+        var vbW = (vb && vb.width) ? vb.width : svgRect.width;
+        var vbH = (vb && vb.height) ? vb.height : svgRect.height;
+        var scaleX = svgRect.width / vbW;
+        var scaleY = svgRect.height / vbH;
+
+        var pad = 6;
+        var screenX = svgRect.left + (elemBbox.x - pad) * scaleX;
+        var screenY = svgRect.top + (elemBbox.y - pad) * scaleY;
+        var screenW = (elemBbox.width + pad * 2) * scaleX;
+        var screenH = (elemBbox.height + pad * 2) * scaleY;
+
+        // ---- Selection box div ----
+        var box = document.getElementById('appSelectionBox');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'appSelectionBox';
+            box.style.cssText = [
+                'position:fixed',
+                'border-radius:4px',
+                'pointer-events:all',
+                'cursor:move',
+                'z-index:9998',
+                'box-sizing:border-box'
+            ].join(';');
+            document.body.appendChild(box);
+            box.addEventListener('mousedown', _selBoxDragStart);
+        }
+
+        if (isOutside) {
+            box.style.border = '2px dashed #FF4444';
+            box.style.background = 'rgba(255,68,68,0.04)';
+            box.style.boxShadow = '0 0 0 1px rgba(255,68,68,0.15)';
+        } else {
+            box.style.border = '2px solid #007bff';
+            box.style.background = 'rgba(0,123,255,0.03)';
+            box.style.boxShadow = '0 0 8px rgba(0,123,255,0.18)';
+        }
+
+        box.style.left = screenX + 'px';
+        box.style.top = screenY + 'px';
+        box.style.width = screenW + 'px';
+        box.style.height = screenH + 'px';
+        box.style.display = 'block';
+
+        _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside);
+
+        // ---- Bring Inside button ----
+        var bringBtn = document.getElementById('appBringInsideBtn');
+        if (isOutside) {
+            if (!bringBtn) {
+                bringBtn = document.createElement('button');
+                bringBtn.id = 'appBringInsideBtn';
+                bringBtn.style.cssText = [
+                    'position:fixed',
+                    'background:#FF4444',
+                    'color:#fff',
+                    'border:none',
+                    'border-radius:4px',
+                    'padding:5px 12px',
+                    'font-size:11px',
+                    'font-weight:700',
+                    'cursor:pointer',
+                    'z-index:9999',
+                    'white-space:nowrap',
+                    'pointer-events:all',
+                    'user-select:none',
+                    'letter-spacing:.5px'
+                ].join(';');
+                document.body.appendChild(bringBtn);
+            }
+            bringBtn.textContent = '⬅ Bring Inside';
+            bringBtn.style.left = (screenX + screenW / 2 - 54) + 'px';
+            bringBtn.style.top = Math.max(4, screenY - 30) + 'px';
+            bringBtn.style.display = 'block';
+            bringBtn.onclick = function (e) {
+                e.stopPropagation();
+                _bringElementInside(layerId, layer);
+            };
+        } else {
+            if (bringBtn) bringBtn.style.display = 'none';
+        }
+
+        window._oobState.selectedLayerId = layerId;
+        window._oobState._layer = layer;
+    };
+
+    // ---- Corner handles ----
+    function _updateCornerHandles(sx, sy, sw, sh, isOutside) {
+        var color = isOutside ? '#FF4444' : '#007bff';
+        var corners = [
+            { id: 'sh-tl', l: sx - 5, t: sy - 5 },
+            { id: 'sh-tr', l: sx + sw - 5, t: sy - 5 },
+            { id: 'sh-bl', l: sx - 5, t: sy + sh - 5 },
+            { id: 'sh-br', l: sx + sw - 5, t: sy + sh - 5 }
+        ];
+        corners.forEach(function (c) {
+            var h = document.getElementById(c.id);
+            if (!h) {
+                h = document.createElement('div');
+                h.id = c.id;
+                h.style.cssText = 'position:fixed;width:10px;height:10px;border-radius:2px;z-index:9999;pointer-events:none;';
+                document.body.appendChild(h);
+            }
+            h.style.background = color;
+            h.style.left = c.l + 'px';
+            h.style.top = c.t + 'px';
+            h.style.display = 'block';
+        });
+    }
+
+    function _hideSelectionBox() {
+        ['appSelectionBox', 'appBringInsideBtn', 'sh-tl', 'sh-tr', 'sh-bl', 'sh-br'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        window._oobState.selectedLayerId = null;
+        window._oobState._layer = null;
+    }
+
+    // =================== DRAG BOX = DRAG LAYER ===================
+
+    function _selBoxDragStart(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        var state = window._oobState;
+        var layer = state._layer;
+        state.isDragging = true;
+        state.dragStartX = e.clientX;
+        state.dragStartY = e.clientY;
+        state.dragStartLayerX = layer ? (layer.x || 0) : 0;
+        state.dragStartLayerY = layer ? (layer.y || 0) : 0;
+
+        document.addEventListener('mousemove', _selBoxDragMove);
+        document.addEventListener('mouseup', _selBoxDragEnd);
+    }
+
+    function _selBoxDragMove(e) {
+        var state = window._oobState;
+        if (!state.isDragging) return;
+
+        var layer = state._layer;
+        if (!layer) return;
+
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+        var svgRect = mainSvg.getBoundingClientRect();
+        var vb = mainSvg.viewBox ? mainSvg.viewBox.baseVal : null;
+        var vbW = (vb && vb.width) ? vb.width : svgRect.width;
+        var vbH = (vb && vb.height) ? vb.height : svgRect.height;
+        var scaleX = vbW / svgRect.width;
+        var scaleY = vbH / svgRect.height;
+
+        var dx = (e.clientX - state.dragStartX) * scaleX;
+        var dy = (e.clientY - state.dragStartY) * scaleY;
+        var newX = Math.round(state.dragStartLayerX + dx);
+        var newY = Math.round(state.dragStartLayerY + dy);
+
+        if (layer.type === 'direct-mascot') {
+            layer.x = newX;
+            layer.y = newY;
+            var el = mainSvg.querySelector('#' + layer.id);
+            if (el) {
+                el.setAttribute('x', (layer._cx || 0) - (layer._mascotSize || 100) / 2 + newX);
+                el.setAttribute('y', (layer._cy || 0) - (layer._mascotSize || 100) / 2 + newY);
+            }
+            // Sync sidebar sliders for mascot
+            var mxEl = document.getElementById('mascotDirectPosX');
+            var mxVal = document.getElementById('mascotDirectPosXValue');
+            var myEl = document.getElementById('mascotDirectPosY');
+            var myVal = document.getElementById('mascotDirectPosYValue');
+            if (mxEl) mxEl.value = newX;
+            if (mxVal) mxVal.textContent = newX;
+            if (myEl) myEl.value = newY;
+            if (myVal) myVal.textContent = newY;
+        } else {
+            layer.x = newX;
+            layer.y = newY;
+            var partEl = mainSvg.querySelector('#' + layer.partId);
+            if (partEl) {
+                var bbox = partEl.getBBox();
+                var cx = bbox.x + bbox.width / 2;
+                var cy = bbox.y + bbox.height / 2;
+                var textEl = mainSvg.querySelector('#' + layer.id);
+                if (textEl) {
+                    textEl.setAttribute('x', cx + newX);
+                    textEl.setAttribute('y', cy + newY);
+                    mainSvg.querySelectorAll('[data-outline-for="' + layer.id + '"]').forEach(function (o) {
+                        o.setAttribute('x', cx + newX);
+                        o.setAttribute('y', cy + newY);
+                    });
+                }
+            }
+            // Sync sidebar sliders for text
+            var pxEl = document.getElementById('posX');
+            var pxVal = document.getElementById('posXValue');
+            var pyEl = document.getElementById('posY');
+            var pyVal = document.getElementById('posYValue');
+            if (pxEl) pxEl.value = newX;
+            if (pxVal) pxVal.textContent = newX;
+            if (pyEl) pyEl.value = newY;
+            if (pyVal) pyVal.textContent = newY;
+        }
+
+        window.showSelectionBox(layer.id);
+    }
+
+    function _selBoxDragEnd() {
+        var state = window._oobState;
+        state.isDragging = false;
+        document.removeEventListener('mousemove', _selBoxDragMove);
+        document.removeEventListener('mouseup', _selBoxDragEnd);
+        if (window.saveCustomizations) window.saveCustomizations();
+        if (state.selectedLayerId) window.showSelectionBox(state.selectedLayerId);
+    }
+
+    // =================== BRING INSIDE ===================
+
+    function _bringElementInside(layerId, layer) {
+        layer.x = 0;
+        layer.y = 0;
+
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+        if (layer.type === 'direct-mascot') {
+            if (window.applyDirectMascotToLayer && layer.mascotSvg) {
+                window.applyDirectMascotToLayer(layer.mascotSvg, layerId, false);
+            }
+            // Sync sliders
+            var mxEl = document.getElementById('mascotDirectPosX');
+            var mxVal = document.getElementById('mascotDirectPosXValue');
+            var myEl = document.getElementById('mascotDirectPosY');
+            var myVal = document.getElementById('mascotDirectPosYValue');
+            if (mxEl) mxEl.value = 0;
+            if (mxVal) mxVal.textContent = 0;
+            if (myEl) myEl.value = 0;
+            if (myVal) myVal.textContent = 0;
+        } else {
+            var partEl = mainSvg.querySelector('#' + layer.partId);
+            if (partEl) {
+                var bbox = partEl.getBBox();
+                var cx = bbox.x + bbox.width / 2;
+                var cy = bbox.y + bbox.height / 2;
+                var textEl = mainSvg.querySelector('#' + layerId);
+                if (textEl) {
+                    textEl.setAttribute('x', cx);
+                    textEl.setAttribute('y', cy);
+                    mainSvg.querySelectorAll('[data-outline-for="' + layerId + '"]').forEach(function (o) {
+                        o.setAttribute('x', cx);
+                        o.setAttribute('y', cy);
+                    });
+                }
+            }
+            var pxEl = document.getElementById('posX');
+            var pxVal = document.getElementById('posXValue');
+            var pyEl = document.getElementById('posY');
+            var pyVal = document.getElementById('posYValue');
+            if (pxEl) pxEl.value = 0;
+            if (pxVal) pxVal.textContent = 0;
+            if (pyEl) pyEl.value = 0;
+            if (pyVal) pyVal.textContent = 0;
+        }
+
+        if (window.saveCustomizations) window.saveCustomizations();
+        setTimeout(function () { window.showSelectionBox(layerId); }, 150);
+    }
+
+    // =================== HOOKS ===================
+
+    // Patch selectApplicationLayer
+    (function () {
+        var orig = window.selectApplicationLayer;
+        window.selectApplicationLayer = function (layerId) {
+            if (orig) orig.call(this, layerId);
+            setTimeout(function () { window.showSelectionBox(layerId); }, 150);
+        };
+    })();
+
+    // SVG background click = deselect
+    document.addEventListener('click', function (e) {
+        var box = document.getElementById('appSelectionBox');
+        var bBtn = document.getElementById('appBringInsideBtn');
+        if (box && box.contains(e.target)) return;
+        if (bBtn && bBtn.contains(e.target)) return;
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (mainSvg && e.target === mainSvg) {
+            _hideSelectionBox();
+            window.currentApplicationLayer = null;
+        }
+    });
+
+    // Resize / scroll update
+    window.addEventListener('resize', function () {
+        if (window._oobState.selectedLayerId) window.showSelectionBox(window._oobState.selectedLayerId);
+    });
+    window.addEventListener('scroll', function () {
+        if (window._oobState.selectedLayerId) window.showSelectionBox(window._oobState.selectedLayerId);
+    }, true);
+
+    // =================== MODAL OPEN/CLOSE HIDE BOX ===================
+    // Jab bhi koi modal open ho — selection box hide karo
+    // Jab modal close ho — wapas show karo
+
+    (function () {
+        // MutationObserver se modal display changes observe karo
+        var observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type !== 'attributes' || mutation.attributeName !== 'style') return;
+                var el = mutation.target;
+                // Sirf modal divs check karo
+                if (!el.id || !el.id.toLowerCase().includes('modal')) return;
+                var isVisible = el.style.display !== 'none' && el.style.display !== '';
+                if (isVisible) {
+                    // Koi modal khula — box hide karo
+                    _hideSelectionBox();
+                } else {
+                    // Modal band hua — agar layer selected hai to box wapas show karo
+                    if (window.currentApplicationLayer) {
+                        setTimeout(function () {
+                            window.showSelectionBox(window.currentApplicationLayer);
+                        }, 200);
+                    }
+                }
+            });
+        });
+
+        // Observe all modals
+        function _observeModals() {
+            var modals = document.querySelectorAll('[id*="modal"],[id*="Modal"]');
+            modals.forEach(function (m) {
+                observer.observe(m, { attributes: true, attributeFilter: ['style'] });
+            });
+        }
+
+        // DOM ready pe observe karo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', _observeModals);
+        } else {
+            setTimeout(_observeModals, 500);
+        }
+    })();
+
+    console.log('✅ Selection box (text + mascot) loaded');
+
+
+
+
+
+
+
+
+    // ============================================================
+    // FLIP PATCH — Rotation + Flip ke baad drag direction fix
+    // ============================================================
+
+    window._applyFlipTransform = function (layer, mainSvg) {
+        var el = mainSvg.querySelector('#' + layer.id);
+        if (!el) return;
+
+        var flipX = layer.flipX || 1;
+        var rot = layer.rotation || 0;
+        var transform;
+
+        if (layer.type === 'direct-mascot') {
+            var cx = (layer._cx || 0) + (layer.x || 0);
+            var cy = (layer._cy || 0) + (layer.y || 0);
+            if (flipX === -1) {
+                transform = 'translate(' + cx + ',' + cy + ') rotate(' + rot + ') scale(-1,1) translate(' + (-cx) + ',' + (-cy) + ')';
+            } else {
+                transform = rot !== 0 ? 'rotate(' + rot + ' ' + cx + ' ' + cy + ')' : null;
+            }
+        } else {
+            var x = parseFloat(el.getAttribute('x') || 0);
+            var y = parseFloat(el.getAttribute('y') || 0);
+            if (flipX === -1) {
+                transform = 'translate(' + x + ',' + y + ') rotate(' + rot + ') scale(-1,1) translate(' + (-x) + ',' + (-y) + ')';
+            } else {
+                transform = rot !== 0 ? 'rotate(' + rot + ' ' + x + ' ' + y + ')' : null;
+            }
+            mainSvg.querySelectorAll('[data-outline-for="' + layer.id + '"]').forEach(function (o) {
+                if (transform) o.setAttribute('transform', transform);
+                else o.removeAttribute('transform');
+            });
+        }
+
+        if (transform) el.setAttribute('transform', transform);
+        else el.removeAttribute('transform');
+    };
+
+    // =================== DRAG DELTA — rotation + flip aware ===================
+    // Mouse movement (screen coords) ko SVG movement mein convert karo
+    // Rotation + flip dono consider karo
+    function _rotateDelta(dx, dy, rotDeg, flipX) {
+        var rad = rotDeg * Math.PI / 180;
+        var cos = Math.cos(rad);
+        var sin = Math.sin(rad);
+
+        // Screen delta → rotated SVG delta
+        // Agar flip ON hai to X axis mirror hai — toh dx negate karo pehle
+        if (flipX === -1) dx = -dx;
+
+        // Rotate the delta vector by -angle (inverse of element rotation)
+        var svgDx = dx * cos + dy * sin;
+        var svgDy = -dx * sin + dy * cos;
+
+        return { dx: svgDx, dy: svgDy };
+    }
+
+    // =================== FLIP TOGGLE ===================
+    window.flipApplicationLayer = function (layerId, event) {
+        if (event) event.stopPropagation();
+        var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+        if (!layer) return;
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+        layer.flipX = (layer.flipX || 1) * -1;
+        window._applyFlipTransform(layer, mainSvg);
+        _updateFlipUI(layerId, layer);
+
+        if (window.saveCustomizations) window.saveCustomizations();
+        if (window.showSelectionBox) setTimeout(function () { window.showSelectionBox(layerId); }, 100);
+    };
+
+    function _updateFlipUI(layerId, layer) {
+        if (layer.type === 'direct-mascot') {
+            var preview = document.getElementById('directMascotPreview');
+            if (preview && layer.mascotSvg) {
+                preview.innerHTML = layer.mascotSvg;
+                var s = preview.querySelector('svg');
+                if (s) {
+                    s.style.maxWidth = '80px';
+                    s.style.maxHeight = '80px';
+                    s.style.transform = layer.flipX === -1 ? 'scaleX(-1)' : '';
+                }
+            }
+        }
+        document.querySelectorAll('.application-layer-item').forEach(function (item) {
+            if (item.dataset.layerId !== layerId) return;
+            var btn = item.querySelector('.flip-btn-h');
+            if (!btn) return;
+            btn.style.background = layer.flipX === -1 ? '#1a1a1a' : '#eee';
+            btn.style.color = layer.flipX === -1 ? '#fff' : '#000';
+        });
+    }
+
+    // =================== makeMascotDraggable — rotation + flip aware ===================
+    (function () {
+        window.makeMascotDraggable = function (element, layer) {
+            var isDragging = false;
+            var startX, startY, initOffX, initOffY;
+
+            element.addEventListener('mousedown', function (e) {
+                if (e.button !== 0) return;
+                isDragging = true;
+                element.style.cursor = 'grabbing';
+                var svg = element.ownerSVGElement || element.closest('svg');
+                var pt = svg.createSVGPoint();
+                pt.x = e.clientX; pt.y = e.clientY;
+                var svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                startX = svgP.x;
+                startY = svgP.y;
+                initOffX = layer.x || 0;
+                initOffY = layer.y || 0;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!isDragging) return;
+                var svg = element.ownerSVGElement || element.closest('svg');
+                var pt = svg.createSVGPoint();
+                pt.x = e.clientX; pt.y = e.clientY;
+                var svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+                var rawDx = svgP.x - startX;
+                var rawDy = svgP.y - startY;
+
+                // Rotation + flip aware delta
+                var d = _rotateDelta(rawDx, rawDy, layer.rotation || 0, layer.flipX || 1);
+
+                layer.x = Math.round(initOffX + d.dx);
+                layer.y = Math.round(initOffY + d.dy);
+
+                var cx = layer._cx || 0;
+                var cy = layer._cy || 0;
+                var sz = layer._mascotSize || 100;
+
+                element.setAttribute('x', cx - sz / 2 + layer.x);
+                element.setAttribute('y', cy - sz / 2 + layer.y);
+
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) window._applyFlipTransform(layer, mainSvg);
+            });
+
+            document.addEventListener('mouseup', function () {
+                if (!isDragging) return;
+                isDragging = false;
+                element.style.cursor = 'move';
+                if (window.currentApplicationLayer === layer.id) {
+                    var xEl = document.getElementById('mascotDirectPosX');
+                    var yEl = document.getElementById('mascotDirectPosY');
+                    if (xEl) { xEl.value = layer.x; document.getElementById('mascotDirectPosXValue').textContent = layer.x; }
+                    if (yEl) { yEl.value = layer.y; document.getElementById('mascotDirectPosYValue').textContent = layer.y; }
+                }
+                if (window.saveCustomizations) window.saveCustomizations();
+            });
+        };
+    })();
+
+    // =================== makeDraggable (text) — rotation + flip aware ===================
+    (function () {
+        window.makeDraggable = function (element, layer) {
+            var isDragging = false;
+            var startX, startY, initialX, initialY;
+
+            element.addEventListener('mousedown', function (e) {
+                if (e.button !== 0) return;
+                isDragging = true;
+                element.style.cursor = 'grabbing';
+                var svg = element.ownerSVGElement;
+                var pt = svg.createSVGPoint();
+                pt.x = e.clientX; pt.y = e.clientY;
+                var svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                startX = svgP.x;
+                startY = svgP.y;
+                initialX = parseFloat(element.getAttribute('x'));
+                initialY = parseFloat(element.getAttribute('y'));
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!isDragging) return;
+                var svg = element.ownerSVGElement;
+                var pt = svg.createSVGPoint();
+                pt.x = e.clientX; pt.y = e.clientY;
+                var svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+                var rawDx = svgP.x - startX;
+                var rawDy = svgP.y - startY;
+
+                // Rotation + flip aware delta
+                var d = _rotateDelta(rawDx, rawDy, layer.rotation || 0, layer.flipX || 1);
+
+                var newX = Math.round(initialX + d.dx);
+                var newY = Math.round(initialY + d.dy);
+
+                element.setAttribute('x', newX);
+                element.setAttribute('y', newY);
+
+                var outlines = element.parentElement.querySelectorAll('[data-outline-for="' + layer.id + '"]');
+                outlines.forEach(function (o) {
+                    o.setAttribute('x', newX);
+                    o.setAttribute('y', newY);
+                });
+
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) window._applyFlipTransform(layer, mainSvg);
+            });
+
+            document.addEventListener('mouseup', function () {
+                if (!isDragging) return;
+                isDragging = false;
+                element.style.cursor = 'move';
+                var partElement = document.querySelector('#' + layer.partId);
+                if (partElement) {
+                    var bbox = partElement.getBBox();
+                    var centerX = bbox.x + bbox.width / 2;
+                    var centerY = bbox.y + bbox.height / 2;
+                    layer.x = Math.round(parseFloat(element.getAttribute('x')) - centerX);
+                    layer.y = Math.round(parseFloat(element.getAttribute('y')) - centerY);
+                    if (window.currentApplicationLayer === layer.id) {
+                        if (window.updateApplicationControls) window.updateApplicationControls(layer);
+                    }
+                    if (window.saveCustomizations) window.saveCustomizations();
+                }
+            });
+        };
+    })();
+
+    // =================== Selection box drag — rotation + flip aware ===================
+    (function () {
+        document.addEventListener('mousemove', function () {
+            if (!window._oobState || !window._oobState.isDragging) return;
+            var layer = window._oobState._layer;
+            if (!layer) return;
+            // Only re-apply flip transform (position already set by oob drag)
+            if (layer.flipX !== -1 && !layer.rotation) return;
+            var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+            if (mainSvg) window._applyFlipTransform(layer, mainSvg);
+        }, true);
+    })();
+
+    // =================== applyDirectMascotToLayer — flip preserve ===================
+    (function () {
+        var _orig = window.applyDirectMascotToLayer;
+        window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal) {
+            var layerId = forcedLayerId || window.currentApplicationLayer;
+            var layer = layerId && window.findLayerById ? window.findLayerById(layerId) : null;
+            var savedFlipX = layer ? (layer.flipX || 1) : 1;
+
+            if (_orig) _orig.call(this, svgContent, forcedLayerId, fromModal);
+
+            if (savedFlipX === -1 && layer) {
+                layer.flipX = -1;
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) setTimeout(function () {
+                    window._applyFlipTransform(layer, mainSvg);
+                    _updateFlipUI(layerId, layer);
+                }, 50);
+            }
+        };
+    })();
+
+    // =================== Rotation patches ===================
+    (function () {
+        var _orig = window.updateRotation;
+        window.updateRotation = function (value) {
+            var layerId = window.currentApplicationLayer;
+            var layer = layerId && window.findLayerById ? window.findLayerById(layerId) : null;
+            if (layer && layer.flipX === -1) {
+                layer.rotation = parseInt(value);
+                var el = document.getElementById('rotationValue');
+                if (el) el.textContent = value;
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) window._applyFlipTransform(layer, mainSvg);
+                if (window.saveCustomizations) window.saveCustomizations();
+            } else {
+                if (_orig) _orig.call(this, value);
+            }
+        };
+    })();
+
+    (function () {
+        var _orig = window.updateDirectMascotRotation;
+        window.updateDirectMascotRotation = function (value) {
+            var layerId = window.currentApplicationLayer;
+            var layer = layerId && window.findLayerById ? window.findLayerById(layerId) : null;
+            if (layer && layer.flipX === -1) {
+                layer.rotation = parseInt(value);
+                var el = document.getElementById('directMascotRotationValue');
+                if (el) el.textContent = value;
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) window._applyFlipTransform(layer, mainSvg);
+                if (window.saveCustomizations) window.saveCustomizations();
+            } else {
+                if (_orig) _orig.call(this, value);
+            }
+        };
+    })();
+
+    // =================== Position slider patches ===================
+    (function () {
+        var _orig = window.updatePosition;
+        window.updatePosition = function (x, y) {
+            if (_orig) _orig.call(this, x, y);
+            var layerId = window.currentApplicationLayer;
+            var layer = layerId && window.findLayerById ? window.findLayerById(layerId) : null;
+            if (layer && layer.flipX === -1) {
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) setTimeout(function () { window._applyFlipTransform(layer, mainSvg); }, 10);
+            }
+        };
+    })();
+
+    (function () {
+        var _orig = window.updateDirectMascotPosition;
+        window.updateDirectMascotPosition = function (axis, value) {
+            if (_orig) _orig.call(this, axis, value);
+            var layerId = window.currentApplicationLayer;
+            var layer = layerId && window.findLayerById ? window.findLayerById(layerId) : null;
+            if (layer && layer.flipX === -1) {
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) setTimeout(function () { window._applyFlipTransform(layer, mainSvg); }, 10);
+            }
+        };
+    })();
+
+    // =================== Layer list button ===================
+    (function () {
+        var _orig = window.updateApplicationLayersList;
+        window.updateApplicationLayersList = function () {
+            if (_orig) _orig.call(this);
+            var container = document.getElementById('applicationLayersList');
+            if (!container) return;
+            container.querySelectorAll('.application-layer-item').forEach(function (item) {
+                var layerId = item.dataset.layerId;
+                if (!layerId || item.querySelector('.flip-btn-h')) return;
+                var dupBtn = item.querySelector('[onclick*="duplicateApplicationLayer"]');
+                if (!dupBtn) return;
+                var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+                var on = layer && layer.flipX === -1;
+                var btn = document.createElement('div');
+                btn.className = 'flip-btn-h';
+                btn.innerHTML = '↔';
+                btn.style.cssText = 'cursor:pointer;font-size:14px;padding:4px 6px;border-radius:4px;flex-shrink:0;user-select:none;transition:all .15s;background:' + (on ? '#1a1a1a' : '#eee') + ';color:' + (on ? '#fff' : '#000');
+                btn.onclick = function (e) { e.stopPropagation(); window.flipApplicationLayer(layerId, e); };
+                dupBtn.parentNode.insertBefore(btn, dupBtn);
+            });
+        };
+    })();
+
+    // =================== Restore on reload ===================
+    (function () {
+        var _orig = window.addApplicationToSvg;
+        window.addApplicationToSvg = function (layer) {
+            if (_orig) _orig.call(this, layer);
+            if (layer.flipX && layer.flipX !== 1) {
+                var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+                if (mainSvg) setTimeout(function () { window._applyFlipTransform(layer, mainSvg); }, 150);
+            }
+        };
+    })();
+
+    (function () {
+        var _orig = window.reorderSvgLayers;
+        window.reorderSvgLayers = function (view, partId, arr) {
+            if (_orig) _orig.call(this, view, partId, arr);
+            var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+            if (!mainSvg) return;
+            arr.forEach(function (layer) {
+                if (layer.flipX && layer.flipX !== 1)
+                    setTimeout(function () { window._applyFlipTransform(layer, mainSvg); }, 50);
+            });
+        };
+    })();
+
+    (function () {
+        var _orig = window.selectApplicationLayer;
+        window.selectApplicationLayer = function (layerId) {
+            if (_orig) _orig.call(this, layerId);
+            setTimeout(function () {
+                var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+                if (layer) _updateFlipUI(layerId, layer);
+            }, 200);
+        };
+    })();
+
+    console.log('✅ Flip patch — rotation + drag direction fully fixed');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 })();

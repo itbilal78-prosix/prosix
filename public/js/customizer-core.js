@@ -3018,78 +3018,7 @@ window.selectSvgElement = function (element) {
         updateUndoRedoButtons();
     }
 
-    // window.saveDesign = async function () {
 
-    //     if (window.isSaving) return;
-    //     window.isSaving = true;
-
-
-    //     const views = ['front', 'back', 'left', 'right'];
-    //     const allSvgs = {};
-
-    //     for (const v of views) {
-
-    //         if (!modelViews[v]?.svg_url) continue;
-
-    //         const res = await fetch(modelViews[v].svg_url);
-    //         const text = await res.text();
-
-    //         const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-    //         const svg = doc.querySelector('svg');
-    //         if (!svg) continue;
-
-    //         svg.setAttribute('width', '100%');
-    //         svg.setAttribute('height', '100%');
-
-    //         svg.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
-    //             el.id = `svg-part-${i}`;
-    //         });
-
-    //         svg.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
-
-    //             if (!el.id) el.id = `svg-part-${i}`;
-
-    //             if (gradientChanges[v]?.[el.id]) {
-
-    //                 rebuildGradient(svg, el.id, gradientChanges[v][el.id], v);
-    //                 el.setAttribute('fill', `url(#gradient-${v}-${el.id})`);
-
-    //             } else if (colorChanges[v]?.[el.id]) {
-
-    //                 el.setAttribute('fill', colorChanges[v][el.id]);
-    //             }
-    //         });
-
-
-    //         if (window.applyPatternsToSvg) {
-    //             applyPatternsToSvg(svg, v);
-    //         }
-
-    //         if (window.applyMascotsToSvg) {
-    //             applyMascotsToSvg(svg, v);   // 🔥 ADD
-    //         }
-
-    //         allSvgs[v] = new XMLSerializer().serializeToString(svg);
-    //     }
-
-    //     await fetch(`/admin/models/${MODEL_ID}/save-design`, {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-    //         },
-    //         body: JSON.stringify({
-    //             svgs: allSvgs,
-    //             color_changes: colorChanges,
-    //             pattern_changes: patternsApplied,
-    //             mascot_changes: mascotsApplied,
-    //             applications: window.applicationsApplied   // 🔥 ADD THIS
-    //         })
-
-    //     });
-
-    //     alert("✅ FIRST SAVE = ALL VIEWS DONE");
-    // }
     window.saveDesign = async function () {
         if (window.isSaving) return;
         window.isSaving = true;
@@ -3192,6 +3121,9 @@ window.selectSvgElement = function (element) {
 
         window.isSaving = false;
     };
+
+
+
 
     /* ================= RESET ================= */
 

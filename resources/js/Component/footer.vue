@@ -64,27 +64,31 @@
 
   <h3 class="footer-title mb-3">CONTACT INFO</h3>
 
-  <a href="tel:+19292104402" class="contact-link mb-2 d-block">
-    <i class="bi bi-telephone-fill me-2"></i>
-    +1 929 210 4402
-  </a>
+  <div class="contact-item mb-2">
+    <i class="bi bi-telephone-fill"></i>
+    <a href="tel:+19292104402" class="contact-link">+1 929 210 4402</a>
+  </div>
 
-  <p class="mb-2">
-    <i class="bi bi-geo-alt-fill me-2"></i>
-    2604 Whittier Place Wilmington <br>
-    Delaware 19808 U.S.A
-  </p>
+  <div class="contact-item mb-2">
+    <i class="bi bi-geo-alt-fill"></i>
+    <span>
+      2604 Whittier Place Wilmington <br>
+      Delaware 19808 U.S.A
+    </span>
+  </div>
 
-  <p class="mb-2">
-    <i class="bi bi-geo-alt-fill me-2"></i>
-    5556 E Kings Canyon Rd <br>
-    Fresno, CA 93727
-  </p>
+  <div class="contact-item mb-2">
+    <i class="bi bi-geo-alt-fill"></i>
+    <span>
+      5556 E Kings Canyon Rd <br>
+      Fresno, CA 93727
+    </span>
+  </div>
 
-  <a href="mailto:sales@prosix.com" class="contact-link">
-    <i class="bi bi-envelope-fill me-2"></i>
-    sales@prosix.com
-  </a>
+  <div class="contact-item">
+    <i class="bi bi-envelope-fill"></i>
+    <a href="mailto:sales@prosix.com" class="contact-link">sales@prosix.com</a>
+  </div>
 
 </div>
 
@@ -192,7 +196,23 @@
   font-size: 0.82rem;
   color: rgba(255,255,255,0.6);
 }
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
 
+.contact-item i {
+  font-size: 16px;
+  margin-top: 4px;
+  min-width: 18px;
+}
+
+.contact-item span,
+.contact-item a {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
 /* ── Responsive ── */
 @media (max-width: 767px) {
   .footer-logo-img { height: 50px; }

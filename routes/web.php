@@ -21,6 +21,7 @@ use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PlaceOrderController;
 
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -181,6 +182,7 @@ Route::get('/storage/{path}', function ($path) {
 })->where('path', '.*');
 Route::post('/admin/artwork/download-pdf',    [ArtworkRequestController::class,    'downloadPdf'])->name('artwork.download.pdf');
 Route::post('/admin/membership/download-pdf', [MembershipRequestController::class, 'downloadPdf'])->name('membership.download.pdf');
+Route::post('/admin/place-orders-download', [PlaceOrderController::class, 'downloadPdf']);
 Route::post('/models/bulk-destroy',   [CustomizerModelController::class, 'bulkDestroy'])->name('models.bulkDestroy');
 Route::post('/models/bulk-duplicate', [CustomizerModelController::class, 'bulkDuplicate'])->name('models.bulkDuplicate');
 Route::get('/api/search', [App\Http\Controllers\SearchController::class, 'search']);
@@ -198,6 +200,11 @@ Route::middleware(['auth:admin'])
         $template = \App\Models\Template::findOrFail($id);
         return view('templates.edit', compact('template'));
     })->name('mascots.edit');
+
+
+
+Route::get('/admin/place-orders', [PlaceOrderController::class, 'index'])
+    ->name('admin.placeorder');
 
 Route::get('/{any}', function () {
     return view('welcome');

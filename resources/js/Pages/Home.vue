@@ -186,8 +186,8 @@
                     <img :src="product.image" :alt="product.name" class="product-img img-fluid" loading="lazy" />
                   </div>
                   <div class="product-meta-row apparel-meta-row">
-                    <h5 class="product-name text-white fw-semibold">{{ product.name }}</h5>
-                    <p class="product-price text-white fw-bold">${{ product.price.toFixed(2) }}</p>
+                    <h5 class="product-name  fw-semibold">{{ product.name }}</h5>
+                    <p class="product-price  fw-bold">${{ product.price.toFixed(2) }}</p>
                   </div>
                   <button v-if="product.type === 'product'" class="btn btn-light w-100 py-2 fw-bold add-to-cart-btn" @click="goToProduct(product)">View &amp; Buy</button>
                   <button v-else-if="product.type === 'model'" class="btn button-apperal w-100 py-2 fw-bold add-to-cart-btn" @click="goToCustomizer(product)">Customize</button>
@@ -722,8 +722,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .home-card-img-wrap { position: relative; overflow: hidden; margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; background: #f8f8f8; }
 .home-cart-icon-btn { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; background: rgba(255,255,255,0.92); border: 1px solid #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 12px; transition: 0.2s; color: #333; flex-shrink: 0; }
 .home-cart-icon-btn:hover { background: #000; color: #fff; border-color: #000; }
-.apparel-cart-icon { background: rgba(50,50,51,0.85) !important; border-color: rgba(255,255,255,0.25) !important; color: #fff !important; }
-.apparel-cart-icon:hover { background: #fff !important; color: #000 !important; }
+.apparel-cart-icon {  color: #000000 !important; }
+.apparel-cart-icon:hover { background: #000000 !important; color: #ffffff !important; }
 .product-card { padding: 0 4px; box-sizing: border-box; }
 .product-card-inner { background: #fff; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 /* .product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); } */
@@ -739,7 +739,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-btn-next { right: 5px; }
 .carousel-btn:hover { background: #222; transform: translateY(-50%) scale(1.05); }
 
-.apparel-card-inner { background:#323233; border: 1px solid #444; border-radius: 12px; padding: 10px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.apparel-card-inner { background:#ffffff; color: #000;   border: 1px solid #444; border-radius: 12px; padding: 10px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .product-image-wrapper { margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; overflow: hidden; background: #ffffff; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-name { font-size: 0.88rem; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

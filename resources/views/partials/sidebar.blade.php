@@ -70,6 +70,11 @@
                 Memberships
             </a>
         </li>
+        <li>
+    <a class="nav-link text-light py-1" href="{{ route('admin.placeorder') }}">
+        Place Orders Data
+    </a>
+</li>
     </ul>
 </li>
         {{-- PRODUCT MANAGEMENT --}}
@@ -86,17 +91,18 @@
                 @if($admin->is_super_admin || $admin->can_categories)
                 <li><a class="nav-link text-light py-1" href="{{ route('categories.index') }}">Categories</a></li>
                 @endif
+                                <li><a class="nav-link text-light py-1" href="{{ route('products.index') }}">All Products</a></li>
+
                 <li>
                     <a class="nav-link text-light py-1" href="{{ route('deals.index') }}">
-                        <i class="bi bi-gift me-2"></i> Deals & Offers
+                         Deals & Offers
                     </a>
                 </li>
                 <li>
                     <a class="nav-link text-light py-1" href="{{ route('videos.index') }}">
-                        <i class="bi bi-camera-video me-2"></i> Video Management
+                        Video Management
                     </a>
                 </li>
-                <li><a class="nav-link text-light py-1" href="{{ route('products.index') }}">All Products</a></li>
             </ul>
         </li>
         @endif

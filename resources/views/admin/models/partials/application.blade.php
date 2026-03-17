@@ -52,7 +52,8 @@
 
             {{-- Mascot Preview --}}
             <div style="margin-bottom:20px; padding:16px; background:#f5f5f5; border-radius:10px; text-align:center;">
-                <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">MASCOT PREVIEW</div>
+                <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">MASCOT
+                    PREVIEW</div>
                 <div id="directMascotPreview"
                     style="width:100px; height:100px; margin:0 auto 12px; background:#e8e8e8; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                     <span style="color:#aaa; font-size:11px;">No mascot</span>
@@ -61,6 +62,15 @@
                     style="width:100%; padding:10px; background:#1a1a1a; color:#fff; border:none; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; letter-spacing:.5px;">
                     Change Mascot
                 </button>
+                {{-- Mascot Colors --}}
+                <div id="directMascotColorSection"
+                    style="margin-bottom:20px; padding:16px; background:#f5f5f5; border-radius:10px;">
+                    <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
+                        MASCOT COLORS</div>
+                    <div id="directMascotColorSwatches" style="display:flex; flex-direction:column; gap:10px;">
+                        <p style="font-size:12px; color:#aaa; text-align:center;">Loading colors...</p>
+                    </div>
+                </div>
             </div>
 
             {{-- Scale --}}
@@ -102,17 +112,17 @@
                     <div>
                         <label style="font-size:12px; color:#666;">X: <span id="mascotDirectPosXValue">0</span></label>
                         <input type="range" id="mascotDirectPosX" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('x', this.value)"
-                            style="width:100%; cursor:pointer;">
+                            oninput="updateDirectMascotPosition('x', this.value)" style="width:100%; cursor:pointer;">
                     </div>
                     <div>
                         <label style="font-size:12px; color:#666;">Y: <span id="mascotDirectPosYValue">0</span></label>
                         <input type="range" id="mascotDirectPosY" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('y', this.value)"
-                            style="width:100%; cursor:pointer;">
+                            oninput="updateDirectMascotPosition('y', this.value)" style="width:100%; cursor:pointer;">
                     </div>
                 </div>
             </div>
+
+
 
             {{-- Delete --}}
             <button onclick="deleteCurrentApplicationLayer()"
@@ -230,7 +240,8 @@
 
                         <div id="currentOutlineDisplay" onclick="openAccentsModal()"
                             style="cursor:pointer; text-align:center; margin-bottom:15px; display:none; width:30%;">
-                            <div id="outlineStylePreview" style="font-size:65px; font-weight:900; margin-bottom:8px; line-height:1;"></div>
+                            <div id="outlineStylePreview"
+                                style="font-size:65px; font-weight:900; margin-bottom:8px; line-height:1;"></div>
                             <div id="outlineStyleName" style="font-size:13px; color:#333; font-weight:600;"></div>
                         </div>
 
@@ -238,31 +249,47 @@
 
                             <div class="control-group"
                                 style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
-                                <label style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Text-Color</label>
-                                <div id="baseColorPicker" style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center;"></div>
+                                <label
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Text-Color</label>
+                                <div id="baseColorPicker"
+                                    style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center;"></div>
                             </div>
 
                             <div id="outline1Section" class="control-group"
                                 style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
-                                <label style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline 1</label>
-                                <div id="outline1ColorPicker" style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;"></div>
-                                <input type="number" min="0" value="3" onchange="updateOutlineStroke('outline1', this.value)"
+                                <label
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline
+                                    1</label>
+                                <div id="outline1ColorPicker"
+                                    style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;">
+                                </div>
+                                <input type="number" min="0" value="3"
+                                    onchange="updateOutlineStroke('outline1', this.value)"
                                     style="width:55px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:12px; text-align:center; flex-shrink:0;">
                             </div>
 
                             <div id="outline2Section" class="control-group"
                                 style="display:none; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
-                                <label style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline 2</label>
-                                <div id="outline2ColorPicker" style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;"></div>
-                                <input type="number" min="0" value="3" onchange="updateOutlineStroke('outline2', this.value)"
+                                <label
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline
+                                    2</label>
+                                <div id="outline2ColorPicker"
+                                    style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;">
+                                </div>
+                                <input type="number" min="0" value="3"
+                                    onchange="updateOutlineStroke('outline2', this.value)"
                                     style="width:55px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:12px; text-align:center; flex-shrink:0;">
                             </div>
 
                             <div id="shadowSection" class="control-group"
                                 style="display:none; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
-                                <label style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Shadow</label>
-                                <div id="shadowColorPicker" style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;"></div>
-                                <input type="number" min="0" value="3" onchange="updateShadowOffset(this.value)"
+                                <label
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Shadow</label>
+                                <div id="shadowColorPicker"
+                                    style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;">
+                                </div>
+                                <input type="number" min="0" value="3"
+                                    onchange="updateShadowOffset(this.value)"
                                     style="width:55px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:12px; text-align:center; flex-shrink:0;">
                             </div>
                         </div>
@@ -281,26 +308,35 @@
                     </div>
 
                     <div id="textPatternColorControls" style="display:none;">
-                        <div style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">PATTERN PREVIEW:</div>
-                            <div id="textPatternPreview" style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;"></div>
+                        <div
+                            style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
+                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">PATTERN
+                                PREVIEW:</div>
+                            <div id="textPatternPreview"
+                                style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;">
+                            </div>
                         </div>
 
-                        <div style="margin-bottom:15px; padding:12px; background:#f8f9fa; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:10px;">PATTERN COLORS:</div>
+                        <div
+                            style="margin-bottom:15px; padding:12px; background:#f8f9fa; border-radius:6px; border:2px solid #e0e0e0;">
+                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:10px;">PATTERN
+                                COLORS:</div>
                             <div id="patternColorPaletteInTab"></div>
                         </div>
 
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Pattern Size: <span id="patternSizeValueTab">100</span>%</label>
+                            <label style="font-weight:600; font-size:14px;">Pattern Size: <span
+                                    id="patternSizeValueTab">100</span>%</label>
                             <input type="range" min="10" max="200" value="100" id="patternSizeTab"
                                 oninput="updateTextPatternSize(this.value); document.getElementById('patternSizeValueTab').textContent=this.value;"
                                 style="width:100%; cursor:pointer;">
                         </div>
 
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Pattern Opacity: <span id="patternOpacityValueTab">100</span>%</label>
-                            <input type="range" min="0" max="100" value="100" id="patternOpacityTab"
+                            <label style="font-weight:600; font-size:14px;">Pattern Opacity: <span
+                                    id="patternOpacityValueTab">100</span>%</label>
+                            <input type="range" min="0" max="100" value="100"
+                                id="patternOpacityTab"
                                 oninput="updateTextPatternOpacity(this.value); document.getElementById('patternOpacityValueTab').textContent=this.value;"
                                 style="width:100%; cursor:pointer;">
                         </div>
@@ -311,7 +347,8 @@
                         </button>
                     </div>
 
-                    <p id="patternPlaceholder" style="color:#999; text-align:center; padding:40px 20px; font-size:14px;">
+                    <p id="patternPlaceholder"
+                        style="color:#999; text-align:center; padding:40px 20px; font-size:14px;">
                         Select a pattern to fill your text</p>
                 </div>
 
@@ -327,28 +364,38 @@
                     </div>
 
                     <div id="textMascotColorControls" style="display:none;">
-                        <div style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">MASCOT PREVIEW:</div>
-                            <div id="textMascotPreview" style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;"></div>
+                        <div
+                            style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
+                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">MASCOT
+                                PREVIEW:</div>
+                            <div id="textMascotPreview"
+                                style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;">
+                            </div>
                         </div>
 
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Mascot Size: <span id="mascotSizeValueTab">100</span>%</label>
-                            <input type="range" min="10" max="200" value="100" id="mascotSizeTabSlider"
+                            <label style="font-weight:600; font-size:14px;">Mascot Size: <span
+                                    id="mascotSizeValueTab">100</span>%</label>
+                            <input type="range" min="10" max="200" value="100"
+                                id="mascotSizeTabSlider"
                                 oninput="updateTextMascotSize(this.value); document.getElementById('mascotSizeValueTab').textContent=this.value;"
                                 style="width:100%; cursor:pointer;">
                         </div>
 
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Mascot Opacity: <span id="mascotOpacityValueTab">100</span>%</label>
-                            <input type="range" min="0" max="100" value="100" id="mascotOpacityTabSlider"
+                            <label style="font-weight:600; font-size:14px;">Mascot Opacity: <span
+                                    id="mascotOpacityValueTab">100</span>%</label>
+                            <input type="range" min="0" max="100" value="100"
+                                id="mascotOpacityTabSlider"
                                 oninput="updateTextMascotOpacity(this.value); document.getElementById('mascotOpacityValueTab').textContent=this.value;"
                                 style="width:100%; cursor:pointer;">
                         </div>
 
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Mascot Count: <span id="mascotCountValueTab">4</span></label>
-                            <input type="range" min="1" max="12" value="4" id="mascotCountTabSlider"
+                            <label style="font-weight:600; font-size:14px;">Mascot Count: <span
+                                    id="mascotCountValueTab">4</span></label>
+                            <input type="range" min="1" max="12" value="4"
+                                id="mascotCountTabSlider"
                                 oninput="updateTextMascotCount(this.value); document.getElementById('mascotCountValueTab').textContent=this.value;"
                                 style="width:100%; cursor:pointer;">
                         </div>
@@ -359,7 +406,8 @@
                         </button>
                     </div>
 
-                    <p id="mascotPlaceholder" style="color:#999; text-align:center; padding:40px 20px; font-size:14px;">
+                    <p id="mascotPlaceholder"
+                        style="color:#999; text-align:center; padding:40px 20px; font-size:14px;">
                         Select a mascot to fill your text</p>
                 </div>
 
@@ -375,9 +423,11 @@
 <div id="accentsModal" class="color-modal" style="display:none;">
     <div class="color-modal-content" style="width:800px; max-width:95%;">
 
-        <div style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
+        <div
+            style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
             <h3 style="margin:0; font-size:18px; font-weight:600;">ACCENTS</h3>
-            <span onclick="closeAccentsModal()" style="cursor:pointer; font-size:28px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%;">×</span>
+            <span onclick="closeAccentsModal()"
+                style="cursor:pointer; font-size:28px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%;">×</span>
         </div>
 
         <div style="padding:30px;">
@@ -386,7 +436,9 @@
                 <div class="accent-card" onclick="selectAccentStyle('single')"
                     style="cursor:pointer; border:3px solid #e0e0e0; border-radius:8px; padding:20px; text-align:center; transition:all 0.3s; background:white;">
                     <div style="font-size:48px; font-weight:900; margin-bottom:10px; color:#000;">T</div>
-                    <div style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">Single Color</div>
+                    <div
+                        style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">
+                        Single Color</div>
                 </div>
 
                 <div class="accent-card" onclick="selectAccentStyle('two-color')"
@@ -394,24 +446,32 @@
                     <div style="font-size:48px; font-weight:900; margin-bottom:10px;">
                         <span style="-webkit-text-fill-color:#333; -webkit-text-stroke:2px #999;">T</span>
                     </div>
-                    <div style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">Two Color</div>
+                    <div
+                        style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">
+                        Two Color</div>
                 </div>
 
                 <div class="accent-card" onclick="selectAccentStyle('two-color-shadow')"
                     style="cursor:pointer; border:3px solid #e0e0e0; border-radius:8px; padding:20px; text-align:center; transition:all 0.3s; background:white;">
                     <div style="font-size:48px; font-weight:900; margin-bottom:10px;">
-                        <span style="-webkit-text-fill-color:#fff; -webkit-text-stroke:2px #333; filter:drop-shadow(3px 3px 0 #666);">T</span>
+                        <span
+                            style="-webkit-text-fill-color:#fff; -webkit-text-stroke:2px #333; filter:drop-shadow(3px 3px 0 #666);">T</span>
                     </div>
-                    <div style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">Two Color with Drop Shadow</div>
+                    <div
+                        style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">
+                        Two Color with Drop Shadow</div>
                 </div>
 
                 <div class="accent-card" onclick="selectAccentStyle('three-color')"
                     style="cursor:pointer; border:3px solid #e0e0e0; border-radius:8px; padding:20px; text-align:center; transition:all 0.3s; background:white;">
                     <div style="font-size:48px; font-weight:900; margin-bottom:10px; position:relative;">
-                        <span style="position:absolute; left:50%; transform:translateX(-50%); -webkit-text-fill-color:transparent; -webkit-text-stroke:4px #999;">T</span>
+                        <span
+                            style="position:absolute; left:50%; transform:translateX(-50%); -webkit-text-fill-color:transparent; -webkit-text-stroke:4px #999;">T</span>
                         <span style="-webkit-text-fill-color:#333; -webkit-text-stroke:2px #ccc;">T</span>
                     </div>
-                    <div style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">Three Color</div>
+                    <div
+                        style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">
+                        Three Color</div>
                 </div>
 
                 <div class="accent-card" onclick="selectAccentStyle('single-shadow')"
@@ -419,16 +479,22 @@
                     <div style="font-size:48px; font-weight:900; margin-bottom:10px;">
                         <span style="color:#000; filter:drop-shadow(3px 3px 0 #666);">T</span>
                     </div>
-                    <div style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">Single Color with Drop Shadow</div>
+                    <div
+                        style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">
+                        Single Color with Drop Shadow</div>
                 </div>
 
                 <div class="accent-card" onclick="selectAccentStyle('three-color-shadow')"
                     style="cursor:pointer; border:3px solid #e0e0e0; border-radius:8px; padding:20px; text-align:center; transition:all 0.3s; background:white;">
                     <div style="font-size:48px; font-weight:900; margin-bottom:10px; position:relative;">
-                        <span style="position:absolute; left:50%; transform:translateX(-50%); -webkit-text-fill-color:transparent; -webkit-text-stroke:4px #999; filter:drop-shadow(3px 3px 0 #666);">T</span>
-                        <span style="-webkit-text-fill-color:#333; -webkit-text-stroke:2px #ccc; filter:drop-shadow(3px 3px 0 #666);">T</span>
+                        <span
+                            style="position:absolute; left:50%; transform:translateX(-50%); -webkit-text-fill-color:transparent; -webkit-text-stroke:4px #999; filter:drop-shadow(3px 3px 0 #666);">T</span>
+                        <span
+                            style="-webkit-text-fill-color:#333; -webkit-text-stroke:2px #ccc; filter:drop-shadow(3px 3px 0 #666);">T</span>
                     </div>
-                    <div style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">Three Color with Drop Shadow</div>
+                    <div
+                        style="font-weight:600; font-size:14px; padding:8px; background:#000; color:white; border-radius:4px;">
+                        Three Color with Drop Shadow</div>
                 </div>
 
             </div>
@@ -451,9 +517,11 @@
 <div id="applicationModal" class="color-modal" style="display:none;">
     <div class="color-modal-content" style="width:900px; max-width:95%;">
 
-        <div style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
+        <div
+            style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
             <h3 style="margin:0; font-size:18px; font-weight:600;">Add a new Free Form Application</h3>
-            <span onclick="closeApplicationModal()" style="cursor:pointer; font-size:28px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%;">×</span>
+            <span onclick="closeApplicationModal()"
+                style="cursor:pointer; font-size:28px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%;">×</span>
         </div>
 
         <div style="display:flex; gap:20px;">
@@ -472,7 +540,8 @@
                             <div class="app-icon">A</div>
                             <div class="app-label">Team Name</div>
                         </div>
-                        <div class="app-type-card" data-type="playername" onclick="selectApplicationType('playername')">
+                        <div class="app-type-card" data-type="playername"
+                            onclick="selectApplicationType('playername')">
                             <div class="app-icon">A</div>
                             <div class="app-label">Player Name</div>
                         </div>
@@ -488,10 +557,14 @@
                         2. What perspective do you want to add the application?
                     </h4>
                     <div class="perspective-grid">
-                        <button class="perspective-btn selected" data-view="front" onclick="selectPerspective('front')">Front</button>
-                        <button class="perspective-btn" data-view="back" onclick="selectPerspective('back')">Back</button>
-                        <button class="perspective-btn" data-view="left" onclick="selectPerspective('left')">Left</button>
-                        <button class="perspective-btn" data-view="right" onclick="selectPerspective('right')">Right</button>
+                        <button class="perspective-btn selected" data-view="front"
+                            onclick="selectPerspective('front')">Front</button>
+                        <button class="perspective-btn" data-view="back"
+                            onclick="selectPerspective('back')">Back</button>
+                        <button class="perspective-btn" data-view="left"
+                            onclick="selectPerspective('left')">Left</button>
+                        <button class="perspective-btn" data-view="right"
+                            onclick="selectPerspective('right')">Right</button>
                     </div>
                 </div>
 
@@ -532,17 +605,30 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .text-custom-tab:hover { background: #f8f9fa; }
+    .text-custom-tab:hover {
+        background: #f8f9fa;
+    }
 
-    button:focus, input:focus, select:focus, textarea:focus, div:focus {
+    button:focus,
+    input:focus,
+    select:focus,
+    textarea:focus,
+    div:focus {
         outline: none !important;
         box-shadow: none !important;
     }
 
-    * { -webkit-tap-highlight-color: transparent; }
-    :focus-visible { outline: none !important; }
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
 
-    .app-type-card:focus, .part-btn:focus, .perspective-btn:focus {
+    :focus-visible {
+        outline: none !important;
+    }
+
+    .app-type-card:focus,
+    .part-btn:focus,
+    .perspective-btn:focus {
         outline: none !important;
         box-shadow: none !important;
     }
