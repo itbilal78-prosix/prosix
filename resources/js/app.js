@@ -71,17 +71,22 @@ document.addEventListener('keydown', e => {
   }
 })
 
-// DevTools open detection
+// DevTools detection — real mobile pe false trigger nahi hoga
 const devToolsCheck = () => {
+  // Real mobile device hai toh skip karo
+  const isRealMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  if (isRealMobile) return
+
   const threshold = 160
-  if (
-    window.outerWidth - window.innerWidth > threshold ||
-    window.outerHeight - window.innerHeight > threshold
-  ) {
+  const widthDiff = window.outerWidth - window.innerWidth
+  const heightDiff = window.outerHeight - window.innerHeight
+
+  if (widthDiff > threshold || heightDiff > threshold) {
     document.body.innerHTML = '<h1 style="text-align:center;margin-top:20%;font-family:sans-serif;color:#000;">⛔ Access Denied</h1>'
     clearInterval(checkInterval)
   }
 }
+
 window.addEventListener('resize', devToolsCheck)
 const checkInterval = setInterval(devToolsCheck, 1000)
 

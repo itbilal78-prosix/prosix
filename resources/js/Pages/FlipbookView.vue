@@ -1,5 +1,5 @@
 <template>
-    
+
   <div id="fb-show" v-if="book">
 
     <!-- Loader -->
@@ -140,7 +140,7 @@ export default {
 
     const id = this.$route.params.id
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/api/flipbooks/${id}`)
+      const res = await axios.get(`/api/flipbooks/${id}`)
       this.book = res.data
       await this.$nextTick()
       await this.initFlipbook()
@@ -216,7 +216,7 @@ export default {
       })
 
       const pdfjsLib = window['pdfjs-dist/build/pdf']
-      const pdfUrl = `http://127.0.0.1:8000/storage/${this.book.file_path}`
+      const pdfUrl = `/storage/${this.book.file_path}`
 
       try {
         const pdf = await pdfjsLib.getDocument(pdfUrl).promise

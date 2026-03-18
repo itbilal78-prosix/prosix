@@ -1546,7 +1546,7 @@
             container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
             return;
         }
-
+var maxColors = layer._selectedColorCount || 6;
         var parser = new DOMParser();
         var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
         var imgTag = doc.querySelector('image');
@@ -1575,7 +1575,9 @@
                 if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
             }
         });
-        var maxColors = layer._selectedColorCount || 6;
+var maxColors = layer._selectedColorCount
+    || (window.selectedColors && window.selectedColors.length)
+    || 6;
         var detected = Object.keys(colorCounts)
             .sort(function (a, b) { return colorCounts[b] - colorCounts[a]; })
             .slice(0, maxColors);
@@ -1630,8 +1632,11 @@
         layer._detectedColors = detectedColors;
         if (!layer._colorMap) layer._colorMap = {};
 
-        var backendColors = (window.backendColors || []).map(function (c) { return c.code || c; });
-        if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000', '#FF8800', '#00FFFF'];
+ // ✅ NAYA CODE — color wheel ke selectedColors use karo:
+var backendColors = (window.selectedColors && window.selectedColors.length)
+    ? window.selectedColors
+    : (window.backendColors || []).map(function (c) { return c.code || c; });
+if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000', '#FF8800', '#00FFFF'];
 
         detectedColors.forEach(function (detectedHex) {
             var row = document.createElement('div');
@@ -1736,89 +1741,107 @@
         _replaceElementInSvg(layer, modifiedSvg);
     }
 
-    function _applyColorMapToPng(dataUrl, layer) {
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
-        var img = new Image();
+   function _applyColorMapToPng(dataUrl, layer) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var img = new Image();
 
-        img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
+    img.onload = function () {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
 
-            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            var data = imageData.data;
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var data = imageData.data;
 
-            // colorMap ko RGB mein convert karo
-            var colorMappings = [];
-            Object.entries(layer._colorMap).forEach(function (entry) {
-                var oldHex = entry[0];
-                var newHex = entry[1];
-                var oldRgb = _hexToRgb(oldHex);
-                var newRgb = _hexToRgb(newHex);
-                if (oldRgb && newRgb) {
-                    colorMappings.push({ old: oldRgb, new: newRgb });
+        // ✅ layer._alphaMask se transparent pixels lo (mcCanvas band hone ke baad bhi kaam karega)
+        var alphaMask = layer._alphaMask || null;
+        var maskW = layer._alphaMaskW || 0;
+        var maskH = layer._alphaMaskH || 0;
+
+        // colorMap ko RGB mein convert karo
+        var colorMappings = [];
+        Object.entries(layer._colorMap).forEach(function (entry) {
+            var oldHex = entry[0];
+            var newHex = entry[1];
+            var oldRgb = _hexToRgb(oldHex);
+            var newRgb = _hexToRgb(newHex);
+            if (oldRgb && newRgb) {
+                colorMappings.push({ old: oldRgb, new: newRgb });
+            }
+        });
+
+        // Har pixel check karo
+        for (var i = 0; i < data.length; i += 4) {
+            var pixelIndex = i / 4;
+
+            // ✅ Alpha mask se check karo — agar wahan transparent tha to yahan bhi transparent karo
+            if (alphaMask && alphaMask.length > 0) {
+                // Pixel index ko mask dimensions ke saath scale karo
+                var px = pixelIndex % canvas.width;
+                var py = Math.floor(pixelIndex / canvas.width);
+                var mx = Math.round(px * maskW / canvas.width);
+                var my = Math.round(py * maskH / canvas.height);
+                var maskIndex = my * maskW + mx;
+                if (alphaMask[maskIndex] !== undefined && alphaMask[maskIndex] < 30) {
+                    data[i + 3] = 0; // transparent rakho
+                    continue;
+                }
+            }
+
+            var a = data[i + 3];
+            if (a < 30) continue;
+
+            var r = data[i];
+            var g = data[i + 1];
+            var b = data[i + 2];
+
+            var bestMatch = null;
+            var bestDist = 60;
+
+            colorMappings.forEach(function (mapping) {
+                var dist = Math.sqrt(
+                    Math.pow(r - mapping.old.r, 2) +
+                    Math.pow(g - mapping.old.g, 2) +
+                    Math.pow(b - mapping.old.b, 2)
+                );
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestMatch = mapping;
                 }
             });
 
-            // Har pixel check karo
-            for (var i = 0; i < data.length; i += 4) {
-                var r = data[i];
-                var g = data[i + 1];
-                var b = data[i + 2];
-                var a = data[i + 3];
-
-                if (a < 30) continue; // transparent skip
-
-                // Closest color dhundo
-                var bestMatch = null;
-                var bestDist = 60; // tolerance
-
-                colorMappings.forEach(function (mapping) {
-                    var dist = Math.sqrt(
-                        Math.pow(r - mapping.old.r, 2) +
-                        Math.pow(g - mapping.old.g, 2) +
-                        Math.pow(b - mapping.old.b, 2)
-                    );
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        bestMatch = mapping;
-                    }
-                });
-
-                if (bestMatch) {
-                    data[i] = bestMatch.new.r;
-                    data[i + 1] = bestMatch.new.g;
-                    data[i + 2] = bestMatch.new.b;
-                }
+            if (bestMatch) {
+                data[i]     = bestMatch.new.r;
+                data[i + 1] = bestMatch.new.g;
+                data[i + 2] = bestMatch.new.b;
             }
+        }
 
-            ctx.putImageData(imageData, 0, 0);
+        ctx.putImageData(imageData, 0, 0);
 
-            // Naya PNG base64 banao
-            var newPngDataUrl = canvas.toDataURL('image/png');
+        var newPngDataUrl = canvas.toDataURL('image/png');
 
-            // Original mascotSvg mein image href replace karo (original safe rakho)
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
-            var imgEl = doc.querySelector('image');
-            if (imgEl) {
-                imgEl.setAttribute('href', newPngDataUrl);
-                if (imgEl.getAttribute('xlink:href')) {
-                    imgEl.setAttribute('xlink:href', newPngDataUrl);
-                }
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+        var imgEl = doc.querySelector('image');
+        if (imgEl) {
+            imgEl.setAttribute('href', newPngDataUrl);
+            if (imgEl.getAttribute('xlink:href')) {
+                imgEl.setAttribute('xlink:href', newPngDataUrl);
             }
+        }
 
-            var modifiedSvg = new XMLSerializer().serializeToString(doc.documentElement);
-            _replaceElementInSvg(layer, modifiedSvg);
-        };
+        var modifiedSvg = new XMLSerializer().serializeToString(doc.documentElement);
+        _replaceElementInSvg(layer, modifiedSvg);
+    };
 
-        img.onerror = function () {
-            console.error('PNG load failed');
-        };
+    img.onerror = function () {
+        console.error('PNG load failed');
+    };
 
-        img.src = dataUrl;
-    }
+    img.src = dataUrl;
+}
 
     function _replaceElementInSvg(layer, modifiedSvg) {
         var mainSvg = window.getMainSvg ? window.getMainSvg() : null;

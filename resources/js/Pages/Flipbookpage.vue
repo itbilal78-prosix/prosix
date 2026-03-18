@@ -39,7 +39,7 @@
           <div class="fb-card-binding"></div>
           <div class="fb-card-pages">
             <iframe
-              :src="`http://127.0.0.1:8000/storage/${book.file_path}#toolbar=0&navpanes=0&scrollbar=0`"
+              :src="`/storage/${book.file_path}#toolbar=0&navpanes=0&scrollbar=0`"
               scrolling="no"
               tabindex="-1"
             ></iframe>
@@ -77,9 +77,9 @@ export default {
       this.$router.push(`/catalogue/${id}`)
     }
   },
-  async mounted() {
+ async mounted() {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/flipbooks')
+      const res = await axios.get('/api/flipbooks')
       this.flipbooks = res.data
     } catch (e) {
       console.error(e)
