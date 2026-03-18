@@ -912,8 +912,27 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; }
   .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
   .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; }
-  .main_title { width: 100% !important; font-size: 2.4rem !important; text-align: center !important; padding: 0 10px !important; }
-  .button-wrapper { margin-top: 0 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
+.main_title {
+  width: 100% !important;
+  font-size: 2.4rem !important;
+
+  position: absolute !important;
+  top: 20% !important;
+  left: 0 !important;
+
+  text-align: left !important;
+  padding: 0 10px !important;
+}
+.button-wrapper {
+  position: absolute !important;
+  top: 53% !important;
+  left: 0 !important;
+
+  width: 100% !important;
+  display: flex !important;
+  justify-content: left !important; /* button center me */
+  padding: 0 10px !important;
+}
   .single-line-btn { font-size: 1rem !important; padding: 12px 35px !important; }
   .lead { font-size: 1rem !important; text-align: center !important; padding: 0 20px !important; }
   .hero-png { max-width: 90% !important; max-height: 300px !important; }
