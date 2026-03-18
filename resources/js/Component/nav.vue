@@ -1,14 +1,14 @@
 <template>
     <nav
         class="navbar navbar-expand-lg fixed-top custom-navbar"
-        :class="{ 'navbar-scrolled': isScrolled, 'navbar-full': navigations.length > 8 }"
+        :class="{ 'navbar-scrolled': isScrolled, 'navbar-full': navigations.length > 10 }"
     >
         <div class="container-fluid px-0">
 
             <!-- Logo -->
             <router-link to="/" class="navbar-brand navbar-brand-fixed">
-                <img src="/public/assets/images/P LOGO BLACK.png" alt="Prosix Logo" class="navbar-logo" :class="{ 'logo-small': isScrolled || navigations.length > 8 }" />
-                <img v-if="isScrolled || navigations.length > 8" src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png" alt="Secondary Logo" class="navbar-logo-secondary" />
+                <img src="/public/assets/images/P LOGO BLACK.png" alt="Prosix Logo" class="navbar-logo" :class="{ 'logo-small': isScrolled || navigations.length > 10 }" />
+                <img v-if="isScrolled || navigations.length > 10" src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png" alt="Secondary Logo" class="navbar-logo-secondary" />
             </router-link>
 
             <!-- Mobile top icons -->
@@ -30,7 +30,7 @@
             <div class="collapse navbar-collapse align-items-center nav-right-block" id="mainNavbar">
 
                 <!-- Nav items -->
-                <ul class="navbar-nav nav-items-list   flex-grow-1">
+                <ul class="navbar-nav nav-items-list flex-grow-1">
                     <li
                         v-for="nav in navigations"
                         :key="nav.id"
@@ -43,15 +43,15 @@
                             :to="nav.route"
                         >{{ nav.title }}</router-link>
 
-                      <a
- v-else
-  class="nav-link dropdown-toggle"
-  href="#"
-  @click.prevent="nav.clickable ? goToMenu(nav.slug) : null"
-  :style="nav.clickable ? 'cursor:pointer' : 'cursor:default'"
->
-  {{ nav.title }}
-</a>
+                        <a
+                            v-else
+                            class="nav-link dropdown-toggle"
+                            href="#"
+                            @click.prevent="nav.clickable ? goToMenu(nav.slug) : null"
+                            :style="nav.clickable ? 'cursor:pointer' : 'cursor:default'"
+                        >
+                            {{ nav.title }}
+                        </a>
 
                         <!-- DROPDOWN MENU -->
                         <div
@@ -72,6 +72,7 @@
 
                             <template v-if="categoriesByNav[nav.id]?.length">
                                 <template v-if="totalDropdownItems(nav) > 10">
+                                    <!-- ✅ Left col: first 10 -->
                                     <div class="dropdown-col">
                                         <div v-for="cat in leftColItems(nav)" :key="cat.id" class="dropdown-submenu position-relative">
                                             <a href="#" class="dropdown-item d-flex justify-content-between align-items-center" @click.prevent="handleCategoryClickInNav(cat)">
@@ -85,6 +86,7 @@
                                             </ul>
                                         </div>
                                     </div>
+                                    <!-- ✅ Right col: next 10 (11-20) -->
                                     <div class="dropdown-col dropdown-col-right">
                                         <div v-for="cat in rightColItems(nav)" :key="cat.id" class="dropdown-submenu position-relative">
                                             <a href="#" class="dropdown-item d-flex justify-content-between align-items-center" @click.prevent="handleCategoryClickInNav(cat)">
@@ -140,10 +142,9 @@
         </div>
     </nav>
 
-    <!-- ===== DESKTOP SEARCH BAR (drops below navbar, inside black area) ===== -->
+    <!-- ✅ DESKTOP SEARCH BAR — Full width, upar se aaye, Nike jaisa -->
     <Transition name="search-drop">
-        <div v-if="desktopSearchOpen" class="desktop-search-bar" ref="desktopSearchBarRef"
-             :class="{ 'search-full': isScrolled || navigations.length > 8 }">
+        <div v-if="desktopSearchOpen" class="desktop-search-bar" ref="desktopSearchBarRef">
             <div class="desktop-search-inner">
                 <i class="bi bi-search ds-icon"></i>
                 <input
@@ -157,6 +158,7 @@
                 />
                 <div v-if="searchLoading" class="s-spinner"></div>
                 <button v-if="searchQuery" class="s-clear" @click="clearSearch"><i class="bi bi-x"></i></button>
+                <button class="ds-close-btn" @click="closeDesktopSearch">Cancel</button>
             </div>
 
             <div v-if="searchQuery.length >= 2" class="ds-results">
@@ -202,7 +204,7 @@
         </div>
     </Transition>
 
-    <!-- Backdrop for desktop search -->
+    <!-- ✅ Backdrop — page dim ho jaye -->
     <div v-if="desktopSearchOpen" class="s-backdrop" @click="closeDesktopSearch"></div>
 
     <!-- ===== MOBILE SEARCH ===== -->
@@ -283,7 +285,7 @@
                         <span>{{ nav.title }}</span><i class="bi bi-arrow-right text-white opacity-50"></i>
                     </router-link>
                     <div v-else class="d-flex align-items-center justify-content-between drawer-link-row">
-<span class="drawer-link drawer-link-text px-4 py-3 flex-grow-1" @click="nav.clickable ? (goToMenu(nav.slug), closeDrawer()) : null">{{ nav.title }}</span>
+                        <span class="drawer-link drawer-link-text px-4 py-3 flex-grow-1" @click="nav.clickable ? (goToMenu(nav.slug), closeDrawer()) : null">{{ nav.title }}</span>
                         <button class="drawer-toggle-icon px-3 py-3" @click="toggleAccordion(nav.id)">
                             <i class="bi fs-6 transition-icon" :class="openAccordion === nav.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                         </button>
@@ -327,9 +329,9 @@
     </transition>
 
     <!-- ===== CART SIDEBAR ===== -->
-<div v-if="showCartSidebar"
-class="cart-sidebar position-fixed end-0 bg-white shadow-lg p-4"
-style="width:400px; z-index:1050; top:50px; height:calc(100% - 50px);">        <h4 class="mb-4">Your Cart</h4>
+    <div v-if="showCartSidebar" class="cart-sidebar position-fixed end-0 bg-white shadow-lg p-4"
+        style="width:400px; z-index:1050; top:50px; height:calc(100% - 50px);">
+        <h4 class="mb-4">Your Cart</h4>
         <button class="btn-close position-absolute top-0 end-0 m-3" @click="showCartSidebar = false"></button>
         <div v-if="cartStore.items.length === 0"><p>Cart is empty</p></div>
         <div v-else>
@@ -413,13 +415,17 @@ const onSearchInput = () => {
 const toggleDesktopSearch = () => {
   desktopSearchOpen.value = !desktopSearchOpen.value
   if (desktopSearchOpen.value) {
+    // ✅ Body scroll band karo jab search open ho
+    document.body.style.overflow = 'hidden'
     nextTick(() => desktopSearchInputRef.value?.focus())
   } else {
+    document.body.style.overflow = ''
     clearSearch()
   }
 }
 const closeDesktopSearch = () => {
   desktopSearchOpen.value = false
+  document.body.style.overflow = ''
   clearSearch()
 }
 
@@ -459,13 +465,17 @@ const totalDropdownItems = (nav) => {
   const cats = categoriesByNav.value[nav.id]?.length || 0
   return subs + cats
 }
+
+// ✅ Left col: exactly first 10
 const leftColItems = (nav) => {
   const cats = categoriesByNav.value[nav.id] || []
   return cats.slice(0, 10)
 }
+
+// ✅ Right col: exactly next 10 (11-20)
 const rightColItems = (nav) => {
   const cats = categoriesByNav.value[nav.id] || []
-  return cats.slice(10)
+  return cats.slice(10, 20)
 }
 
 // ── Password modal
@@ -505,7 +515,6 @@ const navigations     = ref([])
 const categoriesByNav = ref({})
 const goToMenu = (slug) => { if (slug) router.push({ name: "MenuCategories", params: { slug } }) }
 
-// Close desktop search on outside click
 const handleOutsideClick = (e) => {
   if (desktopSearchOpen.value && desktopSearchBarRef.value && !desktopSearchBarRef.value.contains(e.target)) {
     // backdrop handles this
@@ -526,6 +535,7 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll)
   document.removeEventListener("click", handleOutsideClick)
+  document.body.style.overflow = ''
   clearTimeout(debounceTimer)
 })
 </script>
@@ -541,11 +551,6 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/*
-  The black slanted background covers the RIGHT 72% of navbar.
-  Nav items start FROM where the cut begins (28% from left).
-  The ::before pseudo element creates the slanted black shape.
-*/
 .custom-navbar::before {
   content: "";
   position: absolute;
@@ -554,7 +559,6 @@ onUnmounted(() => {
   width: 73%;
   height: 100%;
   background: #000;
-  /* polygon: top-left angled, top-right square, bottom-right square, bottom-left square */
   clip-path: polygon(0% 0, 100% 0, 100% 100%, 4% 100%);
   transition: all 0.35s ease;
   z-index: -1;
@@ -567,7 +571,6 @@ onUnmounted(() => {
   height: 15px;
   border-radius: 50%;
 }
-/* When scrolled OR more than 8 items → full black navbar */
 .navbar-scrolled,
 .navbar-full {
   height: 50px;
@@ -581,7 +584,6 @@ onUnmounted(() => {
 
 /* Logo */
 .navbar-brand-fixed {
-  /* Logo sits in the transparent (white) left 28% area */
   width: 28%;
   flex-shrink: 0;
   display: flex;
@@ -592,12 +594,6 @@ onUnmounted(() => {
 .navbar-logo-secondary { height: 24px; margin-left: 30px; }
 .logo-small { height: 24px; margin-bottom: 70px; filter: brightness(0) invert(1); }
 
-/*
-  nav-right-block: this is the collapsible area.
-  It starts exactly at the 28% mark (where black cut begins),
-  and stretches to the right end.
-  We achieve this by making the navbar brand take ~28% and the rest auto.
-*/
 .nav-right-block {
   display: flex !important;
   align-items: center;
@@ -650,61 +646,76 @@ onUnmounted(() => {
 }
 .search-icon-btn:hover, .search-icon-btn.active { background: rgba(255,255,255,0.15); }
 
-/* ── Desktop Search Bar ──
-   Default: aligned to right 72% (same as black cut area)
-   When scrolled or >8 items: full width
-*/
+/* ✅ DESKTOP SEARCH BAR — Nike jaisa, full width, upar se */
 .desktop-search-bar {
   position: fixed;
-  top: 50px;
-  left: 60%;
-  right: 0;
-  background: #000000;
-  z-index: 1080;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  transition: left 0.35s ease;
-
-}
-
-/* when navbar becomes full width */
-.desktop-search-bar.search-full {
+  top: 0;
   left: 0;
-
-  /* remove angle */
-  clip-path: none;
+  right: 0;
+  background: #111;
+  z-index: 2000;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 
 .desktop-search-inner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 40px;
+  gap: 14px;
+  padding: 16px 40px;
+  max-width: 100%;
 }
-.ds-icon { color: rgba(255,255,255,0.5); font-size: 1rem; flex-shrink: 0; }
+.ds-icon { color: rgba(255,255,255,0.5); font-size: 1.1rem; flex-shrink: 0; }
 .ds-input {
   flex: 1;
   background: transparent;
   border: none;
   outline: none;
   color: #fff;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-family: 'Poppins', sans-serif;
 }
 .ds-input::placeholder { color: rgba(255,255,255,0.3); }
+
+/* ✅ Cancel button — Nike jaisa */
+.ds-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ds-close-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
 .ds-results {
-  max-height: 420px;
+  max-height: 60vh;
   overflow-y: auto;
   border-top: 1px solid rgba(255,255,255,0.08);
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 }
 .ds-results::-webkit-scrollbar { width: 3px; }
 .ds-results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
 
-/* Search drop animation */
-.search-drop-enter-active { transition: all 0.28s cubic-bezier(0.34,1.3,0.64,1); }
-.search-drop-leave-active { transition: all 0.18s ease; }
-.search-drop-enter-from { opacity: 0; transform: translateY(-12px); }
-.search-drop-leave-to { opacity: 0; transform: translateY(-6px); }
+/* ✅ Search animation — upar se slide down */
+.search-drop-enter-active { transition: all 0.3s cubic-bezier(0.34, 1.3, 0.64, 1); }
+.search-drop-leave-active { transition: all 0.2s ease; }
+.search-drop-enter-from { opacity: 0; transform: translateY(-100%); }
+.search-drop-leave-to   { opacity: 0; transform: translateY(-100%); }
+
+/* ✅ Backdrop — page dim ho jaye */
+.s-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+}
 
 /* Shared search result styles */
 .s-spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
@@ -735,7 +746,6 @@ onUnmounted(() => {
 .s-spinner-sm.dark { border-color: rgba(255,255,255,0.2); border-top-color: #fff; }
 .s-empty { padding: 18px 40px; font-size: 0.84rem; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 8px; }
 .s-empty.dark { color: rgba(255,255,255,0.4); }
-.s-backdrop { position: fixed; inset: 0; z-index: 1070; }
 
 /* ── Mobile search ── */
 .m-search-overlay { position: fixed; top: 56px; left: 0; right: 0; background: #111; z-index: 1099; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -758,12 +768,12 @@ onUnmounted(() => {
 .mobile-drop-enter-from { opacity: 0; transform: translateY(-10px); }
 .mobile-drop-leave-to { opacity: 0; transform: translateY(-6px); }
 
-/* ── Dropdown menu ── */
+/* ✅ Dropdown menu — thoda dark */
 .dropdown-menu {
   display: none;
   margin-top: 0;
   border-radius: 6px;
-  background: #000;
+  background: #1a1a1a;
   min-width: 220px;
   padding: 6px 0;
 }
@@ -771,9 +781,14 @@ onUnmounted(() => {
 .dropdown-menu:not(.two-col) { flex-direction: column !important; }
 .dropdown-col { display: flex; flex-direction: column; min-width: 200px; }
 .dropdown-col-right { border-left: 1px solid rgba(255,255,255,0.08); }
-.dropdown-item { padding: 8px 16px; color: #fff !important; transition: all 0.15s; font-size: clamp(0.88rem, 1vw, 1rem);
-         white-space: nowrap; }
-.dropdown-item:hover { background-color: #222 !important; }
+.dropdown-item {
+  padding: 8px 16px;
+  color: #fff !important;
+  transition: all 0.15s;
+  font-size: clamp(0.88rem, 1vw, 1rem);
+  white-space: nowrap;
+}
+.dropdown-item:hover { background-color: #2a2a2a !important; }
 
 .dropdown-submenu { position: relative; }
 .dropdown-submenu:hover > .sub-dropdown { display: block !important; }
@@ -784,7 +799,7 @@ onUnmounted(() => {
   left: 100%;
   min-width: 200px;
   margin-left: 2px;
-  background: #111;
+  background: #222;
   z-index: 10;
 }
 .sub-dropdown-left {
@@ -855,7 +870,7 @@ onUnmounted(() => {
   .logo-small { margin-bottom: 0; }
   #mainNavbar { display: none !important; }
   .cart-sidebar { width: 100% !important; }
-  .desktop-search-bar { top: 56px; left: 0 !important; }
+  .desktop-search-bar { top: 0 !important; left: 0 !important; }
 }
 @media (max-width: 400px) { .mobile-drawer { width: 85vw; } }
 </style>
