@@ -135,9 +135,11 @@ Route::get('/flipbooks/{id}', [FlipbookController::class, 'apiShow']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/logout',           [UserController::class, 'logout']);
     Route::get('/user/profile',           [UserController::class, 'profile']);
-    Route::put('/profile',                [UserController::class, 'updateProfile']);   // ✅ already tha
-    Route::post('/user/change-password',  [UserController::class, 'changePassword']); // ✅ naya add karo
-        Route::get('/user/my-requests', [UserRequestController::class, 'index']);
+    Route::put('/profile',                [UserController::class, 'updateProfile']);
+    Route::post('/user/change-password',  [UserController::class, 'changePassword']);
+    Route::get('/user/my-requests', [UserRequestController::class, 'index']);
+    Route::get('/place-order/my-orders', [PlaceOrderController::class, 'myOrders']);
+
 
 });
 
@@ -161,16 +163,11 @@ Route::post('/categories/{id}/verify-password',
 
 Route::post('/orders', [OrderController::class, 'store']);
 
-// Admin کے لیے (اگر auth ہے تو middleware لگاؤ)
 Route::middleware('auth:sanctum')->group(function () {
-// routes/api.php
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     });
     Route::post('/orders', [OrderController::class, 'store']);
-
-    // routes/api.php
-
 
 
 
@@ -179,7 +176,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Route::get('/mascot-templates', [TemplateController::class, 'apiList']);
 Route::post('/mascot-templates', [TemplateController::class, 'saveFromCustomizer']);
 
-Route::get('/colors', [\App\Http\Controllers\ColorController::class, 'apiIndex']);
+Route::get('/colors', [ColorController::class, 'apiIndex']);
 
 Route::post('/membership-request', [MembershipRequestController::class, 'store']);
 
@@ -192,4 +189,4 @@ Route::fallback(function () {
 Route::get('/models/{id}', [CustomizerModelController::class, 'show']);
 Route::post('/api/templates/save', [TemplateController::class, 'saveFromCustomizer'])->name('templates.save.api');
 // Place Order
-Route::post('/place-order', [\App\Http\Controllers\PlaceOrderController::class, 'store']);
+Route::post('/place-order', [PlaceOrderController::class, 'store']);

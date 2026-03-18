@@ -33,12 +33,19 @@
             @update-profile="updateProfile"
             key="profile"
           />
-          <!-- ✅ NAYA TAB -->
+          <!-- My Requests Tab -->
           <my-requests-tab
             v-else-if="!isLoading && activeTab === 'my-requests'"
             :requests="myRequests"
             :is-loading="requestsLoading"
             key="my-requests"
+          />
+          <!-- ✅ Place Orders Tab -->
+          <my-place-orders-tab
+            v-else-if="!isLoading && activeTab === 'my-place-orders'"
+            :orders="myPlaceOrders"
+            :is-loading="placeOrdersLoading"
+            key="my-place-orders"
           />
         </transition>
       </main>
@@ -61,9 +68,13 @@ const isLoading         = ref(true)
 const isLoggingOut      = ref(false)
 const isUpdatingProfile = ref(false)
 
-// ✅ My Requests state
+// My Requests state
 const myRequests      = ref([])
 const requestsLoading = ref(false)
+
+// ✅ My Place Orders state
+const myPlaceOrders      = ref([])
+const placeOrdersLoading = ref(false)
 
 const checkAuth = () => {
   const token = localStorage.getItem('auth_token')
@@ -71,11 +82,15 @@ const checkAuth = () => {
   return token
 }
 
-// ✅ Tab change — my-requests tab pe click karo toh data fetch ho
+// Tab change handler
 const onTabChange = (tab) => {
   activeTab.value = tab
   if (tab === 'my-requests' && myRequests.value.length === 0) {
     fetchMyRequests()
+  }
+  // ✅ Place Orders tab click hone par fetch karo
+  if (tab === 'my-place-orders' && myPlaceOrders.value.length === 0) {
+    fetchMyPlaceOrders()
   }
 }
 
@@ -103,14 +118,14 @@ const fetchDashboardStats = async () => {
     if (res.ok) {
       const d = await res.json()
       if (d.success) {
-        dashboardStats.value  = d.data.stats
+        dashboardStats.value   = d.data.stats
         recentProperties.value = d.data.recent_properties
       }
     } else if (res.status === 401) handleAuthError()
   } catch (e) { console.error(e) }
 }
 
-// ✅ Logged-in user ki requests fetch karo
+// Logged-in user ki artwork requests fetch karo
 const fetchMyRequests = async () => {
   const token = checkAuth()
   if (!token) return
@@ -127,6 +142,23 @@ const fetchMyRequests = async () => {
   finally { requestsLoading.value = false }
 }
 
+// ✅ Logged-in user ke place orders fetch karo
+const fetchMyPlaceOrders = async () => {
+  const token = checkAuth()
+  if (!token) return
+  placeOrdersLoading.value = true
+  try {
+    const res = await fetch(`${API_BASE_URL}/place-order/my-orders`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
+    })
+    if (res.ok) {
+      const d = await res.json()
+      myPlaceOrders.value = d.data || []
+    }
+  } catch (e) { console.error(e) }
+  finally { placeOrdersLoading.value = false }
+}
+
 const handleAuthError = () => {
   localStorage.removeItem('auth_token')
   alert('Session expired. Please login again.')
@@ -140,14 +172,24 @@ const updateProfile = async (profileData) => {
     isUpdatingProfile.value = true
     const res = await fetch(`${API_BASE_URL}/user/profile`, {
       method: 'PUT',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
       body: JSON.stringify(profileData)
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.status) { user.value = { ...user.value, ...profileData }; alert('Profile updated successfully!') }
+      if (d.status) {
+        user.value = { ...user.value, ...profileData }
+        alert('Profile updated successfully!')
+      }
     } else if (res.status === 401) handleAuthError()
-    else { const d = await res.json(); alert(d.message || 'Failed to update profile') }
+    else {
+      const d = await res.json()
+      alert(d.message || 'Failed to update profile')
+    }
   } catch (e) { alert('Failed to update profile') }
   finally { isUpdatingProfile.value = false }
 }
@@ -159,11 +201,19 @@ const logout = async () => {
     if (token) {
       await fetch(`${API_BASE_URL}/user/user_logout`, {
         method: 'POST',
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       })
     }
   } catch (e) { console.error(e) }
-  finally { localStorage.removeItem('auth_token'); router.push('/'); isLoggingOut.value = false }
+  finally {
+    localStorage.removeItem('auth_token')
+    router.push('/')
+    isLoggingOut.value = false
+  }
 }
 
 onMounted(async () => {

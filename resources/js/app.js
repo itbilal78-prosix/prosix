@@ -35,6 +35,8 @@ app.use(router);
 // Global components
 import MyRequestsTab from './user-dashboard/Components/Myrequeststab.vue'
 app.component('my-requests-tab', MyRequestsTab)
+import MyPlaceOrdersTab from './user-dashboard/Components/Myplaceorderstab.vue'
+app.component('my-place-orders-tab', MyPlaceOrdersTab)
 import nav from './Component/nav.vue';
 app.component('nav-component', nav);
 import Breadcrumb from './Component/Breadcrumb.vue';
@@ -49,7 +51,7 @@ import ProfileTab from './user-dashboard/Components/ProfileTab.vue';
 app.component('profile-tab', ProfileTab);
 
 // =====================================================
-// 🔒 GLOBAL INSPECT / DEVTOOLS PROTECTION
+//  GLOBAL INSPECT / DEVTOOLS PROTECTION
 // =====================================================
 
 // Right click disable
