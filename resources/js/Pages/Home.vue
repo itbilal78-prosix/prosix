@@ -548,25 +548,6 @@ const goToCustomizer = (product) => {
 const addToCart = (product) => { cartStore.addItem(product) }
 
 onMounted(async () => {
-
-// document.addEventListener('contextmenu', e => e.preventDefault())
-
-// document.addEventListener('keydown', e => {
-//   if (
-//     e.key === 'F12' ||
-//     (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-//     (e.ctrlKey && e.key.toUpperCase() === 'U') ||
-//     (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase())) // Mac
-//   ) {
-//     e.preventDefault()
-//     e.stopPropagation()
-//     return false
-//   }
-// })
-
-
-window.addEventListener('resize', devToolsCheck)
-setInterval(devToolsCheck, 1000)
   updateMobile()
   window.addEventListener('resize', handleResize)
   window.addEventListener('scroll', handleScroll)
