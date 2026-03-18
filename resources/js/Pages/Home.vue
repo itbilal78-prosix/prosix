@@ -927,126 +927,79 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 /* ── max 575px: Mobile ────────────────────────────────────── */
 @media (max-width: 575px) {
-  .hero-carousel { height: 100vh !important; min-height: 600px !important; }
-  .carousel-content { margin: 0 !important; width: 100% !important; padding: 0 15px !important; }
-  .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
-  .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; }
-.main_title {
-  width: 70% !important; /* ya 60% try karo */
-  font-size: 2.4rem !important;
 
-  position: absolute !important;
-  top: 18% !important;
-  left: 0 !important;
+  /* ✅ HERO HEIGHT FIX */
+  .hero-carousel {
+    height: 85vh !important;
+    min-height: unset !important;
 
-  text-align: left !important;
-  padding: 0 10px !important;
-
-  line-height: 1.3;
-}
-
-.button-wrapper {
-  position: absolute !important;
-  top: 33% !important;
-  left: 0 !important;
-
-  width: 100% !important;
-  display: flex !important;
-  justify-content: left !important;
-  padding: 0 10px !important;
-}
-  .single-line-btn { font-size: 1rem !important; padding: 12px 35px !important; }
-  .lead { font-size: 1rem !important; text-align: center !important; padding: 0 20px !important; }
-  .hero-png { max-width: 100% !important; max-height: 350px !important; }
-  .sports-icons-section { padding: 20px 0 !important; }
-  .icons-track { gap: 28px !important; padding-left: 60px !important; }
-  .icon-circle { width: 60px !important; height: 60px !important; }
-  .icon-name { font-size: 10px !important; max-width: 65px !important; }
-  .featured-products { padding: 40px 0 !important; }
-
-  /* ✅ FIX 1: Trending Now + Tabs ek row mein, clearly visible */
-  .featured-header {
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-    gap: 6px !important;
-    margin-bottom: 1rem !important;
-    overflow: visible !important;
-  }
-  .featured-ribbon {
-    font-size: 0.78rem !important;
-    padding: 5px 12px 5px 10px !important;
-    margin-left: -12px !important;
-    margin-bottom: 0 !important;
-    letter-spacing: 0 !important;
-    border-radius: 0 14px 14px 0 !important;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    line-height: 1.4 !important;
-  }
-  .tabs {
-    flex-wrap: nowrap !important;
-    gap: 3px !important;
-    justify-content: flex-end !important;
-    flex: 1 !important;
-    overflow: visible !important;
-  }
-  .tab-btn {
-    font-size: 0.62rem !important;
-    padding: 4px 6px !important;
-    min-width: unset !important;
-    white-space: nowrap !important;
-    border-width: 1.5px !important;
-    border-radius: 3px !important;
   }
 
-  .carousel-wrapper { padding: 0 38px !important; }
-  .featured-products .product-card, .apparel-products .product-card { min-width: 50% !important; max-width: 50% !important; padding: 0 3px !important; }
-  .product-card-inner { padding: 8px !important; }
-  .product-img { height: 160px !important; }
-  .product-meta-row { gap: 4px !important; }
-  .product-title { font-size: 0.78rem !important; }
-  .product-price { font-size: 0.85rem !important; }
-  .add-cart-btn, .add-to-cart-btn { font-size: 0.75rem !important; padding: 7px 4px !important; }
-  .carousel-btn { width: 30px !important; height: 30px !important; }
-  .carousel-btn i { font-size: 13px !important; }
-  .latest-videos-section { padding: 40px 0 !important; }
-  .videos-carousel-wrapper { padding: 0 44px !important; }
-  .video-card { width: 100% !important; padding: 0 6px !important; }
-  .video-thumbnail { height: 220px !important; }
-  .video-arrow { width: 38px !important; height: 38px !important; font-size: 1rem !important; }
-  .video-modal-content { width: 95% !important; height: 50vh !important; }
-  .testimonials-section { padding: 50px 0 !important; }
-  .testimonial-item { flex: 0 0 100% !important; padding: 0 6px !important; }
-  .testimonial-card { padding: 16px !important; }
-  .t-arrow { width: 34px !important; height: 34px !important; font-size: 0.9rem !important; }
-  .t-arrow-left { margin-right: 6px !important; }
-  .t-arrow-right { margin-left: 6px !important; }
-  .testimonials-carousel-inner { padding-top: 30px !important; }
-  .quote-float { font-size: 6rem !important; top: -32px !important; }
-  .recent-blog-section { padding: 40px 0 !important; }
-  .col-6.col-lg-6 { padding-left: 6px !important; padding-right: 6px !important; }
-  .blog-card { flex-direction: column !important; box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important; }
-  .blog-image { display: block !important; flex: 0 0 auto !important; height: 100px !important; }
-  .blog-image img { width: 100% !important; height: 100px !important; object-fit: cover !important; }
-  .blog-content { padding: 10px 12px !important; }
-  .blog-meta { display: none !important; }
-  .blog-excerpt { display: none !important; }
-  .blog-title { font-size: 0.9rem !important; margin-bottom: 8px !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
-  .read-more { font-size: 0.85rem !important; color: #dc3545 !important; font-weight: 700 !important; }
-  .left-ribbon { font-size: 1.4rem !important; padding: 8px 24px 8px 20px !important; margin-left: -20px !important; }
-  .left2-ribbon { font-size: 1.4rem !important; padding: 8px 24px !important; margin-left: -20px !important; }
-  .scroll-top-btn { bottom: 80px !important; }
-  .deals-layout { flex-direction: column; gap: 12px; min-height: auto; padding: 0; }
-  .deals-banner-col { flex: none; max-width: 100%; width: 100%; }
-  .deal-banner-box { width: 100%; height: 300px !important; min-height: 300px !important; border-radius: 10px; display: block; }
-  .banner-img { width: 100%; height: auto !important; object-fit: cover; display: block; }
-  .deals-cards-col { width: 100%; }
-  .deals-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; height: auto !important; }
-  .deal-card { width: 100%; height: 0 !important; padding-bottom: 100% !important; min-height: unset !important; border-radius: 10px; }
-  .deals-section .text-center { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; text-align: left !important; margin-bottom: 22px !important; gap: 10px; }
-  .deals-section .text-center h2 { font-size: 1.4rem !important; margin-bottom: 0 !important; flex: 1; text-align: left !important; }
-  .deals-section .text-center p.lead { font-size: 1rem !important; margin-bottom: 0 !important; flex: 1; text-align: right !important; }
-  .deal-card-img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+  .carousel-slide {
+    height: 80vh !important;
+    background-position: center center !important;
+  }
+
+  .carousel-content {
+    margin: 0 !important;
+    width: 100% !important;
+    padding: 0 15px !important;
+  }
+
+  /* ✅ MAIN WRAPPER FIX (IMPORTANT) */
+  .text-and-image-wrapper {
+    max-width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    margin-top: 0 !important;
+    padding: 15px 0 !important;
+  }
+
+  .title-button-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* ✅ REMOVE ABSOLUTE (MAIN FIX 🔥) */
+  .main_title {
+    width: 75% !important;
+    font-size: 2.5rem !important;
+    position: relative !important;
+    top: 60% !important;
+    left: auto !important;
+    padding: 0 10px !important;
+    line-height: 1.3;
+  }
+
+  .button-wrapper {
+    position: relative !important;
+    top: 40% !important;
+    left: auto !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    padding: 0 10px !important;
+  }
+
+  .hero-png {
+    max-width: 100% !important;
+    max-height: 40vh !important;
+  }
+
+  .image-content {
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  /* BUTTON */
+  .single-line-btn {
+    font-size: 0.95rem !important;
+    padding: 10px 28px !important;
+  }
+
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
