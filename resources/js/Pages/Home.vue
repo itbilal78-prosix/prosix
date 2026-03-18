@@ -42,10 +42,17 @@
           </div>
         </section>
       </div>
-<div v-else class="hero-loading">
-  <div class="hero-spinner">
-    <div></div><div></div><div></div><div></div>
+<div v-else class="text-center py-5 mt-5">
+  <div class="pro-spinner">
+    <svg viewBox="0 0 50 50" class="spin-svg">
+      <circle cx="25" cy="25" r="20" fill="none" stroke="#e0e0e0" stroke-width="4"/>
+      <circle cx="25" cy="25" r="20" fill="none" stroke="#000" stroke-width="4"
+        stroke-dasharray="60 200" stroke-linecap="round"
+        class="spin-arc"/>
+    </svg>
+    <div class="spin-dot"></div>
   </div>
+  <p class="spin-text">Loading...</p>
 </div>
       <!-- Sports Icons -->
       <section class="sports-icons-section">
@@ -603,34 +610,50 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @media (max-width: 768px) { .full-container { padding: 0 20px; } }
 @media (max-width: 575px) { .full-container { padding: 0 12px; } }
 .dark-mode { background: #0a0a0a; color: #fff; }
-.hero-loading {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-}
-.hero-spinner {
+.pro-spinner {
   display: inline-block;
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 70px;
+  height: 70px;
 }
-.hero-spinner div {
-  box-sizing: border-box;
-  display: block;
+.spin-svg {
+  width: 70px;
+  height: 70px;
+  animation: rotate 1.4s linear infinite;
+}
+.spin-arc {
+  animation: dash 1.4s ease-in-out infinite;
+}
+.spin-dot {
   position: absolute;
-  width: 52px;
-  height: 52px;
-  margin: 6px;
-  border: 5px solid transparent;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  background: #000;
   border-radius: 50%;
-  animation: ring 1.2s cubic-bezier(0.5,0,0.5,1) infinite;
-  border-top-color: #fff;
+  animation: pulse 1.4s ease-in-out infinite;
 }
-.hero-spinner div:nth-child(1) { animation-delay: -0.45s; }
-.hero-spinner div:nth-child(2) { animation-delay: -0.3s; }
-.hero-spinner div:nth-child(3) { animation-delay: -0.15s; }
+.spin-text {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #888;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+@keyframes dash {
+  0%   { stroke-dasharray: 1 200; stroke-dashoffset: 0; }
+  50%  { stroke-dasharray: 89 200; stroke-dashoffset: -35px; }
+  100% { stroke-dasharray: 89 200; stroke-dashoffset: -124px; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
 .scroll-top-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px) scale(0.8); z-index: 9997; width: 52px; height: 52px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); opacity: 0; pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s; }
 .scroll-top-btn.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
 .scroll-top-btn:hover { background: #fff; color: #000; transform: translateX(-50%) translateY(-3px) scale(1.08); }
