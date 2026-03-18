@@ -947,7 +947,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 .button-wrapper {
   position: absolute !important;
-  top: 30% !important;
+  top: 33% !important;
   left: 0 !important;
 
   width: 100% !important;
