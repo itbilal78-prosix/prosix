@@ -1010,8 +1010,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   }
 
   .deal-banner-box {
-    height: 270px !important; /* thoda chota rakho */
-    min-height: 270px !important;
+    height: 300px !important; /* thoda chota rakho */
+    min-height: 300px !important;
   }
 
   .deals-cards-col {
