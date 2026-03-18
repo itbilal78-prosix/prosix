@@ -23,7 +23,7 @@
       </div>
       <h4>No Orders Yet</h4>
       <p>You haven't placed any orders. Start by placing your first order!</p>
-      <router-link to="/place-order" class="po-place-btn">Place an Order</router-link>
+      <router-link to="/placeorder" class="po-place-btn">Place an Order</router-link>
     </div>
 
     <!-- Orders List -->
