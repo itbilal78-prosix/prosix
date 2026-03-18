@@ -1,9 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\PlaceOrderAdminMail;
-use App\Mail\PlaceOrderUserMail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\PlaceOrder;
@@ -39,92 +36,98 @@ class PlaceOrderController extends Controller
     /**
      * Store Order (MAIN FUNCTION)
      */
-   public function store(Request $request)
-{
-    $request->validate([
-        'full_name'     => 'required|string|max:255',
-        'email'         => 'required|email',
-        'order_number'  => 'required|string',
-        'order_date'    => 'required|string',
-        'delivery_date' => 'nullable|string',
-        'sales_rep'     => 'nullable|string|max:255',
-        'team_colors'   => 'nullable|string',
-        'notes'         => 'nullable|string',
-        'mockup_files'  => 'nullable|array',
-        'mockup_files.*'=> 'file|max:20480',
-        'roster_files'  => 'nullable|array',
-        'roster_files.*'=> 'file|max:20480',
-        'quote_files'   => 'nullable|array',
-        'quote_files.*' => 'file|max:20480',
-    ]);
-
-    // Save files
-    $mockupPaths = $this->saveFiles($request, 'mockup_files', 'orders/mockup');
-    $rosterPaths = $this->saveFiles($request, 'roster_files', 'orders/roster');
-    $quotePaths  = $this->saveFiles($request, 'quote_files',  'orders/quote');
-
-    // Save to DB
-    $order = PlaceOrder::create([
-        'user_id'       => Auth::id(),
-        'full_name'     => $request->full_name,
-        'email'         => $request->email,
-        'order_number'  => $request->order_number,
-        'order_date'    => $request->order_date,
-        'delivery_date' => $request->delivery_date,
-        'sales_rep'     => $request->sales_rep,
-        'team_colors'   => $request->team_colors,
-        'notes'         => $request->notes,
-        'mockup_files'  => $mockupPaths,
-        'roster_files'  => $rosterPaths,
-        'quote_files'   => $quotePaths,
-        'status'        => 'pending',
-    ]);
-
-    // ✅ BREVO API EMAIL (Artwork jaisa)
-    try {
-        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-            ->setApiKey('api-key', env('BREVO_API_KEY'));
-
-        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-            new \GuzzleHttp\Client(), $config
-        );
-
-        $htmlContent = view('emails.place-order-admin', [
-            'order' => $order
-        ])->render();
-
-        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
-            'subject' => 'New Place Order Received',
-            'sender'  => [
-                'name'  => 'Prosix Sports',
-                'email' => 'prosixsports@gmail.com'
-            ],
-            'to' => [
-                ['email' => 'sales@prosix.com'],
-                ['email' => $order->email],
-            ],
-            'htmlContent' => $htmlContent,
+    public function store(Request $request)
+    {
+        $request->validate([
+            'full_name'     => 'required|string|max:255',
+            'email'         => 'required|email',
+            'order_number'  => 'required|string',
+            'order_date'    => 'required|string',
+            'delivery_date' => 'nullable|string',
+            'sales_rep'     => 'nullable|string|max:255',
+            'team_colors'   => 'nullable|string',
+            'notes'         => 'nullable|string',
+            'mockup_files'  => 'nullable|array',
+            'mockup_files.*'=> 'file|max:20480',
+            'roster_files'  => 'nullable|array',
+            'roster_files.*'=> 'file|max:20480',
+            'quote_files'   => 'nullable|array',
+            'quote_files.*' => 'file|max:20480',
         ]);
 
-        $apiInstance->sendTransacEmail($email);
+        // ✅ Sanctum guard se user_id lo — guest ho toh null ayega
+        $userId = Auth::guard('sanctum')->id();
 
-    } catch (\Exception $e) {
-        \Log::error('PlaceOrder Email Error: ' . $e->getMessage());
+        // Save files
+        $mockupPaths = $this->saveFiles($request, 'mockup_files', 'orders/mockup');
+        $rosterPaths = $this->saveFiles($request, 'roster_files', 'orders/roster');
+        $quotePaths  = $this->saveFiles($request, 'quote_files',  'orders/quote');
+
+        // Save to DB
+        $order = PlaceOrder::create([
+            'user_id'       => $userId,   // ✅ logged in ho toh ID, guest ho toh null
+            'full_name'     => $request->full_name,
+            'email'         => $request->email,
+            'order_number'  => $request->order_number,
+            'order_date'    => $request->order_date,
+            'delivery_date' => $request->delivery_date,
+            'sales_rep'     => $request->sales_rep,
+            'team_colors'   => $request->team_colors,
+            'notes'         => $request->notes,
+            'mockup_files'  => $mockupPaths,
+            'roster_files'  => $rosterPaths,
+            'quote_files'   => $quotePaths,
+            'status'        => 'pending',
+        ]);
+
+        // ✅ BREVO API EMAIL
+        try {
+            $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+                ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+            $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+                new \GuzzleHttp\Client(), $config
+            );
+
+            $htmlContent = view('emails.place-order-admin', [
+                'order' => $order
+            ])->render();
+
+            $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+                'subject' => 'New Place Order Received',
+                'sender'  => [
+                    'name'  => 'Prosix Sports',
+                    'email' => 'prosixsports@gmail.com'
+                ],
+                'to' => [
+                    ['email' => 'sales@prosix.com'],
+                    ['email' => $order->email],
+                ],
+                'htmlContent' => $htmlContent,
+            ]);
+
+            $apiInstance->sendTransacEmail($email);
+
+        } catch (\Exception $e) {
+            \Log::error('PlaceOrder Email Error: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success'      => true,
+            'message'      => 'Order placed successfully!',
+            'order_number' => $order->order_number,
+        ], 201);
     }
 
-    return response()->json([
-        'success'      => true,
-        'message'      => 'Order placed successfully!',
-        'order_number' => $order->order_number,
-    ], 201);
-}
-
     /**
-     * User Orders
+     * User Orders — logged in user ke orders
      */
     public function myOrders()
     {
-        $orders = PlaceOrder::where('user_id', Auth::id())
+        // ✅ Sanctum guard se Auth ID lo
+        $userId = Auth::guard('sanctum')->id();
+
+        $orders = PlaceOrder::where('user_id', $userId)
             ->latest()
             ->get()
             ->map(fn($o) => [
@@ -199,18 +202,16 @@ class PlaceOrderController extends Controller
         return $paths;
     }
 
-
-
     /**
- * Download Single Order PDF
- */
-public function downloadSinglePdf($id)
-{
-    $order = PlaceOrder::findOrFail($id);
+     * Download Single Order PDF
+     */
+    public function downloadSinglePdf($id)
+    {
+        $order = PlaceOrder::findOrFail($id);
 
-    $pdf = Pdf::loadView('pdf.placeorder-pdf', ['orders' => collect([$order])])
-              ->setPaper('a4');
+        $pdf = Pdf::loadView('pdf.placeorder-pdf', ['orders' => collect([$order])])
+                  ->setPaper('a4');
 
-    return $pdf->download('order-' . $order->order_number . '.pdf');
-}
+        return $pdf->download('order-' . $order->order_number . '.pdf');
+    }
 }

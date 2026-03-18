@@ -148,11 +148,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
 });
 
+
 // -----------------------------------------------
 // PLACE ORDER
 // -----------------------------------------------
-Route::post('/place-order', [PlaceOrderController::class, 'store']);
-
+Route::post('/place-order', [PlaceOrderController::class, 'store'])
+     ->middleware('auth:sanctum')->withoutMiddleware('auth:sanctum');
 // -----------------------------------------------
 // MEMBERSHIP & ARTWORK (Public)
 // -----------------------------------------------
