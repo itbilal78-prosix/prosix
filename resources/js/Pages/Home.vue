@@ -965,10 +965,10 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
   /* ✅ REMOVE ABSOLUTE (MAIN FIX 🔥) */
   .main_title {
-    width: 80% !important;
+    width: 85% !important;
     font-size: 2.5rem !important;
     position: relative !important;
-    top: 50% !important;
+    top: 40% !important;
     left: auto !important;
     padding: 0 10px !important;
     line-height: 1.3;
@@ -976,7 +976,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
   .button-wrapper {
     position: relative !important;
-    top: 35% !important;
+    top: 30% !important;
     left: auto !important;
     width: 100% !important;
     display: flex !important;
