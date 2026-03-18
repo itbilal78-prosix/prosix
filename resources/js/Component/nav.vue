@@ -470,7 +470,7 @@ onUnmounted(() => {
 .navbar-logo-secondary { height: 24px; margin-left: 30px; }
 .logo-small { height: 24px; margin-bottom: 70px; filter: brightness(0) invert(1); }
 .nav-right-block { display: flex !important; align-items: center; flex: 1; width: 72%; min-width: 0; justify-content: flex-start; }
-.nav-items-list { display: flex; align-items: center; gap: clamp(6px, 1vw, 22px); flex-wrap: nowrap; list-style: none; padding: 0; margin: 0 !important; padding-left: 30px; }
+.nav-items-list { display: flex; align-items: center; gap: clamp(14px, 2vw, 40px); flex-wrap: nowrap; list-style: none; padding: 0; margin: 0 !important; padding-left: 30px; }
 .nav-link { color: #fff !important; font-weight: 600; font-size: clamp(0.85rem, 1.1vw, 1.05rem); white-space: nowrap; padding: 6px 2px !important; }
 .nav-link:hover { color: #ddd !important; }
 .nav-icons i { color: #fff; cursor: pointer; font-size: clamp(0.9rem, 1.1vw, 1.15rem); }
