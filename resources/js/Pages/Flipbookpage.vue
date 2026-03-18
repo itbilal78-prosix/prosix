@@ -1,6 +1,6 @@
 <template>
   <nav-component />
-        <breadcrumb-component />
+  <breadcrumb-component />
 
   <div id="fb-index">
 
@@ -10,7 +10,7 @@
       <div class="title-rule"></div>
     </div>
 
-    <!-- ✅ COMING SOON Empty State -->
+    <!-- Coming Soon Empty State -->
     <div v-if="flipbooks.length === 0" class="fb-coming-soon">
       <div class="cs-icon">
         <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -77,7 +77,7 @@ export default {
       this.$router.push(`/catalogue/${id}`)
     }
   },
- async mounted() {
+  async mounted() {
     try {
       const res = await axios.get('/api/flipbooks')
       this.flipbooks = res.data
@@ -103,7 +103,6 @@ export default {
   font-family: 'DM Sans', sans-serif;
 }
 
-/* Header */
 .fb-header { text-align: center; margin-bottom: 48px; }
 .fb-heading {
   font-family: 'Cormorant Garamond', serif;
@@ -130,10 +129,8 @@ export default {
   text-align: center;
   padding: 20px;
 }
-
 .cs-icon {
-  width: 72px;
-  height: 72px;
+  width: 72px; height: 72px;
   background: #fff;
   border-radius: 18px;
   display: flex;
@@ -143,7 +140,6 @@ export default {
   margin-bottom: 8px;
 }
 .cs-icon svg { width: 36px; height: 36px; }
-
 .cs-eyebrow {
   font-size: 11px;
   letter-spacing: 4px;
@@ -152,7 +148,6 @@ export default {
   margin: 0;
   font-weight: 500;
 }
-
 .cs-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(32px, 5vw, 52px);
@@ -161,21 +156,17 @@ export default {
   margin: 0;
   line-height: 1.1;
 }
-
 .cs-rule {
   width: 48px; height: 2px;
   background: linear-gradient(90deg, transparent, #000, transparent);
   margin: 4px auto;
 }
-
 .cs-sub {
   font-size: 14px;
   color: #777;
   line-height: 1.8;
   margin: 0;
 }
-
-/* Animated dots — black */
 .cs-dots {
   display: flex;
   gap: 8px;
@@ -184,8 +175,7 @@ export default {
   justify-content: center;
 }
 .cs-dots span {
-  width: 7px;
-  height: 7px;
+  width: 7px; height: 7px;
   border-radius: 50%;
   background: #000;
   animation: csDot 1.4s ease-in-out infinite;
@@ -222,8 +212,7 @@ export default {
   box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
 }
 .fb-card-binding {
-  width: 16px;
-  flex-shrink: 0;
+  width: 16px; flex-shrink: 0;
   border-radius: 2px 0 0 2px;
   background: linear-gradient(to right, #1a1008 0%, #3a2a14 20%, #c9a84c 38%, #e8d5a3 50%, #c9a84c 62%, #3a2a14 80%, #1a1008 100%);
   box-shadow: inset -2px 0 5px rgba(0,0,0,0.25);
