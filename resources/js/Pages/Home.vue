@@ -968,7 +968,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
     width: 75% !important;
     font-size: 2.5rem !important;
     position: relative !important;
-    top: 60% !important;
+    top: 50% !important;
     left: auto !important;
     padding: 0 10px !important;
     line-height: 1.3;
@@ -976,7 +976,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
   .button-wrapper {
     position: relative !important;
-    top: 40% !important;
+    top: 35% !important;
     left: auto !important;
     width: 100% !important;
     display: flex !important;
