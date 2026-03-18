@@ -999,6 +999,33 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
     font-size: 0.95rem !important;
     padding: 10px 28px !important;
   }
+    .deals-layout {
+    flex-direction: column !important;  /* 🔥 MAIN FIX */
+    gap: 12px !important;
+  }
+
+  .deals-banner-col {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .deal-banner-box {
+    height: 220px !important; /* thoda chota rakho */
+    min-height: 220px !important;
+  }
+
+  .deals-cards-col {
+    width: 100% !important;
+  }
+
+  .deals-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns */
+    gap: 8px !important;
+  }
+
+  .deal-card {
+    padding-bottom: 100% !important; /* square cards */
+  }
 
 }
 
