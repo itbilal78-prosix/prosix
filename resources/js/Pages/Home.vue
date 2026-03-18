@@ -965,7 +965,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
   /* ✅ REMOVE ABSOLUTE (MAIN FIX 🔥) */
   .main_title {
-    width: 75% !important;
+    width: 80% !important;
     font-size: 2.5rem !important;
     position: relative !important;
     top: 50% !important;
