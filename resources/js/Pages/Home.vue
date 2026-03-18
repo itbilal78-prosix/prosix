@@ -888,8 +888,27 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .benefits-desktop { display: none !important; }
   .benefits-mobile-carousel { display: block !important; }
   .text-and-image-wrapper { max-width: 100% !important; width: 100% !important; height: 88vh !important; margin-top: 0 !important; display: flex !important; flex-direction: column !important; justify-content: flex-end !important; padding-bottom: 20px !important; gap: 10px !important; }
-  .main_title { width: 100% !important; font-size: 3.7rem !important; text-align: center !important; order: 1 !important; }
-  .button-wrapper { margin-top: 0 !important; align-self: center !important; order: 2 !important; }
+ .main_title {
+  width: 100% !important;
+  font-size: 2.4rem !important;
+
+  position: absolute !important;
+  top: 20% !important;
+  left: 0 !important;
+
+  text-align: left !important;
+  padding: 0 10px !important;
+}
+.button-wrapper {
+  position: absolute !important;
+  top: 53% !important;
+  left: 0 !important;
+
+  width: 100% !important;
+  display: flex !important;
+  justify-content: left !important; /* button center me */
+  padding: 0 10px !important;
+}
   .image-content { order: 3 !important; width: 100% !important; display: flex !important; justify-content: center !important; }
   .hero-png { max-height: 45vh !important; max-width: 90% !important; }
   .title-button-row { flex-direction: column !important; align-items: center !important; gap: 10px !important; order: 1 !important; }
@@ -913,29 +932,32 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .text-and-image-wrapper { max-width: 100% !important; margin-top: 20% !important; }
   .title-button-row { flex-direction: column !important; align-items: center !important; gap: 20px !important; }
 .main_title {
-  width: 100% !important;
+  width: 70% !important; /* ya 60% try karo */
   font-size: 2.4rem !important;
 
   position: absolute !important;
-  top: 20% !important;
+  top: 18% !important;
   left: 0 !important;
 
   text-align: left !important;
   padding: 0 10px !important;
+
+  line-height: 1.3;
 }
+
 .button-wrapper {
   position: absolute !important;
-  top: 53% !important;
+  top: 30% !important;
   left: 0 !important;
 
   width: 100% !important;
   display: flex !important;
-  justify-content: left !important; /* button center me */
+  justify-content: left !important;
   padding: 0 10px !important;
 }
   .single-line-btn { font-size: 1rem !important; padding: 12px 35px !important; }
   .lead { font-size: 1rem !important; text-align: center !important; padding: 0 20px !important; }
-  .hero-png { max-width: 90% !important; max-height: 300px !important; }
+  .hero-png { max-width: 100% !important; max-height: 350px !important; }
   .sports-icons-section { padding: 20px 0 !important; }
   .icons-track { gap: 28px !important; padding-left: 60px !important; }
   .icon-circle { width: 60px !important; height: 60px !important; }
