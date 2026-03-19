@@ -355,6 +355,8 @@ const pendingModelId = ref(null)
 // Hamesha items ko repeat karo jab tak track full na ho
 // Sports icons ki tarah seamless infinite scroll
 // ============================================================
+
+
 function useInfiniteCarousel(items, itemsPerView, autoSpeed) {
   const index = ref(0)
   const isTransitioning = ref(false)
@@ -674,7 +676,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @keyframes slideInFromBottomLeft { 0% { transform: translate(-100%, 100%); opacity: 0; } 100% { transform: translate(0, 0); opacity: 1; } }
 .carousel-control-left, .carousel-control-right { position: absolute; top: 50%; transform: translateY(-50%); z-index: 4; width: 60px; height: 60px; cursor: pointer; background: transparent; border: none; outline: none; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
 .carousel-control-left i, .carousel-control-right i { color: #000; font-weight: 700; font-size: 2.2rem; }
-.carousel-control-left { left: 10px; }
+.carousel-control-left { left: 10px; } 
 .carousel-control-right { right: 10px; }
 .carousel-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; gap: 6px; align-items: center; }
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: rgba(0,0,0,0.4); border: none; padding: 0; cursor: pointer; transition: all 0.3s; }
@@ -1000,7 +1002,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
     padding: 10px 28px !important;
   }
     .deals-layout {
-    flex-direction: column !important;  /* 🔥 MAIN FIX */
+    flex-direction: column !important;
     gap: 12px !important;
   }
 
@@ -1010,7 +1012,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   }
 
   .deal-banner-box {
-    height: 300px !important; /* thoda chota rakho */
+    height: 300px !important;
     min-height: 300px !important;
   }
 
@@ -1019,12 +1021,12 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   }
 
   .deals-cards-grid {
-    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns */
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
   }
 
   .deal-card {
-    padding-bottom: 100% !important; /* square cards */
+    padding-bottom: 100% !important;
   }
 
 }

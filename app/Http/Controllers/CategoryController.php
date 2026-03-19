@@ -141,14 +141,26 @@ class CategoryController extends Controller
             ->with('success', 'Category Updated Successfully');
     }
 
+    // public function destroy(Category $category)
+    // {
+
+    //     $category->delete();
+
+    //     return redirect()->route('categories.index')
+    //         ->with('success', 'Category Deleted Successfully');
+    // }
     public function destroy(Category $category)
-    {
+{
+    // 🔥 pehle subcategories delete
+    Category::where('parent_id', $category->id)->delete();
 
-        $category->delete();
+    // 🔥 phir main category
+    $category->delete();
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Category Deleted Successfully');
-    }
+    return redirect()->route('categories.index')
+        ->with('success', 'Category Deleted Successfully');
+}
+
 
     public function toggleStatus(Category $category)
     {
@@ -171,15 +183,23 @@ class CategoryController extends Controller
             ->get();
     }
 
-    public function apiHighlighted()
-    {
-        return Category::where('status', 1)
-            ->where('highlight', 1)
-            ->select('id', 'name', 'icon_image', 'highlight_image')
-            ->orderBy('name')
-            ->get();
-    }
-
+    // public function apiHighlighted()
+    // {
+    //     return Category::where('status', 1)
+    //         ->where('highlight', 1)
+    //         ->select('id', 'name', 'icon_image', 'highlight_image')
+    //         ->orderBy('name')
+    //         ->get();
+    // }
+public function apiHighlighted()
+{
+    return Category::where('status', 1)
+        ->where('highlight', 1)
+        ->whereNull('parent_id') 
+        ->select('id', 'name', 'icon_image', 'highlight_image')
+        ->orderBy('name')
+        ->get();
+}
     public function apiCategoriesByNavigation()
     {
         $categories = Category::with(['subcategories' => function ($q) {
