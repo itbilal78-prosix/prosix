@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\Payment;
 use App\Models\OrderStatusLog;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
-use Stripe\Exception\CardException;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\CardException;
+use Stripe\PaymentIntent;
+use Stripe\Stripe;
 
 class OrderController extends Controller
 {
-
     /**
      * STORE ORDER
      */
@@ -42,36 +40,36 @@ class OrderController extends Controller
                 'checkout.country' => 'nullable|string',
                 'checkout.deliveryDays' => 'required|string',
 
-                'checkout.paymentMethod' =>
-                'required|string|in:stripe,cod,paypal,wire'
+                'checkout.paymentMethod' => 'required|string|in:stripe,cod,paypal,wire',
             ]);
-
 
             /**
              * CALCULATE TOTAL
              */
             $subtotal = collect($request->cart)->sum(
-                fn($item) =>
-                $item['price'] * $item['quantity']
+                fn ($item) => $item['price'] * $item['quantity']
             );
 
             $shipping = 0;
 
             foreach ($request->cart as $item) {
 
-                if (!($item['shipping_enabled'] ?? false)) continue;
+                if (! ($item['shipping_enabled'] ?? false)) {
+                    continue;
+                }
 
                 $cost = $item['shipping_cost'] ?? 0;
 
                 $freeAbove = $item['free_shipping_above'] ?? null;
 
-                if ($freeAbove && $subtotal >= $freeAbove) continue;
+                if ($freeAbove && $subtotal >= $freeAbove) {
+                    continue;
+                }
 
                 $shipping += $cost * $item['quantity'];
             }
 
             $total = round($subtotal + $shipping, 2);
-
 
             /**
              * STRIPE PAYMENT
@@ -82,28 +80,27 @@ class OrderController extends Controller
 
                 Stripe::setApiKey(config('services.stripe.secret'));
 
-     $intent = PaymentIntent::create([
-    'amount' => (int) ($total * 100),
-    'currency' => 'usd',
-    'payment_method' => $request->checkout['stripeToken'],
-    'confirm' => true,
-    'automatic_payment_methods' => [
-        'enabled' => true,
-        'allow_redirects' => 'never'
-    ],
-]);
+                $intent = PaymentIntent::create([
+                    'amount' => (int) ($total * 100),
+                    'currency' => 'usd',
+                    'payment_method' => $request->checkout['stripeToken'],
+                    'confirm' => true,
+                    'automatic_payment_methods' => [
+                        'enabled' => true,
+                        'allow_redirects' => 'never',
+                    ],
+                ]);
 
                 if ($intent->status !== 'succeeded') {
 
                     return response()->json([
                         'success' => false,
-                        'message' => 'Payment failed'
+                        'message' => 'Payment failed',
                     ], 422);
                 }
 
                 $stripePaymentIntentId = $intent->id;
             }
-
 
             /**
              * CREATE ORDER
@@ -114,52 +111,38 @@ class OrderController extends Controller
 
                 'total' => $total,
 
-                'status' =>
-                $stripePaymentIntentId ? 'confirmed' : 'new',
+                'status' => $stripePaymentIntentId ? 'confirmed' : 'new',
 
-                'payment_status' =>
-                $stripePaymentIntentId ? 'paid' : 'pending',
+                'payment_status' => $stripePaymentIntentId ? 'paid' : 'pending',
 
-                'payment_method' =>
-                $request->checkout['paymentMethod'],
+                'payment_method' => $request->checkout['paymentMethod'],
 
                 'currency' => 'usd',
 
-                'stripe_payment_intent_id' =>
-                $stripePaymentIntentId,
+                'stripe_payment_intent_id' => $stripePaymentIntentId,
 
-                'paid_amount' =>
-                $stripePaymentIntentId ? $total : null,
+                'paid_amount' => $stripePaymentIntentId ? $total : null,
 
-                'transaction_date' =>
-                $stripePaymentIntentId ? now() : null,
+                'transaction_date' => $stripePaymentIntentId ? now() : null,
 
-                'shipping_name' =>
-                $request->checkout['name'],
+                'shipping_name' => $request->checkout['name'],
 
-                'shipping_phone' =>
-                $request->checkout['phone'],
-'shipping_email' => $request->checkout['email'],
+                'shipping_phone' => $request->checkout['phone'],
+                'shipping_email' => $request->checkout['email'],
 
-                'shipping_address' =>
-                $request->checkout['address'],
+                'shipping_address' => $request->checkout['address'],
 
-                'shipping_city' =>
-                $request->checkout['city'],
+                'shipping_city' => $request->checkout['city'],
 
-                'shipping_province' =>
-                $request->checkout['province'],
+                'shipping_province' => $request->checkout['province'],
 
-                'shipping_postal_code' =>
-                $request->checkout['postalCode'],
+                'shipping_postal_code' => $request->checkout['postalCode'],
 
-                'delivery_days' =>
-                $request->checkout['deliveryDays'],
+                'delivery_days' => $request->checkout['deliveryDays'],
 
-                'items' => $request->cart
+                'items' => $request->cart,
 
             ]);
-
 
             /**
              * SAVE PAYMENT RECORD
@@ -178,130 +161,109 @@ class OrderController extends Controller
 
                     'payment_status' => 'paid',
 
-                    'stripe_payment_intent_id' =>
-                    $stripePaymentIntentId,
+                    'stripe_payment_intent_id' => $stripePaymentIntentId,
 
-                    'transaction_date' => now()
+                    'transaction_date' => now(),
 
                 ]);
             }
 
+            OrderStatusLog::create([
+                'order_id' => $order->id,
+                'status' => 'order_created',
+                'changed_by' => 'system',
+                'note' => 'Order created successfully',
+            ]);
 
+            // email to customer
+            if ($order->shipping_email) {
 
+                try {
 
+                    $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+                        ->setApiKey('api-key', env('BREVO_API_KEY'));
 
-OrderStatusLog::create([
-    'order_id' => $order->id,
-    'status' => 'order_created',
-    'changed_by' => 'system',
-    'note' => 'Order created successfully'
-]);
+                    $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+                        new \GuzzleHttp\Client,
+                        $config
+                    );
 
-// email to customer
-if ($order->shipping_email) {
+                    $htmlContent = view(
+                        'emails.new_order',
+                        ['order' => $order]
+                    )->render();
 
- try {
+                    $email = new \SendinBlue\Client\Model\SendSmtpEmail([
 
-$config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-    ->setApiKey('api-key', env('BREVO_API_KEY'));
+                        'subject' => 'Order Confirmation - #'.$order->order_number,
 
-$apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-    new \GuzzleHttp\Client(),
-    $config
-);
+                        'sender' => [
+                            'name' => 'Prosix Sports',
+                            'email' => 'prosixsports@gmail.com',
+                        ],
 
-$htmlContent = view(
-    'emails.new_order',
-    ['order' => $order]
-)->render();
+                        'to' => [
 
-$email = new \SendinBlue\Client\Model\SendSmtpEmail([
+                            ['email' => $order->shipping_email],
 
-    'subject' => 'Order Confirmation - #' . $order->order_number,
+                            ['email' => 'sales@prosix.com'],
 
-    'sender' => [
-        'name' => 'Prosix Sports',
-        'email' => 'prosixsports@gmail.com'
-    ],
+                        ],
 
-    'to' => [
+                        'htmlContent' => $htmlContent,
 
-        ['email' => $order->shipping_email],
+                    ]);
 
-        ['email' => 'sales@prosix.com']
+                    $apiInstance->sendTransacEmail($email);
 
-    ],
+                } catch (\Exception $e) {
 
-    'htmlContent' => $htmlContent,
+                    \Log::error('Order email failed: '.$e->getMessage());
 
-]);
+                }
 
-$apiInstance->sendTransacEmail($email);
-
-} catch (\Exception $e) {
-
-\Log::error('Order email failed: '.$e->getMessage());
-
-}
-
-}
-
-
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Order placed successfully!',
-                'order_id' => $order->id
+                'order_id' => $order->id,
             ], 201);
 
-        }
-
-        catch (CardException $e) {
+        } catch (CardException $e) {
 
             return response()->json([
                 'success' => false,
-                'message' =>
-                $e->getError()->message
+                'message' => $e->getError()->message,
             ], 422);
 
-        }
-
-        catch (ApiErrorException $e) {
+        } catch (ApiErrorException $e) {
 
             Log::error($e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' =>
-                'Payment service error'
+                'message' => 'Payment service error',
             ], 500);
 
-        }
-
-        catch (ValidationException $e) {
+        } catch (ValidationException $e) {
 
             return response()->json([
                 'success' => false,
-                'errors' =>
-                $e->errors()
+                'errors' => $e->errors(),
             ], 422);
 
-        }
-
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
 
             Log::error($e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' =>
-                'Order creation failed'
+                'message' => 'Order creation failed',
             ], 500);
 
         }
     }
-
-
 
     /**
      * ADMIN ORDER LIST
@@ -316,8 +278,6 @@ $apiInstance->sendTransacEmail($email);
         );
     }
 
-
-
     /**
      * ADMIN SINGLE ORDER
      */
@@ -331,90 +291,118 @@ $apiInstance->sendTransacEmail($email);
         );
     }
 
-
-
     /**
      * UPDATE ORDER STATUS
      */
     public function updateStatus(Request $request, $id)
     {
-
         $request->validate([
-            'status' =>
-            'required|in:new,confirmed,production,shipped,delivered,cancelled'
+            'status' => 'required|in:new,confirmed,production,shipped,delivered,cancelled',
         ]);
 
         $order = Order::findOrFail($id);
 
+        // update status
         $order->update([
-            'status' => $request->status
-        ]);
-
-
-        OrderStatusLog::create([
-
-            'order_id' => $order->id,
-
             'status' => $request->status,
-
-            'changed_by' => 'admin',
-
-            'note' =>
-            'Status updated by admin'
-
         ]);
 
+        // log status change
+        OrderStatusLog::create([
+            'order_id' => $order->id,
+            'status' => $request->status,
+            'changed_by' => 'admin',
+            'note' => 'Status updated by admin',
+        ]);
 
-        return back()
-        ->with('success', 'Order status updated');
+        // ✅ SEND EMAIL TO CUSTOMER
+        if ($order->shipping_email) {
+
+            try {
+
+                $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+                    ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+                $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+                    new \GuzzleHttp\Client,
+                    $config
+                );
+
+                $htmlContent = view(
+                    'emails.order-status-update',
+                    ['order' => $order]
+                )->render();
+
+                $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+
+                    'subject' => 'Order Status Updated - #'.$order->id,
+
+                    'sender' => [
+                        'name' => 'Prosix Sports',
+                        'email' => 'prosixsports@gmail.com',
+                    ],
+
+                    'to' => [
+                        ['email' => $order->shipping_email],
+                    ],
+
+                    'htmlContent' => $htmlContent,
+
+                ]);
+
+                $apiInstance->sendTransacEmail($email);
+
+            } catch (\Exception $e) {
+
+                \Log::error('Status email failed: '.$e->getMessage());
+
+            }
+        }
+
+        return back()->with('success', 'Order status updated + email sent');
     }
 
+    /**
+     * UPDATE SHIPPING INFO
+     */
+    public function updateShipping(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
 
+        $order->update([
+            'courier_name' => $request->courier_name,
+            'tracking_number' => $request->tracking_number,
+            'dispatch_date' => $request->dispatch_date,
+        ]);
 
+        OrderStatusLog::create([
+            'order_id' => $order->id,
+            'status' => 'shipping_updated',
+            'changed_by' => 'admin',
+            'note' => 'Shipping info updated',
+        ]);
 
+        return back()->with('success', 'Shipping info updated successfully');
+    }
 
     /**
- * UPDATE SHIPPING INFO
- */
-public function updateShipping(Request $request, $id)
-{
-    $order = Order::findOrFail($id);
+     * UPDATE ADMIN NOTES
+     */
+    public function updateNotes(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
 
-    $order->update([
-        'courier_name'   => $request->courier_name,
-        'tracking_number'=> $request->tracking_number,
-        'dispatch_date'  => $request->dispatch_date,
-    ]);
+        $order->update([
+            'admin_notes' => $request->admin_notes,
+        ]);
 
-    OrderStatusLog::create([
-        'order_id'   => $order->id,
-        'status'     => 'shipping_updated',
-        'changed_by' => 'admin',
-        'note'       => 'Shipping info updated'
-    ]);
+        OrderStatusLog::create([
+            'order_id' => $order->id,
+            'status' => 'notes_updated',
+            'changed_by' => 'admin',
+            'note' => 'Admin notes updated',
+        ]);
 
-    return back()->with('success', 'Shipping info updated successfully');
-}
-
-
-/**
- * UPDATE ADMIN NOTES
- */
-public function updateNotes(Request $request, $id)
-{
-    $order = Order::findOrFail($id);
-
-    $order->update([
-        'admin_notes' => $request->admin_notes
-    ]);
-
-    OrderStatusLog::create([
-        'order_id'   => $order->id,
-        'status'     => 'notes_updated',
-        'changed_by' => 'admin',
-        'note'       => 'Admin notes updated'
-    ]);
-
-    return back()->with('success', 'Notes updated successfully');
-}
+        return back()->with('success', 'Notes updated successfully');
+    }
 }
