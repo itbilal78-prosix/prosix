@@ -291,10 +291,16 @@ public function resendOtp(Request $request)
     } catch (\Exception $e) {
 
         \Log::error('Resend OTP failed: '.$e->getMessage());
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Could not resend OTP'
+        ]);
     }
 
     return response()->json([
-        'status' => true
+        'status' => true,
+        'message' => 'OTP resent successfully'
     ]);
 }
 }

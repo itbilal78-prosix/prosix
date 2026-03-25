@@ -23,6 +23,7 @@ use App\Http\Controllers\VideoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\PaymentController;
 
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -38,7 +39,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // User management
         Route::get('/users', [AuthController::class, 'index'])->name('users.index');
         Route::post('/api/verify-otp', [AuthController::class, 'verifyOtp']);
-        Route::post('/user/resend-otp', [UserController::class, 'resendOtp']);
+
     });
 });
 
@@ -220,6 +221,8 @@ Route::middleware(['auth:admin'])
     })->name('mascots.edit');
 
 
+Route::get('/admin/payments', [PaymentController::class, 'index'])
+    ->name('admin.payments.index');
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 Route::get('/admin/place-orders', [PlaceOrderController::class, 'index'])

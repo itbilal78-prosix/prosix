@@ -59,7 +59,7 @@ Route::get('/patterns', function () {
 Route::post('/user/register',   [UserController::class, 'register']);
 Route::post('/user/login',      [UserController::class, 'login']);
 Route::post('/user/verify-otp', [UserController::class, 'verifyOtp']);
-
+Route::post('/user/resend-otp', [UserController::class, 'resendOtp']);
 // -----------------------------------------------
 // EMAIL VERIFICATION
 // -----------------------------------------------
