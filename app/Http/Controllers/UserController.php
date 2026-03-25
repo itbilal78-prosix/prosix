@@ -24,7 +24,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'user',
-            'status' => 'pending',
+'status' => 'pending_otp',
             'otp' => $otp,
         ]);
 
@@ -56,35 +56,35 @@ class UserController extends Controller
         ]);
     }
 
-    public function verifyOtp(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|numeric',
-        ]);
+   public function verifyOtp(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'otp' => 'required|numeric',
+    ]);
 
-        $user = User::where('email', $request->email)
-            ->where('otp', $request->otp)
-            ->first();
+    $user = User::where('email', $request->email)
+        ->where('otp', $request->otp)
+        ->first();
 
-        if (! $user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid OTP',
-            ], 422);
-        }
-
-        $user->update([
-            'status' => 'approved',
-            'otp_verified_at' => now(),
-            'otp' => null,
-        ]);
-
+    if (! $user) {
         return response()->json([
-            'status' => true,
-            'message' => 'OTP verified successfully. You can login now.',
-        ]);
+            'status' => false,
+            'message' => 'Invalid OTP',
+        ], 422);
     }
+
+    $user->update([
+        'status' => 'approved',
+        'otp_verified_at' => now(),
+        'otp' => null,
+    ]);
+
+    return response()->json([
+        'status' => true,
+        'message' => 'OTP verified successfully. Please login now.',
+    ]);
+}
 
     public function login(Request $request)
     {
@@ -235,5 +235,66 @@ public function changePassword(Request $request)
         'message' => 'Password changed successfully.',
     ]);
 }
+public function resendOtp(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email'
+    ]);
 
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'User not found'
+        ]);
+    }
+
+    $otp = rand(100000, 999999);
+
+    $user->update([
+        'otp' => $otp
+    ]);
+
+    try {
+
+        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+            ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+            new \GuzzleHttp\Client(), $config
+        );
+
+        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+
+            'subject' => 'Your OTP Verification Code',
+
+            'sender' => [
+                'name' => 'Prosix Sports',
+                'email' => 'prosixsports@gmail.com'
+            ],
+
+            'to' => [
+                ['email' => $user->email]
+            ],
+
+            'htmlContent' =>
+                '<h2>Your OTP Code</h2>
+                 <p style="font-size:32px;font-weight:bold;">'
+                .$otp.
+                '</p>'
+
+        ]);
+
+        $apiInstance->sendTransacEmail($email);
+
+    } catch (\Exception $e) {
+
+        \Log::error('Resend OTP failed: '.$e->getMessage());
+    }
+
+    return response()->json([
+        'status' => true
+    ]);
+}
 }

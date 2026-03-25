@@ -38,6 +38,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // User management
         Route::get('/users', [AuthController::class, 'index'])->name('users.index');
         Route::post('/api/verify-otp', [AuthController::class, 'verifyOtp']);
+        Route::post('/user/resend-otp', [UserController::class, 'resendOtp']);
     });
 });
 
