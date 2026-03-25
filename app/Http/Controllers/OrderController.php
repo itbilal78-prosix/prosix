@@ -82,17 +82,13 @@ class OrderController extends Controller
 
                 Stripe::setApiKey(config('services.stripe.secret'));
 
-                $intent = PaymentIntent::create([
-                    'amount' => (int) ($total * 100),
-                    'currency' => 'usd',
-                    'payment_method' =>
-                    $request->checkout['stripeToken'],
-                    'confirm' => true,
-                    'automatic_payment_methods' => [
-                        'enabled' => true,
-                        'allow_redirects' => 'never'
-                    ],
-                ]);
+             $intent = PaymentIntent::create([
+    'amount' => (int) ($total * 100),
+    'currency' => 'usd',
+    'automatic_payment_methods' => [
+        'enabled' => true,
+    ],
+]);
 
                 if ($intent->status !== 'succeeded') {
 
@@ -188,7 +184,7 @@ class OrderController extends Controller
             }
 
 
-           
+
 
 
 OrderStatusLog::create([
