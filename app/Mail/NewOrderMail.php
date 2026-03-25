@@ -20,8 +20,8 @@ class NewOrderMail extends Mailable
 
     public function build()
     {
-        return $this->subject('New Order Received - Order #' . $this->order->id)
-                    ->view('emails.new-order')   // ← ye view banao neeche
+return $this->subject('Order Confirmation - #' . $this->order->order_number)
+                    ->view('emails.new_order')
                     ->with(['order' => $this->order]);
     }
 }

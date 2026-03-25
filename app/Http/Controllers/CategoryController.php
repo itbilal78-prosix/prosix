@@ -150,17 +150,16 @@ class CategoryController extends Controller
     //         ->with('success', 'Category Deleted Successfully');
     // }
     public function destroy(Category $category)
-{
-    // 🔥 pehle subcategories delete
-    Category::where('parent_id', $category->id)->delete();
+    {
+        // 🔥 pehle subcategories delete
+        Category::where('parent_id', $category->id)->delete();
 
-    // 🔥 phir main category
-    $category->delete();
+        // 🔥 phir main category
+        $category->delete();
 
-    return redirect()->route('categories.index')
-        ->with('success', 'Category Deleted Successfully');
-}
-
+        return redirect()->route('categories.index')
+            ->with('success', 'Category Deleted Successfully');
+    }
 
     public function toggleStatus(Category $category)
     {
@@ -191,15 +190,17 @@ class CategoryController extends Controller
     //         ->orderBy('name')
     //         ->get();
     // }
-public function apiHighlighted()
-{
-    return Category::where('status', 1)
-        ->where('highlight', 1)
-        ->whereNull('parent_id') 
-        ->select('id', 'name', 'icon_image', 'highlight_image')
-        ->orderBy('name')
-        ->get();
-}
+     
+    public function apiHighlighted()
+    {
+        return Category::where('status', 1)
+            ->where('highlight', 1)
+            ->whereNull('parent_id')
+            ->select('id', 'name', 'icon_image', 'highlight_image')
+            ->orderBy('name')
+            ->get();
+    }
+
     public function apiCategoriesByNavigation()
     {
         $categories = Category::with(['subcategories' => function ($q) {
@@ -378,46 +379,46 @@ public function apiHighlighted()
         ]);
     }
 
-// CategoryController.php mein yeh method replace karo
+    // CategoryController.php mein yeh method replace karo
 
-public function products($id)
-{
-    $category = Category::find($id);
+    public function products($id)
+    {
+        $category = Category::find($id);
 
-    if (!$category) {
-        return response()->json(['error' => 'Category not found'], 404);
+        if (! $category) {
+            return response()->json(['error' => 'Category not found'], 404);
+        }
+
+        $isSubcategory = ! is_null($category->parent_id);
+
+        $query = Product::query()
+            ->select('id', 'name', 'price', 'image')
+            ->where('show_in_category', true); // ✅ SIRF YEH DIKHAO JO ADMIN NE ASSIGN KIYE
+
+        if ($isSubcategory) {
+            $query->where('subcategory_id', $id);
+        } else {
+            $query->where('category_id', $id)
+                ->whereNull('subcategory_id');
+        }
+
+        $products = $query->get()->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'image' => $product->image ? asset('storage/'.$product->image) : null,
+            ];
+        });
+
+        return response()->json([
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+            ],
+            'products' => $products,
+        ]);
     }
-
-    $isSubcategory = !is_null($category->parent_id);
-
-    $query = Product::query()
-        ->select('id', 'name', 'price', 'image')
-        ->where('show_in_category', true); // ✅ SIRF YEH DIKHAO JO ADMIN NE ASSIGN KIYE
-
-    if ($isSubcategory) {
-        $query->where('subcategory_id', $id);
-    } else {
-        $query->where('category_id', $id)
-              ->whereNull('subcategory_id');
-    }
-
-    $products = $query->get()->map(function ($product) {
-        return [
-            'id'    => $product->id,
-            'name'  => $product->name,
-            'price' => $product->price,
-            'image' => $product->image ? asset('storage/' . $product->image) : null,
-        ];
-    });
-
-    return response()->json([
-        'category' => [
-            'id'   => $category->id,
-            'name' => $category->name,
-        ],
-        'products' => $products,
-    ]);
-}
 
     public function verifyCategoryPassword(Request $request, $id)
     {

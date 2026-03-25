@@ -344,8 +344,8 @@ import { useRouter } from 'vue-router'
 const cartStore = useCartStore()
 const router    = useRouter()
 
-// ✅ Apni live key yahan hai — real payments chalenge
-const STRIPE_PK = 'pk_live_51Me8FHImWDOcEyespCiF4IVvemDbUaKUlQk5U3UY5QBgR0Z3bcDrVCJbjfG2rYwNaMS5Dou34Oe7GAMwREHGGs6P000VDG7j3M'
+// ✅ Apni live key yahan hai — real payments chalenge 
+const STRIPE_PK = 'pk_test_51T8ITpHdpb4oZa9ZRkYey6WFkWkp9YsKftIp9WfBYMeYI76cCUCuVm0PoPu93IFH072Zk1DHLD3wFjfBp5kFjdAc00NzHMVUfk'
 
 const loading          = ref(false)
 const currentStep      = ref(1)

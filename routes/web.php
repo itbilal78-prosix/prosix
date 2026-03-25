@@ -22,6 +22,7 @@ use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlaceOrderController;
+use App\Http\Controllers\StripeWebhookController;
 
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -66,6 +67,22 @@ Route::prefix('admin')
 
         Route::get('/orders/{id}', [OrderController::class, 'adminShow'])
             ->name('orders.show');
+
+
+
+Route::post('/orders/{id}/status',
+    [OrderController::class,'updateStatus'])
+    ->name('orders.updateStatus');
+
+Route::post('/orders/{id}/shipping',
+    [OrderController::class,'updateShipping'])
+    ->name('orders.updateShipping');
+
+Route::post('/orders/{id}/notes',
+    [OrderController::class,'updateNotes'])
+    ->name('orders.updateNotes');
+
+
     });
 // Admin protected routes
 Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
@@ -203,6 +220,7 @@ Route::middleware(['auth:admin'])
 
 
 
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 Route::get('/admin/place-orders', [PlaceOrderController::class, 'index'])
     ->name('admin.placeorder');
 Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSinglePdf'])

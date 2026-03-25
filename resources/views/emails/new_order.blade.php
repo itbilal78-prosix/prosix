@@ -1,21 +1,65 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>New Order</title>
+    <title>Order Confirmation</title>
 </head>
+
 <body>
-    <h1>New Order Placed</h1>
-    <p>Order ID: {{ $order->id }}</p>
-    <p>Total: PKR {{ $order->total }}</p>
-    <p>Payment: {{ $order->payment_method }}</p>
-    <p>Customer: {{ $order->shipping_name }} ({{ $order->shipping_phone }})</p>
-    <p>Address: {{ $order->shipping_address }}, {{ $order->shipping_city }}</p>
-    <p>Delivery: {{ $order->delivery_days }}</p>
-    <h2>Items:</h2>
-    <ul>
-        @foreach(json_decode($order->items) as $item)
-            <li>{{ $item->name }} (Size: {{ $item->size }}, Qty: {{ $item->quantity }}, Price: {{ $item->price }})</li>
-        @endforeach
-    </ul>
+
+<h1>Order Placed Successfully 🎉</h1>
+
+<p><strong>Order Number:</strong> {{ $order->order_number }}</p>
+
+<p><strong>Total:</strong> ${{ $order->total }}</p>
+
+<p><strong>Payment Method:</strong> {{ ucfirst($order->payment_method) }}</p>
+
+<p>
+<strong>Customer:</strong>
+{{ $order->shipping_name }}
+({{ $order->shipping_phone }})
+</p>
+
+<p>
+<strong>Address:</strong>
+{{ $order->shipping_address }},
+{{ $order->shipping_city }}
+</p>
+
+<p>
+<strong>Delivery Time:</strong>
+{{ $order->delivery_days }}
+</p>
+
+
+<h2>Items:</h2>
+
+<ul>
+
+@foreach ($order->items as $item)
+
+<li>
+
+{{ $item['name'] }}
+
+(Size: {{ $item['size'] ?? '-' }},
+
+Qty: {{ $item['quantity'] }},
+
+Price: ${{ $item['price'] }})
+
+</li>
+
+@endforeach
+
+</ul>
+
+
+<br>
+
+<p>Thank you for shopping with Prosix Sports.</p>
+
 </body>
+
 </html>

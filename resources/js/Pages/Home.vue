@@ -630,7 +630,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .scroll-top-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px) scale(0.8); z-index: 9997; width: 52px; height: 52px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); opacity: 0; pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s; }
 .scroll-top-btn.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
 .scroll-top-btn:hover { background: #fff; color: #000; transform: translateX(-50%) translateY(-3px) scale(1.08); }
-
 .float-icons-left { position: fixed; bottom: 30px; left: 20px; z-index: 99990; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; font-family: 'Poppins', sans-serif; }
 .float-icon-wrap { position: relative; display: flex; align-items: center; cursor: pointer; }
 .float-icon-btn { width: 54px; height: 54px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 2.5px solid #fff; box-shadow: 0 6px 22px rgba(0,0,0,0.35); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.2s; position: relative; z-index: 2; text-decoration: none; cursor: pointer; }
@@ -645,7 +644,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .float-icons-right { position: fixed; bottom: 30px; right: 20px; z-index: 99990; display: flex; flex-direction: column; gap: 14px; align-items: flex-end; }
 .float-icons-right .float-icon-tooltip { left: auto; right: 64px; transform: translateY(-50%) translateX(6px); }
 .float-icons-right .float-icon-wrap:hover .float-icon-tooltip { opacity: 1; transform: translateY(-50%) translateX(0); }
-
 .hero-carousel { position: relative; height: 100vh; min-height: 100vh; overflow: hidden; }
 .carousel-container { position: relative; height: 100%; }
 .carousel-slide { height: 100vh; position: absolute; inset: 0; background-size: cover; background-position: center center; background-repeat: no-repeat; animation: slideBackgroundFromRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
@@ -676,7 +674,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @keyframes slideInFromBottomLeft { 0% { transform: translate(-100%, 100%); opacity: 0; } 100% { transform: translate(0, 0); opacity: 1; } }
 .carousel-control-left, .carousel-control-right { position: absolute; top: 50%; transform: translateY(-50%); z-index: 4; width: 60px; height: 60px; cursor: pointer; background: transparent; border: none; outline: none; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
 .carousel-control-left i, .carousel-control-right i { color: #000; font-weight: 700; font-size: 2.2rem; }
-.carousel-control-left { left: 10px; } 
+.carousel-control-left { left: 10px; }
 .carousel-control-right { right: 10px; }
 .carousel-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; gap: 6px; align-items: center; }
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: rgba(0,0,0,0.4); border: none; padding: 0; cursor: pointer; transition: all 0.3s; }
@@ -703,7 +701,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .left-ribbon { position: relative; display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; text-align: center; }
 .left-ribbon span { position: relative; z-index: 2; display: block; text-align: center; }
 .left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 14px 40px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
-
 .deals-section { background-color: #e0e0e0; }
 .deals-layout { display: flex; gap: 50px; align-items: stretch; }
 .deals-banner-col { flex: 0 0 42%; max-width: 42%; }
@@ -720,29 +717,14 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .fade-enter-active, .fade-leave-active { transition: all 0.7s ease; }
 .fade-enter-from { opacity: 0; filter: blur(15px); transform: scale(1.1); }
 .fade-leave-to { opacity: 0; filter: blur(10px); }
-
 .featured-products { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .featured-products::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .featured-products > * { position: relative; z-index: 2; }
-
-/* ── Featured header — always one row ── */
-.featured-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  gap: 10px;
-  margin-bottom: 3rem;
-}
-.featured-ribbon {
-  margin-bottom: 0 !important;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
+.featured-header { display: flex;  align-items: center;  justify-content: space-between;flex-wrap: nowrap; gap: 10px;  margin-bottom: 3rem; }
+.featured-ribbon {  margin-bottom: 0 !important;  flex-shrink: 0;  white-space: nowrap;}
 .tabs { display: flex; gap: 8px; flex-wrap: nowrap; align-items: center; }
 .tab-btn { padding: 10px 22px; border: 2px solid #000; background: #fff; color: #000; font-weight: 600; cursor: pointer; transition: all 0.3s; border-radius: 4px; font-size: 0.95rem; white-space: nowrap; }
 .tab-btn:hover, .tab-btn.active { background: #000; color: #fff; }
-
 .carousel-wrapper { position: relative; overflow: hidden; padding: 0 55px; }
 .products-track { display: flex; will-change: transform; }
 .home-card-img-wrap { position: relative; overflow: hidden; margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; background: #f8f8f8; }
@@ -752,7 +734,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .apparel-cart-icon:hover { background: #000000 !important; color: #ffffff !important; }
 .product-card { padding: 0 4px; box-sizing: border-box; }
 .product-card-inner { background: #fff; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-/* .product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); } */
+/*.product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); } */
 .product-img { width: 100%; height: 240px; object-fit: contain; margin-bottom: 8px; border-radius: 0; display: block; }
 .product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-title { font-size: 0.88rem; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -764,14 +746,12 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-btn-prev { left: 5px; }
 .carousel-btn-next { right: 5px; }
 .carousel-btn:hover { background: #222; transform: translateY(-50%) scale(1.05); }
-
 .apparel-card-inner { background:#ffffff; color: #000;   border: 1px solid #444; border-radius: 12px; padding: 10px; transition: all 0.35s ease; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .product-image-wrapper { margin: -10px -10px 8px -10px; border-radius: 12px 12px 0 0; overflow: hidden; background: #ffffff; }
 .apparel-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-name { font-size: 0.88rem; font-weight: 600; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .add-to-cart-btn { margin-top: auto; font-size: 0.85rem; }
 .button-apperal { background-color: #000; color: white; }
-
 /* Benefits desktop */
 .benefits-section { background: #111; }
 .benefit-card { background: white; border: 1px solid #333; transition: all 0.3s; color: black; border-radius: 8px; }
@@ -782,7 +762,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .benefit-card p { font-size: 0.95rem; }
 .benefits-desktop { display: flex; }
 .benefits-mobile-carousel { display: none; }
-
 /* Benefits mobile chain */
 .benefits-mobile-carousel { position: relative; overflow: hidden; padding: 0 46px; }
 .benefits-chain-track { display: flex; will-change: transform; }
@@ -791,7 +770,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .benefit-btn:hover { background: #ddd; }
 .benefit-btn-prev { left: 2px; }
 .benefit-btn-next { right: 2px; }
-
 .latest-videos-section { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .latest-videos-section::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .latest-videos-section > * { position: relative; z-index: 2; }
@@ -817,7 +795,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .fullscreen-video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 .close-video-btn { position: absolute; top: 20px; right: 20px; z-index: 10000; width: 50px; height: 50px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; color: #000; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
 .close-video-btn:hover { background: black; color: white; transform: scale(1.1) rotate(90deg); }
-
 .testimonials-section { background-color: #eeecec; padding: 100px 0; }
 .testimonial-card, .testimonial-text, .author-name, .author-position, .stars-rating { user-select: none; -webkit-user-select: none; }
 .testimonials-outer-wrapper { display: flex; align-items: center; width: 100%; gap: 0; }
@@ -841,7 +818,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .author-image img { width: 100%; height: 100%; object-fit: cover; }
 .author-name { font-size: 1.1rem; font-weight: 700; color: #111; margin: 0; }
 .author-position { font-size: 0.88rem; color: #777; margin: 4px 0 0; text-transform: uppercase; letter-spacing: 0.8px; }
-
 .recent-blog-section { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .recent-blog-section::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .recent-blog-section * { position: relative; z-index: 2; }
@@ -885,7 +861,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   .blog-card { flex-direction: row !important; }
   .blog-image { flex: 0 0 40% !important; height: auto !important; }
   .float-icon-btn { width: 50px; height: 50px; font-size: 1.4rem; }
-}
+  }
 @media (max-width: 991px) {
   .benefits-desktop { display: none !important; }
   .benefits-mobile-carousel { display: block !important; }
@@ -893,11 +869,9 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
  .main_title {
   width: 100% !important;
   font-size: 2.4rem !important;
-
   position: absolute !important;
   top: 20% !important;
   left: 0 !important;
-
   text-align: left !important;
   padding: 0 10px !important;
 }
@@ -905,7 +879,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
   position: absolute !important;
   top: 53% !important;
   left: 0 !important;
-
   width: 100% !important;
   display: flex !important;
   justify-content: left !important; /* button center me */
@@ -929,12 +902,10 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 /* ── max 575px: Mobile ────────────────────────────────────── */
 @media (max-width: 575px) {
-
   /* ✅ HERO HEIGHT FIX */
   .hero-carousel {
     height: 85vh !important;
     min-height: unset !important;
-
   }
 
   .carousel-slide {
