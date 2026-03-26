@@ -87,7 +87,6 @@
 
               <td>
                 @if($order->user)
-                  <span class="fw-semibold">{{ $order->user->name ?? 'N/A' }}</span><br>
                   <small class="text-muted">{{ $order->user->email ?? '' }}</small>
                 @else
                   <span class="badge bg-warning text-dark">Guest</span>

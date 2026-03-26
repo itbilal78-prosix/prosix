@@ -70,4 +70,43 @@ class DashboardController extends Controller
             'chart_users', 'status_data'
         ));
     }
+
+
+
+    public function dashboardStats()
+{
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json([
+            'error' => 'User not authenticated'
+        ], 401);
+    }
+
+    return response()->json([
+
+        'total_orders' =>
+            \App\Models\Order::where('user_id', $user->id)->count(),
+
+        'pending_orders' =>
+            \App\Models\Order::where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->count(),
+
+        'delivered_orders' =>
+            \App\Models\Order::where('user_id', $user->id)
+                ->where('status', 'confirmed')
+                ->count(),
+
+        'place_orders' =>
+            \App\Models\PlaceOrder::where('user_id', $user->id)->count(),
+
+        'my_requests' =>
+            \App\Models\ArtworkRequest::where('user_id', $user->id)->count(),
+
+        'total_spent' =>
+            \App\Models\Order::where('user_id', $user->id)->sum('total')
+
+    ]);
+}
 }

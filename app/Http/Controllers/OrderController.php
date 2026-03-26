@@ -107,8 +107,7 @@ class OrderController extends Controller
              */
             $order = Order::create([
 
-                'user_id' => auth()->id(),
-
+                'user_id' => auth('sanctum')->id(),
                 'total' => $total,
 
                 'status' => $stripePaymentIntentId ? 'confirmed' : 'new',
@@ -329,7 +328,7 @@ class OrderController extends Controller
                 );
 
                 $htmlContent = view(
-'emails.order-update',
+                    'emails.order-update',
                     ['order' => $order]
                 )->render();
 
@@ -365,136 +364,132 @@ class OrderController extends Controller
     /**
      * UPDATE SHIPPING INFO
      */
-   public function updateShipping(Request $request, $id)
-{
-    $order = Order::findOrFail($id);
+    public function updateShipping(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
 
-    $order->update([
-        'courier_name' => $request->courier_name,
-        'tracking_number' => $request->tracking_number,
-        'dispatch_date' => $request->dispatch_date,
-    ]);
+        $order->update([
+            'courier_name' => $request->courier_name,
+            'tracking_number' => $request->tracking_number,
+            'dispatch_date' => $request->dispatch_date,
+        ]);
 
-    OrderStatusLog::create([
-        'order_id' => $order->id,
-        'status' => 'shipping_updated',
-        'changed_by' => 'admin',
-        'note' => 'Shipping info updated',
-    ]);
+        OrderStatusLog::create([
+            'order_id' => $order->id,
+            'status' => 'shipping_updated',
+            'changed_by' => 'admin',
+            'note' => 'Shipping info updated',
+        ]);
 
-    // ✅ EMAIL SEND
-    if ($order->shipping_email) {
+        // ✅ EMAIL SEND
+        if ($order->shipping_email) {
 
-        try {
+            try {
 
-            $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-                ->setApiKey('api-key', env('BREVO_API_KEY'));
+                $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+                    ->setApiKey('api-key', env('BREVO_API_KEY'));
 
-            $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-                new \GuzzleHttp\Client(),
-                $config
-            );
+                $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+                    new \GuzzleHttp\Client,
+                    $config
+                );
 
-            $htmlContent = view(
-                'emails.order-update',
-                ['order' => $order]
-            )->render();
+                $htmlContent = view(
+                    'emails.order-update',
+                    ['order' => $order]
+                )->render();
 
-            $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+                $email = new \SendinBlue\Client\Model\SendSmtpEmail([
 
-                'subject' => 'Shipping Update - Order #' . $order->id,
+                    'subject' => 'Shipping Update - Order #'.$order->id,
 
-                'sender' => [
-                    'name' => 'Prosix Sports',
-                    'email' => 'prosixsports@gmail.com'
-                ],
+                    'sender' => [
+                        'name' => 'Prosix Sports',
+                        'email' => 'prosixsports@gmail.com',
+                    ],
 
-                'to' => [
-                    ['email' => $order->shipping_email]
-                ],
+                    'to' => [
+                        ['email' => $order->shipping_email],
+                    ],
 
-                'htmlContent' => $htmlContent,
+                    'htmlContent' => $htmlContent,
 
-            ]);
+                ]);
 
-            $apiInstance->sendTransacEmail($email);
+                $apiInstance->sendTransacEmail($email);
 
-        } catch (\Exception $e) {
+            } catch (\Exception $e) {
 
-            \Log::error('Shipping email failed: '.$e->getMessage());
+                \Log::error('Shipping email failed: '.$e->getMessage());
 
+            }
         }
-    }
 
-    return back()->with('success', 'Shipping info updated + email sent');
-}
+        return back()->with('success', 'Shipping info updated + email sent');
+    }
 
     /**
      * UPDATE ADMIN NOTES
      */
-  public function updateNotes(Request $request, $id)
-{
-    $order = Order::findOrFail($id);
+    public function updateNotes(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
 
-    $order->update([
-        'admin_notes' => $request->admin_notes,
-    ]);
+        $order->update([
+            'admin_notes' => $request->admin_notes,
+        ]);
 
-    OrderStatusLog::create([
-        'order_id' => $order->id,
-        'status' => 'notes_updated',
-        'changed_by' => 'admin',
-        'note' => 'Admin notes updated',
-    ]);
+        OrderStatusLog::create([
+            'order_id' => $order->id,
+            'status' => 'notes_updated',
+            'changed_by' => 'admin',
+            'note' => 'Admin notes updated',
+        ]);
 
-    // ✅ EMAIL SEND
-    if ($order->shipping_email) {
+        // ✅ EMAIL SEND
+        if ($order->shipping_email) {
 
-        try {
+            try {
 
-            $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-                ->setApiKey('api-key', env('BREVO_API_KEY'));
+                $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+                    ->setApiKey('api-key', env('BREVO_API_KEY'));
 
-            $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-                new \GuzzleHttp\Client(),
-                $config
-            );
+                $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+                    new \GuzzleHttp\Client,
+                    $config
+                );
 
-            $htmlContent = view(
-                'emails.order-update',
-                ['order' => $order]
-            )->render();
+                $htmlContent = view(
+                    'emails.order-update',
+                    ['order' => $order]
+                )->render();
 
-            $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+                $email = new \SendinBlue\Client\Model\SendSmtpEmail([
 
-                'subject' => 'Order Update - #' . $order->id,
+                    'subject' => 'Order Update - #'.$order->id,
 
-                'sender' => [
-                    'name' => 'Prosix Sports',
-                    'email' => 'prosixsports@gmail.com'
-                ],
+                    'sender' => [
+                        'name' => 'Prosix Sports',
+                        'email' => 'prosixsports@gmail.com',
+                    ],
 
-                'to' => [
-                    ['email' => $order->shipping_email]
-                ],
+                    'to' => [
+                        ['email' => $order->shipping_email],
+                    ],
 
-                'htmlContent' => $htmlContent,
+                    'htmlContent' => $htmlContent,
 
-            ]);
+                ]);
 
-            $apiInstance->sendTransacEmail($email);
+                $apiInstance->sendTransacEmail($email);
 
-        } catch (\Exception $e) {
+            } catch (\Exception $e) {
 
-            \Log::error('Notes email failed: '.$e->getMessage());
+                \Log::error('Notes email failed: '.$e->getMessage());
 
+            }
         }
+
+        return back()->with('success', 'Notes updated + email sent');
     }
-
-    return back()->with('success', 'Notes updated + email sent');
-}
-
-
-
-
 }

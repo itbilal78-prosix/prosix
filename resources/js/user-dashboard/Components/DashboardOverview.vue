@@ -9,7 +9,7 @@
         </h1>
         <p class="page-sub">Here's your store activity at a glance.</p>
       </div>
-      <router-link to="/shop" class="add-property-btn">
+      <router-link to="/" class="add-property-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
           <line x1="3" y1="6" x2="21" y2="6"/>
@@ -34,55 +34,46 @@
     </div>
 
     <!-- Recent Orders -->
-    <div class="section-card">
-      <div class="section-header">
-        <h2 class="section-title">Recent Orders</h2>
-        <router-link to="#" class="view-all-link">View All</router-link>
-      </div>
+   <!-- Recent Orders -->
+<div class="section-card">
+  <div class="section-header">
+    <h2 class="section-title">Recent Orders</h2>
+    <router-link to="#" class="view-all-link">View All</router-link>
+  </div>
 
-      <div v-if="!recentOrders || recentOrders.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
-        </div>
-        <h3>No orders yet</h3>
-        <p>Your recent orders will appear here.</p>
-        <router-link to="/" class="cta-btn">Start Shopping</router-link>
-      </div>
-
-      <div v-else class="order-list">
-        <div class="order-row" v-for="order in recentOrders" :key="order.id">
-          <!-- Order Icon -->
-          <div class="order-icon-wrap">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-          </div>
-
-          <!-- Order Details -->
-          <div class="order-details">
-            <h4 class="order-id">Order #{{ order.id }}</h4>
-            <p class="order-items">{{ order.items_count || 0 }} item(s)</p>
-          </div>
-
-          <!-- Status & Price -->
-          <div class="order-meta">
-            <span class="order-price">{{ formatPrice(order.total) }}</span>
-            <span class="order-status" :class="statusClass(order.status)">
-              {{ order.status || 'Pending' }}
-            </span>
-          </div>
-
-          <!-- Date -->
-          <div class="order-date">{{ formatDate(order.created_at) }}</div>
-        </div>
-      </div>
+  <div v-if="!recentOrders || recentOrders.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
     </div>
+    <h3>No orders yet</h3>
+    <p>Your recent orders will appear here.</p>
+    <router-link to="/" class="cta-btn">Start Shopping</router-link>
+  </div>
+
+  <div v-else class="order-list">
+    <div class="order-row" v-for="order in recentOrders" :key="order.id">
+
+      <!-- Order Number -->
+      <div class="order-details">
+        <h4 class="order-id">Order #{{ order.id }}</h4>
+        <p class="order-date-text">{{ formatDate(order.created_at) }}</p>
+      </div>
+
+      <!-- Price + Status only -->
+      <div class="order-meta">
+        <span class="order-price">{{ formatPrice(order.total) }}</span>
+        <span class="order-status" :class="statusClass(order.status)">
+          {{ order.status || 'Pending' }}
+        </span>
+      </div>
+
+    </div>
+  </div>
+</div>
 
   </div>
 </template>
@@ -90,16 +81,23 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
+// ✅ Props - Dashboard.vue se data aayega
 const props = defineProps({
-  dashboardStats: Object,
-  user: { type: Object, default: () => ({}) }
+  dashboardStats: {
+    type: Object,
+    default: () => ({})
+  },
+  user: {
+    type: Object,
+    default: () => ({})
+  }
 })
 
-// ── Fetch recent orders ──
 const recentOrders = ref([])
 
 const token = () => localStorage.getItem('auth_token')
 
+// ✅ Sirf recent orders fetch karein
 const fetchRecentOrders = async () => {
   try {
     const res = await fetch('/api/user/orders?limit=5', {
@@ -110,16 +108,17 @@ const fetchRecentOrders = async () => {
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.status) recentOrders.value = d.data
+      recentOrders.value = d.data || []  // ✅ seedha d.data
     }
   } catch (e) {
     console.error(e)
   }
 }
 
-onMounted(fetchRecentOrders)
+onMounted(() => {
+  fetchRecentOrders()
+})
 
-// ── Helpers ──
 const formatPrice = (price) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(price || 0)
 
@@ -134,7 +133,7 @@ const statusClass = (status) => {
   return 'status-pending'
 }
 
-// ── Stat Cards ──
+// ✅ Sab props.dashboardStats se aa raha hai
 const statCards = computed(() => [
   {
     label: 'Total Orders',
@@ -163,14 +162,27 @@ const statCards = computed(() => [
     color: '#0f3460',
     light: '#dce8f5',
     icon: `<svg width="22" height="22" fill="none" stroke="#0f3460" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
-  }
+  },
+  {
+    label: 'Place Orders',
+    value: props.dashboardStats?.place_orders ?? 0,
+    color: '#2563eb',
+    light: '#dbeafe',
+    icon: `<svg width="22" height="22" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
+  },
+  {
+    label: 'My Requests',
+    value: props.dashboardStats?.requests ?? 0,
+    color: '#7c3aed',
+    light: '#ede9fe',
+    icon: `<svg width="22" height="22" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>`
+  },
 ])
 </script>
 
 <style scoped>
 .overview-root { display: flex; flex-direction: column; gap: 1.5rem; }
 
-/* ── Header ── */
 .page-header {
   display: flex;
   align-items: center;
@@ -199,7 +211,6 @@ const statCards = computed(() => [
 }
 .add-property-btn:hover { background: #1f1f1f; transform: translateY(-1px); }
 
-/* ── Stats Grid ── */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -234,7 +245,6 @@ const statCards = computed(() => [
   background: var(--light); opacity: 0.5;
 }
 
-/* ── Section Card ── */
 .section-card {
   background: white;
   border-radius: 16px;
@@ -254,7 +264,6 @@ const statCards = computed(() => [
 }
 .view-all-link:hover { opacity: 0.6; }
 
-/* ── Empty State ── */
 .empty-state {
   display: flex; flex-direction: column; align-items: center;
   padding: 48px 20px; gap: 8px; text-align: center;
@@ -277,7 +286,6 @@ const statCards = computed(() => [
 }
 .cta-btn:hover { transform: translateY(-1px); }
 
-/* ── Order List ── */
 .order-list { padding: 8px 0; }
 .order-row {
   display: flex; align-items: center; gap: 16px;
@@ -293,14 +301,11 @@ const statCards = computed(() => [
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-
 .order-details { flex: 1; min-width: 0; }
 .order-id   { font-weight: 600; font-size: 0.9rem; color: #111827; margin: 0 0 3px; }
 .order-items { color: #9ca3af; font-size: 0.78rem; margin: 0; }
-
 .order-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .order-price { font-weight: 700; font-size: 0.9rem; color: #111827; }
-
 .order-status {
   font-size: 0.72rem; font-weight: 600;
   padding: 2px 10px; border-radius: 20px;
@@ -310,6 +315,5 @@ const statCards = computed(() => [
 .status-shipped   { background: #dbeafe; color: #2563eb; }
 .status-pending   { background: #fef3c7; color: #d97706; }
 .status-cancelled { background: #fee2e2; color: #dc2626; }
-
 .order-date { color: #d1d5db; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0; }
 </style>

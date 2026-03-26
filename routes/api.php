@@ -23,7 +23,7 @@ use App\Http\Controllers\FlipbookController;
 use App\Http\Controllers\UserRequestController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\PlaceOrderController;
-
+use App\Http\Controllers\DashboardController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -52,7 +52,14 @@ Route::get('/patterns', function () {
         ];
     });
 });
-
+////// order////
+Route::middleware('auth:sanctum')->get('/user/orders', function () {
+    return response()->json([
+        'data' => \App\Models\Order::where('user_id', auth()->id())
+            ->latest()
+            ->get()
+    ]);
+});
 // -----------------------------------------------
 // USER AUTH (Public)
 // -----------------------------------------------
@@ -142,7 +149,6 @@ Route::post('/mascot-templates', [TemplateController::class, 'saveFromCustomizer
 // ORDERS (Public store + Auth index/show)
 // -----------------------------------------------
 Route::post('/orders', [OrderController::class, 'store']);
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders',      [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
@@ -185,3 +191,11 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::fallback(function () {
     return response()->json(['error' => 'API endpoint not found'], 404);
 });
+// -------------
+// dashbord overview
+// --------------
+Route::middleware('auth:sanctum')->get(
+    '/dashboard/stats',
+    [DashboardController::class, 'dashboardStats']
+);
+

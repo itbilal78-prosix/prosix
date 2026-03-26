@@ -73,7 +73,7 @@
     <i class="bi bi-geo-alt-fill"></i>
     <span>
       2604 Whittier Place Wilmington <br>
-      Delaware 19808 U.S.A
+      Delaware 19808
     </span>
   </div>
 

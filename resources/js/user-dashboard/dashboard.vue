@@ -1,16 +1,26 @@
 <template>
   <div class="dashboard-root">
-    <div class="dashboard-layout">
+    <div class="dashboard-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+
       <dashboard-sidebar
         :user="user"
         :active-tab="activeTab"
         :dashboard-stats="dashboardStats"
         :is-logging-out="isLoggingOut"
+        :is-collapsed="sidebarCollapsed"
         @tab-change="onTabChange"
         @logout="logout"
       />
 
       <main class="dashboard-main">
+
+      <dashboard-header
+  :user="user"
+  @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed"
+  @logout="logout"
+  @go-profile="onTabChange('profile')"
+/>
+
         <div v-if="isLoading" class="loading-screen">
           <div class="loader-ring">
             <div></div><div></div><div></div><div></div>
@@ -33,21 +43,29 @@
             @update-profile="updateProfile"
             key="profile"
           />
-          <!-- My Requests Tab -->
           <my-requests-tab
             v-else-if="!isLoading && activeTab === 'my-requests'"
             :requests="myRequests"
             :is-loading="requestsLoading"
             key="my-requests"
           />
-          <!-- ✅ Place Orders Tab -->
           <my-place-orders-tab
             v-else-if="!isLoading && activeTab === 'my-place-orders'"
             :orders="myPlaceOrders"
             :is-loading="placeOrdersLoading"
             key="my-place-orders"
           />
+          <my-orders-tab
+            v-else-if="!isLoading && activeTab === 'my-orders'"
+            :orders="myOrders"
+            :is-loading="ordersLoading"
+          />
+          <mydesigntab
+            v-else-if="!isLoading && activeTab === 'my-design'"
+            key="my-design"
+          />
         </transition>
+
       </main>
     </div>
   </div>
@@ -56,6 +74,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import MyOrdersTab from './Components/MyOrdersTab.vue'
+import Mydesigntab from './Components/Mydesigntab.vue'
+import DashboardHeader from './Components/DashboardHeader.vue'
 
 const router = useRouter()
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -67,14 +88,14 @@ const recentProperties  = ref([])
 const isLoading         = ref(true)
 const isLoggingOut      = ref(false)
 const isUpdatingProfile = ref(false)
+const sidebarCollapsed  = ref(false)
 
-// My Requests state
-const myRequests      = ref([])
-const requestsLoading = ref(false)
-
-// ✅ My Place Orders state
+const myRequests         = ref([])
+const requestsLoading    = ref(false)
 const myPlaceOrders      = ref([])
 const placeOrdersLoading = ref(false)
+const myOrders           = ref([])
+const ordersLoading      = ref(false)
 
 const checkAuth = () => {
   const token = localStorage.getItem('auth_token')
@@ -82,16 +103,24 @@ const checkAuth = () => {
   return token
 }
 
-// Tab change handler
 const onTabChange = (tab) => {
   activeTab.value = tab
-  if (tab === 'my-requests' && myRequests.value.length === 0) {
-    fetchMyRequests()
-  }
-  // ✅ Place Orders tab click hone par fetch karo
-  if (tab === 'my-place-orders' && myPlaceOrders.value.length === 0) {
-    fetchMyPlaceOrders()
-  }
+  if (tab === 'my-requests' && myRequests.value.length === 0) fetchMyRequests()
+  if (tab === 'my-place-orders' && myPlaceOrders.value.length === 0) fetchMyPlaceOrders()
+  if (tab === 'my-orders' && myOrders.value.length === 0) fetchMyOrders()
+}
+
+const fetchMyOrders = async () => {
+  const token = checkAuth()
+  if (!token) return
+  ordersLoading.value = true
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/orders`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
+    })
+    if (res.ok) { const d = await res.json(); myOrders.value = d.data || [] }
+  } catch (e) { console.error(e) }
+  finally { ordersLoading.value = false }
 }
 
 const fetchUserData = async () => {
@@ -112,20 +141,13 @@ const fetchDashboardStats = async () => {
   const token = checkAuth()
   if (!token) return
   try {
-    const res = await fetch(`${API_BASE_URL}/user/dashboard-stats`, {
+    const res = await fetch(`${API_BASE_URL}/dashboard/stats`, {
       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
     })
-    if (res.ok) {
-      const d = await res.json()
-      if (d.success) {
-        dashboardStats.value   = d.data.stats
-        recentProperties.value = d.data.recent_properties
-      }
-    } else if (res.status === 401) handleAuthError()
+    if (res.ok) { dashboardStats.value = await res.json() }
   } catch (e) { console.error(e) }
 }
 
-// Logged-in user ki artwork requests fetch karo
 const fetchMyRequests = async () => {
   const token = checkAuth()
   if (!token) return
@@ -134,15 +156,11 @@ const fetchMyRequests = async () => {
     const res = await fetch(`${API_BASE_URL}/user/my-requests`, {
       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
     })
-    if (res.ok) {
-      const d = await res.json()
-      myRequests.value = d.data || []
-    }
+    if (res.ok) { const d = await res.json(); myRequests.value = d.data || [] }
   } catch (e) { console.error(e) }
   finally { requestsLoading.value = false }
 }
 
-// ✅ Logged-in user ke place orders fetch karo
 const fetchMyPlaceOrders = async () => {
   const token = checkAuth()
   if (!token) return
@@ -151,10 +169,7 @@ const fetchMyPlaceOrders = async () => {
     const res = await fetch(`${API_BASE_URL}/place-order/my-orders`, {
       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
     })
-    if (res.ok) {
-      const d = await res.json()
-      myPlaceOrders.value = d.data || []
-    }
+    if (res.ok) { const d = await res.json(); myPlaceOrders.value = d.data || [] }
   } catch (e) { console.error(e) }
   finally { placeOrdersLoading.value = false }
 }
@@ -181,15 +196,9 @@ const updateProfile = async (profileData) => {
     })
     if (res.ok) {
       const d = await res.json()
-      if (d.status) {
-        user.value = { ...user.value, ...profileData }
-        alert('Profile updated successfully!')
-      }
+      if (d.status) { user.value = { ...user.value, ...profileData }; alert('Profile updated successfully!') }
     } else if (res.status === 401) handleAuthError()
-    else {
-      const d = await res.json()
-      alert(d.message || 'Failed to update profile')
-    }
+    else { const d = await res.json(); alert(d.message || 'Failed to update profile') }
   } catch (e) { alert('Failed to update profile') }
   finally { isUpdatingProfile.value = false }
 }
@@ -227,8 +236,19 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard-root { min-height:100vh; background:#f0f2f8; font-family:'Segoe UI',system-ui,sans-serif; }
-.dashboard-layout { display:flex; min-height:100vh; padding-left:260px; }
-.dashboard-main { flex:1; overflow-x:hidden; padding:2rem; min-height:100vh; }
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  padding-left: 260px;
+  transition: padding-left 0.3s ease;
+}
+
+.dashboard-layout.sidebar-collapsed {
+  padding-left: 60px;
+}
+
+.dashboard-main { flex:1; overflow-x:hidden; padding:2rem; min-height:100vh; margin-top:50px; }
 .loading-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; gap:1.5rem; }
 .loader-ring { display:inline-block; position:relative; width:64px; height:64px; }
 .loader-ring div { box-sizing:border-box; display:block; position:absolute; width:52px; height:52px; margin:6px; border:5px solid transparent; border-radius:50%; animation:ring 1.2s cubic-bezier(0.5,0,0.5,1) infinite; border-top-color:#4f46e5; }
