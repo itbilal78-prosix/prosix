@@ -124,22 +124,9 @@
               </td>
 
               <td>
-              <a href="{{ route('admin.orders.show', $order->id) }}" class="btn-view">
-  <i class="bi bi-eye"></i> View
-</a>
-
-<form action="{{ route('admin.orders.destroy', $order->id) }}"
-      method="POST"
-      style="display:inline-block"
-      onsubmit="return confirm('Delete this order?')">
-
-    @csrf
-    @method('DELETE')
-
-    <button type="submit" class="btn-delete">
-        <i class="bi bi-trash"></i> Delete
-    </button>
-</form>
+                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn-view">
+                  <i class="bi bi-eye"></i> View
+                </a>
               </td>
             </tr>
             @endforeach

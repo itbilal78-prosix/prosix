@@ -220,8 +220,7 @@ Route::middleware(['auth:admin'])
         return view('templates.edit', compact('template'));
     })->name('mascots.edit');
 
-Route::delete('/admin/orders/{id}', [OrderController::class, 'destroy'])
-    ->name('admin.orders.destroy');
+
 Route::get('/admin/payments', [PaymentController::class, 'index'])
     ->name('admin.payments.index');
 
