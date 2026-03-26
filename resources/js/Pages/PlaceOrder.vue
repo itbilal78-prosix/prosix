@@ -430,7 +430,12 @@ this.showHelpSidebar = !this.showHelpSidebar;
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
-.po-page { min-height:80vh; background:#fff; padding-bottom:60px;  }
+.po-page{
+min-height:80vh;
+background:#fff;
+padding-bottom:60px;
+position:relative;
+}
 .po-header { text-align:center; padding:40px 20px 20px; border-bottom:1px solid #e5e5e5; }
 .po-main-title { font-family:'Barlow Condensed',sans-serif; font-size:clamp(22px,4vw,38px); font-weight:800; font-style:italic; color:#000; margin:0 0 6px; }
 .po-subtitle { font-size:12px; letter-spacing:3px; color:#666; text-transform:uppercase; margin:0; }
@@ -504,32 +509,22 @@ z-index:9999;
 
 
 .help-sidebar{
-
-position:fixed;
-
-top:0;
-
+position:absolute;
+top:285px;   /* header ke niche start hogi */
 left:-320px;
-
 width:260px;
-
-height:100%;
-
+height:530px;
+max-height:600px;  /* sirf form area jitni */
+overflow-y:auto;
 background:#fff;
-
 box-shadow:2px 0 20px rgba(0,0,0,0.2);
-
 padding:20px;
-
 transition:0.4s;
-
-z-index:9999;
-
+z-index:999;
 }
 
 
 .help-sidebar.open{
-
 left:0;
 
 }

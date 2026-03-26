@@ -429,16 +429,6 @@ onMounted(() => {
   fetchCategory()
   fetchProducts()
   loadModels()
-  document.addEventListener("dragstart", e => {
-
-if (e.target.tagName === "IMG") {
-
-e.preventDefault()
-
-}
-
-})
-
 })
 </script>
 
@@ -464,16 +454,7 @@ e.preventDefault()
     max-width: 50%;
   }
 }
-.model-thumb,
-.img-layer {
 
-pointer-events: none;
-
-user-select: none;
-
--webkit-user-drag: none;
-
-}
 /* ===== PRODUCT CARDS ===== */
 .product-card {
   border-radius: 14px;
