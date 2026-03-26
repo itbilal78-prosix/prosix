@@ -110,6 +110,7 @@ const routeNames = {
   'BlogDetail':      'Blog',
   'Membership':      'Membership',
   'Artworkform':     'Artwork',
+
 }
 
 router.afterEach((to, from) => {

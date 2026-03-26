@@ -2,15 +2,24 @@
   <nav-component />
   <breadcrumb-component />
 
-  <div class="po-page">
+<div
+class="po-page"
+:class="{ 'sidebar-open': showHelpSidebar }"
+>
+<button class="help-btn" @click="toggleHelpSidebar">
+How to Order
+</button>
 
     <div class="po-header">
       <h1 class="po-main-title">THANKS FOR CHOOSING US!</h1>
       <p class="po-subtitle">WE REALY APPRICATE &amp; VALUE YOUR BUSINESS</p>
     </div>
 
-    <div class="po-container">
+<div class="po-layout">
 
+
+
+<div class="po-container">
       <!-- Row 1: Name, Email, Date, Delivery, Sales Rep, Colors, Order# -->
       <div class="po-top-row">
 
@@ -31,7 +40,12 @@
 
         <div class="po-field-group">
           <label class="po-label">Mention Delivery Date</label>
-          <input type="date" class="po-input" v-model="form.deliveryDate" />
+<input
+type="date"
+class="po-input"
+v-model="form.deliveryDate"
+:min="minDeliveryDate"
+/>
         </div>
 
         <div class="po-field-group">
@@ -42,9 +56,9 @@
         <div class="po-field-group">
           <label class="po-label">Your Team Colors</label>
           <div class="po-color-selector" @click="openColorPicker">
-            <div v-if="form.selectedColors.length === 0" class="po-color-swatches-empty">
-              <div v-for="c in defaultSwatchColors" :key="c" class="po-swatch-demo" :style="{ background: c }"></div>
-            </div>
+          <div v-if="form.selectedColors.length === 0" class="po-color-placeholder">
+  Please select color
+</div>
             <div v-else class="po-selected-chips">
               <div v-for="c in form.selectedColors" :key="c.id" class="po-chip">
                 <span class="po-chip-dot" :style="{ background: c.code }"></span>
@@ -223,7 +237,37 @@
       <button class="po-done-btn" @click="resetForm">OK</button>
     </div>
   </div>
+</div>
+<div
+class="help-sidebar"
+:class="{ open: showHelpSidebar }"
+>
 
+<div class="help-header">
+
+<h4>How To Order</h4>
+
+<button @click="toggleHelpSidebar">✖</button>
+
+</div>
+
+<ul>
+
+<li>Select delivery date</li>
+
+<li>Upload final mockup</li>
+
+<li>Upload team roster</li>
+
+<li>Select team colors</li>
+
+<li>Add notes if required</li>
+
+<li>Click Place Order</li>
+
+</ul>
+
+</div>
   <footer-component />
 </template>
 
@@ -233,8 +277,12 @@ import axios from 'axios';
 export default {
   name: 'PlaceOrder',
   data() {
+
 const today = new Date();
 const year = today.getFullYear();
+
+const minDate = new Date();
+minDate.setDate(today.getDate() + 7);
 
 const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
     + String(today.getMonth() + 1).padStart(2, '0')
@@ -242,6 +290,8 @@ const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
       + '-' + Math.floor(1000 + Math.random() * 9000);
     return {
       todayDate: today.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      showHelpSidebar: false,
+      minDeliveryDate: minDate.toISOString().split("T")[0],
       orderNumber: orderNum,
       form: {
         fullName: '',
@@ -259,6 +309,11 @@ const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
     };
   },
   methods: {
+    toggleHelpSidebar(){
+
+this.showHelpSidebar = !this.showHelpSidebar;
+
+},
     async openColorPicker() {
       this.colorPickerOpen = true;
       if (this.allColors.length === 0) {
@@ -380,10 +435,127 @@ const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
 .po-main-title { font-family:'Barlow Condensed',sans-serif; font-size:clamp(22px,4vw,38px); font-weight:800; font-style:italic; color:#000; margin:0 0 6px; }
 .po-subtitle { font-size:12px; letter-spacing:3px; color:#666; text-transform:uppercase; margin:0; }
 .po-container {
-  width: 100%;
-  max-width: 100%;   /* remove limit */
-  margin: 0;         /* center hata do */
-  padding: 30px 40px; /* thoda side spacing rakho */
+
+width:100%;
+
+max-width:100%;
+
+margin:0;
+
+padding:30px 40px;
+
+transition:0.4s;
+
+}
+.po-layout{
+display:flex;
+gap:40px;
+}
+.sidebar-open .po-container{
+
+margin-left:300px;
+
+transition:0.4s;
+
+}
+.po-howto{
+width:260px;
+background:#fafafa;
+border:1px solid #ddd;
+padding:20px;
+border-radius:10px;
+height:fit-content;
+}
+
+.po-howto h4{
+font-weight:700;
+margin-bottom:12px;
+}
+
+.po-howto ul{
+padding-left:18px;
+font-size:14px;
+color:#444;
+line-height:1.8;
+}
+.help-btn{
+
+position:fixed;
+
+left:20px;
+
+bottom:30px;
+
+background:#000;
+
+color:#fff;
+
+border:none;
+
+padding:10px 18px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+z-index:9999;
+
+}
+
+
+.help-sidebar{
+
+position:fixed;
+
+top:0;
+
+left:-320px;
+
+width:260px;
+
+height:100%;
+
+background:#fff;
+
+box-shadow:2px 0 20px rgba(0,0,0,0.2);
+
+padding:20px;
+
+transition:0.4s;
+
+z-index:9999;
+
+}
+
+
+.help-sidebar.open{
+
+left:0;
+
+}
+
+
+.help-header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+margin-bottom:15px;
+
+}
+
+
+.help-sidebar ul{
+
+padding-left:18px;
+
+line-height:1.8;
+
+font-size:14px;
+
 }
 /* Top row — 7 columns */
 .po-top-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1.2fr 1.8fr 0.9fr; gap:16px; align-items:end; }
@@ -396,6 +568,11 @@ const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
 .po-color-selector { min-height:38px; border:1px solid #d0d0d0; border-radius:6px; padding:4px 10px; background:#fafafa; cursor:pointer; display:flex; align-items:center; gap:8px; transition:border-color 0.2s; }
 .po-color-selector:hover { border-color:#000; }
 .po-color-swatches-empty { display:flex; gap:4px; align-items:center; flex:1; }
+.po-color-placeholder{
+color:#888;
+font-size:14px;
+font-weight:500;
+}
 .po-swatch-demo { width:16px; height:16px; border-radius:50%; border:1px solid rgba(0,0,0,.12); }
 .po-selected-chips { display:flex; flex-wrap:wrap; gap:4px; flex:1; }
 .po-chip { display:flex; align-items:center; gap:4px; background:#f0f0f0; border:1px solid #ddd; border-radius:20px; padding:2px 7px 2px 4px; font-size:11px; }
@@ -448,16 +625,16 @@ const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
 .po-spinner-dark { width:28px; height:28px; border:3px solid #eee; border-top-color:#000; border-radius:50%; animation:spin 0.7s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .po-color-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:9999; display:flex; align-items:center; justify-content:center; }
-.po-color-popup { background:#fff; border-radius:16px; width:520px; max-width:95vw; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,.25); overflow:hidden; }
+.po-color-popup { background:#fff; border-radius:16px; width:900px; max-width:95vw; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,.25); overflow:hidden; }
 .po-color-popup-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #eee; }
 .po-color-popup-header h6 { margin:0; font-weight:700; }
 .po-popup-close { background:none; border:none; font-size:24px; cursor:pointer; color:#999; }
 .po-popup-close:hover { color:#000; }
 .po-color-loading { display:flex; justify-content:center; align-items:center; padding:40px; }
-.po-color-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; padding:20px; overflow-y:auto; }
+.po-color-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:14px; padding:20px; overflow-y:auto; }
 .po-color-item { display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:7px; border-radius:10px; border:2px solid transparent; transition:border-color 0.15s; }
 .po-color-item.selected { border-color:#000; }
-.po-color-swatch { width:48px; height:48px; border-radius:50%; border:2px solid rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; }
+.po-color-swatch { width:48px; height:48px; border-radius:6px; border:2px solid rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; }
 .po-swatch-check { width:20px; height:20px; filter:drop-shadow(0 0 4px rgba(0,0,0,.5)); }
 .po-color-name { font-size:10px; font-weight:600; text-align:center; color:#333; margin-top:5px; }
 .po-color-popup-footer { padding:14px 20px; border-top:1px solid #eee; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:#777; }
