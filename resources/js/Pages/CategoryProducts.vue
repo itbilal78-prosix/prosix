@@ -93,11 +93,21 @@
                       <i class="bi bi-cart" style="transform: scaleX(-1); display:inline-block;"></i>
                     </button>
 
-                    <img v-if="model.thumbnail" :src="model.thumbnail" class="model-thumb" />
+<img
+v-if="model.thumbnail"
+:src="model.thumbnail"
+class="model-thumb"
+draggable="false"
+/>
                     <template v-else>
                       <img v-if="model.front_black" :src="model.front_black" class="img-layer black" />
                       <img v-if="model.front_white" :src="model.front_white" class="img-layer white" />
-                      <img v-if="model.front_svg"   :src="model.front_svg"   class="img-layer svg"   />
+<img
+v-if="model.front_svg"
+:src="model.front_svg"
+class="img-layer svg"
+draggable="false"
+/>
                       <img
                         v-if="!model.front_black && !model.front_white && !model.front_svg"
                         src="https://via.placeholder.com/300x180?text=No+Image"
@@ -419,6 +429,16 @@ onMounted(() => {
   fetchCategory()
   fetchProducts()
   loadModels()
+  document.addEventListener("dragstart", e => {
+
+if (e.target.tagName === "IMG") {
+
+e.preventDefault()
+
+}
+
+})
+
 })
 </script>
 
@@ -444,7 +464,16 @@ onMounted(() => {
     max-width: 50%;
   }
 }
+.model-thumb,
+.img-layer {
 
+pointer-events: none;
+
+user-select: none;
+
+-webkit-user-drag: none;
+
+}
 /* ===== PRODUCT CARDS ===== */
 .product-card {
   border-radius: 14px;

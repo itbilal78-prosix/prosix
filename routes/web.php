@@ -232,7 +232,7 @@ Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSingle
 
 
 
-    
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');
