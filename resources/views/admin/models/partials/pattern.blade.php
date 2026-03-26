@@ -88,14 +88,14 @@
 
 <!-- Pattern Library Modal -->
 <div id="patternLibraryModal" class="color-modal" style="display:none;">
-    <div class="color-modal-content" style="width:900px;">
+    <div class="color-modal-content" style="width:800px;">
         <div class="color-modal-header">
             <h3>Select Pattern</h3>
             <span class="color-modal-close" onclick="closePatternLibrary()">✕</span>
         </div>
 
         <div style="padding:20px;">
-            <div id="patternList" style="display:grid; grid-template-columns:repeat(6,1fr); gap:15px;">
+            <div id="patternList" style="display:grid; grid-template-columns:repeat(8,1fr); gap:15px;">
                 <!-- Patterns will be loaded here via AJAX -->
             </div>
         </div>
