@@ -46,7 +46,6 @@
 
 
 
-        <!-- Remove Button -->
 
     </div>
 
@@ -89,7 +88,7 @@
 
 <!-- Pattern Library Modal -->
 <div id="patternLibraryModal" class="color-modal" style="display:none;">
-    <div class="color-modal-content" style="width:700px;">
+    <div class="color-modal-content" style="width:900px;">
         <div class="color-modal-header">
             <h3>Select Pattern</h3>
             <span class="color-modal-close" onclick="closePatternLibrary()">✕</span>
@@ -148,3 +147,4 @@
         </div>
     </div>
 </div>
+

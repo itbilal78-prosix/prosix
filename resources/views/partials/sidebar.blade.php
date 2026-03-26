@@ -114,7 +114,7 @@
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
                         href="#customizerSubmenu" role="button" aria-expanded="false">
                         <i class="bi bi-paint-bucket me-2"></i>
-                        <span class="flex-grow-1">Customizer Management</span>
+                        <span class="flex-grow-1">Customizer</span>
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
                     <ul class="collapse list-unstyled ps-4" id="customizerSubmenu">

@@ -6,7 +6,7 @@
 
     <!-- Header -->
     <div class="fb-header mt-5">
-      <h1 class="fb-heading">Flipbook Collection</h1>
+      <h1 class="fb-heading">Catalogues</h1>
       <div class="title-rule"></div>
     </div>
 
