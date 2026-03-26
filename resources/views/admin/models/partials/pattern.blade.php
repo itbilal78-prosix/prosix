@@ -95,7 +95,7 @@
         </div>
 
         <div style="padding:20px;">
-            <div id="patternList" style="display:grid; grid-template-columns:repeat(4,1fr); gap:15px;">
+            <div id="patternList" style="display:grid; grid-template-columns:repeat(6,1fr); gap:15px;">
                 <!-- Patterns will be loaded here via AJAX -->
             </div>
         </div>
