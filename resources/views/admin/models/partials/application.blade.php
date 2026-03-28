@@ -685,7 +685,7 @@
         -webkit-appearance: none;
         appearance: none;
         height: 4px;
-        background: #ddd;
+        background: #e6e5e5;
         border-radius: 2px;
         outline: none;
     }
