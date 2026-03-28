@@ -233,6 +233,12 @@ Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSingle
 
 
 
+
+
+Route::post('/models/update-order',
+    [CustomizerModelController::class,'updateOrder']
+)->name('models.updateOrder');
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

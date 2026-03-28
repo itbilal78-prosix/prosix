@@ -381,7 +381,7 @@
         outer.setAttribute('stroke-width', stroke * 2);
         outer.setAttribute('text-anchor', 'middle');
         outer.setAttribute('dominant-baseline', 'middle');
-        outer.setAttribute('stroke-linejoin', 'round');
+outer.setAttribute('stroke-linejoin', 'miter');
         outer.style.pointerEvents = 'none';
 
         if (withShadow) {
@@ -572,7 +572,7 @@
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('paint-order', 'stroke fill');
-        text.setAttribute('stroke-linejoin', 'round');
+text.setAttribute('stroke-linejoin', 'miter');
         text.textContent = defaultText;
 
         clonedSvg.appendChild(text);
@@ -872,7 +872,7 @@
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('paint-order', 'stroke fill');
-        text.setAttribute('stroke-linejoin', 'round');
+text.setAttribute('stroke-linejoin', 'miter');
         text.style.cursor = 'move';
         text.textContent = layer.text;
 
@@ -2892,7 +2892,7 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
                 text.setAttribute('text-anchor', 'middle');
                 text.setAttribute('dominant-baseline', 'middle');
                 text.setAttribute('paint-order', 'stroke fill');
-                text.setAttribute('stroke-linejoin', 'round');
+text.setAttribute('stroke-linejoin', 'miter');
                 text.textContent = layer.text;
                 if (layer.rotation) text.setAttribute('transform', `rotate(${layer.rotation} ${centerX + layer.x} ${centerY + layer.y})`);
                 appGroup.appendChild(text);

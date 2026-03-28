@@ -2815,6 +2815,7 @@ el.classList.add('selected');
 
             const centerBtn = document.getElementById('selectedColorBtn');
             if (centerBtn) centerBtn.style.background = solidColor;
+window.highlightWheelColor(solidColor);
 
             window.gradientStops = [
                 { color: '#FFC000', position: 0 },

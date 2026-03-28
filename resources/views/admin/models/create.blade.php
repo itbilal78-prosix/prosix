@@ -352,37 +352,53 @@
             showThumbnail(currentView);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const catSelect = document.getElementById('categorySelect');
-            const subSelect = document.getElementById('subcategorySelect');
+       document.addEventListener('DOMContentLoaded', () => {
+    const navSelect = document.querySelector('select[name="navigation_id"]');
+    const catSelect = document.getElementById('categorySelect');
+    const subSelect = document.getElementById('subcategorySelect');
 
-            const categoriesWithSubs = @json($parentCategories);
+    // Sari categories PHP se JS mein
+    const allCategories = @json($parentCategories);
 
-            function loadSubcategories() {
-                const catId = catSelect.value;
-                subSelect.innerHTML = '<option value="">-- None --</option>';
+    function loadCategories() {
+        const navId = navSelect.value;
+        catSelect.innerHTML = '<option value="">None</option>';
+        subSelect.innerHTML = '<option value="">-- None --</option>';
 
-                if (!catId) return;
+        const filtered = navId
+            ? allCategories.filter(c => String(c.navigation_id) === String(navId))
+            : allCategories;
 
-                const found = categoriesWithSubs.find(c => c.id == catId);
-                if (found && found.subcategories) {
-                    found.subcategories.forEach(sub => {
-                        const opt = document.createElement('option');
-                        opt.value = sub.id;
-                        opt.textContent = sub.name;
-                        if (sub.id == {{ old('subcategory_id', $model->subcategory_id ?? 'null') }}) {
-                            opt.selected = true;
-                        }
-                        subSelect.appendChild(opt);
-                    });
-                }
-            }
-
-            catSelect.addEventListener('change', loadSubcategories);
-
-            // Edit mode mein already selected category ke sub load karo
-            loadSubcategories();
+        filtered.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            catSelect.appendChild(opt);
         });
+    }
+
+    function loadSubcategories() {
+        const catId = catSelect.value;
+        subSelect.innerHTML = '<option value="">-- None --</option>';
+        if (!catId) return;
+
+        const found = allCategories.find(c => c.id == catId);
+        if (found && found.subcategories) {
+            found.subcategories.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.id;
+                opt.textContent = sub.name;
+                subSelect.appendChild(opt);
+            });
+        }
+    }
+
+    navSelect.addEventListener('change', loadCategories);
+    catSelect.addEventListener('change', loadSubcategories);
+
+    // Initial load
+    loadCategories();
+});
     </script>
 
 @endsection

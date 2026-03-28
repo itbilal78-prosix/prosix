@@ -16,7 +16,7 @@ class CustomizerModelController extends Controller
         $categories = Category::whereNull('parent_id')
             ->where('status', 1)
             ->with(['models' => function ($q) {
-                $q->orderBy('model_name');
+$q->orderBy('position');
             }])
             ->get();
 
@@ -24,17 +24,17 @@ class CustomizerModelController extends Controller
     }
 
     // Show create form
-    public function create()
-    {
-        $navigations = Navigation::where('status', 1)->get() ?? collect();
+ public function create()
+{
+    $navigations = Navigation::where('status', 1)->get() ?? collect();
 
-        $parentCategories = Category::whereNull('parent_id')
-            ->where('status', 1)
-            ->with('subcategories')
-            ->get();
+    $parentCategories = Category::whereNull('parent_id')
+        ->where('status', 1)
+        ->with('subcategories')
+        ->get();
 
-        return view('admin.models.create', compact('navigations', 'parentCategories'));
-    }
+    return view('admin.models.create', compact('navigations', 'parentCategories'));
+}
 
     public function store(Request $request)
     {
@@ -350,6 +350,8 @@ class CustomizerModelController extends Controller
     public function modelsByCategory($id)
     {
         $models = CustomizerModel::where('category_id', $id)
+    ->orderBy('position')
+
             ->whereNull('subcategory_id')
             ->select('id', 'model_name', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'custom_front_svg', 'thumbnail')
             ->get()
@@ -377,6 +379,7 @@ class CustomizerModelController extends Controller
         $isSubcategory = Category::where('id', $id)->whereNotNull('parent_id')->exists();
 
         $models = CustomizerModel::query()
+            ->orderBy('position')
             ->when($isSubcategory, fn ($q) => $q->where('subcategory_id', $id))
             ->when(!$isSubcategory, fn ($q) => $q->where('category_id', $id)->whereNull('subcategory_id'))
             ->select('id', 'model_name', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'custom_front_svg', 'thumbnail')
@@ -403,6 +406,8 @@ class CustomizerModelController extends Controller
     public function modelsBySubcategory($id)
     {
         $models = CustomizerModel::where('subcategory_id', $id)
+    ->orderBy('position')
+    
             ->select('id', 'model_name', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'custom_front_svg', 'thumbnail')
             ->get()
             ->map(function ($model) {
@@ -476,5 +481,21 @@ class CustomizerModelController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Models updated successfully']);
     }
+public function updateOrder(Request $request)
+{
+    foreach ($request->order as $item) {
 
+        \App\Models\CustomizerModel::where(
+            'model_name',
+            $item['model_name']
+        )->update([
+            'position' => $item['position']
+        ]);
+
+    }
+
+    return response()->json([
+        'success' => true
+    ]);
+}
 }

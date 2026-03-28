@@ -6,7 +6,8 @@
             <i class="fas fa-fill-drip"></i> Solid
         </button>
         <button id="gradientBtn" class="fill-btn" onclick="setFillType('gradient')">
-            <i class="fas fa-fill"></i> Gradient
+<i class="fas fa-circle-half-stroke"></i> Gradient
+
         </button>
     </div>
 
@@ -73,15 +74,21 @@
 <div id="colorPaletteModal" class="color-modal" style="display:none;">
     <div class="color-modal-content modern-color-modal">
 
-        <h3 class="modal-title">🎨 Pick Your Colors</h3>
+        <h3 class="modal-title"> Pick Your Colors</h3>
 
         <div class="color-grid modern-grid">
-            @foreach ($colors as $c)
-                <div class="color-box modern-box"
-                    style="background:{{ $c->code }};@if (strtoupper($c->code) == '#FFFFFF') border:1px solid #ccc; @endif"
-                    onclick="togglePaletteColor(this,'{{ $c->code }}')">
-                </div>
-            @endforeach
+           @foreach ($colors as $c)
+    <div class="color-item">
+        <div class="color-box modern-box"
+            style="background:{{ $c->code }};"
+            onclick="togglePaletteColor(this,'{{ $c->code }}')">
+        </div>
+
+        <div class="color-name">
+            {{ $c->name }}
+        </div>
+    </div>
+@endforeach
         </div>
 
         <div class="modal-footer">
@@ -131,15 +138,7 @@
 
     /* GRADIENT STOPS - HORIZONTAL LAYOUT */
 
-    .gradient-stop-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        background: #f8f9fa;
-        border-radius: 6px;
-        margin-bottom: 8px;
-    }
+
 
     .stop-color {
         width: 36px;
@@ -183,7 +182,7 @@
 
     /* MODAL */
     .modern-color-modal {
-        width: 420px;
+        width: 620px;
         padding: 25px;
         border-radius: 18px;
         background: white;
@@ -212,18 +211,30 @@
 
     .modern-grid {
         display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 10px;
         margin-bottom: 20px;
     }
+.color-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    .modern-box {
-        width: 42px;
-        height: 42px;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: .2s;
-        border: 2px solid transparent;
+.color-name {
+    font-size: 12px;
+    margin-top: 4px;
+    text-align: center;
+    font-weight: 500;
+}
+
+   .modern-box {
+       width: 42px;
+       height: 42px;
+       border-radius: 10px;
+       cursor: pointer;
+       transition: .2s;
+       border: 2px solid transparent;
     }
 
     .modern-box:hover {
@@ -411,20 +422,20 @@
     }
 
     /* COLOR STOPS LIST */
-    .gradient-stop-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        transition: all 0.2s;
-    }
 
-    .gradient-stop-item:hover {
-        background: #e9ecef;
-    }
+  .gradient-stop-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+
+    /* border: 1px solid #000; */
+}
+
+
 
     .gradient-stop-item.active {
         background: #dee2e6;
@@ -453,25 +464,20 @@
         min-width: 40px;
     }
 
-    .remove-stop-btn {
-        background: #000000;
-        color: white;
-        border: none;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 18px;
-        font-weight: bold;
-        line-height: 1;
-        transition: all 0.2s;
-        flex-shrink: 0;
-    }
+  .remove-stop-btn {
+    color: rgb(0, 0, 0);
+    border: none;
+    background: none; /* background remove */
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    flex-shrink: 0;
+}
 
-    .remove-stop-btn:hover {
-        background: #272727;
-        transform: scale(1.1);
-    }
+
 
     .add-stop-btn {
         background: #000000;
@@ -490,3 +496,9 @@
         transform: translateY(-2px);
     }
 </style>
+
+
+
+
+
+

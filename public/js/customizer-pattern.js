@@ -3,6 +3,93 @@
 
 // =================== PATTERN LIBRARY ===================
 
+let slider = document.getElementById("circularSlider");
+let angleValue = document.getElementById("angleValue");
+slider.addEventListener("mousemove", function(e){
+
+    if(e.buttons !== 1) return;
+
+    let rect = slider.getBoundingClientRect();
+
+    let centerX = rect.left + rect.width / 2;
+    let centerY = rect.top + rect.height / 2;
+
+    let angle = Math.atan2(
+        e.clientY - centerY,
+        e.clientX - centerX
+    ) * (180 / Math.PI);
+
+    angle = angle + 90;
+
+    if(angle < 0) angle += 360;
+
+    slider.style.background =
+        `conic-gradient(#000 ${angle}deg, #e5e5e5 ${angle}deg)`;
+
+    angleValue.value = Math.round(angle);
+
+    updatePatternAngle(Math.round(angle));
+
+
+    // ⭐ NEW CODE — rotate knob movement
+    const knob = document.getElementById("rotateKnob");
+
+    if(knob){
+
+        const radius = slider.offsetWidth / 2;
+
+        const rad = (angle - 90) * Math.PI / 180;
+
+        const x = radius + radius * Math.cos(rad);
+
+        const y = radius + radius * Math.sin(rad);
+
+        knob.style.left = x + "px";
+
+        knob.style.top = y + "px";
+
+    }
+
+});
+window.movePattern = function(axis, value){
+
+if (!window.selectedSvgElement?.dataset.patternId) return;
+
+const view = window.currentView;
+const partId = window.selectedSvgElement.id;
+
+const patternData = window.patternsApplied[view]?.[partId];
+if (!patternData) return;
+
+const pattern = document.querySelector(
+`#${window.selectedSvgElement.dataset.patternId}`
+);
+
+if (!pattern) return;
+
+let offsetX = patternData.offsetX || 0;
+let offsetY = patternData.offsetY || 0;
+
+if(axis === "x") offsetX = value;
+if(axis === "y") offsetY = value;
+
+const bbox = patternData.bbox;
+
+const cx = bbox.x + bbox.width/2;
+const cy = bbox.y + bbox.height/2;
+
+pattern.setAttribute(
+"patternTransform",
+`translate(${offsetX} ${offsetY}) rotate(${patternData.angle || 0} ${cx} ${cy})`
+);
+
+patternData.offsetX = offsetX;
+patternData.offsetY = offsetY;
+
+if(window.saveCustomizations)
+window.saveCustomizations();
+
+};
 window.openPatternLibrary = function() {
     document.getElementById('patternLibraryModal').style.display = 'flex';
     loadPatternsFromDB();
@@ -110,7 +197,16 @@ window.clearPatternForSelectedPart = function() {
     window.uploadedSvgContent = null;
 
     if(window.saveCustomizations) window.saveCustomizations();
+// show SELECT PATTERN button again
+const btns = document.querySelector('.pattern-top-buttons');
+if(btns) btns.style.display = 'flex';
 
+// disable preview click
+const preview = document.getElementById('patternPreviewBox');
+if(preview){
+    preview.style.cursor = 'default';
+    preview.onclick = null;
+}
     console.log("✅ BLANK clicked → SVG cleaned");
 };
 
@@ -307,6 +403,16 @@ window.applyUploadedPattern = function () {
     if (window.saveCustomizations) window.saveCustomizations();
 
     document.getElementById('patternControls').style.display = 'block';
+    // hide SELECT PATTERN button
+const btns = document.querySelector('.pattern-top-buttons');
+if(btns) btns.style.display = 'none';
+
+// make preview clickable selector
+const preview = document.getElementById('patternPreviewBox');
+if(preview){
+    preview.style.cursor = 'pointer';
+    preview.onclick = openPatternLibrary;
+}
 
     if (window.updatePatternPreview) window.updatePatternPreview();
     if (window.updatePatternColorPalette) window.updatePatternColorPalette();
@@ -405,7 +511,6 @@ window.getPatternUniqueColors = function(svgContent) {
     const elements = doc.querySelectorAll('[fill], [stroke]');
 
     const uniqueColors = new Set();
-
     elements.forEach(el => {
         const fill = el.getAttribute('fill');
         if (fill && fill !== 'none' && !fill.startsWith('url')) {
@@ -519,7 +624,6 @@ window.recreatePatternAndOverlayWithNewColors = function() {
 }
 
 // =================== PATTERN CONTROLS ===================
-
 window.updatePatternSize = function(value) {
     if (!window.selectedSvgElement?.dataset.patternId) return;
 
@@ -604,12 +708,23 @@ window.updatePatternPreview = function() {
         const patternData = window.patternsApplied[view]?.[partId];
 
         if (patternData && patternData.svgContent) {
-            previewBox.innerHTML = patternData.svgContent;
+previewBox.innerHTML = `
+<div style="
+width:100%;
+height:100%;
+background-image:url('data:image/svg+xml;utf8,${encodeURIComponent(patternData.svgContent)}');
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+">
+</div>
+`;
 
             const svg = previewBox.querySelector('svg');
             if (svg) {
-                svg.style.maxWidth = '80px';
-                svg.style.maxHeight = '80px';
+               svg.style.width = '100%';
+svg.style.height = '100%';
+svg.style.objectFit = 'cover';
                 svg.style.display = 'block';
             }
         } else {
@@ -1081,6 +1196,51 @@ window.updateMascotOpacity = function(value) {
 
     document.getElementById('mascotOpacityValue').textContent = value + '%';
 };
+window.updatePatternAngle = function(value) {
+
+    const angle = parseInt(value);
+
+    const angleValue = document.getElementById('angleValue');
+    if(angleValue) angleValue.textContent = angle + "°";
+
+    if (!window.selectedSvgElement?.dataset.patternId) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const patternData = window.patternsApplied[view]?.[partId];
+
+    if (!patternData) return;
+
+    const pattern = document.querySelector(
+        `#${window.selectedSvgElement.dataset.patternId}`
+    );
+
+    if (!pattern) return;
+
+    const bbox = patternData.bbox;
+
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
+
+    // ⭐ rotate pattern around CENTER
+    pattern.setAttribute(
+        "patternTransform",
+        `rotate(${angle} ${cx} ${cy})`
+    );
+
+    patternData.angle = angle;
+
+    if(window.saveCustomizations)
+        window.saveCustomizations();
+    const slider = document.getElementById("circularSlider");
+
+if(slider){
+
+slider.style.background =
+`conic-gradient(#000 ${value}deg, #e5e5e5 ${value}deg)`;
+
+}
+};
 
 // Mascot Count/Repetition Control
 window.updateMascotCount = function(value) {
@@ -1223,7 +1383,10 @@ window.restorePatternStateForPart = function(partId, view) {
         controls.style.display = 'block';
         console.log('✅ Pattern controls shown');
     }
-
+const angleSlider = document.getElementById('patternAngle');
+if(angleSlider){
+    angleSlider.value = window.patternAngle;
+}
     if (window.updatePatternPreview) window.updatePatternPreview();
     if (window.updatePatternColorPalette) window.updatePatternColorPalette();
 
@@ -1274,33 +1437,63 @@ const part = mainSvg.querySelector(`[id="${partId}"]`);
 // =================== PART CLICK HANDLER ===================
 
 // In your part click handler, add this check:
+
+
+
 window.onPartClickForPattern = function(partElement) {
+
+    // IMPORTANT
+    window.selectedSvgElement = partElement;
+
     const view = window.currentView;
     const partId = partElement.id;
 
     console.log(`👆 Clicked: ${partId} in ${view}`);
 
-    // ✅ ALWAYS show the top buttons
     const topButtons = document.querySelector('.pattern-top-buttons');
-    if (topButtons) topButtons.style.display = 'flex';
 
-    // Check if part has pattern
+    // ✅ Pattern exists → hide button
     if (partElement.dataset.hasPattern === 'true') {
-        console.log(`✅ Restoring pattern state`);
+
+        console.log("Pattern exists → hide button");
+
+        if(topButtons) topButtons.style.display = 'none';
+
         window.restorePatternStateForPart(partId, view);
 
-        // ❌ DON'T hide buttons
-        // if (topButtons) topButtons.style.display = 'none';
-    } else if (partElement.dataset.hasMascot === 'true') {
-        console.log(`✅ Has mascot`);
-        // ❌ DON'T hide buttons
-        // if (topButtons) topButtons.style.display = 'none';
-    } else {
-        console.log(`❌ No pattern/mascot, show controls`);
+    }
+
+    // ✅ Mascot exists → hide button
+    else if (partElement.dataset.hasMascot === 'true') {
+
+        console.log("Mascot exists → hide button");
+
+        if(topButtons) topButtons.style.display = 'none';
+
+    }
+
+    // ❌ No pattern → show button
+    else {
+
+        console.log("No pattern → show button");
+
+        if(topButtons) topButtons.style.display = 'flex';
+
         const controls = document.getElementById('patternControls');
         if (controls) controls.style.display = 'none';
+
+        const preview = document.getElementById('patternPreviewBox');
+        if(preview){
+            preview.innerHTML =
+            '<span style="color:#999;">No pattern applied</span>';
+        }
+
     }
 };
+
+
+
+
 // Mascot apply karne se pehle:
 function applyMascotToModel(mascotSvg) {
     const mainSvg = document.getElementById('your-main-svg-id');
@@ -1405,5 +1598,28 @@ if (document.readyState === 'loading') {
     setTimeout(window.initializeMascotsOnLoad, 500);   // 🔥 THIS WAS MISSING
 
 }
+setTimeout(() => {
 
+    const svg = window.getMainSvg?.() || document.querySelector('svg');
+
+    if (!svg) return;
+
+    svg.querySelectorAll('[id]').forEach(part => {
+
+        part.addEventListener('click', function(e) {
+
+            window.selectedSvgElement = this;
+
+            if (window.onPartClickForPattern) {
+                window.onPartClickForPattern(this);
+            }
+
+            e.stopPropagation();
+        });
+
+    });
+
+    console.log("✅ Pattern click listeners attached");
+
+}, 700);
 })();

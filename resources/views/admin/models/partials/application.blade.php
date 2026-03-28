@@ -80,7 +80,7 @@
                 </label>
                 <input type="range" id="directMascotScale" min="10" max="200" value="100"
                     oninput="updateDirectMascotScale(this.value); document.getElementById('directMascotScaleValue').textContent=this.value;"
-                    style="width:100%; cursor:pointer;">
+                    class="app-slider" style="width:100%; cursor:pointer;">
             </div>
 
             {{-- Opacity --}}
@@ -90,7 +90,7 @@
                 </label>
                 <input type="range" id="directMascotOpacity" min="0" max="100" value="100"
                     oninput="updateDirectMascotOpacity(this.value); document.getElementById('directMascotOpacityValue').textContent=this.value;"
-                    style="width:100%; cursor:pointer;">
+                    class="app-slider" style="width:100%; cursor:pointer;">
             </div>
 
             {{-- Rotation --}}
@@ -100,7 +100,7 @@
                 </label>
                 <input type="range" id="directMascotRotation" min="0" max="360" value="0"
                     oninput="updateDirectMascotRotation(this.value); document.getElementById('directMascotRotationValue').textContent=this.value;"
-                    style="width:100%; cursor:pointer;">
+                    class="app-slider" style="width:100%; cursor:pointer;">
             </div>
 
             {{-- Position --}}
@@ -112,17 +112,15 @@
                     <div>
                         <label style="font-size:12px; color:#666;">X: <span id="mascotDirectPosXValue">0</span></label>
                         <input type="range" id="mascotDirectPosX" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('x', this.value)" style="width:100%; cursor:pointer;">
+                            oninput="updateDirectMascotPosition('x', this.value)" class="app-slider" style="width:100%; cursor:pointer;">
                     </div>
                     <div>
                         <label style="font-size:12px; color:#666;">Y: <span id="mascotDirectPosYValue">0</span></label>
                         <input type="range" id="mascotDirectPosY" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('y', this.value)" style="width:100%; cursor:pointer;">
+                            oninput="updateDirectMascotPosition('y', this.value)" class="app-slider" style="width:100%; cursor:pointer;">
                     </div>
                 </div>
             </div>
-
-
 
             {{-- Delete --}}
             <button onclick="deleteCurrentApplicationLayer()"
@@ -137,44 +135,39 @@
         {{-- ============================================================ --}}
         <div id="textLayerControls" style="display:block;">
 
-            {{-- Text Input --}}
+            {{-- ===== ROW 1: Text label + Select Font button ===== --}}
             <div class="control-group" style="margin-bottom:15px;">
-                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-                    Text
-                </label>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                    <label style="font-weight:600; font-size:14px; color:#333; white-space:nowrap;">Text</label>
+                    <button onclick="openFontModal()"
+                        style="padding:6px 14px; background:#fff; color:#000; border:2px solid #000; border-radius:6px; font-weight:600; font-size:12px; cursor:pointer; white-space:nowrap; flex-shrink:0;">
+                        Select Font
+                    </button>
+                </div>
                 <input type="text" id="applicationText" placeholder="Enter text..."
                     oninput="updateApplicationText(this.value)"
-                    style="width:100%; padding:10px; border:2px solid #ddd; border-radius:6px; font-size:14px;">
+                    style="width:100%; padding:10px; border:2px solid #ddd; border-radius:6px; font-size:14px; margin-top:8px; box-sizing:border-box;">
             </div>
 
-            {{-- Font Family --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-                    Font Style
-                </label>
-                <button onclick="openFontModal()"
-                    style="width:100%; padding:12px; background:#fff; color:#000; border:2px solid #000; border-radius:6px; font-weight:600;">
-                    Select Font
-                </button>
+            {{-- ===== ROW 2: Font Size + Letter Spacing side by side ===== --}}
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                <div class="control-group">
+                    <label style="display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#333;">
+                        Font Size: <span id="fontSizeValue">2000</span>
+                    </label>
+                    <input type="range" id="fontSize" min="50" max="5500" value="2000"
+                        oninput="updateFontSize(this.value)" class="app-slider" style="width:100%; cursor:pointer;">
+                </div>
+                <div class="control-group">
+                    <label style="display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#333;">
+                        Letter Spacing: <span id="letterSpacingValue">0</span>px
+                    </label>
+                    <input type="number" value="0" oninput="updateLetterSpacing(this.value); document.getElementById('letterSpacingValue').textContent=this.value;"
+                        style="width:100%; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; box-sizing:border-box;">
+                </div>
             </div>
 
-            {{-- Font Size --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-                    Font Size: <span id="fontSizeValue">200</span>px
-                </label>
-                <input type="range" id="fontSize" min="50" max="5500" value="2000"
-                    oninput="updateFontSize(this.value)" style="width:100%; cursor:pointer;">
-            </div>
-
-            {{-- Letter Spacing --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <label>Letter Spacing: <span id="letterSpacingValue">0</span>px</label>
-                <input type="number" value="0" oninput="updateLetterSpacing(this.value)"
-                    style="width:100%;padding:8px;border:2px solid #ddd;border-radius:6px;">
-            </div>
-
-            {{-- Position Controls --}}
+            {{-- ===== ROW 3: Position Controls ===== --}}
             <div class="control-group" style="margin-bottom:15px;">
                 <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
                     Position
@@ -183,36 +176,82 @@
                     <div>
                         <label style="font-size:12px; color:#666;">X: <span id="posXValue">0</span></label>
                         <input type="range" id="posX" min="-200" max="200" value="0"
-                            oninput="updatePosition(this.value, null)" style="width:100%; cursor:pointer;">
+                            oninput="updatePosition(this.value, null)" class="app-slider" style="width:100%; cursor:pointer;">
                     </div>
                     <div>
                         <label style="font-size:12px; color:#666;">Y: <span id="posYValue">0</span></label>
                         <input type="range" id="posY" min="-200" max="200" value="0"
-                            oninput="updatePosition(null, this.value)" style="width:100%; cursor:pointer;">
+                            oninput="updatePosition(null, this.value)" class="app-slider" style="width:100%; cursor:pointer;">
                     </div>
                 </div>
             </div>
 
-            {{-- Rotation --}}
+            {{-- ===== ROW 4: Width + Height (left) | Rotation (right) ===== --}}
             <div class="control-group" style="margin-bottom:15px;">
-                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-                    Rotation: <span id="rotationValue">0</span>°
-                </label>
-                <input type="range" id="rotation" min="0" max="360" value="0"
-                    oninput="updateRotation(this.value)" style="width:100%; cursor:pointer;">
-            </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;">
 
-            {{-- Width / Height --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <label>Width %</label>
-                <input type="number" value="100" oninput="updateTextScale('x',this.value)"
-                    style="width:100%;padding:8px;border:2px solid #ddd;border-radius:6px;">
-            </div>
+                    {{-- Left: Width + Height --}}
+                    <div>
+                        <div style="margin-bottom:10px;">
+                            <label style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
+                                Width %
+                            </label>
+                            <input type="range" min="10" max="300" value="100"
+                                oninput="updateTextScale('x',this.value); this.nextElementSibling.textContent=this.value+'%';"
+                                class="app-slider app-slider-small" style="width:100%; cursor:pointer;">
+                            <span style="font-size:11px; color:#888;">100%</span>
+                        </div>
+                        <div>
+                            <label style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
+                                Height %
+                            </label>
+                            <input type="range" min="10" max="300" value="100"
+                                oninput="updateTextScale('y',this.value); this.nextElementSibling.textContent=this.value+'%';"
+                                class="app-slider app-slider-small" style="width:100%; cursor:pointer;">
+                            <span style="font-size:11px; color:#888;">100%</span>
+                        </div>
+                    </div>
 
-            <div class="control-group" style="margin-bottom:15px;">
-                <label>Height %</label>
-                <input type="number" value="100" oninput="updateTextScale('y',this.value)"
-                    style="width:100%;padding:8px;border:2px solid #ddd;border-radius:6px;">
+
+
+
+
+
+                    {{-- Right: Rotation --}}
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                        <label style="font-weight:600; font-size:12px; color:#333; margin-bottom:8px; text-align:center;">
+                            Rotation
+                        </label>
+                        {{-- Vertical slider wrapper --}}
+                        <div style="position:relative; height:90px; display:flex; align-items:center; justify-content:center; width:100%;">
+                            <input type="range" id="rotation" min="0" max="360" value="0"
+                                oninput="updateRotation(this.value); document.getElementById('rotationValue').textContent=this.value; document.getElementById('rotationManual').value=this.value;"
+                                class="app-slider rotation-vertical-slider"
+                                style="width:90px; cursor:pointer; transform:rotate(-90deg); transform-origin:center center;">
+                        </div>
+                        {{-- Manual input --}}
+                        <div style="display:flex; align-items:center; gap:4px; margin-top:6px;">
+                            <input type="number" id="rotationManual" min="0" max="360" value="0"
+                                oninput="
+                                    var v=Math.min(360,Math.max(0,parseInt(this.value)||0));
+                                    document.getElementById('rotation').value=v;
+                                    document.getElementById('rotationValue').textContent=v;
+                                    updateRotation(v);
+                                "
+                                style="width:52px; padding:4px 6px; border:2px solid #ddd; border-radius:5px; font-size:12px; font-weight:700; text-align:center;">
+                            <span style="font-size:12px; color:#666; font-weight:600;"><span id="rotationValue">0</span>°</span>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+                </div>
             </div>
 
             {{-- ========== COLORS/PATTERN/MASCOT TABS ========== --}}
@@ -258,8 +297,7 @@
                             <div id="outline1Section" class="control-group"
                                 style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
-                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline
-                                    1</label>
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline 1</label>
                                 <div id="outline1ColorPicker"
                                     style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;">
                                 </div>
@@ -271,8 +309,7 @@
                             <div id="outline2Section" class="control-group"
                                 style="display:none; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
-                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline
-                                    2</label>
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline 2</label>
                                 <div id="outline2ColorPicker"
                                     style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;">
                                 </div>
@@ -310,8 +347,7 @@
                     <div id="textPatternColorControls" style="display:none;">
                         <div
                             style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">PATTERN
-                                PREVIEW:</div>
+                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">PATTERN PREVIEW:</div>
                             <div id="textPatternPreview"
                                 style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;">
                             </div>
@@ -319,8 +355,7 @@
 
                         <div
                             style="margin-bottom:15px; padding:12px; background:#f8f9fa; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:10px;">PATTERN
-                                COLORS:</div>
+                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:10px;">PATTERN COLORS:</div>
                             <div id="patternColorPaletteInTab"></div>
                         </div>
 
@@ -329,7 +364,7 @@
                                     id="patternSizeValueTab">100</span>%</label>
                             <input type="range" min="10" max="200" value="100" id="patternSizeTab"
                                 oninput="updateTextPatternSize(this.value); document.getElementById('patternSizeValueTab').textContent=this.value;"
-                                style="width:100%; cursor:pointer;">
+                                class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
 
                         <div style="margin-bottom:12px;">
@@ -338,7 +373,7 @@
                             <input type="range" min="0" max="100" value="100"
                                 id="patternOpacityTab"
                                 oninput="updateTextPatternOpacity(this.value); document.getElementById('patternOpacityValueTab').textContent=this.value;"
-                                style="width:100%; cursor:pointer;">
+                                class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
 
                         <button onclick="clearTextPattern()"
@@ -366,8 +401,7 @@
                     <div id="textMascotColorControls" style="display:none;">
                         <div
                             style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">MASCOT
-                                PREVIEW:</div>
+                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">MASCOT PREVIEW:</div>
                             <div id="textMascotPreview"
                                 style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;">
                             </div>
@@ -379,7 +413,7 @@
                             <input type="range" min="10" max="200" value="100"
                                 id="mascotSizeTabSlider"
                                 oninput="updateTextMascotSize(this.value); document.getElementById('mascotSizeValueTab').textContent=this.value;"
-                                style="width:100%; cursor:pointer;">
+                                class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
 
                         <div style="margin-bottom:12px;">
@@ -388,7 +422,7 @@
                             <input type="range" min="0" max="100" value="100"
                                 id="mascotOpacityTabSlider"
                                 oninput="updateTextMascotOpacity(this.value); document.getElementById('mascotOpacityValueTab').textContent=this.value;"
-                                style="width:100%; cursor:pointer;">
+                                class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
 
                         <div style="margin-bottom:12px;">
@@ -397,7 +431,7 @@
                             <input type="range" min="1" max="12" value="4"
                                 id="mascotCountTabSlider"
                                 oninput="updateTextMascotCount(this.value); document.getElementById('mascotCountValueTab').textContent=this.value;"
-                                style="width:100%; cursor:pointer;">
+                                class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
 
                         <button onclick="clearTextMascot()"
@@ -502,14 +536,16 @@
     </div>
 </div>
 
-{{-- FONT MODAL --}}
+{{-- FONT MODAL — 1000px wide, 6 per row --}}
 <div id="fontModal" class="color-modal" style="display:none;">
-    <div class="color-modal-content" style="width:800px;max-width:95%">
-        <div style="padding:20px;background:#2a2a2a;color:white;display:flex;justify-content:space-between">
-            <h3>FONTS</h3>
-            <span onclick="closeFontModal()" style="cursor:pointer;font-size:26px">×</span>
+    <div class="color-modal-content" style="width:1000px; max-width:96%;">
+        <div style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:18px; font-weight:600;">SELECT FONT</h3>
+            <span onclick="closeFontModal()" style="cursor:pointer; font-size:26px; line-height:1;">×</span>
         </div>
-        <div id="fontGrid" style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:15px"></div>
+        <div id="fontGrid"
+            style="padding:20px; display:grid; grid-template-columns:repeat(6, 1fr); gap:12px; max-height:70vh; overflow-y:auto;">
+        </div>
     </div>
 </div>
 
@@ -599,6 +635,98 @@
         -ms-user-select: none;
     }
 
+    /* ===== SQUARE SLIDER THUMB ===== */
+    .app-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        background: #ddd;
+        border-radius: 2px;
+        outline: none;
+    }
+
+   .app-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #000;
+    border-radius: 3px; /* square box */
+    cursor: pointer;
+    border: none;
+}
+
+.app-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #000;
+    border-radius: 3px;
+    cursor: pointer;
+    border: none;
+}
+
+    /* Smaller slider for width/height */
+    .app-slider-small {
+        height: 3px;
+    }
+
+    .app-slider-small::-webkit-slider-thumb {
+        width: 11px;
+        height: 11px;
+    }
+
+    .app-slider-small::-moz-range-thumb {
+        width: 11px;
+        height: 11px;
+    }
+
+    /* Rotation vertical slider */
+    .rotation-vertical-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        background: #ddd;
+        border-radius: 2px;
+        outline: none;
+    }
+
+    .rotation-vertical-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #000;
+        border-radius: 2px;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .rotation-vertical-slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #000;
+        border-radius: 2px;
+        cursor: pointer;
+        border: none;
+    }
+
+    /* Font grid items */
+    #fontGrid > div {
+        border: 2px solid #ddd;
+        padding: 10px 6px;
+        text-align: center;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #fff;
+        transition: all 0.2s;
+    }
+
+    #fontGrid > div:hover {
+        background: #f2f2f2;
+        border-color: #999;
+    }
+
     .accent-card:hover {
         border-color: #000000 !important;
         transform: translateY(-2px);
@@ -632,6 +760,14 @@
         outline: none !important;
         box-shadow: none !important;
     }
+
+    /* rotation manual input arrow hide */
+    #rotationManual::-webkit-outer-spin-button,
+    #rotationManual::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    #rotationManual { -moz-appearance: textfield; }
 </style>
 
 @include('admin.models.partials.mascot-select-modal')

@@ -14,12 +14,16 @@ class CategoryController extends Controller
        ADMIN (WEB) CRUD
     ==========================*/
 
-    public function index()
-    {
-        $categories = Category::orderBy('position')->get();
+   public function index()
+{
+    $navigations = \App\Models\Navigation::orderBy('title')->get();
 
-        return view('categories.index', compact('categories'));
-    }
+    $categories = \App\Models\Category::with('subcategories')
+                    ->orderBy('position')
+                    ->get();
+
+    return view('categories.index', compact('navigations', 'categories'));
+}
 
     public function create()
     {
@@ -190,7 +194,7 @@ class CategoryController extends Controller
     //         ->orderBy('name')
     //         ->get();
     // }
-     
+
     public function apiHighlighted()
     {
         return Category::where('status', 1)

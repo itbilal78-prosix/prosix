@@ -111,12 +111,14 @@
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             // clone for outer stroke only
             const strokePath = path.cloneNode();
+            strokePath._isClone = true;
+
 
             strokePath.setAttribute('fill', 'none');
             strokePath.setAttribute('stroke', color);
             strokePath.setAttribute('stroke-width', '6');
             strokePath.style.pointerEvents = 'none';
-            strokePath.style.display = 'none'; // hidden until active
+            strokePath.style.display = 'none';
 
             svg.appendChild(strokePath);
 
@@ -220,7 +222,41 @@ btn.innerHTML = `
     }
 }
 
+window.highlightWheelColor = function(color) {
+    if (!color || color.startsWith('url(')) return;
 
+    const upperColor = color.toUpperCase();
+    const index = selectedColors.findIndex(c => c.toUpperCase() === upperColor);
+    if (index === -1) return;
+
+    const svg = document.querySelector('#colorWheelRing svg');
+    if (!svg) return;
+
+    const angleStep = 360 / selectedColors.length;
+
+    // Remove active from all slices
+    svg.querySelectorAll('path').forEach(p => {
+        p.classList.remove('active');
+        if (p._strokeClone) p._strokeClone.style.display = 'none';
+    });
+
+    // Find the path at this index and activate it
+    const paths = Array.from(svg.querySelectorAll('path')).filter(p => !p._isClone);
+    const targetPath = paths[index];
+
+   if (targetPath) {
+    targetPath.classList.add('active');
+    if (targetPath._strokeClone) {
+        targetPath._strokeClone.style.display = 'block';
+        svg.appendChild(targetPath._strokeClone);
+    }
+}
+    // Rotate wheel so this slice is at top
+    const deg = -(index * angleStep + angleStep / 2);
+    svg.style.transform = `rotate(${deg}deg)`;
+
+    updateCenterColor(color);
+};
     /* ================= APPLY COLOR TO SELECTED PART ================= */
 
     function applyColorToPart(color) {
@@ -846,7 +882,7 @@ btn.innerHTML = `
     }
 
     // Initialize on load
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => {
             renderGradientStops();
             updateGradientPreview();
@@ -855,4 +891,7 @@ btn.innerHTML = `
     });
 
 
+
 })();
+
+

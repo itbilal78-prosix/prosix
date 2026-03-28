@@ -66,68 +66,141 @@
             @forelse($categories as $category)
                 @if ($category->models->count() === 0) @continue @endif
 
-                @foreach ($category->models->groupBy('model_name') as $modelName => $models)
-                    <div class="model-name-divider mb-3 mt-4"><span>{{ $modelName }}</span></div>
-                    <div class="row mb-4">
-                        @foreach ($models as $model)
-                            <div class="col-md-2 mb-4">
-                                <div class="card model-card shadow-sm h-100 position-relative"
-                                     data-featured="{{ $model->is_featured ? '1':'0' }}"
-                                     data-apparel="{{ $model->is_apparel   ? '1':'0' }}">
-                                    <div class="position-absolute top-0 start-0 p-2 cb-wrap">
-                                        <input type="checkbox" class="model-checkbox" value="{{ $model->id }}"
-                                               data-block="block-all">
-                                    </div>
-                                    @if ($model->subcategory)
-                                        <div class="position-absolute top-0 end-0 p-2" style="z-index:999;">
-                                            <span class="badge bg-dark" style="font-size:10px;">{{ $model->subcategory->name }}</span>
-                                        </div>
-                                    @endif
-                                    <div class="card-image-wrapper text-center">
-                                        @if ($model->thumbnail)
-                                            <img src="{{ asset('uploads/models/'.$model->thumbnail) }}"
-                                                 style="max-width:100%;max-height:100%;object-fit:contain;">
-                                        @else
-                                            <img src="{{ asset('uploads/models/'.($model->custom_front_svg ?: $model->front_svg)) }}"
-                                                 class="img-layer svg">
-                                            @if ($model->front_white)
-                                                <img src="{{ asset('uploads/models/'.$model->front_white) }}" class="img-layer white">
-                                            @endif
-                                            @if ($model->front_black)
-                                                <img src="{{ asset('uploads/models/'.$model->front_black) }}" class="img-layer black">
-                                            @endif
-                                        @endif
-                                    </div>
-                                    <div class="card-body p-2">
-                                        @if ($model->is_featured)<span class="badge bg-dark mb-1 d-block">Featured</span>@endif
-                                        @if ($model->is_apparel)<span class="badge bg-secondary mb-1 d-block">Apparel</span>@endif
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <strong>{{ $model->title }}</strong>
-                                            <span>${{ number_format($model->price??0,2) }}</span>
-                                        </div>
-                                        <p class="card-text small">{{ Str::limit($model->description,50) }}</p>
-                                    </div>
-                                    <div class="card-footer p-2">
-                                        <div class="d-flex gap-2 mb-2">
-                                            <a href="{{ route('models.show',$model->id) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
-                                            <a href="{{ route('models.edit',$model->id) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <form action="{{ route('models.duplicate',$model->id) }}" method="POST" class="flex-fill">
-                                                @csrf<button class="btn btn-custom btn-sm w-100">Duplicate</button>
-                                            </form>
-                                            <form action="{{ route('models.destroy',$model->id) }}" method="POST" class="flex-fill">
-                                                @csrf @method('DELETE')
-                                                <button class="btn btn-custom btn-sm w-100"
-                                                        onclick="return confirm('Delete?')">Delete</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+               @foreach ($category->models->groupBy('model_name') as $modelName => $models)
+
+<div class="model-group-wrapper" data-group="{{ $modelName }}">
+
+    {{-- Model Name Divider --}}
+    <div class="model-name-divider mb-3 mt-4">
+        <span>{{ $modelName }}</span>
+    </div>
+
+    {{-- Models Row --}}
+    <div class="row mb-4 model-group-row sortable-row">
+
+        @foreach ($models as $model)
+
+        <div class="col-md-2 mb-4">
+            <div class="card model-card shadow-sm h-100 position-relative"
+                 data-featured="{{ $model->is_featured ? '1':'0' }}"
+                 data-apparel="{{ $model->is_apparel ? '1':'0' }}">
+
+                <div class="position-absolute top-0 start-0 p-2 cb-wrap">
+                    <input type="checkbox"
+                           class="model-checkbox"
+                           value="{{ $model->id }}"
+                           data-block="block-all">
+                </div>
+
+                @if ($model->subcategory)
+                <div class="position-absolute top-0 end-0 p-2" style="z-index:999;">
+                    <span class="badge bg-dark" style="font-size:10px;">
+                        {{ $model->subcategory->name }}
+                    </span>
+                </div>
+                @endif
+
+                <div class="card-image-wrapper text-center">
+
+                    @if ($model->thumbnail)
+
+                        <img src="{{ asset('uploads/models/'.$model->thumbnail) }}"
+                             style="max-width:100%;max-height:100%;object-fit:contain;">
+
+                    @else
+
+                        <img src="{{ asset('uploads/models/'.($model->custom_front_svg ?: $model->front_svg)) }}"
+                             class="img-layer svg">
+
+                        @if ($model->front_white)
+                        <img src="{{ asset('uploads/models/'.$model->front_white) }}"
+                             class="img-layer white">
+                        @endif
+
+                        @if ($model->front_black)
+                        <img src="{{ asset('uploads/models/'.$model->front_black) }}"
+                             class="img-layer black">
+                        @endif
+
+                    @endif
+
+                </div>
+
+                <div class="card-body p-2">
+
+                    @if ($model->is_featured)
+                    <span class="badge bg-dark mb-1 d-block">Featured</span>
+                    @endif
+
+                    @if ($model->is_apparel)
+                    <span class="badge bg-secondary mb-1 d-block">Apparel</span>
+                    @endif
+
+                    <div class="d-flex justify-content-between mb-1">
+                        <strong>{{ $model->title }}</strong>
+                        <span>${{ number_format($model->price ?? 0, 2) }}</span>
                     </div>
-                @endforeach
+
+                    <p class="card-text small">
+                        {{ Str::limit($model->description,50) }}
+                    </p>
+
+                </div>
+
+                <div class="card-footer p-2">
+
+                    <div class="d-flex gap-2 mb-2">
+
+                        <a href="{{ route('models.show',$model->id) }}"
+                           class="btn btn-custom btn-sm flex-fill">
+                           Customize
+                        </a>
+
+                        <a href="{{ route('models.edit',$model->id) }}"
+                           class="btn btn-custom btn-sm flex-fill">
+                           Edit
+                        </a>
+
+                    </div>
+
+                    <div class="d-flex gap-2">
+
+                        <form action="{{ route('models.duplicate',$model->id) }}"
+                              method="POST"
+                              class="flex-fill">
+                            @csrf
+                            <button class="btn btn-custom btn-sm w-100">
+                                Duplicate
+                            </button>
+                        </form>
+
+                        <form action="{{ route('models.destroy',$model->id) }}"
+                              method="POST"
+                              class="flex-fill">
+                            @csrf
+                            @method('DELETE')
+
+                            <button class="btn btn-custom btn-sm w-100"
+                                    onclick="return confirm('Delete?')">
+                                Delete
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        @endforeach
+
+    </div>
+
+</div>
+
+@endforeach
 
             @empty
                 <div class="alert alert-info text-center">No Categories</div>
@@ -183,18 +256,19 @@
 
                 {{-- Models Grid --}}
                 @foreach ($cat->models->groupBy('model_name') as $modelName => $models)
-                    <div class="model-name-divider mb-3 mt-4 model-group-divider"
-                         data-cat="{{ $cat->id }}"
-                         data-subcats="{{ $models->pluck('subcategory_id')->unique()->filter()->implode(',') ?: 'none' }}">
-                        <span>{{ $modelName }} — {{ $models->count() }} Models</span>
-                    </div>
+<div class="model-group-wrapper" data-group="{{ $modelName }}">
 
-                    <div class="row mb-4 model-group-row"
-                         data-cat="{{ $cat->id }}"
+    <div class="model-name-divider mb-3 mt-4">
+        <span>{{ $modelName }} — {{ $models->count() }} Models</span>
+    </div>
+
+<div class="row mb-4 model-group-row sortable-row"
+                             data-cat="{{ $cat->id }}"
                          data-subcats="{{ $models->pluck('subcategory_id')->unique()->filter()->implode(',') ?: 'none' }}">
                         @foreach ($models as $model)
-                            <div class="col-md-2 mb-4 model-col-item"
-                                 data-cat="{{ $cat->id }}"
+<div class="col-md-2 mb-4 model-col-item"
+     data-id="{{ $model->id }}"
+                                      data-cat="{{ $cat->id }}"
                                  data-sub="{{ $model->subcategory_id ?? 'none' }}">
                                 <div class="card model-card shadow-sm h-100 position-relative"
                                      data-featured="{{ $model->is_featured ? '1':'0' }}"
@@ -578,4 +652,59 @@
         }, 2000);
     });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+   <script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".cat-block").forEach(container => {
+
+        new Sortable(container, {
+
+            animation: 200,
+
+            draggable: ".model-group-wrapper",
+
+            ghostClass: "dragging",
+
+            onEnd: function () {
+
+                let order = [];
+
+                container.querySelectorAll(".model-group-wrapper")
+                .forEach((group, index) => {
+
+                    order.push({
+                        model_name: group.dataset.group,
+                        position: index + 1
+                    });
+
+                });
+
+                fetch("{{ route('models.updateOrder') }}", {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+
+                    },
+
+                    body: JSON.stringify({
+                        order: order
+                    })
+
+                });
+
+            }
+
+        });
+
+    });
+
+});
+
+</script>
 @endsection
