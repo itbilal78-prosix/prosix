@@ -11,17 +11,21 @@ use Illuminate\Http\Request;
 
 class CustomizerModelController extends Controller
 {
-    public function index()
-    {
-        $categories = Category::whereNull('parent_id')
-            ->where('status', 1)
-            ->with(['models' => function ($q) {
-$q->orderBy('position');
-            }])
-            ->get();
+   public function index()
+{
+    $categories = Category::whereNull('parent_id')
+        ->where('status', 1)
+        ->with([
+            'subcategories',
+            'models' => function ($q) {
+                $q->orderBy('position');
+            },
+            'models.subcategory'
+        ])
+        ->get();
 
-        return view('admin.models.index', compact('categories'));
-    }
+    return view('admin.models.index', compact('categories'));
+}
 
     // Show create form
  public function create()
@@ -407,7 +411,7 @@ $q->orderBy('position');
     {
         $models = CustomizerModel::where('subcategory_id', $id)
     ->orderBy('position')
-    
+
             ->select('id', 'model_name', 'title', 'price', 'description', 'front_black', 'front_white', 'front_svg', 'custom_front_svg', 'thumbnail')
             ->get()
             ->map(function ($model) {

@@ -54,7 +54,10 @@
         </div>
 
         <!-- ===== MODELS SECTION + SIDEBAR (side by side) ===== -->
-        <div class="main-layout" v-if="models.length > 0">
+<div
+class="main-layout"
+:class="{ 'sidebar-open': sidebarOpen }"
+>
 
         <!-- Mobile Filter Toggle -->
         <button class="mobile-filter-btn d-xl-none" @click="mobileFilterOpen = !mobileFilterOpen">
@@ -108,6 +111,11 @@
         <div class="content-area">
 
           <!-- SELECT DESIGN heading -->
+           <button class="desktop-filter-btn" @click="toggleSidebar">
+  <i class="bi bi-sliders"></i>
+  Filters
+</button>
+
           <div class="select-design-heading">SELECT DESIGN</div>
 
           <!-- ===== ALL view: grouped by model_name ===== -->
@@ -179,7 +187,12 @@
         <!-- END content-area -->
 
         <!-- ===== RIGHT: FILTER SIDEBAR (desktop only, sticky) ===== -->
-        <div class="filter-sidebar d-none d-xl-block">
+<div
+class="filter-sidebar desktop-sidebar"
+:class="{
+  open: sidebarOpen,
+  peek: sidebarPeek
+}">
           <div class="sidebar-inner">
             <div class="sidebar-title">CUSTOMIZE YOUR LOOK</div>
             <div class="filter-section">
@@ -202,6 +215,10 @@
                 <button class="btn-clear" @click="clearFilters">CLEAR ALL</button>
               </div>
             </div>
+<div class="sidebar-handle" @click="toggleSidebar">
+      <i class="bi bi-chevron-left"></i>
+</div>
+
             <div class="sidebar-divider"></div>
             <div class="filter-label mb-2">SEARCH &amp; FILTER</div>
             <div class="filter-section">
@@ -227,7 +244,6 @@
       <!-- END models.length > 0 -->
 
     </div>
-
     <!-- ===== COLOR POPUP ===== -->
     <transition name="modal-pop">
       <div v-if="showColorPopup" class="color-popup-overlay" @click.self="showColorPopup = false">
@@ -432,7 +448,8 @@ const appliedColor      = ref(null)
 const showColorPopup    = ref(false)
 const allColors         = ref([])
 const modelNameOpen     = ref(true)
-
+const sidebarOpen = ref(false)
+const sidebarPeek = ref(false)
 const uniqueModelNames = computed(() => {
   return [...new Set(models.value.map(m => m.model_name).filter(Boolean))]
 })
@@ -468,7 +485,18 @@ const clearFilters = () => {
   customName.value        = ''
   appliedName.value       = ''
 }
+const toggleSidebar = () => {
 
+  if (sidebarOpen.value) {
+    sidebarOpen.value = false
+    sidebarPeek.value = false
+  }
+
+  else {
+    sidebarOpen.value = true
+  }
+
+}
 // ─────────────────────────────────────────────
 // FILTERED MODELS
 // ─────────────────────────────────────────────
@@ -614,9 +642,9 @@ onMounted(() => {
 
 /* ===== FILTER SIDEBAR ===== */
 .filter-sidebar {
-  width: 280px;
+  /* width: 280px; */
   flex-shrink: 0;
-  position: sticky;
+  /* position: sticky; */
   top: 140px;
   align-self: flex-start;
 }
@@ -978,20 +1006,22 @@ onMounted(() => {
 
 /* Card info below image */
 .model-card-info {
+      background: #eeeeee;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 2px 6px 2px;
+  padding: 10px 10px 10px 10px;
   gap: 4px;
 }
 .model-card-title {
-  font-size: clamp(11px, 1.3vw, 13px);
-  color: #555;
+  font-size: clamp(16px, 1.8vw, 18px);
+  color: #000000;
   font-weight: 400;
 }
 .model-card-price {
   font-size: clamp(11px, 1.3vw, 13px);
-  color: #333;
+  color: #000000;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1216,6 +1246,63 @@ onMounted(() => {
 }
 .toast-slide-enter-active, .toast-slide-leave-active { transition: all .3s ease; }
 .toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateY(14px); }
+
+
+
+
+
+.col-xl-models {
+  flex: 0 0 16.666%;
+  max-width: 16.666%;
+}
+.sidebar-open .col-xl-models {
+  flex: 0 0 20%;
+  max-width: 20%;
+}
+.desktop-sidebar {
+  position: fixed;
+  right: -260px;
+  top: 140px;
+  width: 260px;
+  transition: 0.35s ease;
+  z-index: 999;
+}
+
+
+.desktop-sidebar.peek {
+
+  right: -230px;
+
+}
+
+.desktop-sidebar.open {
+
+  right: 20px;
+
+}
+
+.sidebar-handle {
+
+  position: absolute;
+  left: -30px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  background: black;
+  color: white;
+
+  width: 30px;
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  z-index: 1000;
+
+}
 
 /* ============================================================
    RESPONSIVE BREAKPOINTS

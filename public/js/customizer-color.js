@@ -75,112 +75,244 @@
         ring.style.transform = `rotate(${-angle}deg)`;
     }
 
-    window.updateColorWheel = function () {
+//     window.updateColorWheel = function () {
 
-        const wheel = document.getElementById('colorWheelRing');
-        if (!wheel || selectedColors.length === 0) return;
+//         const wheel = document.getElementById('colorWheelRing');
+//         if (!wheel || selectedColors.length === 0) return;
 
-        wheel.innerHTML = '';
+//         wheel.innerHTML = '';
 
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', '340');
-        svg.setAttribute('height', '340');
-        svg.style.position = 'absolute';
-        svg.style.transition = 'transform .6s cubic-bezier(.22,.61,.36,1)';
+//         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+//         svg.setAttribute('width', '340');
+//         svg.setAttribute('height', '340');
+//         svg.style.position = 'absolute';
+//         svg.style.transition = 'transform .6s cubic-bezier(.22,.61,.36,1)';
 
-        const center = 170;
-        const radius = 160;
-        const innerRadius = 110;
+//         const center = 170;
+//         const radius = 160;
+//         const innerRadius = 110;
 
-        const angleStep = 360 / selectedColors.length;
+//         const angleStep = 360 / selectedColors.length;
 
-        selectedColors.forEach((color, i) => {
+//         selectedColors.forEach((color, i) => {
 
-            const startAngle = (i * angleStep - 90) * Math.PI / 180;
-            const endAngle = ((i + 1) * angleStep - 90) * Math.PI / 180;
+//             const startAngle = (i * angleStep - 90) * Math.PI / 180;
+//             const endAngle = ((i + 1) * angleStep - 90) * Math.PI / 180;
 
-            const x1 = center + radius * Math.cos(startAngle);
-            const y1 = center + radius * Math.sin(startAngle);
-            const x2 = center + radius * Math.cos(endAngle);
-            const y2 = center + radius * Math.sin(endAngle);
-            const x3 = center + innerRadius * Math.cos(endAngle);
-            const y3 = center + innerRadius * Math.sin(endAngle);
-            const x4 = center + innerRadius * Math.cos(startAngle);
-            const y4 = center + innerRadius * Math.sin(startAngle);
+//             const x1 = center + radius * Math.cos(startAngle);
+//             const y1 = center + radius * Math.sin(startAngle);
+//             const x2 = center + radius * Math.cos(endAngle);
+//             const y2 = center + radius * Math.sin(endAngle);
+//             const x3 = center + innerRadius * Math.cos(endAngle);
+//             const y3 = center + innerRadius * Math.sin(endAngle);
+//             const x4 = center + innerRadius * Math.cos(startAngle);
+//             const y4 = center + innerRadius * Math.sin(startAngle);
 
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            // clone for outer stroke only
-            const strokePath = path.cloneNode();
-            strokePath._isClone = true;
+//             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+//             // clone for outer stroke only
+//             const strokePath = path.cloneNode();
+//             strokePath._isClone = true;
 
 
-            strokePath.setAttribute('fill', 'none');
-            strokePath.setAttribute('stroke', color);
-            strokePath.setAttribute('stroke-width', '6');
-            strokePath.style.pointerEvents = 'none';
-            strokePath.style.display = 'none';
+//             strokePath.setAttribute('fill', 'none');
+//             strokePath.setAttribute('stroke', color);
+//             strokePath.setAttribute('stroke-width', '6');
+//             strokePath.style.pointerEvents = 'none';
+//             strokePath.style.display = 'none';
 
-            svg.appendChild(strokePath);
+//             svg.appendChild(strokePath);
 
-            // link clone to main path
-            path._strokeClone = strokePath;
+//             // link clone to main path
+//             path._strokeClone = strokePath;
 
-            const largeArc = angleStep > 180 ? 1 : 0;
+//             const largeArc = angleStep > 180 ? 1 : 0;
 
-            path.setAttribute('d',
-                `M ${x1},${y1}
- A ${radius},${radius} 0 ${largeArc},1 ${x2},${y2}
- L ${x3},${y3}
- A ${innerRadius},${innerRadius} 0 ${largeArc},0 ${x4},${y4} Z`
-            );
+//             path.setAttribute('d',
+//                 `M ${x1},${y1}
+//  A ${radius},${radius} 0 ${largeArc},1 ${x2},${y2}
+//  L ${x3},${y3}
+//  A ${innerRadius},${innerRadius} 0 ${largeArc},0 ${x4},${y4} Z`
+//             );
 
-            path.setAttribute('fill', color);
-            path.setAttribute('fill-rule', 'evenodd');
+//             path.setAttribute('fill', color);
+//             path.setAttribute('fill-rule', 'evenodd');
 
-            path.setAttribute('stroke', 'none');
-            path.style.color = color;   // 🔥 active outline ke liye
+//             path.setAttribute('stroke', 'none');
+//             path.style.color = color;   // 🔥 active outline ke liye
 
-            path.style.cursor = 'pointer';
-            path.style.transition = 'all .25s';
+//             path.style.cursor = 'pointer';
+//             path.style.transition = 'all .25s';
 
-            // save angle for rotation
-            path.setAttribute('data-angle', i * angleStep);
+//             // save angle for rotation
+//             path.setAttribute('data-angle', i * angleStep);
 
-            // CLICK
-            path.addEventListener('click', function () {
+//             // CLICK
+//             path.addEventListener('click', function () {
 
-                document.querySelectorAll('#colorWheelRing path').forEach(p => {
-                    p.classList.remove('active');
-                    if (p._strokeClone) p._strokeClone.style.display = 'none';
-                });
+//                 document.querySelectorAll('#colorWheelRing path').forEach(p => {
+//                     p.classList.remove('active');
+//                     if (p._strokeClone) p._strokeClone.style.display = 'none';
+//                 });
 
-                this.classList.add('active');
+//                 this.classList.add('active');
 
-                // show only THIS outline
-                if (this._strokeClone) {
-                    this._strokeClone.style.display = 'block';
-                    svg.appendChild(this._strokeClone); // bring outline top
+//                 // show only THIS outline
+//                 if (this._strokeClone) {
+//                     this._strokeClone.style.display = 'block';
+//                     svg.appendChild(this._strokeClone); // bring outline top
+//                 }
+
+//                 svg.appendChild(this); // bring slice top
+
+//                 const deg = -(i * angleStep + angleStep / 2);
+//                 svg.style.transform = `rotate(${deg}deg)`;
+
+//                 applyColorToPart(color);
+//                 updateCenterColor(color);
+//             });
+
+
+//             path.addEventListener('mouseenter', () => path.style.filter = 'brightness(1.2)');
+//             path.addEventListener('mouseleave', () => path.style.filter = 'none');
+
+//             svg.appendChild(path);
+
+//         });
+
+//         wheel.appendChild(svg);
+//     };
+
+
+
+
+// Helper: hex color ko darken karo
+
+
+
+
+
+function darkenColor(hex, amount = 40) {
+    const h = hex.replace('#', '');
+    let r = parseInt(h.substr(0,2),16);
+    let g = parseInt(h.substr(2,2),16);
+    let b = parseInt(h.substr(4,2),16);
+    r = Math.max(0, r - amount);
+    g = Math.max(0, g - amount);
+    b = Math.max(0, b - amount);
+    return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+window.updateColorWheel = function () {
+    const wheel = document.getElementById('colorWheelRing');
+    if (!wheel || selectedColors.length === 0) return;
+
+    wheel.innerHTML = '';
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '340');
+    svg.setAttribute('height', '340');
+    svg.setAttribute('overflow', 'hidden');
+    svg.style.position = 'absolute';
+    svg.style.transition = 'transform .6s cubic-bezier(.22,.61,.36,1)';
+
+    const center = 170;
+    const radius = 160;
+    const activeRadius = 168;   // 🔥 active slice thodi bahar
+    const innerRadius = 110;
+    const angleStep = 360 / selectedColors.length;
+
+    // ✅ ClipPath — stroke kabhi bahar nahi jayega
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+    clipPath.setAttribute('id', 'wheelRingClip');
+    const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    clipCircle.setAttribute('cx', String(center));
+    clipCircle.setAttribute('cy', String(center));
+    clipCircle.setAttribute('r', String(activeRadius + 2));
+    clipPath.appendChild(clipCircle);
+    defs.appendChild(clipPath);
+    svg.appendChild(defs);
+
+    // ✅ All slices inside clipped group
+    const slicesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    slicesGroup.setAttribute('clip-path', 'url(#wheelRingClip)');
+    svg.appendChild(slicesGroup);
+
+    selectedColors.forEach((color, i) => {
+
+        function makeSlicePath(r) {
+            const sa = (i * angleStep - 90) * Math.PI / 180;
+            const ea = ((i + 1) * angleStep - 90) * Math.PI / 180;
+            const x1 = center + r * Math.cos(sa);
+            const y1 = center + r * Math.sin(sa);
+            const x2 = center + r * Math.cos(ea);
+            const y2 = center + r * Math.sin(ea);
+            const x3 = center + innerRadius * Math.cos(ea);
+            const y3 = center + innerRadius * Math.sin(ea);
+            const x4 = center + innerRadius * Math.cos(sa);
+            const y4 = center + innerRadius * Math.sin(sa);
+            const la = angleStep > 180 ? 1 : 0;
+            return `M ${x1},${y1} A ${r},${r} 0 ${la},1 ${x2},${y2} L ${x3},${y3} A ${innerRadius},${innerRadius} 0 ${la},0 ${x4},${y4} Z`;
+        }
+
+        const normalD = makeSlicePath(radius);
+        const activeD = makeSlicePath(activeRadius);  // 🔥 bigger path for active
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', normalD);
+        path.setAttribute('fill', color);
+        path.setAttribute('stroke', 'none');
+        path.style.cursor = 'pointer';
+        path.style.transition = 'd .2s, stroke-width .2s';
+        path._color = color;
+        path._index = i;
+        path._normalD = normalD;
+        path._activeD = activeD;
+
+        path.addEventListener('click', function () {
+            // Reset all
+            Array.from(slicesGroup.querySelectorAll('path')).forEach(p => {
+                if (p._normalD) {
+                    p.setAttribute('d', p._normalD);
+                    p.setAttribute('stroke', 'none');
+                    p.setAttribute('stroke-width', '0');
                 }
-
-                svg.appendChild(this); // bring slice top
-
-                const deg = -(i * angleStep + angleStep / 2);
-                svg.style.transform = `rotate(${deg}deg)`;
-
-                applyColorToPart(color);
-                updateCenterColor(color);
             });
 
+this.setAttribute('d', this._activeD);
+this.setAttribute('stroke', 'none');
+this.setAttribute('stroke-width', '0');
 
-            path.addEventListener('mouseenter', () => path.style.filter = 'brightness(1.2)');
-            path.addEventListener('mouseleave', () => path.style.filter = 'none');
+            // Bring to top
+            slicesGroup.appendChild(this);
 
-            svg.appendChild(path);
+            const deg = -(i * angleStep + angleStep / 2);
+            svg.style.transform = `rotate(${deg}deg)`;
 
+            applyColorToPart(color);
+            updateCenterColor(color);
         });
 
-        wheel.appendChild(svg);
-    };
+        path.addEventListener('mouseenter', function() {
+            if (this.getAttribute('stroke') === 'none' || !this.getAttribute('stroke')) {
+                this.style.filter = 'brightness(1.15)';
+            }
+        });
+        path.addEventListener('mouseleave', function() {
+            this.style.filter = 'none';
+        });
+
+        slicesGroup.appendChild(path);
+    });
+
+    wheel.appendChild(svg);
+};
+
+
+
+
+
+
 
     function updateCenterColor(color) {
 
@@ -222,9 +354,22 @@ btn.innerHTML = `
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 window.highlightWheelColor = function(color) {
     if (!color || color.startsWith('url(')) return;
-
     const upperColor = color.toUpperCase();
     const index = selectedColors.findIndex(c => c.toUpperCase() === upperColor);
     if (index === -1) return;
@@ -233,25 +378,24 @@ window.highlightWheelColor = function(color) {
     if (!svg) return;
 
     const angleStep = 360 / selectedColors.length;
+    const paths = Array.from(svg.querySelectorAll('path'));
 
-    // Remove active from all slices
-    svg.querySelectorAll('path').forEach(p => {
-        p.classList.remove('active');
-        if (p._strokeClone) p._strokeClone.style.display = 'none';
+    paths.forEach(p => {
+        if (p._normalD) {
+            p.setAttribute('d', p._normalD);
+            p.setAttribute('stroke', 'none');
+        }
     });
 
-    // Find the path at this index and activate it
-    const paths = Array.from(svg.querySelectorAll('path')).filter(p => !p._isClone);
-    const targetPath = paths[index];
+    const target = paths[index];
+    if (!target) return;
 
-   if (targetPath) {
-    targetPath.classList.add('active');
-    if (targetPath._strokeClone) {
-        targetPath._strokeClone.style.display = 'block';
-        svg.appendChild(targetPath._strokeClone);
-    }
-}
-    // Rotate wheel so this slice is at top
+    // Active: bigger + darker stroke
+    target.setAttribute('d', target._activeD);
+    const darker = darkenColor(target._color, 50);
+    target.setAttribute('stroke', darker);
+    target.setAttribute('stroke-width', '0');
+
     const deg = -(index * angleStep + angleStep / 2);
     svg.style.transform = `rotate(${deg}deg)`;
 

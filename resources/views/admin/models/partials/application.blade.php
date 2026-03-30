@@ -41,9 +41,9 @@
     {{-- Layer Controls (shown when layer is selected) --}}
     <div id="applicationLayerControls" style="display:none; margin-top:20px;">
 
-        <h4 style="margin:0 0 15px 0; font-size:16px; font-weight:600; color:#333;">
-            Edit Application
-        </h4>
+       <h4 style="margin:0 0 15px 0; font-size:20px; font-weight:600; color:#333; text-align:center;">
+    Edit Application
+</h4>
 
         {{-- ============================================================ --}}
         {{-- 🦅 DIRECT MASCOT CONTROLS (shown only for mascot-type layers) --}}
@@ -136,26 +136,47 @@
         <div id="textLayerControls" style="display:block;">
 
             {{-- ===== ROW 1: Text label + Select Font button ===== --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                    <label style="font-weight:600; font-size:14px; color:#333; white-space:nowrap;">Text</label>
-                    <button onclick="openFontModal()"
-                        style="padding:6px 14px; background:#fff; color:#000; border:2px solid #000; border-radius:6px; font-weight:600; font-size:12px; cursor:pointer; white-space:nowrap; flex-shrink:0;">
-                        Select Font
-                    </button>
-                </div>
-                <input type="text" id="applicationText" placeholder="Enter text..."
-                    oninput="updateApplicationText(this.value)"
-                    style="width:100%; padding:10px; border:2px solid #ddd; border-radius:6px; font-size:14px; margin-top:8px; box-sizing:border-box;">
-            </div>
+           <div class="control-group" style="margin-bottom:15px;">
+
+    <label style="font-weight:600; font-size:14px; color:#333; margin-bottom:6px;">
+        Text
+    </label>
+
+    <div style="display:flex; gap:30px;">
+
+        <input type="text"
+               id="applicationText"
+               placeholder="Enter text..."
+               oninput="updateApplicationText(this.value)"
+               style="flex:1; padding:10px;
+                      border:2px solid #ddd;
+                      border-radius:6px;
+                      font-size:14px;">
+
+        <button onclick="openFontModal()"
+                style="padding:10px 14px;
+                       background:#fff;
+                       color:#000;
+                       border:2px solid #000;
+                       border-radius:6px;
+                       font-weight:600;
+                       font-size:12px;
+                       cursor:pointer;">
+            Select Font
+        </button>
+        
+
+    </div>
+
+</div>
 
             {{-- ===== ROW 2: Font Size + Letter Spacing side by side ===== --}}
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
                 <div class="control-group">
                     <label style="display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#333;">
-                        Font Size: <span id="fontSizeValue">2000</span>
+                        Font Size: <span id="fontSizeValue">100</span>
                     </label>
-                    <input type="range" id="fontSize" min="50" max="5500" value="2000"
+                    <input type="range" id="fontSize" min="50" max="5500" value="100"
                         oninput="updateFontSize(this.value)" class="app-slider" style="width:100%; cursor:pointer;">
                 </div>
                 <div class="control-group">
@@ -163,7 +184,7 @@
                         Letter Spacing: <span id="letterSpacingValue">0</span>px
                     </label>
                     <input type="number" value="0" oninput="updateLetterSpacing(this.value); document.getElementById('letterSpacingValue').textContent=this.value;"
-                        style="width:100%; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; box-sizing:border-box;">
+                        style="width:30%; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; box-sizing:border-box;">
                 </div>
             </div>
 
@@ -218,30 +239,46 @@
 
 
                     {{-- Right: Rotation --}}
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
-                        <label style="font-weight:600; font-size:12px; color:#333; margin-bottom:8px; text-align:center;">
-                            Rotation
-                        </label>
-                        {{-- Vertical slider wrapper --}}
-                        <div style="position:relative; height:90px; display:flex; align-items:center; justify-content:center; width:100%;">
-                            <input type="range" id="rotation" min="0" max="360" value="0"
-                                oninput="updateRotation(this.value); document.getElementById('rotationValue').textContent=this.value; document.getElementById('rotationManual').value=this.value;"
-                                class="app-slider rotation-vertical-slider"
-                                style="width:90px; cursor:pointer; transform:rotate(-90deg); transform-origin:center center;">
-                        </div>
-                        {{-- Manual input --}}
-                        <div style="display:flex; align-items:center; gap:4px; margin-top:6px;">
-                            <input type="number" id="rotationManual" min="0" max="360" value="0"
-                                oninput="
-                                    var v=Math.min(360,Math.max(0,parseInt(this.value)||0));
-                                    document.getElementById('rotation').value=v;
-                                    document.getElementById('rotationValue').textContent=v;
-                                    updateRotation(v);
-                                "
-                                style="width:52px; padding:4px 6px; border:2px solid #ddd; border-radius:5px; font-size:12px; font-weight:700; text-align:center;">
-                            <span style="font-size:12px; color:#666; font-weight:600;"><span id="rotationValue">0</span>°</span>
-                        </div>
-                    </div>
+{{-- Right: Rotation --}}
+<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+    <label style="font-weight:600; font-size:12px; color:#333; text-align:center;">Rotation</label>
+
+    <input type="hidden" id="rotation" value="0">
+
+    {{-- Wheel --}}
+    <div id="rotationWheel"
+         style="position:relative; width:100px; height:100px; border-radius:50%;
+                border:2.5px solid #bbb; background:#ececec; cursor:grab; flex-shrink:0;">
+
+        {{-- Dot — wheel ke EDGE par ghoomega --}}
+        <div id="rotationDot"
+             style="position:absolute; width:13px; height:13px; border-radius:50%;
+                    background:#222; top:-6px; left:50%;
+                    transform:translateX(-50%);
+                    box-shadow:0 1px 4px rgba(0,0,0,0.3);
+                    pointer-events:none;">
+        </div>
+
+        {{-- Center: rounded square input box --}}
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+            <input type="number" id="rotationManual" min="0" max="360" value="0"
+                   style="width:54px; height:40px; text-align:center;
+                          border-radius:8px; border:2px solid #ccc;
+                          font-weight:700; font-size:13px;
+                          background:#fff; color:#222;
+                          -moz-appearance:textfield;"
+                   oninput="
+                       var v=Math.min(360,Math.max(0,parseInt(this.value)||0));
+                       setWheelAngle(v);
+                       updateRotation(v);
+                   ">
+        </div>
+    </div>
+
+    <span style="font-size:12px; color:#666; font-weight:600;">
+        <span id="rotationValue">0</span>°
+    </span>
+</div>
 
 
 
@@ -644,6 +681,9 @@
         border-radius: 2px;
         outline: none;
     }
+text:focus{
+outline:none !important;
+}
 
    .app-slider::-webkit-slider-thumb {
     -webkit-appearance: none;

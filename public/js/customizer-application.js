@@ -564,7 +564,7 @@ outer.setAttribute('stroke-linejoin', 'miter');
         text.classList.add('modal-preview-text');
         text.setAttribute('x', centerX);
         text.setAttribute('y', centerY);
-        text.setAttribute('font-size', '2000');
+        text.setAttribute('font-size', '100');
         text.style.fontFamily = 'Arial Black';
         text.setAttribute('fill', textColor);
         text.setAttribute('stroke', strokeColor);
@@ -583,109 +583,8 @@ text.setAttribute('stroke-linejoin', 'miter');
         console.log(`✅ Modal preview updated`);
     };
 
-    // =================== CONFIRM ADD APPLICATION ===================
 
-    // window.confirmAddApplication = function () {
 
-    //     if (!window.selectedApplicationPart) {
-    //         alert('Please select a part!');
-    //         return;
-    //     }
-
-    //     const view = window.selectedApplicationView;
-    //     const partId = window.selectedApplicationPart;
-
-    //     // ====================================================
-    //     // 🦅 MASCOT TYPE — Direct SVG mascot (no text layer)
-    //     // ====================================================
-    //     if (window.selectedApplicationType === 'mascot') {
-
-    //         closeApplicationModal();
-
-    //         const layerId = `app-${Date.now()}`;
-
-    //         // Mascot layer — type 'direct-mascot' to distinguish from text layers
-    //         const layer = {
-    //             id: layerId,
-    //             type: 'direct-mascot',
-    //             view: view,
-    //             partId: partId,
-    //             // No text fields needed — this is a direct SVG mascot
-    //             mascotSvg: null,
-    //             mascotId: null,
-    //             x: 0,
-    //             y: 0,
-    //             rotation: 0,
-    //             mascotScaleX: 1,
-    //             mascotScaleY: 1,
-    //             mascotOpacity: 100
-    //         };
-
-    //         if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
-    //         if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
-
-    //         window.applicationsApplied[view][partId].push(layer);
-
-    //         // Set current layer so mascot modal can apply to it
-    //         window.currentApplicationLayer = layerId;
-
-    //         updateApplicationLayersList();
-    //         openApplicationsSidebar();
-
-    //         // Open mascot select modal — when user picks mascot it will call applyDirectMascotToLayer
-    //         window.openMascotSelectModal(layerId);
-
-    //         if (window.saveCustomizations) window.saveCustomizations();
-
-    //         console.log('✅ Direct mascot layer created:', layerId);
-    //         return;
-    //     }
-
-    //     // ====================================================
-    //     // TEXT TYPES — number, teamname, playername
-    //     // ====================================================
-
-    //     const layerId = `app-${Date.now()}`;
-
-    //     let defaultText = '00';
-    //     if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
-    //     if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
-
-    //     const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
-
-    //     const layer = {
-    //         id: layerId,
-    //         type: window.selectedApplicationType,
-    //         view: view,
-    //         partId: partId,
-    //         text: defaultText,
-    //         fontSize: 2000,
-    //         fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
-    //         fill: globalColors[0] || '#FFFFFF',
-    //         stroke: globalColors[1] || '#000000',
-    //         strokeWidth: 5,
-    //         x: 0,
-    //         y: 0,
-    //         rotation: 0,
-    //         outlineStyle: window.currentOutlineStyle,
-    //         outlineColors: { ...window.outlineColors }
-    //     };
-
-    //     if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
-    //     if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
-
-    //     window.applicationsApplied[view][partId].push(layer);
-
-    //     addApplicationToSvg(layer);
-    //     updateApplicationLayersList();
-    //     closeApplicationModal();
-    //     openApplicationsSidebar();
-    //     selectApplicationLayer(layerId);
-
-    //     if (window.saveCustomizations) window.saveCustomizations();
-
-    //     console.log('✅ Text application added:', layer);
-    // };
 
     // ============================================================
     // SIRF YEH FUNCTION apni applications.js mein replace karo
@@ -769,7 +668,7 @@ text.setAttribute('stroke-linejoin', 'miter');
             view: view,
             partId: partId,
             text: defaultText,
-            fontSize: 2000,
+            fontSize: 100,
             fontFamily: window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
             fill: globalColors[0] || '#FFFFFF',
             stroke: globalColors[1] || '#000000',
@@ -1461,6 +1360,32 @@ text.setAttribute('stroke-linejoin', 'miter');
         // TEXT LAYER — show text controls
         // ================================================
         showTextLayerControls(foundLayer);
+
+        const textEl = document.getElementById(layerId);
+
+if (textEl) {
+
+    // old indicator remove karo
+    const old = document.getElementById("selection-indicator");
+    if (old) old.remove();
+
+    // tight indicator add karo
+    const bbox = textEl.getBBox();
+    const svg = textEl.ownerSVGElement;
+
+    const icon = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "circle"
+    );
+
+    icon.setAttribute("id", "selection-indicator");
+    icon.setAttribute("cx", bbox.x + bbox.width / 2);
+    icon.setAttribute("cy", bbox.y - 10);
+    icon.setAttribute("r", 6);
+    icon.setAttribute("fill", "#007bff");
+
+    svg.appendChild(icon);
+}
     };
 
 
@@ -1953,14 +1878,7 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         // Flash highlight
         const textEl = document.getElementById(layer.id);
         if (textEl) {
-            textEl.style.filter = 'drop-shadow(0 0 8px rgba(0,123,255,0.8))';
-            setTimeout(() => {
-                if (layer.outlineStyle && layer.outlineStyle.includes('shadow')) {
-                    applyOutlineStyleToText(layer.id);
-                } else {
-                    textEl.style.filter = '';
-                }
-            }, 1000);
+           textEl.style.filter = 'none';
         }
 
         // Pattern UI sync
@@ -2100,6 +2018,8 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         document.getElementById('posYValue').textContent = layer.y || 0;
         document.getElementById('rotation').value = layer.rotation || 0;
         document.getElementById('rotationValue').textContent = layer.rotation || 0;
+        if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
+
     };
 
     // =================== REAL-TIME UPDATES (TEXT) ===================
@@ -3113,7 +3033,7 @@ text.setAttribute('stroke-linejoin', 'miter');
         var scaleX = svgRect.width / vbW;
         var scaleY = svgRect.height / vbH;
 
-        var pad = 6;
+        var pad = 0;
         var screenX = svgRect.left + (elemBbox.x - pad) * scaleX;
         var screenY = svgRect.top + (elemBbox.y - pad) * scaleY;
         var screenW = (elemBbox.width + pad * 2) * scaleX;
@@ -3136,15 +3056,45 @@ text.setAttribute('stroke-linejoin', 'miter');
             box.addEventListener('mousedown', _selBoxDragStart);
         }
 
+       var smartBorderColor = '#000000';
+if (partEl) {
+    try {
+        var pFill = partEl.getAttribute('fill') || '';
+        var pHex = pFill.replace('#','');
+        if (pHex.length === 3) pHex = pHex[0]+pHex[0]+pHex[1]+pHex[1]+pHex[2]+pHex[2];
+        if (/^[0-9a-fA-F]{6}$/.test(pHex)) {
+            var pr = parseInt(pHex.substr(0,2),16);
+            var pg = parseInt(pHex.substr(2,2),16);
+            var pb = parseInt(pHex.substr(4,2),16);
+            var lum = (0.299*pr + 0.587*pg + 0.114*pb)/255;
+            if (lum < 0.4) smartBorderColor = '#ffffff';
+        }
+    } catch(e2) {}
+}
+
+var smartBorder = '#000000';
+        if (partEl) {
+            try {
+                var pf = partEl.getAttribute('fill') || '';
+                var ph = pf.replace('#','');
+                if (ph.length === 3) ph = ph[0]+ph[0]+ph[1]+ph[1]+ph[2]+ph[2];
+                if (/^[0-9a-fA-F]{6}$/.test(ph)) {
+                    var lum = (0.299*parseInt(ph.substr(0,2),16) + 0.587*parseInt(ph.substr(2,2),16) + 0.114*parseInt(ph.substr(4,2),16)) / 255;
+                    if (lum < 0.4) smartBorder = '#ffffff';
+                }
+            } catch(ex) {}
+        }
+
         if (isOutside) {
             box.style.border = '2px dashed #FF4444';
-            box.style.background = 'rgba(255,68,68,0.04)';
-            box.style.boxShadow = '0 0 0 1px rgba(255,68,68,0.15)';
+            box.style.background = 'transparent';
+            box.style.boxShadow = 'none';
         } else {
-            box.style.border = '2px solid #007bff';
-            box.style.background = 'rgba(0,123,255,0.03)';
-            box.style.boxShadow = '0 0 8px rgba(0,123,255,0.18)';
+            box.style.border = '2px solid ' + smartBorder;
+            box.style.background = 'transparent';
+            box.style.boxShadow = 'none';
         }
+
 
         box.style.left = screenX + 'px';
         box.style.top = screenY + 'px';
@@ -3152,7 +3102,7 @@ text.setAttribute('stroke-linejoin', 'miter');
         box.style.height = screenH + 'px';
         box.style.display = 'block';
 
-        _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside);
+_updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderColor);
 
         // ---- Bring Inside button ----
         var bringBtn = document.getElementById('appBringInsideBtn');
@@ -3195,8 +3145,8 @@ text.setAttribute('stroke-linejoin', 'miter');
     };
 
     // ---- Corner handles ----
-    function _updateCornerHandles(sx, sy, sw, sh, isOutside) {
-        var color = isOutside ? '#FF4444' : '#007bff';
+   function _updateCornerHandles(sx, sy, sw, sh, isOutside, borderColor) {
+    var color = isOutside ? '#FF4444' : (borderColor || '#000000');
         var corners = [
             { id: 'sh-tl', l: sx - 5, t: sy - 5 },
             { id: 'sh-tr', l: sx + sw - 5, t: sy - 5 },
@@ -3390,17 +3340,32 @@ text.setAttribute('stroke-linejoin', 'miter');
     })();
 
     // SVG background click = deselect
-    document.addEventListener('click', function (e) {
-        var box = document.getElementById('appSelectionBox');
-        var bBtn = document.getElementById('appBringInsideBtn');
-        if (box && box.contains(e.target)) return;
-        if (bBtn && bBtn.contains(e.target)) return;
-        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-        if (mainSvg && e.target === mainSvg) {
+   document.addEventListener('click', function (e) {
+    var box = document.getElementById('appSelectionBox');
+    var bBtn = document.getElementById('appBringInsideBtn');
+    if (box && box.contains(e.target)) return;
+    if (bBtn && bBtn.contains(e.target)) return;
+
+    var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+    if (!mainSvg) return;
+
+    if (mainSvg.contains(e.target)) {
+        var clickedLayer = false;
+        var el = e.target;
+        while (el && el !== mainSvg) {
+            if (el.id && el.id.startsWith('app-group-')) { clickedLayer = true; break; }
+            if (el.id && window.findLayerById && window.findLayerById(el.id)) { clickedLayer = true; break; }
+            el = el.parentElement;
+        }
+        if (!clickedLayer) {
             _hideSelectionBox();
             window.currentApplicationLayer = null;
+            var controls = document.getElementById('applicationLayerControls');
+            if (controls) controls.style.display = 'none';
+            if (window.updateApplicationLayersList) window.updateApplicationLayersList();
         }
-    });
+    }
+});
 
     // Resize / scroll update
     window.addEventListener('resize', function () {
@@ -3863,7 +3828,728 @@ text.setAttribute('stroke-linejoin', 'miter');
 
 
 
+// =================== WHEEL INIT ===================
+    function init() {
+        var wheel = document.getElementById('rotationWheel');
+        var dot   = document.getElementById('rotationDot');
+        if (!wheel || !dot) { setTimeout(init, 400); return; }
+
+        var angle = 0, dragging = false, startAngle = 0, startRot = 0;
+
+        function getCenter() {
+            var r = wheel.getBoundingClientRect();
+            return [r.left + r.width / 2, r.top + r.height / 2];
+        }
+
+        function getAngle(cx, cy, ex, ey) {
+            return Math.atan2(ey - cy, ex - cx) * (180 / Math.PI) + 90;
+        }
+
+   window.setWheelAngle = function(a) {
+    angle = ((a % 360) + 360) % 360;
+
+    // Dot wheel center se edge tak ka radius = 50px (wheel ka half)
+    // Dot top:-6px hai — matlab center se 50px upar (radius) pe hai
+    // transformOrigin = wheel center relative to dot
+    // Dot left:50% translateX(-50%) hai — matlab horizontally centered
+    // Vertically: dot top = -6px, wheel center = 50px from top of wheel
+    // So origin from dot's perspective = center is 50+6=56px below dot's top
+    dot.style.transformOrigin = '50% 56px';
+    dot.style.transform = 'translateX(-50%) rotate(' + angle + 'deg)';
+
+    var manual = document.getElementById('rotationManual');
+    var hidden = document.getElementById('rotation');
+    var display = document.getElementById('rotationValue');
+    if (manual) manual.value = Math.round(angle);
+    if (hidden) hidden.value = Math.round(angle);
+    if (display) display.textContent = Math.round(angle);
+};
+
+        wheel.addEventListener('mousedown', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            dragging = true;
+            var c = getCenter();
+            startAngle = getAngle(c[0], c[1], e.clientX, e.clientY);
+            startRot = angle;
+            wheel.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (!dragging) return;
+            var c = getCenter();
+            var a = getAngle(c[0], c[1], e.clientX, e.clientY);
+            var newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360;
+            setWheelAngle(newAngle);
+            updateRotation(Math.round(newAngle));
+        });
+
+        window.addEventListener('mouseup', function() {
+            if (!dragging) return;
+            dragging = false;
+            wheel.style.cursor = 'grab';
+        });
+
+        wheel.addEventListener('touchstart', function(e) {
+            if (e.target.tagName === 'INPUT') return;
+            dragging = true;
+            var t = e.touches[0];
+            var c = getCenter();
+            startAngle = getAngle(c[0], c[1], t.clientX, t.clientY);
+            startRot = angle;
+            e.preventDefault();
+        }, { passive: false });
+
+        window.addEventListener('touchmove', function(e) {
+            if (!dragging) return;
+            var t = e.touches[0];
+            var c = getCenter();
+            var a = getAngle(c[0], c[1], t.clientX, t.clientY);
+            var newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360;
+            setWheelAngle(newAngle);
+            updateRotation(Math.round(newAngle));
+        });
+
+        window.addEventListener('touchend', function() { dragging = false; });
+
+  console.log('✅ Rotation wheel ready');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(init, 500); });
+    } else {
+        setTimeout(init, 500);
+    }
 
 
+    // ===== SVG PART CLICK = DESELECT =====
+    document.addEventListener('click', function (e) {
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+        if (!mainSvg.contains(e.target)) return;
+
+        var clickedLayer = false;
+        var el = e.target;
+        while (el && el !== mainSvg) {
+            if (el.id && el.id.startsWith('app-group-')) { clickedLayer = true; break; }
+            if (el.id && window.findLayerById && window.findLayerById(el.id)) { clickedLayer = true; break; }
+            el = el.parentElement;
+        }
+
+        if (!clickedLayer) {
+            window.currentApplicationLayer = null;
+            var controls = document.getElementById('applicationLayerControls');
+            if (controls) controls.style.display = 'none';
+            if (window.updateApplicationLayersList) window.updateApplicationLayersList();
+        }
+    });
+
+
+
+
+
+
+    // ============================================================
+// APPLICATION TEXT — SMART SELECTION BOX + RESIZE HANDLES
+// Yeh file apni existing JS ke BAAD load karo
+// ============================================================
+
+    'use strict';
+
+    // =================== STATE ===================
+    var _sel = {
+        layerId: null,
+        layer: null,
+        isDragging: false,
+        isResizing: false,
+        resizeHandle: null,     // 'tl','tm','tr','ml','mr','bl','bm','br'
+        startClient: { x: 0, y: 0 },
+        startSvg: { x: 0, y: 0 },
+        startLayerX: 0,
+        startLayerY: 0,
+        startScaleX: 1,
+        startScaleY: 1,
+        startFontSize: 2000,
+        startBbox: null,        // bbox at drag start (SVG coords)
+    };
+
+    // =================== SVG COORD HELPER ===================
+    function _clientToSvg(clientX, clientY) {
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return { x: 0, y: 0 };
+        var pt = mainSvg.createSVGPoint();
+        pt.x = clientX;
+        pt.y = clientY;
+        var svgP = pt.matrixTransform(mainSvg.getScreenCTM().inverse());
+        return { x: svgP.x, y: svgP.y };
+    }
+
+    function _svgToScreen(svgX, svgY) {
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return { x: 0, y: 0 };
+        var pt = mainSvg.createSVGPoint();
+        pt.x = svgX;
+        pt.y = svgY;
+        var screenPt = pt.matrixTransform(mainSvg.getScreenCTM());
+        return { x: screenPt.x, y: screenPt.y };
+    }
+
+    // =================== GET ELEMENT SCREEN BBOX ===================
+    function _getScreenBbox(el) {
+        if (!el) return null;
+        try {
+            var cr = el.getBoundingClientRect();
+            if (cr.width > 0 && cr.height > 0) {
+                return { left: cr.left, top: cr.top, right: cr.right, bottom: cr.bottom, width: cr.width, height: cr.height };
+            }
+        } catch (e) {}
+
+        // Fallback: SVG getBBox → screen
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return null;
+        try {
+            var svgBb = el.getBBox();
+            var tl = _svgToScreen(svgBb.x, svgBb.y);
+            var br = _svgToScreen(svgBb.x + svgBb.width, svgBb.y + svgBb.height);
+            return { left: tl.x, top: tl.y, right: br.x, bottom: br.y, width: br.x - tl.x, height: br.y - tl.y };
+        } catch (e2) {}
+        return null;
+    }
+
+    // =================== HANDLE POSITIONS ===================
+    // 8 handles: tl, tm, tr, ml, mr, bl, bm, br
+    var HANDLE_IDS = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
+    var HANDLE_CURSOR = {
+        tl: 'nwse-resize', tm: 'ns-resize',  tr: 'nesw-resize',
+        ml: 'ew-resize',                      mr: 'ew-resize',
+        bl: 'nesw-resize', bm: 'ns-resize',  br: 'nwse-resize'
+    };
+
+    function _handlePos(sb, id) {
+        // sb = screen bbox {left,top,right,bottom,width,height}
+        var cx = (sb.left + sb.right) / 2;
+        var cy = (sb.top + sb.bottom) / 2;
+        var map = {
+            tl: { x: sb.left,  y: sb.top    },
+            tm: { x: cx,        y: sb.top    },
+            tr: { x: sb.right,  y: sb.top    },
+            ml: { x: sb.left,   y: cy        },
+            mr: { x: sb.right,  y: cy        },
+            bl: { x: sb.left,   y: sb.bottom },
+            bm: { x: cx,        y: sb.bottom },
+            br: { x: sb.right,  y: sb.bottom }
+        };
+        return map[id];
+    }
+
+    // =================== CREATE / UPDATE BOX ===================
+    function _ensureBox() {
+        var box = document.getElementById('appSelBox2');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'appSelBox2';
+            box.style.cssText = [
+                'position:fixed',
+                'pointer-events:none',
+                'z-index:9990',
+                'box-sizing:border-box',
+'border:none',
+'background:transparent',
+                'border-radius:3px',
+                'display:none'
+            ].join(';');
+            document.body.appendChild(box);
+        }
+        return box;
+    }
+
+    function _ensureHandle(id) {
+        var hid = 'appSelH2_' + id;
+        var h = document.getElementById(hid);
+        if (!h) {
+            h = document.createElement('div');
+            h.id = hid;
+            h.dataset.handle = id;
+            h.style.cssText = [
+                'position:fixed',
+                'width:10px',
+                'height:10px',
+                'background:var(--handleColor)',
+'border:2px solid var(--handleBorder)',
+
+                'border-radius:2px',
+                'z-index:9991',
+                'transform:translate(-50%,-50%)',
+                'cursor:' + HANDLE_CURSOR[id],
+                'display:none',
+                'user-select:none'
+            ].join(';');
+            // Drag start on handle
+            h.addEventListener('mousedown', _onHandleMouseDown);
+            document.body.appendChild(h);
+        }
+        return h;
+    }
+
+    // =================== SHOW / HIDE ===================
+    window.showAppSelectionBox = function (layerId) {
+        if (!layerId) { _hideAppSelBox(); return; }
+
+        var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+        if (!layer) { _hideAppSelBox(); return; }
+
+        // Only show for current view
+        if (layer.view && layer.view !== window.currentView) { _hideAppSelBox(); return; }
+
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+    var el = mainSvg.querySelector('#' + layerId);
+if (!el) { _hideAppSelBox(); return; }
+
+
+// ✅ Detect object color brightness (handles auto black/white)
+let fillColor = el.getAttribute('fill') || '#000';
+
+function getBrightness(hex){
+    hex = hex.replace('#','');
+
+    if(hex.length === 3){
+        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    }
+
+    let r=parseInt(hex.substr(0,2),16);
+    let g=parseInt(hex.substr(2,2),16);
+    let b=parseInt(hex.substr(4,2),16);
+
+    return (r*299+g*587+b*114)/1000;
+}
+
+let brightness = getBrightness(fillColor);
+
+let handleColor = brightness > 180 ? '#000' : '#fff';
+let handleBorder = brightness > 180 ? '#fff' : '#000';
+
+document.documentElement.style.setProperty('--handleColor', handleColor);
+document.documentElement.style.setProperty('--handleBorder', handleBorder);
+
+        var sb = _getScreenBbox(el);
+        if (!sb || sb.width < 2) return;
+
+        _sel.layerId = layerId;
+        _sel.layer = layer;
+
+        var pad = 2;
+        var box = _ensureBox();
+        box.style.left   = (sb.left   - pad) + 'px';
+        box.style.top    = (sb.top    - pad) + 'px';
+        box.style.width  = (sb.width  + pad * 2) + 'px';
+        box.style.height = (sb.height + pad * 2) + 'px';
+        box.style.display = 'block';
+
+        // Expanded bbox for handles
+        var esb = {
+            left:   sb.left   - pad,
+            top:    sb.top    - pad,
+            right:  sb.right  + pad,
+            bottom: sb.bottom + pad,
+            width:  sb.width  + pad * 2,
+            height: sb.height + pad * 2
+        };
+
+        HANDLE_IDS.forEach(function (id) {
+            var h = _ensureHandle(id);
+            var pos = _handlePos(esb, id);
+            h.style.left    = pos.x + 'px';
+            h.style.top     = pos.y + 'px';
+            h.style.display = 'block';
+        });
+    };
+
+    function _hideAppSelBox() {
+        var box = document.getElementById('appSelBox2');
+        if (box) box.style.display = 'none';
+        HANDLE_IDS.forEach(function (id) {
+            var h = document.getElementById('appSelH2_' + id);
+            if (h) h.style.display = 'none';
+        });
+        _sel.layerId = null;
+        _sel.layer = null;
+    }
+
+    // =================== HANDLE MOUSE DOWN ===================
+    function _onHandleMouseDown(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        var handleId = e.currentTarget.dataset.handle;
+        if (!_sel.layerId || !_sel.layer) return;
+
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        var el = mainSvg ? mainSvg.querySelector('#' + _sel.layerId) : null;
+        if (!el) return;
+
+        _sel.isResizing = true;
+        _sel.resizeHandle = handleId;
+        _sel.startClient = { x: e.clientX, y: e.clientY };
+
+        // Save starting values
+        var layer = _sel.layer;
+        _sel.startLayerX = layer.x || 0;
+        _sel.startLayerY = layer.y || 0;
+        _sel.startScaleX = layer.scaleX || 1;
+        _sel.startScaleY = layer.scaleY || 1;
+        _sel.startFontSize = parseInt(el.getAttribute('font-size')) || layer.fontSize || 2000;
+
+        // Get starting SVG bbox
+        try { _sel.startBbox = el.getBBox(); } catch(ex) { _sel.startBbox = { x: 0, y: 0, width: 100, height: 100 }; }
+
+        document.addEventListener('mousemove', _onResizeMove);
+        document.addEventListener('mouseup',   _onResizeEnd);
+    }
+
+    // =================== RESIZE MOVE ===================
+    function _onResizeMove(e) {
+        if (!_sel.isResizing) return;
+
+        var layer = _sel.layer;
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+        var el = mainSvg.querySelector('#' + _sel.layerId);
+        if (!el) return;
+
+        // Delta in SVG coords
+        var startSvg = _clientToSvg(_sel.startClient.x, _sel.startClient.y);
+        var curSvg   = _clientToSvg(e.clientX, e.clientY);
+        var dx = curSvg.x - startSvg.x;
+        var dy = curSvg.y - startSvg.y;
+
+        var h = _sel.resizeHandle;
+        var bb = _sel.startBbox; // {x, y, width, height}
+
+        // ---- SCALE X (width) ----
+        var newScaleX = _sel.startScaleX;
+        var newScaleY = _sel.startScaleY;
+
+        if (h === 'tr' || h === 'mr' || h === 'br') {
+            // Right handle — increase width to right
+            var newW = bb.width + dx;
+            if (newW > 10) newScaleX = _sel.startScaleX * (newW / bb.width);
+        }
+        if (h === 'tl' || h === 'ml' || h === 'bl') {
+            // Left handle — increase width to left (mirror)
+            var newW = bb.width - dx;
+            if (newW > 10) newScaleX = _sel.startScaleX * (newW / bb.width);
+        }
+        if (h === 'br' || h === 'bm' || h === 'bl') {
+            // Bottom handle — increase height downward
+            var newH = bb.height + dy;
+            if (newH > 5) newScaleY = _sel.startScaleY * (newH / bb.height);
+        }
+        if (h === 'tr' || h === 'tm' || h === 'tl') {
+            // Top handle — increase height upward
+            var newH = bb.height - dy;
+            if (newH > 5) newScaleY = _sel.startScaleY * (newH / bb.height);
+        }
+
+        // Corner: both X and Y (uniform for corner diagonals)
+        // tm / bm: only Y, ml / mr: only X — already handled above
+
+        // Clamp
+        newScaleX = Math.max(0.05, Math.min(newScaleX, 20));
+        newScaleY = Math.max(0.05, Math.min(newScaleY, 20));
+
+        // Apply scaleX / scaleY to layer
+        layer.scaleX = newScaleX;
+        layer.scaleY = newScaleY;
+
+        // Apply transform to element
+        _applyScaleTransform(el, layer);
+
+        // Also apply to outline elements
+        var outlines = mainSvg.querySelectorAll('[data-outline-for="' + _sel.layerId + '"]');
+        outlines.forEach(function (o) { _applyScaleTransform(o, layer); });
+
+        // Update sidebar sliders if visible
+        _syncWidthHeightSliders(newScaleX, newScaleY);
+
+        // Refresh selection box
+        requestAnimationFrame(function () {
+            window.showAppSelectionBox(_sel.layerId);
+        });
+    }
+
+    function _onResizeEnd() {
+        _sel.isResizing = false;
+        _sel.resizeHandle = null;
+        document.removeEventListener('mousemove', _onResizeMove);
+        document.removeEventListener('mouseup',   _onResizeEnd);
+
+        if (window.saveCustomizations) window.saveCustomizations();
+        if (_sel.layerId) window.showAppSelectionBox(_sel.layerId);
+    }
+
+    // =================== APPLY SCALE TRANSFORM ===================
+    function _applyScaleTransform(el, layer) {
+        var x = el.getAttribute('x');
+        var y = el.getAttribute('y');
+        var scaleX = layer.scaleX || 1;
+        var scaleY = layer.scaleY || 1;
+        var rot = layer.rotation || 0;
+        var flipX = layer.flipX || 1;
+
+        var transform;
+        if (flipX === -1) {
+            transform = 'translate(' + x + ',' + y + ') scale(' + (-scaleX) + ',' + scaleY + ') translate(' + (-x) + ',' + (-y) + ')';
+        } else {
+            transform = 'translate(' + x + ',' + y + ') scale(' + scaleX + ',' + scaleY + ') translate(' + (-x) + ',' + (-y) + ')';
+        }
+        if (rot !== 0) {
+            transform += ' rotate(' + rot + ' ' + x + ' ' + y + ')';
+        }
+        el.setAttribute('transform', transform);
+    }
+
+    function _syncWidthHeightSliders(sx, sy) {
+        // Find the Width % and Height % sliders
+        var sliders = document.querySelectorAll('.app-slider-small');
+        // First slider = Width, Second = Height (per HTML structure)
+        if (sliders.length >= 2) {
+            var wVal = Math.round(sx * 100);
+            var hVal = Math.round(sy * 100);
+            sliders[0].value = Math.min(300, Math.max(10, wVal));
+            sliders[1].value = Math.min(300, Math.max(10, hVal));
+            var wSpan = sliders[0].nextElementSibling;
+            var hSpan = sliders[1].nextElementSibling;
+            if (wSpan) wSpan.textContent = Math.min(300, Math.max(10, wVal)) + '%';
+            if (hSpan) hSpan.textContent = Math.min(300, Math.max(10, hVal)) + '%';
+        }
+    }
+
+    // =================== BOX DRAG (Move) ===================
+    // Attach drag to the selection box border itself
+    function _initBoxDrag() {
+        var box = _ensureBox();
+        box.style.pointerEvents = 'all';
+        box.style.cursor = 'move';
+
+        box.addEventListener('mousedown', function (e) {
+            if (e.button !== 0) return;
+            // Don't drag if clicking on a handle
+            if (e.target !== box) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!_sel.layerId || !_sel.layer) return;
+
+            _sel.isDragging = true;
+            _sel.startClient = { x: e.clientX, y: e.clientY };
+            _sel.startLayerX = _sel.layer.x || 0;
+            _sel.startLayerY = _sel.layer.y || 0;
+
+            document.addEventListener('mousemove', _onBoxDragMove);
+            document.addEventListener('mouseup',   _onBoxDragEnd);
+        });
+    }
+
+    function _onBoxDragMove(e) {
+        if (!_sel.isDragging || !_sel.layer) return;
+
+        var layer = _sel.layer;
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+
+        var startSvg = _clientToSvg(_sel.startClient.x, _sel.startClient.y);
+        var curSvg   = _clientToSvg(e.clientX, e.clientY);
+        var dx = curSvg.x - startSvg.x;
+        var dy = curSvg.y - startSvg.y;
+
+        var newX = Math.round(_sel.startLayerX + dx);
+        var newY = Math.round(_sel.startLayerY + dy);
+
+        layer.x = newX;
+        layer.y = newY;
+
+        // Move text element
+        var partEl = mainSvg.querySelector('#' + layer.partId);
+        if (partEl) {
+            var bbox = partEl.getBBox();
+            var cx = bbox.x + bbox.width / 2;
+            var cy = bbox.y + bbox.height / 2;
+
+            var el = mainSvg.querySelector('#' + layer.id);
+            if (el) {
+                el.setAttribute('x', cx + newX);
+                el.setAttribute('y', cy + newY);
+                mainSvg.querySelectorAll('[data-outline-for="' + layer.id + '"]').forEach(function (o) {
+                    o.setAttribute('x', cx + newX);
+                    o.setAttribute('y', cy + newY);
+                });
+                if (layer.rotation) {
+                    el.setAttribute('transform', 'rotate(' + layer.rotation + ' ' + (cx + newX) + ' ' + (cy + newY) + ')');
+                }
+            }
+        }
+
+        // Sync sidebar position sliders
+        var pxEl  = document.getElementById('posX');
+        var pyEl  = document.getElementById('posY');
+        var pxVal = document.getElementById('posXValue');
+        var pyVal = document.getElementById('posYValue');
+        if (pxEl) pxEl.value = newX;
+        if (pyEl) pyEl.value = newY;
+        if (pxVal) pxVal.textContent = newX;
+        if (pyVal) pyVal.textContent = newY;
+
+        // Refresh box
+        requestAnimationFrame(function () {
+            window.showAppSelectionBox(_sel.layerId);
+        });
+    }
+
+    function _onBoxDragEnd() {
+        _sel.isDragging = false;
+        document.removeEventListener('mousemove', _onBoxDragMove);
+        document.removeEventListener('mouseup',   _onBoxDragEnd);
+        if (window.saveCustomizations) window.saveCustomizations();
+        if (_sel.layerId) window.showAppSelectionBox(_sel.layerId);
+    }
+
+    // =================== DESELECT ON SVG CLICK ===================
+    document.addEventListener('mousedown', function (e) {
+        // Agar click selection box ya handle pe hua to ignore
+        var box = document.getElementById('appSelBox2');
+        if (box && box.contains(e.target)) return;
+        var isHandle = HANDLE_IDS.some(function (id) {
+            var h = document.getElementById('appSelH2_' + id);
+            return h && h.contains(e.target);
+        });
+        if (isHandle) return;
+
+        // Agar kisi application layer element pe click hua to ignore
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
+        if (!mainSvg.contains(e.target)) return;
+
+        // Check if clicked inside an app-group
+        var el = e.target;
+        var clickedLayer = false;
+        while (el && el !== mainSvg) {
+            if (el.id && el.id.startsWith('app-group-')) { clickedLayer = true; break; }
+            if (el.id && window.findLayerById && window.findLayerById(el.id)) { clickedLayer = true; break; }
+            el = el.parentElement;
+        }
+
+        if (!clickedLayer) {
+            // Deselect
+            _hideAppSelBox();
+            window.currentApplicationLayer = null;
+            var controls = document.getElementById('applicationLayerControls');
+            if (controls) controls.style.display = 'none';
+            if (window.updateApplicationLayersList) window.updateApplicationLayersList();
+        }
+    }, true);
+
+    // =================== HOOK INTO selectApplicationLayer ===================
+    (function () {
+        var _origSelect = window.selectApplicationLayer;
+        window.selectApplicationLayer = function (layerId) {
+            if (_origSelect) _origSelect.call(this, layerId);
+            // Show our new selection box after a tick (so SVG element is ready)
+            setTimeout(function () {
+                window.showAppSelectionBox(layerId);
+            }, 80);
+        };
+    })();
+
+    // =================== KEEP BOX IN SYNC on resize/scroll ===================
+    window.addEventListener('resize', function () {
+        if (_sel.layerId) window.showAppSelectionBox(_sel.layerId);
+    });
+    window.addEventListener('scroll', function () {
+        if (_sel.layerId) window.showAppSelectionBox(_sel.layerId);
+    }, true);
+
+    // Hide box when modals open
+    (function () {
+        var observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (m) {
+                if (m.type !== 'attributes' || m.attributeName !== 'style') return;
+                var el = m.target;
+                if (!el.id || !el.id.toLowerCase().includes('modal')) return;
+                var visible = el.style.display !== 'none' && el.style.display !== '';
+                if (visible) {
+                    _hideAppSelBox();
+                } else if (window.currentApplicationLayer) {
+                    setTimeout(function () { window.showAppSelectionBox(window.currentApplicationLayer); }, 200);
+                }
+            });
+        });
+
+        function _observeModals() {
+            document.querySelectorAll('[id*="modal"],[id*="Modal"]').forEach(function (m) {
+                observer.observe(m, { attributes: true, attributeFilter: ['style'] });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function () { setTimeout(_observeModals, 600); });
+        } else {
+            setTimeout(_observeModals, 600);
+        }
+    })();
+
+    // =================== ALSO DISABLE OLD SELECTION BOX to avoid conflict ===================
+    // Old box se conflict avoid karne ke liye
+    (function () {
+        var _origShow = window.showSelectionBox;
+        window.showSelectionBox = function (layerId) {
+            // Old box hide rakhein — new box use ho raha hai
+            var oldBox = document.getElementById('appSelectionBox');
+            if (oldBox) oldBox.style.display = 'none';
+            ['sh-tl','sh-tr','sh-bl','sh-br'].forEach(function(id){
+                var h = document.getElementById(id);
+                if (h) h.style.display = 'none';
+            });
+            // New box dikhao
+            window.showAppSelectionBox(layerId);
+        };
+    })();
+
+    // =================== PATCH updateTextScale to sync on slider use too ===================
+    (function () {
+        var _origScale = window.updateTextScale;
+        window.updateTextScale = function (type, value) {
+            if (_origScale) _origScale.call(this, type, value);
+            // Refresh selection box
+            setTimeout(function () {
+                if (window.currentApplicationLayer) window.showAppSelectionBox(window.currentApplicationLayer);
+            }, 50);
+        };
+    })();
+
+    // =================== PATCH updateFontSize ===================
+    (function () {
+        var _origFS = window.updateFontSize;
+        window.updateFontSize = function (value) {
+            if (_origFS) _origFS.call(this, value);
+            setTimeout(function () {
+                if (window.currentApplicationLayer) window.showAppSelectionBox(window.currentApplicationLayer);
+            }, 50);
+        };
+    })();
+
+    // =================== INIT ===================
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(_initBoxDrag, 400);
+        });
+    } else {
+        setTimeout(_initBoxDrag, 400);
+    }
+
+    console.log('✅ App Selection Box + Resize Handles — loaded');
 
 })();

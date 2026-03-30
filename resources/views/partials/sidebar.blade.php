@@ -34,9 +34,7 @@
                         <li><a class="nav-link text-light py-1" href="#">Website Info</a></li>
                         <li><a class="nav-link text-light py-1" href="#">Pages</a></li>
                         <li><a class="nav-link text-light py-1" href="{{ route('banners.index') }}">Banner</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('navigations.index') }}">Navigation
-                                Menu</a></li>
-                        <li>
+
                             <a class="nav-link text-light py-1 d-flex align-items-center gap-2"
                                 href="{{ route('admin.flipbooks.index') }}">
                                 <span>Flip Books</span>
@@ -87,10 +85,7 @@
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
                     <ul class="collapse list-unstyled ps-4" id="productSubmenu">
-                        @if ($admin->is_super_admin || $admin->can_categories)
-                            <li><a class="nav-link text-light py-1"
-                                    href="{{ route('categories.index') }}">Categories</a></li>
-                        @endif
+
                         <li><a class="nav-link text-light py-1" href="{{ route('products.index') }}">All Products</a>
                         </li>
 
@@ -107,7 +102,32 @@
                     </ul>
                 </li>
             @endif
+<li class="nav-item">
+    <a class="nav-link text-light d-flex align-items-center px-3 py-2"
+        data-bs-toggle="collapse"
+        href="#navigationSubmenu"
+        role="button"
+        aria-expanded="false">
 
+        <i class="bi bi-list-ul me-2"></i>
+        <span class="flex-grow-1">Navi & Cata..</span>
+        <i class="bi bi-chevron-right ms-auto"></i>
+    </a>
+
+    <ul class="collapse list-unstyled ps-4" id="navigationSubmenu">
+
+         @if ($admin->is_super_admin || $admin->can_categories)
+                            <li><a class="nav-link text-light py-1"
+                                    href="{{ route('categories.index') }}">Categories</a></li>
+                        @endif
+
+
+          <li><a class="nav-link text-light py-1" href="{{ route('navigations.index') }}">Navigation
+                                Menu</a></li>
+                        <li>
+
+    </ul>
+</li>
             {{-- CUSTOMIZER MANAGEMENT --}}
             @if ($admin->is_super_admin || $admin->can_customizer)
                 <li class="nav-item">
@@ -128,6 +148,32 @@
                     </ul>
                 </li>
             @endif
+
+
+ {{-- USER MANAGEMENT (SUPER ADMIN) --}}
+            @if ($admin->is_super_admin)
+                <li class="nav-item">
+                    <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
+                        href="#userSubmenu" role="button" aria-expanded="false">
+                        <i class="bi bi-people-fill me-2"></i>
+                        <span class="flex-grow-1">User Management</span>
+                        <i class="bi bi-chevron-right ms-auto"></i>
+                    </a>
+                    <ul class="collapse list-unstyled ps-4" id="userSubmenu">
+                        <li><a class="nav-link text-light py-1" href="{{ route('admin.users.index') }}">All Users</a>
+                        </li>
+                        <li><a class="nav-link text-light py-1" href="#">Add User</a></li>
+                        <li><a class="nav-link text-light py-1" href="#">Roles</a></li>
+                        <li><a class="nav-link text-light py-1" href="#">Permissions</a></li>
+                        <li>
+                            <a class="nav-link text-light py-1" href="{{ route('admin.admins.index') }}">
+                                <i class="bi bi-person-gear me-1"></i> Manage Admins
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            @endif
+
 
             {{-- ORDERS --}}
             @if ($admin->is_super_admin || $admin->can_orders)
@@ -169,29 +215,7 @@
                 </li>
             @endif
 
-            {{-- USER MANAGEMENT (SUPER ADMIN) --}}
-            @if ($admin->is_super_admin)
-                <li class="nav-item">
-                    <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
-                        href="#userSubmenu" role="button" aria-expanded="false">
-                        <i class="bi bi-people-fill me-2"></i>
-                        <span class="flex-grow-1">User Management</span>
-                        <i class="bi bi-chevron-right ms-auto"></i>
-                    </a>
-                    <ul class="collapse list-unstyled ps-4" id="userSubmenu">
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.users.index') }}">All Users</a>
-                        </li>
-                        <li><a class="nav-link text-light py-1" href="#">Add User</a></li>
-                        <li><a class="nav-link text-light py-1" href="#">Roles</a></li>
-                        <li><a class="nav-link text-light py-1" href="#">Permissions</a></li>
-                        <li>
-                            <a class="nav-link text-light py-1" href="{{ route('admin.admins.index') }}">
-                                <i class="bi bi-person-gear me-1"></i> Manage Admins
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            @endif
+
 
             {{-- SEO & MARKETING (SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
