@@ -138,8 +138,7 @@ Route::get('/colors', [ColorController::class, 'apiIndex']);
 // -----------------------------------------------
 Route::get('/subcategories/{id}/models', [CustomizerModelController::class, 'modelsBySubcategory']);
 Route::get('/categories/{id}/models',    [CustomizerModelController::class, 'modelsByCategory']);
-Route::get('/models/{id}',               [CustomizerModelController::class, 'show']);
-
+Route::get('/models/{id}/product', [CustomizerModelController::class, 'showApi']);
 // -----------------------------------------------
 // TEMPLATES (Public)
 // -----------------------------------------------

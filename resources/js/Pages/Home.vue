@@ -106,10 +106,18 @@
               <div v-for="(product, idx) in infiniteFeatured" :key="idx" class="product-card flex-shrink-0">
                 <div class="product-card-inner bg-white rounded shadow-sm text-center">
                   <div class="home-card-img-wrap">
-                    <button v-if="product.type === 'model'" class="home-cart-icon-btn" @click.stop="router.push(`/product/${product.id}?type=model`)" title="View Product">
+                    <!-- <button v-if="product.type === 'model'" class="home-cart-icon-btn" @click.stop="router.push(`/product/${product.id}?type=model`)" title="View Product">
                       <i class="bi bi-cart" style="transform:scaleX(-1);display:inline-block;"></i>
-                    </button>
-                    <img :src="product.image" :alt="product.name" class="product-img img-fluid" loading="lazy" />
+                    </button> -->
+<img
+  :src="product.image"
+  :alt="product.name"
+  class="product-img img-fluid clickable-img"
+  loading="lazy"
+  @click="product.type === 'model'
+    ? router.push(`/product/${product.id}?type=model`)
+    : router.push(`/product/${product.id}`)"
+/>
                   </div>
                   <div class="product-meta-row">
                     <h5 class="product-title">{{ product.name }}</h5>
@@ -190,10 +198,16 @@
               <div v-for="(product, idx) in infiniteApparel" :key="idx" class="product-card flex-shrink-0">
                 <div class="product-card-inner apparel-card-inner text-center">
                   <div class="product-image-wrapper home-card-img-wrap">
-                    <button v-if="product.type === 'model'" class="home-cart-icon-btn apparel-cart-icon" @click.stop="router.push(`/product/${product.id}?type=model`)" title="View Product">
+                    <!-- <button v-if="product.type === 'model'" class="home-cart-icon-btn apparel-cart-icon" @click.stop="router.push(`/product/${product.id}?type=model`)" title="View Product">
                       <i class="bi bi-cart" style="transform:scaleX(-1);display:inline-block;"></i>
-                    </button>
-                    <img :src="product.image" :alt="product.name" class="product-img img-fluid" loading="lazy" />
+                    </button> -->
+<img
+  :src="product.image"
+  :alt="product.name"
+  class="product-img img-fluid"
+  loading="lazy"
+  @click="router.push(`/product/${product.id}?type=model`)"
+/>
                   </div>
                   <div class="product-meta-row apparel-meta-row">
                     <h5 class="product-name  fw-semibold">{{ product.name }}</h5>
@@ -717,6 +731,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .fade-enter-active, .fade-leave-active { transition: all 0.7s ease; }
 .fade-enter-from { opacity: 0; filter: blur(15px); transform: scale(1.1); }
 .fade-leave-to { opacity: 0; filter: blur(10px); }
+.clickable-img { cursor: pointer;}
 .featured-products { position: relative; padding: 80px 0; overflow: hidden; background: url('/assets/images/lines texture.svg') no-repeat center center; background-size: cover; }
 .featured-products::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.933); z-index: 1; }
 .featured-products > * { position: relative; z-index: 2; }
@@ -735,7 +750,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .product-card { padding: 0 4px; box-sizing: border-box; }
 .product-card-inner { background: #fff; border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 /*.product-card:hover .product-card-inner { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); } */
-.product-img { width: 100%; height: 240px; object-fit: contain; margin-bottom: 8px; margin-top: 10px; border-radius: 0; display: block; }
+.product-img { width: 100%; height: 240px; object-fit: contain; margin-bottom: 8px; margin-top: 10px; border-radius: 0; display: block;   cursor: pointer; }
 .product-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 0 4px; }
 .product-title { font-size: 0.88rem; font-weight: 600; color: #000; margin: 0; flex: 1; text-align: left; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .product-price { color: #000; font-weight: 800; font-size: 1rem; margin: 0; white-space: nowrap; flex-shrink: 0; }

@@ -11,8 +11,8 @@
           <div class="gallery-wrap">
 
             <!-- Left thumbnails -->
-            <div class="thumbnails" v-if="!isModel && thumbList.length > 0">
-              <div
+<div class="thumbnails" v-if="thumbList.length > 0">
+                  <div
                 v-for="(thumb, ti) in thumbList"
                 :key="ti"
                 class="thumb"
@@ -42,15 +42,16 @@
                 v-if="zoomActive && (displayImage || product.image)"
                 class="zoom-lens"
                 :style="{
-                  backgroundImage: `url(${isModel ? product.image : displayImage})`,
+backgroundImage: `url(${isModel ? modelDisplayImage : displayImage})`,
                   backgroundPosition: zoomBgPos,
                   backgroundSize: zoomBgSize,
                 }"
               ></div>
 
-              <template v-if="isModel">
-                <img :src="product.image" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
-              </template>
+             <template v-if="isModel">
+  <img :src="modelDisplayImage" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
+</template>
+
               <template v-else>
                 <transition name="img-fade" mode="out-in">
                   <img
@@ -99,8 +100,8 @@
           <hr class="divider" />
 
           <!-- Color Swatches -->
-          <div class="option-group" v-if="!isModel && productColors.length">
-            <div class="option-header">
+<div class="option-group" v-if="productColors.length">
+                <div class="option-header">
               <label class="option-label">Color</label>
               <span class="selected-value">{{ selectedColorIdx === -1 ? 'Original' : productColors[selectedColorIdx]?.name }}</span>
             </div>
@@ -464,7 +465,26 @@ const selectColor = (ci) => {
 const globalGallery = computed(() => product.value.gallery_images || [])
 
 const thumbList = computed(() => {
-  if (isModel.value) return []
+  if (isModel.value) {
+    // Views directly product.value.views mein hain
+    const views = product.value.views || {}
+    const list = []
+    const viewKeys = ['front', 'back', 'left', 'right']
+    viewKeys.forEach(v => {
+      const viewObj = views[v]
+      if (!viewObj) return
+      // thumbnail jaise dikhna hai — white version use karo (actual design)
+      const src = viewObj.white || viewObj.black || viewObj.svg || null
+      if (src) list.push({ src, label: v.charAt(0).toUpperCase() + v.slice(1), colorHex: null })
+    })
+    // Fallback
+    if (!list.length && product.value.thumbnail) {
+      list.push({ src: product.value.thumbnail, label: 'Front', colorHex: null })
+    }
+    return list
+  }
+
+  // Normal product (unchanged)
   const list = []
   const color = selectedColorIdx.value >= 0 ? productColors.value[selectedColorIdx.value] : null
   const colorHasImages = color && (color.image || (color.gallery && color.gallery.length > 0))
@@ -490,6 +510,20 @@ const displayImage = computed(() => {
     return thumbList.value[activeThumbIdx.value].src
   }
   return product.value.image || ''
+})
+const modelDisplayImage = computed(() => {
+  // Active thumb ki image dikhao
+  if (thumbList.value.length > 0 && activeThumbIdx.value < thumbList.value.length) {
+    return thumbList.value[activeThumbIdx.value].src
+  }
+  // Fallback: front white ya thumbnail
+  const views = product.value.views || {}
+  return views.front?.white
+    || views.front?.black
+    || views.front?.svg
+    || product.value.thumbnail
+    || product.value.image
+    || ''
 })
 
 // ══════════════════════════════════════════
@@ -657,18 +691,27 @@ const loadProduct = async () => {
   const type = route.query.type
   if (type === 'model') {
     try {
-      const res = await axios.get(`/api/models/${route.params.id}`)
+const res = await axios.get(`/api/models/${route.params.id}/product`)
       const m = res.data
       isModel.value = true
-      product.value = {
-        id: m.id, name: m.title, type: 'Custom Model', price: m.price || 0,
-        description: m.description || '',
-        image: m.thumbnail || m.front_svg || m.views?.front?.svg || '',
-        is_new: false, in_stock: true, stock_quantity: null,
-        shipping_enabled: false, shipping_cost: 0, free_shipping_above: null,
-        sizes: [], colors: [], gallery_images: [], size_chart_image: null,
-        category_id: m.category_id || null, subcategory_id: m.subcategory_id || null,
-      }
+   product.value = {
+  id: m.id, name: m.name || m.title, type: 'Custom Model', price: m.price || 0,
+  description: m.description || '',
+  image: m.thumbnail || m.views?.front?.svg || m.views?.front?.black || '',
+  is_new: false,
+  in_stock: m.in_stock ?? true,
+  stock_quantity: m.stock_quantity ?? null,
+  shipping_enabled: m.shipping_enabled ?? false,
+  shipping_cost: m.shipping_cost ?? 0,
+  free_shipping_above: m.free_shipping_above ?? null,
+  sizes: m.sizes || [],
+  views: m.views || {},
+  colors: m.colors_data || [],
+  gallery_images: [],
+  size_chart_image: m.size_chart_image || null,
+  category_id: m.category_id || null,
+  subcategory_id: m.subcategory_id || null,
+}
       nextTick(() => loadReviews())
     } catch (err) { console.error('Model load error:', err) }
   } else {

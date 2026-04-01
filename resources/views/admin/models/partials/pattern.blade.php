@@ -20,23 +20,21 @@
     </div>
 
     <!-- Pattern Controls (Hidden by default) -->
-    <div id="patternControls"
-        style="display:none;  padding: 0px 20px 20px 20px; border-radius:12px;  margin-top:20px;">
+    <div id="patternControls" style="display:none;  padding: 0px 20px 20px 20px; border-radius:12px;  margin-top:20px;">
 
         <!-- Pattern Preview -->
-   <div style="display:flex; gap:15px; align-items:flex-start;">
+        <div style="display:flex; gap:15px; align-items:flex-start;">
 
-    <div id="patternPreviewBox"
-       style="width:120px;height:100px;border:1px solid #000;
+            <div id="patternPreviewBox"
+                style="width:120px;height:100px;border:1px solid #000;
 border-radius:8px;overflow:hidden;">
-        <span style="color:#999;">No pattern applied</span>
-    </div>
+                <span style="color:#999;">No pattern applied</span>
+            </div>
 
-    <div id="patternColorPalette"
-        style="flex:1;display:flex;flex-direction:column;gap:12px;">
-    </div>
+            <div id="patternColorPalette" style="flex:1;display:flex;flex-direction:column;gap:12px;">
+            </div>
 
-</div>
+        </div>
 
         <!-- Size Slider -->
         <div style="margin-bottom:2px;">
@@ -53,46 +51,31 @@ border-radius:8px;overflow:hidden;">
                 oninput="updatePatternOpacity(this.value)" style="width:100%;">
             <div style="text-align:right; font-size:12px;"><span id="opacityValue">100</span>%</div>
         </div>
-<div style="margin-bottom:2px;">
-<label style="font-weight:600;font-size:14px;">LEFT & Right</label>
+        <div style="margin-bottom:2px;">
+            <label style="font-weight:600;font-size:14px;">LEFT & Right</label>
 
-<input type="range"
-min="-800"
-max="800"
-value="0"
-id="patternLeft"
-oninput="movePattern('x', this.value)"
-style="width:100%;">
-</div>
+            <input type="range" min="-800" max="800" value="0" id="patternLeft"
+                oninput="movePattern('x', this.value)" style="width:100%;">
+        </div>
 
 
-<div style="margin-bottom:2px;">
-<label style="font-weight:600;font-size:14px;">Top &  Bottom</label>
+        <div style="margin-bottom:2px;">
+            <label style="font-weight:600;font-size:14px;">Top & Bottom</label>
 
-<input type="range"
-min="-800"
-max="800"
-value="0"
-id="patternRight"
-oninput="movePattern('y', this.value)"
-style="width:100%;">
-</div>
+            <input type="range" min="-800" max="800" value="0" id="patternRight"
+                oninput="movePattern('y', this.value)" style="width:100%;">
+        </div>
 
-<div class="rotate-wrapper">
+        <div class="rotate-wrapper">
 
-  <label class="rotate-label">Rotate</label>
+            <label class="rotate-label">Rotate</label>
 
-  <div class="circular-slider" id="circularSlider">
-        <div id="rotateKnob"></div>
+            <div class="circular-slider" id="circularSlider">
+                <div id="rotateKnob"></div>
 
-      <div class="circle-inner">
-<input
-type="number"
-id="angleValue"
-value="0"
-min="0"
-max="360"
-style="
+                <div class="circle-inner">
+                    <input type="number" id="angleValue" value="0" min="0" max="360"
+                        style="
 width:55px;
 height:40px;
 text-align:center;
@@ -100,12 +83,11 @@ border-radius:6px;
 border:1px solid #ccc;
 font-weight:600;
 "
-oninput="updatePatternAngle(this.value)"
->
-      </div>
-  </div>
+                        oninput="updatePatternAngle(this.value)">
+                </div>
+            </div>
 
-</div>
+        </div>
 
 
     </div>

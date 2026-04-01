@@ -41,9 +41,9 @@
     {{-- Layer Controls (shown when layer is selected) --}}
     <div id="applicationLayerControls" style="display:none; margin-top:20px;">
 
-       <h4 style="margin:0 0 15px 0; font-size:20px; font-weight:600; color:#333; text-align:center;">
-    Edit Application
-</h4>
+        <h4 style="margin:0 0 15px 0; font-size:20px; font-weight:600; color:#333; text-align:center;">
+            Edit Application
+        </h4>
 
         {{-- ============================================================ --}}
         {{-- 🦅 DIRECT MASCOT CONTROLS (shown only for mascot-type layers) --}}
@@ -112,12 +112,14 @@
                     <div>
                         <label style="font-size:12px; color:#666;">X: <span id="mascotDirectPosXValue">0</span></label>
                         <input type="range" id="mascotDirectPosX" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('x', this.value)" class="app-slider" style="width:100%; cursor:pointer;">
+                            oninput="updateDirectMascotPosition('x', this.value)" class="app-slider"
+                            style="width:100%; cursor:pointer;">
                     </div>
                     <div>
                         <label style="font-size:12px; color:#666;">Y: <span id="mascotDirectPosYValue">0</span></label>
                         <input type="range" id="mascotDirectPosY" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('y', this.value)" class="app-slider" style="width:100%; cursor:pointer;">
+                            oninput="updateDirectMascotPosition('y', this.value)" class="app-slider"
+                            style="width:100%; cursor:pointer;">
                     </div>
                 </div>
             </div>
@@ -136,25 +138,23 @@
         <div id="textLayerControls" style="display:block;">
 
             {{-- ===== ROW 1: Text label + Select Font button ===== --}}
-           <div class="control-group" style="margin-bottom:15px;">
+            <div class="control-group" style="margin-bottom:15px;">
 
-    <label style="font-weight:600; font-size:14px; color:#333; margin-bottom:6px;">
-        Text
-    </label>
+                <label style="font-weight:600; font-size:14px; color:#333; margin-bottom:6px;">
+                    Text
+                </label>
 
-    <div style="display:flex; gap:30px;">
+                <div style="display:flex; gap:30px;">
 
-        <input type="text"
-               id="applicationText"
-               placeholder="Enter text..."
-               oninput="updateApplicationText(this.value)"
-               style="flex:1; padding:10px;
+                    <input type="text" id="applicationText" placeholder="Enter text..."
+                        oninput="updateApplicationText(this.value)"
+                        style="flex:1; padding:10px;
                       border:2px solid #ddd;
                       border-radius:6px;
                       font-size:14px;">
 
-        <button onclick="openFontModal()"
-                style="padding:10px 14px;
+                    <button onclick="openFontModal()"
+                        style="padding:10px 14px;
                        background:#fff;
                        color:#000;
                        border:2px solid #000;
@@ -162,13 +162,13 @@
                        font-weight:600;
                        font-size:12px;
                        cursor:pointer;">
-            Select Font
-        </button>
-        
+                        Select Font
+                    </button>
 
-    </div>
 
-</div>
+                </div>
+
+            </div>
 
             {{-- ===== ROW 2: Font Size + Letter Spacing side by side ===== --}}
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
@@ -183,7 +183,8 @@
                     <label style="display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#333;">
                         Letter Spacing: <span id="letterSpacingValue">0</span>px
                     </label>
-                    <input type="number" value="0" oninput="updateLetterSpacing(this.value); document.getElementById('letterSpacingValue').textContent=this.value;"
+                    <input type="number" value="0"
+                        oninput="updateLetterSpacing(this.value); document.getElementById('letterSpacingValue').textContent=this.value;"
                         style="width:30%; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; box-sizing:border-box;">
                 </div>
             </div>
@@ -197,12 +198,14 @@
                     <div>
                         <label style="font-size:12px; color:#666;">X: <span id="posXValue">0</span></label>
                         <input type="range" id="posX" min="-200" max="200" value="0"
-                            oninput="updatePosition(this.value, null)" class="app-slider" style="width:100%; cursor:pointer;">
+                            oninput="updatePosition(this.value, null)" class="app-slider"
+                            style="width:100%; cursor:pointer;">
                     </div>
                     <div>
                         <label style="font-size:12px; color:#666;">Y: <span id="posYValue">0</span></label>
                         <input type="range" id="posY" min="-200" max="200" value="0"
-                            oninput="updatePosition(null, this.value)" class="app-slider" style="width:100%; cursor:pointer;">
+                            oninput="updatePosition(null, this.value)" class="app-slider"
+                            style="width:100%; cursor:pointer;">
                     </div>
                 </div>
             </div>
@@ -214,7 +217,8 @@
                     {{-- Left: Width + Height --}}
                     <div>
                         <div style="margin-bottom:10px;">
-                            <label style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
+                            <label
+                                style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
                                 Width %
                             </label>
                             <input type="range" min="10" max="300" value="100"
@@ -223,7 +227,8 @@
                             <span style="font-size:11px; color:#888;">100%</span>
                         </div>
                         <div>
-                            <label style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
+                            <label
+                                style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
                                 Height %
                             </label>
                             <input type="range" min="10" max="300" value="100"
@@ -239,46 +244,48 @@
 
 
                     {{-- Right: Rotation --}}
-{{-- Right: Rotation --}}
-<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
-    <label style="font-weight:600; font-size:12px; color:#333; text-align:center;">Rotation</label>
+                    <div
+                        style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
+                        <label style="font-weight:600; font-size:12px; color:#333; text-align:center;">Rotation</label>
 
-    <input type="hidden" id="rotation" value="0">
+                        <input type="hidden" id="rotation" value="0">
 
-    {{-- Wheel --}}
-    <div id="rotationWheel"
-         style="position:relative; width:100px; height:100px; border-radius:50%;
+                        {{-- Wheel --}}
+                        <div id="rotationWheel"
+                            style="position:relative; width:100px; height:100px; border-radius:50%;
                 border:2.5px solid #bbb; background:#ececec; cursor:grab; flex-shrink:0;">
 
-        {{-- Dot — wheel ke EDGE par ghoomega --}}
-        <div id="rotationDot"
-             style="position:absolute; width:13px; height:13px; border-radius:50%;
+                            {{-- Dot — wheel ke EDGE par ghoomega --}}
+                            <div id="rotationDot"
+                                style="position:absolute; width:13px; height:13px; border-radius:50%;
                     background:#222; top:-6px; left:50%;
                     transform:translateX(-50%);
                     box-shadow:0 1px 4px rgba(0,0,0,0.3);
                     pointer-events:none;">
-        </div>
+                            </div>
 
-        {{-- Center: rounded square input box --}}
-        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
-            <input type="number" id="rotationManual" min="0" max="360" value="0"
-                   style="width:54px; height:40px; text-align:center;
+                            {{-- Center: rounded square input box --}}
+                            <div
+                                style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+                                <input type="number" id="rotationManual" min="0" max="360"
+                                    value="0"
+                                    style="width:54px; height:40px; text-align:center;
                           border-radius:8px; border:2px solid #ccc;
                           font-weight:700; font-size:13px;
                           background:#fff; color:#222;
                           -moz-appearance:textfield;"
-                   oninput="
+                                    oninput="
                        var v=Math.min(360,Math.max(0,parseInt(this.value)||0));
                        setWheelAngle(v);
                        updateRotation(v);
                    ">
-        </div>
-    </div>
+                            </div>
+                        </div>
 
-    <span style="font-size:12px; color:#666; font-weight:600;">
-        <span id="rotationValue">0</span>°
-    </span>
-</div>
+                        <span style="font-size:12px; color:#666; font-weight:600;">
+                            <span id="rotationValue">0</span>°
+                        </span>
+                    </div>
 
 
 
@@ -334,7 +341,8 @@
                             <div id="outline1Section" class="control-group"
                                 style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
-                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline 1</label>
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline
+                                    1</label>
                                 <div id="outline1ColorPicker"
                                     style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;">
                                 </div>
@@ -346,7 +354,8 @@
                             <div id="outline2Section" class="control-group"
                                 style="display:none; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
-                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline 2</label>
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Outline
+                                    2</label>
                                 <div id="outline2ColorPicker"
                                     style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center; flex-shrink:0;">
                                 </div>
@@ -371,115 +380,178 @@
                 </div>
 
                 {{-- Tab Content: PATTERN --}}
+                {{-- Tab Content: PATTERN --}}
                 <div id="patternTabContent" class="tab-content" style="display:none;">
 
-                    <div style="margin-bottom:20px;">
-                        <button onclick="openTextPatternLibrary()"
-                            style="width:100%; padding:14px; background:#000; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.3s;">
-                            <span style="font-size:18px;">🎨</span>
-                            Select Pattern for Text
-                        </button>
-                    </div>
-
-                    <div id="textPatternColorControls" style="display:none;">
-                        <div
-                            style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">PATTERN PREVIEW:</div>
-                            <div id="textPatternPreview"
-                                style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;">
+                    {{-- Preview Button (image thumbnail) --}}
+                    <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:18px;">
+                        <div onclick="openTextPatternLibrary()"
+                            style="cursor:pointer; flex-shrink:0; text-align:center;">
+                            <div style="width:70px; height:70px; border-radius:8px; border:2px solid #ddd; background:#f5f5f5;
+                        display:flex; align-items:center; justify-content:center; overflow:hidden; transition:border-color 0.2s;"
+                                onmouseover="this.style.borderColor='#000'"
+                                onmouseout="this.style.borderColor='#ddd'">
+                                <img id="textPatternThumbnail" src="/assets/images/pattern logo.avif"
+                                    style="width:100%; height:100%; object-fit:cover; border-radius:6px;">
+                            </div>
+                            <div style="font-size:11px; color:#333; font-weight:600; margin-top:5px;">Pattern Fill
                             </div>
                         </div>
 
-                        <div
-                            style="margin-bottom:15px; padding:12px; background:#f8f9fa; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:10px;">PATTERN COLORS:</div>
+                        {{-- Colors inline with the button --}}
+                        <div id="textPatternColorControls" style="display:none; flex:1;">
+                            <div
+                                style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:8px;">
+                                PATTERN COLORS</div>
                             <div id="patternColorPaletteInTab"></div>
                         </div>
+                    </div>
 
+                    {{-- Size + Opacity sliders --}}
+                    <div id="textPatternSizeOpacityControls" style="display:none;">
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Pattern Size: <span
+                            <label style="font-weight:600; font-size:13px;">Pattern Size: <span
                                     id="patternSizeValueTab">100</span>%</label>
                             <input type="range" min="10" max="200" value="100" id="patternSizeTab"
                                 oninput="updateTextPatternSize(this.value); document.getElementById('patternSizeValueTab').textContent=this.value;"
                                 class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
-
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Pattern Opacity: <span
+                            <label style="font-weight:600; font-size:13px;">Pattern Opacity: <span
                                     id="patternOpacityValueTab">100</span>%</label>
                             <input type="range" min="0" max="100" value="100"
                                 id="patternOpacityTab"
                                 oninput="updateTextPatternOpacity(this.value); document.getElementById('patternOpacityValueTab').textContent=this.value;"
                                 class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
-
                         <button onclick="clearTextPattern()"
-                            style="width:100%; padding:10px; background:#000000; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer; margin-top:10px;">
+                            style="width:100%; padding:10px; background:#000; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">
                             Clear Pattern
                         </button>
                     </div>
 
                     <p id="patternPlaceholder"
-                        style="color:#999; text-align:center; padding:40px 20px; font-size:14px;">
-                        Select a pattern to fill your text</p>
+                        style="color:#999; text-align:center; padding:30px 20px; font-size:13px;">
+                        Click the pattern button to select a pattern fill
+                    </p>
                 </div>
 
                 {{-- Tab Content: MASCOT (text fill) --}}
+                {{-- Tab Content: MASCOT (text fill) --}}
                 <div id="mascotTabContent" class="tab-content" style="display:none;">
 
-                    <div style="margin-bottom:20px;">
-                        <button onclick="openTextMascotLibrary()"
-                            style="width:100%; padding:14px; background:#000; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.3s;">
-                            <span style="font-size:18px;">🦅</span>
-                            Select Mascot for Text
-                        </button>
-                    </div>
+                    {{-- Preview Button + Colors side by side --}}
+                    {{-- Preview Button + Controls side by side --}}
+                    <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:18px;">
 
-                    <div id="textMascotColorControls" style="display:none;">
-                        <div
-                            style="margin-bottom:15px; padding:12px; background:white; border-radius:6px; border:2px solid #e0e0e0;">
-                            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:8px;">MASCOT PREVIEW:</div>
-                            <div id="textMascotPreview"
-                                style="height:80px; display:flex; align-items:center; justify-content:center; background:#f5f5f5; border-radius:4px;">
+                        {{-- Mascot thumbnail button --}}
+                        <div onclick="openTextMascotLibrary()"
+                            style="cursor:pointer; flex-shrink:0; text-align:center;">
+                            <div style="width:70px; height:70px; border-radius:8px; border:2px solid #ddd;
+                    background:#f5f5f5; display:flex; align-items:center; justify-content:center;
+                    overflow:hidden; transition:border-color 0.2s;"
+                                onmouseover="this.style.borderColor='#000'"
+                                onmouseout="this.style.borderColor='#ddd'">
+                                <div id="textMascotPreview"
+                                    style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                    <span style="font-size:26px; opacity:0.3;">🦅</span>
+                                </div>
                             </div>
+                            <div
+                                style="font-size:10px; color:#666; font-weight:600; margin-top:4px; letter-spacing:.3px;">
+                                MASCOT FILL</div>
                         </div>
 
+                        {{-- Right side info (shown after mascot selected) --}}
+                        <div id="textMascotColorControls" style="display:none; flex:1;">
+                            <div
+                                style="font-size:10px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:6px;">
+                                MASCOT APPLIED</div>
+                            <button onclick="openTextMascotLibrary()"
+                                style="width:100%; padding:7px 10px; background:#f0f0f0; color:#000; border:2px solid #ddd;
+                   border-radius:6px; font-weight:600; font-size:11px; cursor:pointer;">
+                                Change Mascot
+                            </button>
+                            <button onclick="clearTextMascot()"
+                                style="width:100%; padding:7px 10px; background:#000; color:#fff; border:none;
+                   border-radius:6px; font-weight:600; font-size:11px; cursor:pointer; margin-top:6px;">
+                                Clear Mascot
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Sliders (shown after mascot selected) --}}
+                    <div id="textMascotSizeOpacityControls" style="display:none;">
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Mascot Size: <span
+                            <label style="font-weight:600; font-size:13px; color:#333;">
+                                Size: <span id="mascotSizeValueTab">100</span>%
+                            </label>
+                            <input type="range" min="10" max="200" value="100"
+                                id="mascotSizeTabSlider"
+                                oninput="updateTextMascotSize(this.value); document.getElementById('mascotSizeValueTab').textContent=this.value;"
+                                class="app-slider" style="width:100%; cursor:pointer;">
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="font-weight:600; font-size:13px; color:#333;">
+                                Opacity: <span id="mascotOpacityValueTab">100</span>%
+                            </label>
+                            <input type="range" min="0" max="100" value="100"
+                                id="mascotOpacityTabSlider"
+                                oninput="updateTextMascotOpacity(this.value); document.getElementById('mascotOpacityValueTab').textContent=this.value;"
+                                class="app-slider" style="width:100%; cursor:pointer;">
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="font-weight:600; font-size:13px; color:#333;">
+                                Count: <span id="mascotCountValueTab">4</span>
+                            </label>
+                            <input type="range" min="1" max="12" value="4"
+                                id="mascotCountTabSlider"
+                                oninput="updateTextMascotCount(this.value); document.getElementById('mascotCountValueTab').textContent=this.value;"
+                                class="app-slider" style="width:100%; cursor:pointer;">
+                        </div>
+                    </div>
+
+                    <p id="mascotPlaceholder"
+                        style="color:#bbb; text-align:center; padding:20px 20px 10px; font-size:12px; font-style:italic;">
+                        Click above to fill your text with a tiled mascot
+                    </p>
+
+                    {{-- Sliders --}}
+                    <div id="textMascotSizeOpacityControls" style="display:none;">
+                        <div style="margin-bottom:12px;">
+                            <label style="font-weight:600; font-size:13px;">Mascot Size: <span
                                     id="mascotSizeValueTab">100</span>%</label>
                             <input type="range" min="10" max="200" value="100"
                                 id="mascotSizeTabSlider"
                                 oninput="updateTextMascotSize(this.value); document.getElementById('mascotSizeValueTab').textContent=this.value;"
                                 class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
-
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Mascot Opacity: <span
+                            <label style="font-weight:600; font-size:13px;">Mascot Opacity: <span
                                     id="mascotOpacityValueTab">100</span>%</label>
                             <input type="range" min="0" max="100" value="100"
                                 id="mascotOpacityTabSlider"
                                 oninput="updateTextMascotOpacity(this.value); document.getElementById('mascotOpacityValueTab').textContent=this.value;"
                                 class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
-
                         <div style="margin-bottom:12px;">
-                            <label style="font-weight:600; font-size:14px;">Mascot Count: <span
+                            <label style="font-weight:600; font-size:13px;">Mascot Count: <span
                                     id="mascotCountValueTab">4</span></label>
                             <input type="range" min="1" max="12" value="4"
                                 id="mascotCountTabSlider"
                                 oninput="updateTextMascotCount(this.value); document.getElementById('mascotCountValueTab').textContent=this.value;"
                                 class="app-slider" style="width:100%; cursor:pointer;">
                         </div>
-
                         <button onclick="clearTextMascot()"
-                            style="width:100%; padding:10px; background:#000000; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer; margin-top:10px;">
+                            style="width:100%; padding:10px; background:#000; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">
                             Clear Mascot
                         </button>
                     </div>
 
                     <p id="mascotPlaceholder"
-                        style="color:#999; text-align:center; padding:40px 20px; font-size:14px;">
-                        Select a mascot to fill your text</p>
+                        style="color:#999; text-align:center; padding:30px 20px; font-size:13px;">
+                        Click the mascot button to fill your text with a mascot
+                    </p>
                 </div>
 
             </div>
@@ -576,7 +648,8 @@
 {{-- FONT MODAL — 1000px wide, 6 per row --}}
 <div id="fontModal" class="color-modal" style="display:none;">
     <div class="color-modal-content" style="width:1000px; max-width:96%;">
-        <div style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
+        <div
+            style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
             <h3 style="margin:0; font-size:18px; font-weight:600;">SELECT FONT</h3>
             <span onclick="closeFontModal()" style="cursor:pointer; font-size:26px; line-height:1;">×</span>
         </div>
@@ -681,29 +754,31 @@
         border-radius: 2px;
         outline: none;
     }
-text:focus{
-outline:none !important;
-}
 
-   .app-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #000;
-    border-radius: 3px; /* square box */
-    cursor: pointer;
-    border: none;
-}
+    text:focus {
+        outline: none !important;
+    }
 
-.app-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: #000;
-    border-radius: 3px;
-    cursor: pointer;
-    border: none;
-}
+    .app-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #000;
+        border-radius: 3px;
+        /* square box */
+        cursor: pointer;
+        border: none;
+    }
+
+    .app-slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: #000;
+        border-radius: 3px;
+        cursor: pointer;
+        border: none;
+    }
 
     /* Smaller slider for width/height */
     .app-slider-small {
@@ -739,7 +814,7 @@ outline:none !important;
         border-radius: 2px;
         cursor: pointer;
         border: none;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     .rotation-vertical-slider::-moz-range-thumb {
@@ -752,7 +827,7 @@ outline:none !important;
     }
 
     /* Font grid items */
-    #fontGrid > div {
+    #fontGrid>div {
         border: 2px solid #ddd;
         padding: 10px 6px;
         text-align: center;
@@ -762,7 +837,7 @@ outline:none !important;
         transition: all 0.2s;
     }
 
-    #fontGrid > div:hover {
+    #fontGrid>div:hover {
         background: #f2f2f2;
         border-color: #999;
     }
@@ -807,7 +882,10 @@ outline:none !important;
         -webkit-appearance: none;
         margin: 0;
     }
-    #rotationManual { -moz-appearance: textfield; }
+
+    #rotationManual {
+        -moz-appearance: textfield;
+    }
 </style>
 
 @include('admin.models.partials.mascot-select-modal')

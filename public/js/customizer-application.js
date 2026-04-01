@@ -296,108 +296,212 @@
 
     // =================== APPLY OUTLINE STYLE TO TEXT ===================
 
-    window.applyOutlineStyleToText = function (layerId) {
+    // window.applyOutlineStyleToText = function (layerId) {
 
-        const layer = findLayerById(layerId);
-        if (!layer) return;
+    //     const layer = findLayerById(layerId);
+    //     if (!layer) return;
 
-        const textEl = document.getElementById(layerId);
-        if (!textEl) return;
+    //     const textEl = document.getElementById(layerId);
+    //     if (!textEl) return;
 
-        const colors = layer.outlineColors;
-        const style = layer.outlineStyle;
-        const shadow = layer.shadowOffset ?? 3;
-        const stroke = layer.strokeWidth || 5;
+    //     const colors = layer.outlineColors;
+    //     const style = layer.outlineStyle;
+    //     const shadow = layer.shadowOffset ?? 3;
+    //     const stroke = layer.strokeWidth || 5;
 
-        // remove old outlines
-        textEl.parentElement
-            .querySelectorAll(`[data-outline-for="${layerId}"]`)
-            .forEach(e => e.remove());
+    //     // remove old outlines
+    //     textEl.parentElement
+    //         .querySelectorAll(`[data-outline-for="${layerId}"]`)
+    //         .forEach(e => e.remove());
 
-        // IMPORTANT: base text NEVER shadow
-        textEl.style.filter = 'none';
+    //     // IMPORTANT: base text NEVER shadow
+    //     textEl.style.filter = 'none';
 
-        switch (style) {
+    //     switch (style) {
 
-            case 'single':
-                textEl.setAttribute('fill', colors.baseColor);
-                textEl.removeAttribute('stroke');
-                textEl.removeAttribute('stroke-width');
-                textEl.style.filter = 'none';
-                break;
+    //         case 'single':
+    //             textEl.setAttribute('fill', colors.baseColor);
+    //             textEl.removeAttribute('stroke');
+    //             textEl.removeAttribute('stroke-width');
+    //             textEl.style.filter = 'none';
+    //             break;
 
-            case 'single-shadow':
-                textEl.setAttribute('fill', colors.baseColor);
-                textEl.removeAttribute('stroke');
-                textEl.removeAttribute('stroke-width');
-                textEl.style.filter =
-                    `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
-                break;
+    //         case 'single-shadow':
+    //             textEl.setAttribute('fill', colors.baseColor);
+    //             textEl.removeAttribute('stroke');
+    //             textEl.removeAttribute('stroke-width');
+    //             textEl.style.filter =
+    //                 `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+    //             break;
 
-            case 'two-color':
-                textEl.setAttribute('fill', colors.baseColor);
-                textEl.setAttribute('stroke', colors.outline1);
-                textEl.setAttribute('stroke-width', stroke);
-                textEl.style.filter = 'none';
-                break;
+    //         case 'two-color':
+    //             textEl.setAttribute('fill', colors.baseColor);
+    //             textEl.setAttribute('stroke', colors.outline1);
+    //             textEl.setAttribute('stroke-width', stroke);
+    //             textEl.style.filter = 'none';
+    //             break;
 
-            case 'two-color-shadow':
-                textEl.setAttribute('fill', colors.baseColor);
-                textEl.setAttribute('stroke', colors.outline1);
-                textEl.setAttribute('stroke-width', stroke);
-                textEl.style.filter =
-                    `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
-                break;
+    //         case 'two-color-shadow':
+    //             textEl.setAttribute('fill', colors.baseColor);
+    //             textEl.setAttribute('stroke', colors.outline1);
+    //             textEl.setAttribute('stroke-width', stroke);
+    //             textEl.style.filter =
+    //                 `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+    //             break;
 
-            case 'three-color':
-            case 'three-color-shadow':
-                createThreeColorOutline(textEl, layer, style.includes('shadow'));
-                break;
-        }
+    //         case 'three-color':
+    //         case 'three-color-shadow':
+    //             createThreeColorOutline(textEl, layer, style.includes('shadow'));
+    //             break;
+    //     }
 
-    };
+    // };
 
+window.applyOutlineStyleToText = function (layerId) {
+
+    const layer = findLayerById(layerId);
+    if (!layer) return;
+
+    const textEl = document.getElementById(layerId);
+    if (!textEl) return;
+
+    const colors = layer.outlineColors;
+    const style = layer.outlineStyle;
+    const shadow = layer.shadowOffset ?? 3;
+    const stroke = layer.strokeWidth || 5;
+
+    // ✅ Pattern ya mascot applied hai to fill mat override karo
+    const hasFill = layer.hasPattern || layer.hasMascot;
+    const baseFill = hasFill ? textEl.getAttribute('fill') : colors.baseColor;
+
+    // remove old outlines
+    textEl.parentElement
+        .querySelectorAll(`[data-outline-for="${layerId}"]`)
+        .forEach(e => e.remove());
+
+    textEl.style.filter = 'none';
+
+    switch (style) {
+
+        case 'single':
+            if (!hasFill) textEl.setAttribute('fill', colors.baseColor);
+            textEl.removeAttribute('stroke');
+            textEl.removeAttribute('stroke-width');
+            textEl.style.filter = 'none';
+            break;
+
+        case 'single-shadow':
+            if (!hasFill) textEl.setAttribute('fill', colors.baseColor);
+            textEl.removeAttribute('stroke');
+            textEl.removeAttribute('stroke-width');
+            textEl.style.filter =
+                `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+            break;
+
+        case 'two-color':
+            if (!hasFill) textEl.setAttribute('fill', colors.baseColor);
+            textEl.setAttribute('stroke', colors.outline1);
+            textEl.setAttribute('stroke-width', stroke);
+            textEl.style.filter = 'none';
+            break;
+
+        case 'two-color-shadow':
+            if (!hasFill) textEl.setAttribute('fill', colors.baseColor);
+            textEl.setAttribute('stroke', colors.outline1);
+            textEl.setAttribute('stroke-width', stroke);
+            textEl.style.filter =
+                `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+            break;
+
+        case 'three-color':
+        case 'three-color-shadow':
+            createThreeColorOutline(textEl, layer, style.includes('shadow'));
+            break;
+    }
+};
 
     // =================== THREE COLOR OUTLINE ===================
 
+    // window.createThreeColorOutline = function (textEl, layer, withShadow) {
+
+    //     const colors = layer.outlineColors;
+    //     const shadow = layer.shadowOffset ?? 3;
+    //     const stroke = layer.strokeWidth || 5;
+
+    //     const outer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    //     outer.setAttribute('data-outline-for', layer.id);
+
+    //     ['x', 'y', 'font-size', 'transform'].forEach(a => {
+    //         if (textEl.getAttribute(a)) outer.setAttribute(a, textEl.getAttribute(a));
+    //     });
+
+    //     outer.style.fontFamily = textEl.style.fontFamily;
+    //     outer.textContent = textEl.textContent;
+
+    //     outer.setAttribute('fill', colors.outline2);
+    //     outer.setAttribute('stroke', colors.outline2);
+    //     outer.setAttribute('stroke-width', stroke * 2);
+    //     outer.setAttribute('text-anchor', 'middle');
+    //     outer.setAttribute('dominant-baseline', 'middle');
+    //     outer.setAttribute('stroke-linejoin', 'miter');
+    //     outer.style.pointerEvents = 'none';
+
+    //     if (withShadow) {
+    //         outer.style.filter = `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+    //     } else {
+    //         outer.style.filter = 'none';
+    //     }
+
+    //     textEl.parentElement.insertBefore(outer, textEl);
+
+    //     textEl.setAttribute('fill', colors.baseColor);
+    //     textEl.setAttribute('stroke', colors.outline1);
+    //     textEl.setAttribute('stroke-width', stroke);
+    //     textEl.style.filter = 'none';
+    // };
+
+
     window.createThreeColorOutline = function (textEl, layer, withShadow) {
 
-        const colors = layer.outlineColors;
-        const shadow = layer.shadowOffset ?? 3;
-        const stroke = layer.strokeWidth || 5;
+    const colors = layer.outlineColors;
+    const shadow = layer.shadowOffset ?? 3;
+    const stroke = layer.strokeWidth || 5;
 
-        const outer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        outer.setAttribute('data-outline-for', layer.id);
+    // ✅ Pattern/mascot fill preserve karo
+    const hasFill = layer.hasPattern || layer.hasMascot;
 
-        ['x', 'y', 'font-size', 'transform'].forEach(a => {
-            if (textEl.getAttribute(a)) outer.setAttribute(a, textEl.getAttribute(a));
-        });
+    const outer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    outer.setAttribute('data-outline-for', layer.id);
 
-        outer.style.fontFamily = textEl.style.fontFamily;
-        outer.textContent = textEl.textContent;
+    ['x', 'y', 'font-size', 'transform'].forEach(a => {
+        if (textEl.getAttribute(a)) outer.setAttribute(a, textEl.getAttribute(a));
+    });
 
-        outer.setAttribute('fill', colors.outline2);
-        outer.setAttribute('stroke', colors.outline2);
-        outer.setAttribute('stroke-width', stroke * 2);
-        outer.setAttribute('text-anchor', 'middle');
-        outer.setAttribute('dominant-baseline', 'middle');
-outer.setAttribute('stroke-linejoin', 'miter');
-        outer.style.pointerEvents = 'none';
+    outer.style.fontFamily = textEl.style.fontFamily;
+    outer.textContent = textEl.textContent;
 
-        if (withShadow) {
-            outer.style.filter = `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
-        } else {
-            outer.style.filter = 'none';
-        }
+    outer.setAttribute('fill', colors.outline2);
+    outer.setAttribute('stroke', colors.outline2);
+    outer.setAttribute('stroke-width', stroke * 2);
+    outer.setAttribute('text-anchor', 'middle');
+    outer.setAttribute('dominant-baseline', 'middle');
+    outer.setAttribute('stroke-linejoin', 'miter');
+    outer.style.pointerEvents = 'none';
 
-        textEl.parentElement.insertBefore(outer, textEl);
+    if (withShadow) {
+        outer.style.filter = `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})`;
+    } else {
+        outer.style.filter = 'none';
+    }
 
-        textEl.setAttribute('fill', colors.baseColor);
-        textEl.setAttribute('stroke', colors.outline1);
-        textEl.setAttribute('stroke-width', stroke);
-        textEl.style.filter = 'none';
-    };
+    textEl.parentElement.insertBefore(outer, textEl);
 
+    // ✅ Sirf tab fill change karo jab pattern/mascot nahi hai
+    if (!hasFill) textEl.setAttribute('fill', colors.baseColor);
+    textEl.setAttribute('stroke', colors.outline1);
+    textEl.setAttribute('stroke-width', stroke);
+    textEl.style.filter = 'none';
+};
 
     // =================== OPEN/CLOSE APPLICATION MODAL ===================
 
@@ -572,7 +676,7 @@ outer.setAttribute('stroke-linejoin', 'miter');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('paint-order', 'stroke fill');
-text.setAttribute('stroke-linejoin', 'miter');
+        text.setAttribute('stroke-linejoin', 'miter');
         text.textContent = defaultText;
 
         clonedSvg.appendChild(text);
@@ -668,11 +772,10 @@ text.setAttribute('stroke-linejoin', 'miter');
             view: view,
             partId: partId,
             text: defaultText,
-            fontSize: 100,
+            fontSize: 500,
             fontFamily: window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
             fill: globalColors[0] || '#FFFFFF',
             stroke: globalColors[1] || '#000000',
-            strokeWidth: 5,
             x: 0,
             y: 0,
             rotation: 0,
@@ -695,6 +798,102 @@ text.setAttribute('stroke-linejoin', 'miter');
         console.log('✅ Text application added:', layer);
     };
     // =================== ADD TEXT APPLICATION TO SVG ===================
+
+
+
+
+
+
+
+
+
+
+
+
+ function updateTextPatternButtonPreview(patternSvg) {
+    const previewImg = document.getElementById("textPatternThumbnail");
+    if (!previewImg) return;
+
+    const layer = window.currentApplicationLayer
+        ? window.findLayerById(window.currentApplicationLayer)
+        : null;
+
+    if (!layer || !layer.patternId) {
+        if (patternSvg && patternSvg.includes('<svg')) {
+            const blob = new Blob([patternSvg], { type: "image/svg+xml" });
+            previewImg.src = URL.createObjectURL(blob);
+        }
+        return;
+    }
+
+    // ✅ DOM se LIVE pattern lo
+    const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+    if (!mainSvg) return;
+
+    const patternEl = mainSvg.querySelector('#' + layer.patternId);
+    if (!patternEl) return;
+
+    const patternCopy = patternEl.cloneNode(true);
+    patternCopy.setAttribute('id', 'preview-temp-pattern');
+    patternCopy.setAttribute('patternUnits', 'userSpaceOnUse');
+    patternCopy.setAttribute('x', '0');
+    patternCopy.setAttribute('y', '0');
+
+    // Current scale
+    const transformAttr = patternEl.getAttribute('patternTransform') || '';
+    const scaleMatch = transformAttr.match(/scale\(([\d.]+)\)/);
+    const scale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
+
+    const baseW = parseFloat(patternEl.getAttribute('width')) || 100;
+    const baseH = parseFloat(patternEl.getAttribute('height')) || 100;
+    const scaledW = baseW * scale;
+    const scaledH = baseH * scale;
+
+    patternCopy.setAttribute('width', scaledW);
+    patternCopy.setAttribute('height', scaledH);
+    patternCopy.removeAttribute('patternTransform');
+
+    const innerSvg = patternCopy.querySelector('svg');
+    if (innerSvg) {
+        innerSvg.setAttribute('width', scaledW);
+        innerSvg.setAttribute('height', scaledH);
+        innerSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    }
+
+    // Current opacity
+    const opacity = (layer.patternOpacity !== undefined) ? layer.patternOpacity / 100 : 1;
+
+    const previewSvgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+        <defs>${patternCopy.outerHTML}</defs>
+        <rect width="200" height="200" fill="url(#preview-temp-pattern)" opacity="${opacity}"/>
+    </svg>`;
+
+    const blob = new Blob([previewSvgStr], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    previewImg.src = url;
+}
+
+function updateText(value) {
+
+    if (!window.currentApplicationLayer) return;
+
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer) return;
+
+    layer.text = value;
+
+    const textEl = document.getElementById(layer.id);
+
+    if (textEl) {
+
+        textEl.textContent = value;
+
+        // ✅ realtime selection box update
+        selectApplicationLayer(layer.id);
+    }
+
+}
+
 
     window.addApplicationToSvg = function (layer) {
 
@@ -771,7 +970,7 @@ text.setAttribute('stroke-linejoin', 'miter');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('paint-order', 'stroke fill');
-text.setAttribute('stroke-linejoin', 'miter');
+        text.setAttribute('stroke-linejoin', 'miter');
         text.style.cursor = 'move';
         text.textContent = layer.text;
 
@@ -1363,29 +1562,18 @@ text.setAttribute('stroke-linejoin', 'miter');
 
         const textEl = document.getElementById(layerId);
 
-if (textEl) {
+        if (textEl) {
 
-    // old indicator remove karo
-    const old = document.getElementById("selection-indicator");
-    if (old) old.remove();
+            // old indicator remove karo
+            const old = document.getElementById("selection-indicator");
+            if (old) old.remove();
 
-    // tight indicator add karo
-    const bbox = textEl.getBBox();
-    const svg = textEl.ownerSVGElement;
+            // tight indicator add karo
+            const bbox = textEl.getBBox();
+            const svg = textEl.ownerSVGElement;
 
-    const icon = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "circle"
-    );
 
-    icon.setAttribute("id", "selection-indicator");
-    icon.setAttribute("cx", bbox.x + bbox.width / 2);
-    icon.setAttribute("cy", bbox.y - 10);
-    icon.setAttribute("r", 6);
-    icon.setAttribute("fill", "#007bff");
-
-    svg.appendChild(icon);
-}
+        }
     };
 
 
@@ -1471,7 +1659,7 @@ if (textEl) {
             container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
             return;
         }
-var maxColors = layer._selectedColorCount || 6;
+        var maxColors = layer._selectedColorCount || 6;
         var parser = new DOMParser();
         var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
         var imgTag = doc.querySelector('image');
@@ -1500,9 +1688,9 @@ var maxColors = layer._selectedColorCount || 6;
                 if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
             }
         });
-var maxColors = layer._selectedColorCount
-    || (window.selectedColors && window.selectedColors.length)
-    || 6;
+        var maxColors = layer._selectedColorCount
+            || (window.selectedColors && window.selectedColors.length)
+            || 6;
         var detected = Object.keys(colorCounts)
             .sort(function (a, b) { return colorCounts[b] - colorCounts[a]; })
             .slice(0, maxColors);
@@ -1557,11 +1745,11 @@ var maxColors = layer._selectedColorCount
         layer._detectedColors = detectedColors;
         if (!layer._colorMap) layer._colorMap = {};
 
- // ✅ NAYA CODE — color wheel ke selectedColors use karo:
-var backendColors = (window.selectedColors && window.selectedColors.length)
-    ? window.selectedColors
-    : (window.backendColors || []).map(function (c) { return c.code || c; });
-if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000', '#FF8800', '#00FFFF'];
+        // ✅ NAYA CODE — color wheel ke selectedColors use karo:
+        var backendColors = (window.selectedColors && window.selectedColors.length)
+            ? window.selectedColors
+            : (window.backendColors || []).map(function (c) { return c.code || c; });
+        if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000', '#FF8800', '#00FFFF'];
 
         detectedColors.forEach(function (detectedHex) {
             var row = document.createElement('div');
@@ -1666,107 +1854,107 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         _replaceElementInSvg(layer, modifiedSvg);
     }
 
-   function _applyColorMapToPng(dataUrl, layer) {
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
-    var img = new Image();
+    function _applyColorMapToPng(dataUrl, layer) {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var img = new Image();
 
-    img.onload = function () {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
 
-        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        var data = imageData.data;
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var data = imageData.data;
 
-        // ✅ layer._alphaMask se transparent pixels lo (mcCanvas band hone ke baad bhi kaam karega)
-        var alphaMask = layer._alphaMask || null;
-        var maskW = layer._alphaMaskW || 0;
-        var maskH = layer._alphaMaskH || 0;
+            // ✅ layer._alphaMask se transparent pixels lo (mcCanvas band hone ke baad bhi kaam karega)
+            var alphaMask = layer._alphaMask || null;
+            var maskW = layer._alphaMaskW || 0;
+            var maskH = layer._alphaMaskH || 0;
 
-        // colorMap ko RGB mein convert karo
-        var colorMappings = [];
-        Object.entries(layer._colorMap).forEach(function (entry) {
-            var oldHex = entry[0];
-            var newHex = entry[1];
-            var oldRgb = _hexToRgb(oldHex);
-            var newRgb = _hexToRgb(newHex);
-            if (oldRgb && newRgb) {
-                colorMappings.push({ old: oldRgb, new: newRgb });
-            }
-        });
-
-        // Har pixel check karo
-        for (var i = 0; i < data.length; i += 4) {
-            var pixelIndex = i / 4;
-
-            // ✅ Alpha mask se check karo — agar wahan transparent tha to yahan bhi transparent karo
-            if (alphaMask && alphaMask.length > 0) {
-                // Pixel index ko mask dimensions ke saath scale karo
-                var px = pixelIndex % canvas.width;
-                var py = Math.floor(pixelIndex / canvas.width);
-                var mx = Math.round(px * maskW / canvas.width);
-                var my = Math.round(py * maskH / canvas.height);
-                var maskIndex = my * maskW + mx;
-                if (alphaMask[maskIndex] !== undefined && alphaMask[maskIndex] < 30) {
-                    data[i + 3] = 0; // transparent rakho
-                    continue;
-                }
-            }
-
-            var a = data[i + 3];
-            if (a < 30) continue;
-
-            var r = data[i];
-            var g = data[i + 1];
-            var b = data[i + 2];
-
-            var bestMatch = null;
-            var bestDist = 60;
-
-            colorMappings.forEach(function (mapping) {
-                var dist = Math.sqrt(
-                    Math.pow(r - mapping.old.r, 2) +
-                    Math.pow(g - mapping.old.g, 2) +
-                    Math.pow(b - mapping.old.b, 2)
-                );
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestMatch = mapping;
+            // colorMap ko RGB mein convert karo
+            var colorMappings = [];
+            Object.entries(layer._colorMap).forEach(function (entry) {
+                var oldHex = entry[0];
+                var newHex = entry[1];
+                var oldRgb = _hexToRgb(oldHex);
+                var newRgb = _hexToRgb(newHex);
+                if (oldRgb && newRgb) {
+                    colorMappings.push({ old: oldRgb, new: newRgb });
                 }
             });
 
-            if (bestMatch) {
-                data[i]     = bestMatch.new.r;
-                data[i + 1] = bestMatch.new.g;
-                data[i + 2] = bestMatch.new.b;
+            // Har pixel check karo
+            for (var i = 0; i < data.length; i += 4) {
+                var pixelIndex = i / 4;
+
+                // ✅ Alpha mask se check karo — agar wahan transparent tha to yahan bhi transparent karo
+                if (alphaMask && alphaMask.length > 0) {
+                    // Pixel index ko mask dimensions ke saath scale karo
+                    var px = pixelIndex % canvas.width;
+                    var py = Math.floor(pixelIndex / canvas.width);
+                    var mx = Math.round(px * maskW / canvas.width);
+                    var my = Math.round(py * maskH / canvas.height);
+                    var maskIndex = my * maskW + mx;
+                    if (alphaMask[maskIndex] !== undefined && alphaMask[maskIndex] < 30) {
+                        data[i + 3] = 0; // transparent rakho
+                        continue;
+                    }
+                }
+
+                var a = data[i + 3];
+                if (a < 30) continue;
+
+                var r = data[i];
+                var g = data[i + 1];
+                var b = data[i + 2];
+
+                var bestMatch = null;
+                var bestDist = 60;
+
+                colorMappings.forEach(function (mapping) {
+                    var dist = Math.sqrt(
+                        Math.pow(r - mapping.old.r, 2) +
+                        Math.pow(g - mapping.old.g, 2) +
+                        Math.pow(b - mapping.old.b, 2)
+                    );
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestMatch = mapping;
+                    }
+                });
+
+                if (bestMatch) {
+                    data[i] = bestMatch.new.r;
+                    data[i + 1] = bestMatch.new.g;
+                    data[i + 2] = bestMatch.new.b;
+                }
             }
-        }
 
-        ctx.putImageData(imageData, 0, 0);
+            ctx.putImageData(imageData, 0, 0);
 
-        var newPngDataUrl = canvas.toDataURL('image/png');
+            var newPngDataUrl = canvas.toDataURL('image/png');
 
-        var parser = new DOMParser();
-        var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
-        var imgEl = doc.querySelector('image');
-        if (imgEl) {
-            imgEl.setAttribute('href', newPngDataUrl);
-            if (imgEl.getAttribute('xlink:href')) {
-                imgEl.setAttribute('xlink:href', newPngDataUrl);
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+            var imgEl = doc.querySelector('image');
+            if (imgEl) {
+                imgEl.setAttribute('href', newPngDataUrl);
+                if (imgEl.getAttribute('xlink:href')) {
+                    imgEl.setAttribute('xlink:href', newPngDataUrl);
+                }
             }
-        }
 
-        var modifiedSvg = new XMLSerializer().serializeToString(doc.documentElement);
-        _replaceElementInSvg(layer, modifiedSvg);
-    };
+            var modifiedSvg = new XMLSerializer().serializeToString(doc.documentElement);
+            _replaceElementInSvg(layer, modifiedSvg);
+        };
 
-    img.onerror = function () {
-        console.error('PNG load failed');
-    };
+        img.onerror = function () {
+            console.error('PNG load failed');
+        };
 
-    img.src = dataUrl;
-}
+        img.src = dataUrl;
+    }
 
     function _replaceElementInSvg(layer, modifiedSvg) {
         var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
@@ -1878,15 +2066,19 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         // Flash highlight
         const textEl = document.getElementById(layer.id);
         if (textEl) {
-           textEl.style.filter = 'none';
+            textEl.style.filter = 'none';
         }
 
         // Pattern UI sync
         if (layer.hasPattern) {
             document.getElementById('textPatternColorControls').style.display = 'block';
             document.getElementById('patternPlaceholder').style.display = 'none';
-            if (layer.patternSvg) renderTextPatternPalette(layer.patternSvg);
-        } else {
+            var soc = document.getElementById('textPatternSizeOpacityControls');
+            if (soc) soc.style.display = 'block';
+        }
+
+
+        else {
             document.getElementById('textPatternColorControls').style.display = 'none';
             document.getElementById('patternPlaceholder').style.display = 'block';
         }
@@ -1895,7 +2087,10 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         if (layer.hasMascot) {
             document.getElementById('textMascotColorControls').style.display = 'block';
             document.getElementById('mascotPlaceholder').style.display = 'none';
-        } else {
+            var msoc = document.getElementById('textMascotSizeOpacityControls');
+            if (msoc) msoc.style.display = 'block';
+        }
+        else {
             document.getElementById('textMascotColorControls').style.display = 'none';
             document.getElementById('mascotPlaceholder').style.display = 'block';
         }
@@ -2040,21 +2235,46 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         updateApplicationLayersList();
     };
 
-    window.updateFontSize = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer) return;
+function updateFont(fontFamily) {
 
-        layer.fontSize = parseInt(value);
-        const textEl = document.getElementById(layer.id);
-        if (textEl) textEl.setAttribute('font-size', value);
+    if (!window.currentApplicationLayer) return;
 
-        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.setAttribute('font-size', value));
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer) return;
 
-        document.getElementById('fontSizeValue').textContent = value;
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+    layer.fontFamily = fontFamily;
 
+    const textEl = document.getElementById(layer.id);
+
+    if (textEl) {
+
+        textEl.style.fontFamily = fontFamily;
+
+        // ✅ realtime selection box update
+        selectApplicationLayer(layer.id);
+    }
+
+}
+function updateFontSize(value) {
+
+    if (!window.currentApplicationLayer) return;
+
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer) return;
+
+    layer.fontSize = value;
+
+    const textEl = document.getElementById(layer.id);
+
+    if (textEl) {
+
+        textEl.setAttribute("font-size", value);
+
+        // ✅ realtime selection box update
+        selectApplicationLayer(layer.id);
+    }
+
+}
     window.updateFontFamily = function (value) {
         if (!window.currentApplicationLayer) return;
         const layer = findLayerById(window.currentApplicationLayer);
@@ -2108,27 +2328,32 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    window.updateRotation = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer) return;
+   function updateRotation(value) {
 
-        layer.rotation = parseInt(value);
+    if (!window.currentApplicationLayer) return;
 
-        const textEl = document.getElementById(layer.id);
-        if (textEl) {
-            const x = textEl.getAttribute('x');
-            const y = textEl.getAttribute('y');
-            textEl.setAttribute('transform', `rotate(${value} ${x} ${y})`);
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer) return;
 
-            document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
-                o.setAttribute('transform', `rotate(${value} ${x} ${y})`);
-            });
-        }
+    layer.rotation = parseInt(value);
 
-        document.getElementById('rotationValue').textContent = value;
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+    const textEl = document.getElementById(layer.id);
+
+    if (textEl) {
+
+        const x = parseFloat(textEl.getAttribute("x"));
+        const y = parseFloat(textEl.getAttribute("y"));
+
+        textEl.setAttribute(
+            "transform",
+            `rotate(${layer.rotation} ${x} ${y})`
+        );
+
+        // ✅ realtime selection box update
+        selectApplicationLayer(layer.id);
+    }
+
+}
 
     window.updateOutlineStroke = function (type, value) {
         if (!window.currentApplicationLayer) return;
@@ -2215,18 +2440,20 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         }
     };
 
-    window.updateTextPatternColor = function (color) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer?.patternId) return;
-        const pattern = window.getMainSvg().querySelector(`#${layer.patternId}`);
-        if (!pattern) return;
-        pattern.querySelectorAll('*').forEach(el => {
-            if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') el.setAttribute('fill', color);
-        });
-    };
-
-    window.applyPatternToText = function (svgContent, forcedLayerId = null) {
+ window.updateTextPatternColor = function (color) {
+    if (!window.currentApplicationLayer) return;
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer?.patternId) return;
+    const pattern = window.getMainSvg().querySelector(`#${layer.patternId}`);
+    if (!pattern) return;
+    pattern.querySelectorAll('*').forEach(el => {
+        if (el.hasAttribute('fill') && el.getAttribute('fill') !== 'none') {
+            el.setAttribute('fill', color);
+        }
+    });
+    updateTextPatternButtonPreview(); // ✅ add this
+};
+window.applyPatternToText = function (svgContent, forcedLayerId = null) {
         const layerId = forcedLayerId || window.currentApplicationLayer;
         if (!layerId) return;
 
@@ -2276,6 +2503,9 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
 
         document.getElementById('textPatternColorControls').style.display = 'block';
         document.getElementById('patternPlaceholder').style.display = 'none';
+        var soc = document.getElementById('textPatternSizeOpacityControls');
+        if (soc) soc.style.display = 'block';
+
         switchTextCustomizationTab('pattern');
 
         const preview = document.getElementById('textPatternPreview');
@@ -2284,6 +2514,9 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
             const svg = preview.querySelector('svg');
             if (svg) { svg.style.width = '70px'; svg.style.height = '70px'; svg.style.display = 'block'; }
         }
+
+        // ✅ Real-time button preview update
+        setTimeout(function() { updateTextPatternButtonPreview(); }, 100);
     };
 
     function extractPatternColors(svg) {
@@ -2381,7 +2614,7 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
 
     // =================== MASCOT (TEXT FILL) ===================
 
-    window.applyMascotToText = function (svgContent, forcedLayerId = null) {
+   window.applyMascotToText = function (svgContent, forcedLayerId = null) {
         const layerId = forcedLayerId || window.currentApplicationLayer;
         if (!layerId) return;
 
@@ -2392,6 +2625,29 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         if (layer.type === 'direct-mascot') {
             applyDirectMascotToLayer(svgContent, layerId, true);
             return;
+        }
+
+        // ✅ Pehle pattern remove karo agar applied hai
+        if (layer.hasPattern) {
+            const mainSvgTemp = window.getMainSvg();
+            if (layer.patternId) {
+                const p = mainSvgTemp.querySelector(`#${layer.patternId}`);
+                if (p) p.remove();
+            }
+            delete layer.patternSvg;
+            delete layer.hasPattern;
+            delete layer.patternId;
+            delete layer.patternSize;
+            delete layer.patternOpacity;
+
+            const patternControls = document.getElementById('textPatternColorControls');
+            if (patternControls) patternControls.style.display = 'none';
+            const patternPlaceholder = document.getElementById('patternPlaceholder');
+            if (patternPlaceholder) patternPlaceholder.style.display = 'block';
+            const soc = document.getElementById('textPatternSizeOpacityControls');
+            if (soc) soc.style.display = 'none';
+            const previewImg = document.getElementById('textPatternThumbnail');
+            if (previewImg) previewImg.src = '/assets/images/pattern logo.avif';
         }
 
         const textEl = document.getElementById(layer.id);
@@ -2430,7 +2686,6 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
 
         mascotSvg.style.background = 'transparent';
 
-        // Ensure viewBox
         if (!mascotSvg.getAttribute('viewBox')) {
             mascotSvg.setAttribute('viewBox', '0 0 100 100');
         }
@@ -2472,6 +2727,8 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
 
         document.getElementById('textMascotColorControls').style.display = 'block';
         document.getElementById('mascotPlaceholder').style.display = 'none';
+        var msoc = document.getElementById('textMascotSizeOpacityControls');
+        if (msoc) msoc.style.display = 'block';
 
         const preview = document.getElementById('textMascotPreview');
         if (preview) {
@@ -2630,22 +2887,29 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         }
     };
 
-    window.clearTextPattern = function () {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer || !layer.hasPattern) return;
-        const textEl = document.getElementById(layer.id);
-        if (!textEl) return;
-        const mainSvg = window.getMainSvg();
-        if (layer.patternId) { const p = mainSvg.querySelector(`#${layer.patternId}`); if (p) p.remove(); }
-        const colors = layer.outlineColors || window.outlineColors;
-        textEl.setAttribute('fill', colors.baseColor || '#FFFFFF');
-        textEl.setAttribute('fill-opacity', '1');
-        delete layer.patternSvg; delete layer.hasPattern; delete layer.patternId; delete layer.patternSize; delete layer.patternOpacity;
-        document.getElementById('textPatternColorControls').style.display = 'none';
-        document.getElementById('patternPlaceholder').style.display = 'block';
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+ window.clearTextPattern = function () {
+    if (!window.currentApplicationLayer) return;
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer || !layer.hasPattern) return;
+    const textEl = document.getElementById(layer.id);
+    if (!textEl) return;
+    const mainSvg = window.getMainSvg();
+    if (layer.patternId) { const p = mainSvg.querySelector(`#${layer.patternId}`); if (p) p.remove(); }
+    const colors = layer.outlineColors || window.outlineColors;
+    textEl.setAttribute('fill', colors.baseColor || '#FFFFFF');
+    textEl.setAttribute('fill-opacity', '1');
+    delete layer.patternSvg; delete layer.hasPattern; delete layer.patternId; delete layer.patternSize; delete layer.patternOpacity;
+    document.getElementById('textPatternColorControls').style.display = 'none';
+    document.getElementById('patternPlaceholder').style.display = 'block';
+    var soc = document.getElementById('textPatternSizeOpacityControls');
+    if (soc) soc.style.display = 'none';
+
+    // ✅ Thumbnail reset karo default image par
+    const previewImg = document.getElementById('textPatternThumbnail');
+    if (previewImg) previewImg.src = '/assets/images/pattern logo.avif';
+
+    if (window.saveCustomizations) window.saveCustomizations();
+};
 
     window.clearTextMascot = function () {
         if (!window.currentApplicationLayer) return;
@@ -2662,30 +2926,38 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
         document.getElementById('textMascotColorControls').style.display = 'none';
         document.getElementById('mascotPlaceholder').style.display = 'block';
         if (window.saveCustomizations) window.saveCustomizations();
+        var msoc = document.getElementById('textMascotSizeOpacityControls');
+        if (msoc) msoc.style.display = 'none';
+        // Reset mascot preview
+        var prev = document.getElementById('textMascotPreview');
+        if (prev) prev.innerHTML = '<span style="font-size:28px;">🦅</span>';
     };
 
-    window.updateTextPatternSize = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer || !layer.hasPattern || !layer.patternId) return;
-        const mainSvg = window.getMainSvg();
-        const pattern = mainSvg.querySelector(`#${layer.patternId}`);
-        if (!pattern) return;
-        pattern.setAttribute('patternTransform', `scale(${value / 100})`);
-        layer.patternSize = value;
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+   window.updateTextPatternSize = function (value) {
+    if (!window.currentApplicationLayer) return;
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer || !layer.hasPattern || !layer.patternId) return;
+    const mainSvg = window.getMainSvg();
+    const pattern = mainSvg.querySelector(`#${layer.patternId}`);
+    if (!pattern) return;
+    pattern.setAttribute('patternTransform', `scale(${value / 100})`);
+    layer.patternSize = value;
+    updateTextPatternButtonPreview(); // ✅ no argument
+    if (window.saveCustomizations) window.saveCustomizations();
+};
 
-    window.updateTextPatternOpacity = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer || !layer.hasPattern) return;
-        const textEl = document.getElementById(layer.id);
-        if (!textEl) return;
-        textEl.setAttribute('fill-opacity', value / 100);
-        layer.patternOpacity = value;
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+
+  window.updateTextPatternOpacity = function (value) {
+    if (!window.currentApplicationLayer) return;
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer || !layer.hasPattern) return;
+    const textEl = document.getElementById(layer.id);
+    if (!textEl) return;
+    textEl.setAttribute('fill-opacity', value / 100);
+    layer.patternOpacity = value;
+    updateTextPatternButtonPreview(); // ✅ no argument
+    if (window.saveCustomizations) window.saveCustomizations();
+};
 
     window.updateTextMascotSize = function (value) {
         if (!window.currentApplicationLayer) return;
@@ -2812,17 +3084,27 @@ if (!backendColors.length) backendColors = ['#FF0000', '#FF6600', '#FFFF00', '#0
                 text.setAttribute('text-anchor', 'middle');
                 text.setAttribute('dominant-baseline', 'middle');
                 text.setAttribute('paint-order', 'stroke fill');
-text.setAttribute('stroke-linejoin', 'miter');
+                text.setAttribute('stroke-linejoin', 'miter');
                 text.textContent = layer.text;
                 if (layer.rotation) text.setAttribute('transform', `rotate(${layer.rotation} ${centerX + layer.x} ${centerY + layer.y})`);
                 appGroup.appendChild(text);
 
                 if (layer.outlineStyle) { window.currentOutlineStyle = layer.outlineStyle; window.outlineColors = { ...layer.outlineColors }; applyOutlineStyleToText(layer.id); }
-                if (layer.hasPattern && layer.patternSvg) { applyPatternToText(layer.patternSvg); if (layer.patternSize) updateTextPatternSize(layer.patternSize); if (layer.patternOpacity) updateTextPatternOpacity(layer.patternOpacity); }
+                if (layer.hasPattern && layer.patternSvg) {
+
+                    applyPatternToText(layer.patternSvg);
+
+                    updateTextPatternButtonPreview(layer.patternSvg);
+
+
+                    if (layer.patternSize) updateTextPatternSize(layer.patternSize); if (layer.patternOpacity) updateTextPatternOpacity(layer.patternOpacity);
+                }
                 if (layer.hasMascot && layer.mascotSvg) { applyMascotToText(layer.mascotSvg); if (layer.mascotSize) updateTextMascotSize(layer.mascotSize); if (layer.mascotOpacity) updateTextMascotOpacity(layer.mascotOpacity); if (layer.mascotCount) updateTextMascotCount(layer.mascotCount); }
             });
         });
     };
+
+
 
     window.initializeApplicationsOnLoad = function () {
         if (!window.applicationsApplied) return;
@@ -2986,167 +3268,11 @@ text.setAttribute('stroke-linejoin', 'miter');
     }
 
     // =================== MAIN: SHOW SELECTION BOX ===================
-    window.showSelectionBox = function (layerId) {
-        if (!layerId) { _hideSelectionBox(); return; }
 
-        var layer = window.findLayerById ? window.findLayerById(layerId) : null;
-        if (!layer) { _hideSelectionBox(); return; }
-
-
-        if (layer.view && layer.view !== window.currentView) {
-            _hideSelectionBox();
-            return;
-        }
-
-        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-        if (!mainSvg) return;
-
-        var svgEl = mainSvg.querySelector('#' + layerId);
-        if (!svgEl) { _hideSelectionBox(); return; }
-
-        var partEl = mainSvg.querySelector('#' + layer.partId);
-
-        // ---- Get bounding box ----
-        var elemBbox = _getElementBbox(svgEl, mainSvg);
-        if (!elemBbox || elemBbox.width === 0) return;
-
-        // ---- Check inside/outside part ----
-        var partBbox = null;
-        var isOutside = false;
-        if (partEl) {
-            try { partBbox = partEl.getBBox(); } catch (e) { }
-            if (partBbox) {
-                isOutside = !(
-                    elemBbox.x + elemBbox.width > partBbox.x &&
-                    elemBbox.x < partBbox.x + partBbox.width &&
-                    elemBbox.y + elemBbox.height > partBbox.y &&
-                    elemBbox.y < partBbox.y + partBbox.height
-                );
-            }
-        }
-
-        // ---- SVG coords → screen coords ----
-        var svgRect = mainSvg.getBoundingClientRect();
-        var vb = mainSvg.viewBox ? mainSvg.viewBox.baseVal : null;
-        var vbW = (vb && vb.width) ? vb.width : svgRect.width;
-        var vbH = (vb && vb.height) ? vb.height : svgRect.height;
-        var scaleX = svgRect.width / vbW;
-        var scaleY = svgRect.height / vbH;
-
-        var pad = 0;
-        var screenX = svgRect.left + (elemBbox.x - pad) * scaleX;
-        var screenY = svgRect.top + (elemBbox.y - pad) * scaleY;
-        var screenW = (elemBbox.width + pad * 2) * scaleX;
-        var screenH = (elemBbox.height + pad * 2) * scaleY;
-
-        // ---- Selection box div ----
-        var box = document.getElementById('appSelectionBox');
-        if (!box) {
-            box = document.createElement('div');
-            box.id = 'appSelectionBox';
-            box.style.cssText = [
-                'position:fixed',
-                'border-radius:4px',
-                'pointer-events:all',
-                'cursor:move',
-                'z-index:9998',
-                'box-sizing:border-box'
-            ].join(';');
-            document.body.appendChild(box);
-            box.addEventListener('mousedown', _selBoxDragStart);
-        }
-
-       var smartBorderColor = '#000000';
-if (partEl) {
-    try {
-        var pFill = partEl.getAttribute('fill') || '';
-        var pHex = pFill.replace('#','');
-        if (pHex.length === 3) pHex = pHex[0]+pHex[0]+pHex[1]+pHex[1]+pHex[2]+pHex[2];
-        if (/^[0-9a-fA-F]{6}$/.test(pHex)) {
-            var pr = parseInt(pHex.substr(0,2),16);
-            var pg = parseInt(pHex.substr(2,2),16);
-            var pb = parseInt(pHex.substr(4,2),16);
-            var lum = (0.299*pr + 0.587*pg + 0.114*pb)/255;
-            if (lum < 0.4) smartBorderColor = '#ffffff';
-        }
-    } catch(e2) {}
-}
-
-var smartBorder = '#000000';
-        if (partEl) {
-            try {
-                var pf = partEl.getAttribute('fill') || '';
-                var ph = pf.replace('#','');
-                if (ph.length === 3) ph = ph[0]+ph[0]+ph[1]+ph[1]+ph[2]+ph[2];
-                if (/^[0-9a-fA-F]{6}$/.test(ph)) {
-                    var lum = (0.299*parseInt(ph.substr(0,2),16) + 0.587*parseInt(ph.substr(2,2),16) + 0.114*parseInt(ph.substr(4,2),16)) / 255;
-                    if (lum < 0.4) smartBorder = '#ffffff';
-                }
-            } catch(ex) {}
-        }
-
-        if (isOutside) {
-            box.style.border = '2px dashed #FF4444';
-            box.style.background = 'transparent';
-            box.style.boxShadow = 'none';
-        } else {
-            box.style.border = '2px solid ' + smartBorder;
-            box.style.background = 'transparent';
-            box.style.boxShadow = 'none';
-        }
-
-
-        box.style.left = screenX + 'px';
-        box.style.top = screenY + 'px';
-        box.style.width = screenW + 'px';
-        box.style.height = screenH + 'px';
-        box.style.display = 'block';
-
-_updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderColor);
-
-        // ---- Bring Inside button ----
-        var bringBtn = document.getElementById('appBringInsideBtn');
-        if (isOutside) {
-            if (!bringBtn) {
-                bringBtn = document.createElement('button');
-                bringBtn.id = 'appBringInsideBtn';
-                bringBtn.style.cssText = [
-                    'position:fixed',
-                    'background:#FF4444',
-                    'color:#fff',
-                    'border:none',
-                    'border-radius:4px',
-                    'padding:5px 12px',
-                    'font-size:11px',
-                    'font-weight:700',
-                    'cursor:pointer',
-                    'z-index:9999',
-                    'white-space:nowrap',
-                    'pointer-events:all',
-                    'user-select:none',
-                    'letter-spacing:.5px'
-                ].join(';');
-                document.body.appendChild(bringBtn);
-            }
-            bringBtn.textContent = '⬅ Bring Inside';
-            bringBtn.style.left = (screenX + screenW / 2 - 54) + 'px';
-            bringBtn.style.top = Math.max(4, screenY - 30) + 'px';
-            bringBtn.style.display = 'block';
-            bringBtn.onclick = function (e) {
-                e.stopPropagation();
-                _bringElementInside(layerId, layer);
-            };
-        } else {
-            if (bringBtn) bringBtn.style.display = 'none';
-        }
-
-        window._oobState.selectedLayerId = layerId;
-        window._oobState._layer = layer;
-    };
 
     // ---- Corner handles ----
-   function _updateCornerHandles(sx, sy, sw, sh, isOutside, borderColor) {
-    var color = isOutside ? '#FF4444' : (borderColor || '#000000');
+    function _updateCornerHandles(sx, sy, sw, sh, isOutside, borderColor) {
+        var color = isOutside ? '#FF4444' : (borderColor || '#000000');
         var corners = [
             { id: 'sh-tl', l: sx - 5, t: sy - 5 },
             { id: 'sh-tr', l: sx + sw - 5, t: sy - 5 },
@@ -3340,32 +3466,32 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
     })();
 
     // SVG background click = deselect
-   document.addEventListener('click', function (e) {
-    var box = document.getElementById('appSelectionBox');
-    var bBtn = document.getElementById('appBringInsideBtn');
-    if (box && box.contains(e.target)) return;
-    if (bBtn && bBtn.contains(e.target)) return;
+    document.addEventListener('click', function (e) {
+        var box = document.getElementById('appSelectionBox');
+        var bBtn = document.getElementById('appBringInsideBtn');
+        if (box && box.contains(e.target)) return;
+        if (bBtn && bBtn.contains(e.target)) return;
 
-    var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-    if (!mainSvg) return;
+        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
 
-    if (mainSvg.contains(e.target)) {
-        var clickedLayer = false;
-        var el = e.target;
-        while (el && el !== mainSvg) {
-            if (el.id && el.id.startsWith('app-group-')) { clickedLayer = true; break; }
-            if (el.id && window.findLayerById && window.findLayerById(el.id)) { clickedLayer = true; break; }
-            el = el.parentElement;
+        if (mainSvg.contains(e.target)) {
+            var clickedLayer = false;
+            var el = e.target;
+            while (el && el !== mainSvg) {
+                if (el.id && el.id.startsWith('app-group-')) { clickedLayer = true; break; }
+                if (el.id && window.findLayerById && window.findLayerById(el.id)) { clickedLayer = true; break; }
+                el = el.parentElement;
+            }
+            if (!clickedLayer) {
+                _hideSelectionBox();
+                window.currentApplicationLayer = null;
+                var controls = document.getElementById('applicationLayerControls');
+                if (controls) controls.style.display = 'none';
+                if (window.updateApplicationLayersList) window.updateApplicationLayersList();
+            }
         }
-        if (!clickedLayer) {
-            _hideSelectionBox();
-            window.currentApplicationLayer = null;
-            var controls = document.getElementById('applicationLayerControls');
-            if (controls) controls.style.display = 'none';
-            if (window.updateApplicationLayersList) window.updateApplicationLayersList();
-        }
-    }
-});
+    });
 
     // Resize / scroll update
     window.addEventListener('resize', function () {
@@ -3828,10 +3954,10 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
 
 
 
-// =================== WHEEL INIT ===================
+    // =================== WHEEL INIT ===================
     function init() {
         var wheel = document.getElementById('rotationWheel');
-        var dot   = document.getElementById('rotationDot');
+        var dot = document.getElementById('rotationDot');
         if (!wheel || !dot) { setTimeout(init, 400); return; }
 
         var angle = 0, dragging = false, startAngle = 0, startRot = 0;
@@ -3845,27 +3971,27 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
             return Math.atan2(ey - cy, ex - cx) * (180 / Math.PI) + 90;
         }
 
-   window.setWheelAngle = function(a) {
-    angle = ((a % 360) + 360) % 360;
+        window.setWheelAngle = function (a) {
+            angle = ((a % 360) + 360) % 360;
 
-    // Dot wheel center se edge tak ka radius = 50px (wheel ka half)
-    // Dot top:-6px hai — matlab center se 50px upar (radius) pe hai
-    // transformOrigin = wheel center relative to dot
-    // Dot left:50% translateX(-50%) hai — matlab horizontally centered
-    // Vertically: dot top = -6px, wheel center = 50px from top of wheel
-    // So origin from dot's perspective = center is 50+6=56px below dot's top
-    dot.style.transformOrigin = '50% 56px';
-    dot.style.transform = 'translateX(-50%) rotate(' + angle + 'deg)';
+            // Dot wheel center se edge tak ka radius = 50px (wheel ka half)
+            // Dot top:-6px hai — matlab center se 50px upar (radius) pe hai
+            // transformOrigin = wheel center relative to dot
+            // Dot left:50% translateX(-50%) hai — matlab horizontally centered
+            // Vertically: dot top = -6px, wheel center = 50px from top of wheel
+            // So origin from dot's perspective = center is 50+6=56px below dot's top
+            dot.style.transformOrigin = '50% 56px';
+            dot.style.transform = 'translateX(-50%) rotate(' + angle + 'deg)';
 
-    var manual = document.getElementById('rotationManual');
-    var hidden = document.getElementById('rotation');
-    var display = document.getElementById('rotationValue');
-    if (manual) manual.value = Math.round(angle);
-    if (hidden) hidden.value = Math.round(angle);
-    if (display) display.textContent = Math.round(angle);
-};
+            var manual = document.getElementById('rotationManual');
+            var hidden = document.getElementById('rotation');
+            var display = document.getElementById('rotationValue');
+            if (manual) manual.value = Math.round(angle);
+            if (hidden) hidden.value = Math.round(angle);
+            if (display) display.textContent = Math.round(angle);
+        };
 
-        wheel.addEventListener('mousedown', function(e) {
+        wheel.addEventListener('mousedown', function (e) {
             if (e.target.tagName === 'INPUT') return;
             dragging = true;
             var c = getCenter();
@@ -3875,7 +4001,7 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
             e.preventDefault();
         });
 
-        window.addEventListener('mousemove', function(e) {
+        window.addEventListener('mousemove', function (e) {
             if (!dragging) return;
             var c = getCenter();
             var a = getAngle(c[0], c[1], e.clientX, e.clientY);
@@ -3884,13 +4010,13 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
             updateRotation(Math.round(newAngle));
         });
 
-        window.addEventListener('mouseup', function() {
+        window.addEventListener('mouseup', function () {
             if (!dragging) return;
             dragging = false;
             wheel.style.cursor = 'grab';
         });
 
-        wheel.addEventListener('touchstart', function(e) {
+        wheel.addEventListener('touchstart', function (e) {
             if (e.target.tagName === 'INPUT') return;
             dragging = true;
             var t = e.touches[0];
@@ -3900,7 +4026,7 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
             e.preventDefault();
         }, { passive: false });
 
-        window.addEventListener('touchmove', function(e) {
+        window.addEventListener('touchmove', function (e) {
             if (!dragging) return;
             var t = e.touches[0];
             var c = getCenter();
@@ -3910,13 +4036,13 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
             updateRotation(Math.round(newAngle));
         });
 
-        window.addEventListener('touchend', function() { dragging = false; });
+        window.addEventListener('touchend', function () { dragging = false; });
 
-  console.log('✅ Rotation wheel ready');
+        console.log('✅ Rotation wheel ready');
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() { setTimeout(init, 500); });
+        document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 500); });
     } else {
         setTimeout(init, 500);
     }
@@ -3950,9 +4076,9 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
 
 
     // ============================================================
-// APPLICATION TEXT — SMART SELECTION BOX + RESIZE HANDLES
-// Yeh file apni existing JS ke BAAD load karo
-// ============================================================
+    // APPLICATION TEXT — SMART SELECTION BOX + RESIZE HANDLES
+    // Yeh file apni existing JS ke BAAD load karo
+    // ============================================================
 
     'use strict';
 
@@ -3996,49 +4122,88 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
 
     // =================== GET ELEMENT SCREEN BBOX ===================
     function _getScreenBbox(el) {
-        if (!el) return null;
-        try {
-            var cr = el.getBoundingClientRect();
-            if (cr.width > 0 && cr.height > 0) {
-                return { left: cr.left, top: cr.top, right: cr.right, bottom: cr.bottom, width: cr.width, height: cr.height };
-            }
-        } catch (e) {}
 
-        // Fallback: SVG getBBox → screen
-        var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-        if (!mainSvg) return null;
-        try {
-            var svgBb = el.getBBox();
-            var tl = _svgToScreen(svgBb.x, svgBb.y);
-            var br = _svgToScreen(svgBb.x + svgBb.width, svgBb.y + svgBb.height);
-            return { left: tl.x, top: tl.y, right: br.x, bottom: br.y, width: br.x - tl.x, height: br.y - tl.y };
-        } catch (e2) {}
-        return null;
+        if (!el) return null;
+
+        const rect = el.getBoundingClientRect();
+
+        return {
+            left: rect.left,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+            width: rect.width,
+            height: rect.height
+        };
     }
 
     // =================== HANDLE POSITIONS ===================
     // 8 handles: tl, tm, tr, ml, mr, bl, bm, br
     var HANDLE_IDS = ['tl', 'tm', 'tr', 'ml', 'mr', 'bl', 'bm', 'br'];
     var HANDLE_CURSOR = {
-        tl: 'nwse-resize', tm: 'ns-resize',  tr: 'nesw-resize',
-        ml: 'ew-resize',                      mr: 'ew-resize',
-        bl: 'nesw-resize', bm: 'ns-resize',  br: 'nwse-resize'
+        tl: 'nwse-resize', tm: 'ns-resize', tr: 'nesw-resize',
+        ml: 'ew-resize', mr: 'ew-resize',
+        bl: 'nesw-resize', bm: 'ns-resize', br: 'nwse-resize'
     };
 
     function _handlePos(sb, id) {
-        // sb = screen bbox {left,top,right,bottom,width,height}
+
         var cx = (sb.left + sb.right) / 2;
         var cy = (sb.top + sb.bottom) / 2;
-        var map = {
-            tl: { x: sb.left,  y: sb.top    },
-            tm: { x: cx,        y: sb.top    },
-            tr: { x: sb.right,  y: sb.top    },
-            ml: { x: sb.left,   y: cy        },
-            mr: { x: sb.right,  y: cy        },
-            bl: { x: sb.left,   y: sb.bottom },
-            bm: { x: cx,        y: sb.bottom },
-            br: { x: sb.right,  y: sb.bottom }
+
+        var o = window.handleOffsets || {
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            cornerX: 0,
+            cornerY: 0
         };
+
+        var map = {
+
+            tl: {
+                x: sb.left + o.cornerX,
+                y: sb.top + o.cornerY
+            },
+
+            tm: {
+                x: cx,
+                y: sb.top + o.top
+            },
+
+            tr: {
+                x: sb.right + o.cornerX,
+                y: sb.top + o.cornerY
+            },
+
+            ml: {
+                x: sb.left + o.left,
+                y: cy
+            },
+
+            mr: {
+                x: sb.right + o.right,
+                y: cy
+            },
+
+            bl: {
+                x: sb.left + o.cornerX,
+                y: sb.bottom + o.cornerY
+            },
+
+            bm: {
+                x: cx,
+                y: sb.bottom + o.bottom
+            },
+
+            br: {
+                x: sb.right + o.cornerX,
+                y: sb.bottom + o.cornerY
+            }
+
+        };
+
         return map[id];
     }
 
@@ -4053,8 +4218,8 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
                 'pointer-events:none',
                 'z-index:9990',
                 'box-sizing:border-box',
-'border:none',
-'background:transparent',
+                'border:none',
+                'background:transparent',
                 'border-radius:3px',
                 'display:none'
             ].join(';');
@@ -4075,7 +4240,7 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
                 'width:10px',
                 'height:10px',
                 'background:var(--handleColor)',
-'border:2px solid var(--handleBorder)',
+                'border:2px solid var(--handleBorder)',
 
                 'border-radius:2px',
                 'z-index:9991',
@@ -4104,34 +4269,34 @@ _updateCornerHandles(screenX, screenY, screenW, screenH, isOutside, smartBorderC
         var mainSvg = window.getMainSvg ? window.getMainSvg() : null;
         if (!mainSvg) return;
 
-    var el = mainSvg.querySelector('#' + layerId);
-if (!el) { _hideAppSelBox(); return; }
+        var el = mainSvg.querySelector('#' + layerId);
+        if (!el) { _hideAppSelBox(); return; }
 
 
-// ✅ Detect object color brightness (handles auto black/white)
-let fillColor = el.getAttribute('fill') || '#000';
+        // ✅ Detect object color brightness (handles auto black/white)
+        let fillColor = el.getAttribute('fill') || '#000';
 
-function getBrightness(hex){
-    hex = hex.replace('#','');
+        function getBrightness(hex) {
+            hex = hex.replace('#', '');
 
-    if(hex.length === 3){
-        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-    }
+            if (hex.length === 3) {
+                hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+            }
 
-    let r=parseInt(hex.substr(0,2),16);
-    let g=parseInt(hex.substr(2,2),16);
-    let b=parseInt(hex.substr(4,2),16);
+            let r = parseInt(hex.substr(0, 2), 16);
+            let g = parseInt(hex.substr(2, 2), 16);
+            let b = parseInt(hex.substr(4, 2), 16);
 
-    return (r*299+g*587+b*114)/1000;
-}
+            return (r * 299 + g * 587 + b * 114) / 1000;
+        }
 
-let brightness = getBrightness(fillColor);
+        let brightness = getBrightness(fillColor);
 
-let handleColor = brightness > 180 ? '#000' : '#fff';
-let handleBorder = brightness > 180 ? '#fff' : '#000';
+        let handleColor = brightness > 180 ? '#000' : '#fff';
+        let handleBorder = brightness > 180 ? '#fff' : '#000';
 
-document.documentElement.style.setProperty('--handleColor', handleColor);
-document.documentElement.style.setProperty('--handleBorder', handleBorder);
+        document.documentElement.style.setProperty('--handleColor', handleColor);
+        document.documentElement.style.setProperty('--handleBorder', handleBorder);
 
         var sb = _getScreenBbox(el);
         if (!sb || sb.width < 2) return;
@@ -4139,29 +4304,29 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
         _sel.layerId = layerId;
         _sel.layer = layer;
 
-        var pad = 2;
+        var pad = -4;
         var box = _ensureBox();
-        box.style.left   = (sb.left   - pad) + 'px';
-        box.style.top    = (sb.top    - pad) + 'px';
-        box.style.width  = (sb.width  + pad * 2) + 'px';
+        box.style.left = (sb.left - pad) + 'px';
+        box.style.top = (sb.top - pad) + 'px';
+        box.style.width = (sb.width + pad * 2) + 'px';
         box.style.height = (sb.height + pad * 2) + 'px';
         box.style.display = 'block';
 
         // Expanded bbox for handles
         var esb = {
-            left:   sb.left   - pad,
-            top:    sb.top    - pad,
-            right:  sb.right  + pad,
+            left: sb.left - pad,
+            top: sb.top - pad,
+            right: sb.right + pad,
             bottom: sb.bottom + pad,
-            width:  sb.width  + pad * 2,
+            width: sb.width + pad * 2,
             height: sb.height + pad * 2
         };
 
         HANDLE_IDS.forEach(function (id) {
             var h = _ensureHandle(id);
             var pos = _handlePos(esb, id);
-            h.style.left    = pos.x + 'px';
-            h.style.top     = pos.y + 'px';
+            h.style.left = pos.x + 'px';
+            h.style.top = pos.y + 'px';
             h.style.display = 'block';
         });
     };
@@ -4203,10 +4368,10 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
         _sel.startFontSize = parseInt(el.getAttribute('font-size')) || layer.fontSize || 2000;
 
         // Get starting SVG bbox
-        try { _sel.startBbox = el.getBBox(); } catch(ex) { _sel.startBbox = { x: 0, y: 0, width: 100, height: 100 }; }
+        try { _sel.startBbox = el.getBBox(); } catch (ex) { _sel.startBbox = { x: 0, y: 0, width: 100, height: 100 }; }
 
         document.addEventListener('mousemove', _onResizeMove);
-        document.addEventListener('mouseup',   _onResizeEnd);
+        document.addEventListener('mouseup', _onResizeEnd);
     }
 
     // =================== RESIZE MOVE ===================
@@ -4222,7 +4387,7 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
 
         // Delta in SVG coords
         var startSvg = _clientToSvg(_sel.startClient.x, _sel.startClient.y);
-        var curSvg   = _clientToSvg(e.clientX, e.clientY);
+        var curSvg = _clientToSvg(e.clientX, e.clientY);
         var dx = curSvg.x - startSvg.x;
         var dy = curSvg.y - startSvg.y;
 
@@ -4285,7 +4450,7 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
         _sel.isResizing = false;
         _sel.resizeHandle = null;
         document.removeEventListener('mousemove', _onResizeMove);
-        document.removeEventListener('mouseup',   _onResizeEnd);
+        document.removeEventListener('mouseup', _onResizeEnd);
 
         if (window.saveCustomizations) window.saveCustomizations();
         if (_sel.layerId) window.showAppSelectionBox(_sel.layerId);
@@ -4350,7 +4515,7 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
             _sel.startLayerY = _sel.layer.y || 0;
 
             document.addEventListener('mousemove', _onBoxDragMove);
-            document.addEventListener('mouseup',   _onBoxDragEnd);
+            document.addEventListener('mouseup', _onBoxDragEnd);
         });
     }
 
@@ -4362,7 +4527,7 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
         if (!mainSvg) return;
 
         var startSvg = _clientToSvg(_sel.startClient.x, _sel.startClient.y);
-        var curSvg   = _clientToSvg(e.clientX, e.clientY);
+        var curSvg = _clientToSvg(e.clientX, e.clientY);
         var dx = curSvg.x - startSvg.x;
         var dy = curSvg.y - startSvg.y;
 
@@ -4394,8 +4559,8 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
         }
 
         // Sync sidebar position sliders
-        var pxEl  = document.getElementById('posX');
-        var pyEl  = document.getElementById('posY');
+        var pxEl = document.getElementById('posX');
+        var pyEl = document.getElementById('posY');
         var pxVal = document.getElementById('posXValue');
         var pyVal = document.getElementById('posYValue');
         if (pxEl) pxEl.value = newX;
@@ -4412,7 +4577,7 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
     function _onBoxDragEnd() {
         _sel.isDragging = false;
         document.removeEventListener('mousemove', _onBoxDragMove);
-        document.removeEventListener('mouseup',   _onBoxDragEnd);
+        document.removeEventListener('mouseup', _onBoxDragEnd);
         if (window.saveCustomizations) window.saveCustomizations();
         if (_sel.layerId) window.showAppSelectionBox(_sel.layerId);
     }
@@ -4509,7 +4674,7 @@ document.documentElement.style.setProperty('--handleBorder', handleBorder);
             // Old box hide rakhein — new box use ho raha hai
             var oldBox = document.getElementById('appSelectionBox');
             if (oldBox) oldBox.style.display = 'none';
-            ['sh-tl','sh-tr','sh-bl','sh-br'].forEach(function(id){
+            ['sh-tl', 'sh-tr', 'sh-bl', 'sh-br'].forEach(function (id) {
                 var h = document.getElementById(id);
                 if (h) h.style.display = 'none';
             });

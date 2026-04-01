@@ -3,19 +3,10 @@
 @section('content')
 <div class="container-fluid">
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <h1 class="mb-0 fw-bold">Products Management</h1>
-        <div class="d-flex align-items-center gap-2">
-            <input type="text" id="searchInput" class="form-control form-control-sm"
-                placeholder="Search by name..." style="min-width: 220px;">
-            <a href="{{ route('products.create') }}" class="btn btn-dark" style="min-width: 150px;">+ Add Product</a>
-        </div>
-    </div>
+
 
     <!-- Action Buttons -->
-    <div class="mb-4 d-flex justify-content-end gap-2 flex-wrap">
-        <button id="addFeaturedBtn" class="btn btn-dark px-3">
+<div class="mt-2 d-flex justify-content-end gap-2 flex-wrap action-toolbar">        <button id="addFeaturedBtn" class="btn btn-dark px-3">
             <i class="bi bi-star-fill me-1"></i> Add to Featured
         </button>
         <button id="removeFeaturedBtn" class="btn btn-outline-secondary px-3">
@@ -35,13 +26,21 @@
         </button>
     </div>
 
-    @if(session('success'))
+    {{-- @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    @endif
-
+    @endif --}}
+<!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mt-5 flex-wrap gap-3">
+        <h1 class="mb-0 fw-bold">Products Management</h1>
+        <div class="d-flex align-items-center gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm"
+                placeholder="Search by name..." style="min-width: 220px;">
+            <a href="{{ route('products.create') }}" class="btn btn-dark" style="min-width: 150px;">+ Add Product</a>
+        </div>
+    </div>
     {{-- ═══════════════════════════════════════════════
          CATEGORY CARDS (top navigation — like Models page)
     ════════════════════════════════════════════════ --}}
@@ -318,6 +317,16 @@
 
 {{-- ═══ STYLES ═══ --}}
 <style>
+    .action-toolbar {
+    position: fixed;
+    top: 70px;        /* header ke niche fix */
+    left: 260px;      /* sidebar width */
+    right: 20px;
+    z-index: 9999;
+    background: white;
+    padding: 0px 0px 10px 10px ;
+    border-radius: 8px;
+}
 /* ── Category Cards Row ── */
 .cat-cards-row {
     display: flex;

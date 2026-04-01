@@ -8,7 +8,7 @@
     <div class="container-fluid">
 
         {{-- ── Page Header ── --}}
-        <div class="d-flex justify-content-center align-items-center mb-4 flex-wrap position-relative">
+        <div class="d-flex justify-content-center align-items-center  add-model flex-wrap position-relative">
             <h1 class="mb-2 text-center">All Models</h1>
             <a href="{{ route('models.create') }}" class="btn btn-dark mb-2 position-absolute end-0">
                 <i class="bi bi-plus-lg"></i> Add Model
@@ -348,18 +348,25 @@
 
     {{-- ════ STYLES ════ --}}
     <style>
-        .block-toolbar {
+         .block-toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background: #f5f5f5;
             border: 1.5px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 0px 0px 10px 10px ;
             padding: 10px 16px;
             flex-wrap: wrap;
             gap: 10px;
+            position: fixed;
+    top: 75px;
+    left: 260px;
+    right: 20px;
+    z-index: 9999;
         }
-
+.add-model{
+    margin-top: 5%;
+}
         .cat-cards-row {
             display: flex;
             gap: 14px;
