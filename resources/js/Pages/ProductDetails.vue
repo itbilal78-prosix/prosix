@@ -48,6 +48,7 @@ backgroundImage: `url(${isModel ? modelDisplayImage : displayImage})`,
                 }"
               ></div>
 
+
              <template v-if="isModel">
   <img :src="modelDisplayImage" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
 </template>
@@ -74,7 +75,7 @@ backgroundImage: `url(${isModel ? modelDisplayImage : displayImage})`,
             </div>
           </div>
         </div>
-
+    
         <!-- ══ RIGHT: Product Info ══ -->
         <div class="product-info">
           <h1 class="product-title">{{ product.name }}</h1>
