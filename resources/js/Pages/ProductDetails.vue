@@ -231,14 +231,16 @@ backgroundImage: `url(${isModel ? modelDisplayImage : displayImage})`,
             </div>
             <div>
               <h3 class="spec-heading">Specifications</h3>
-              <table class="spec-table">
-                <tr><td>Type</td><td>{{ product.type || 'Sportswear' }}</td></tr>
-                <tr><td>Fit</td><td>Athletic Regular Fit</td></tr>
-                <tr><td>Care</td><td>Machine Wash Cold</td></tr>
-                <tr v-if="productSizes.length"><td>Available Sizes</td><td>{{ productSizes.join(', ') }}</td></tr>
-                <tr v-if="productColors.length"><td>Colors</td><td>{{ productColors.map(c=>c.name).join(', ') }}</td></tr>
-                <tr v-if="product.stock_quantity"><td>In Stock</td><td>{{ product.stock_quantity }} units</td></tr>
-              </table>
+<table class="spec-table">
+  <tbody>
+    <tr><td>Type</td><td>{{ product.type || 'Sportswear' }}</td></tr>
+    <tr><td>Fit</td><td>Athletic Regular Fit</td></tr>
+    <tr><td>Care</td><td>Machine Wash Cold</td></tr>
+    <tr v-if="productSizes.length"><td>Available Sizes</td><td>{{ productSizes.join(', ') }}</td></tr>
+    <tr v-if="productColors.length"><td>Colors</td><td>{{ productColors.map(c=>c.name).join(', ') }}</td></tr>
+    <tr v-if="product.stock_quantity"><td>In Stock</td><td>{{ product.stock_quantity }} units</td></tr>
+  </tbody>
+</table>
             </div>
           </div>
         </div>
@@ -474,8 +476,15 @@ const thumbList = computed(() => {
       const viewObj = views[v]
       if (!viewObj) return
       // thumbnail jaise dikhna hai — white version use karo (actual design)
-      const src = viewObj.white || viewObj.black || viewObj.svg || null
-      if (src) list.push({ src, label: v.charAt(0).toUpperCase() + v.slice(1), colorHex: null })
+const src =
+  viewObj.preview ||
+  viewObj.render ||
+  viewObj.output ||
+  viewObj.svg ||
+  viewObj.black ||
+  viewObj.white ||
+  null
+        if (src) list.push({ src, label: v.charAt(0).toUpperCase() + v.slice(1), colorHex: null })
     })
     // Fallback
     if (!list.length && product.value.thumbnail) {
@@ -734,7 +743,8 @@ const fetchRelated = async () => {
       if (subId) { try { const r = await axios.get(`/api/subcategories/${subId}/models`); models = r.data.models || [] } catch {} }
       if (!models.length && catId) { const r = await axios.get(`/api/categories/${catId}/models`); models = r.data.models || [] }
       relatedItems.value = models.filter(m => m.id !== product.value.id)
-    } else {
+    }
+    else {
       const res = await axios.get('/api/products')
       let all = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.products) ? res.data.products : []
       relatedItems.value = all.filter(p => p?.id && p.id !== product.value?.id)
