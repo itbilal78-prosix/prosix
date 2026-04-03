@@ -579,7 +579,7 @@ addCustomColor(e) {
   background: white;
   padding: 25px;
   border-radius: 14px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
