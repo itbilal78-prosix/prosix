@@ -12,17 +12,24 @@
 
             <!-- Left thumbnails -->
 <div class="thumbnails" v-if="thumbList.length > 0">
-                  <div
-                v-for="(thumb, ti) in thumbList"
-                :key="ti"
-                class="thumb"
-                :class="{ active: activeThumbIdx === ti }"
-                @click="selectThumb(ti)"
-              >
-                <img :src="thumb.src" :alt="thumb.label" />
-                <span v-if="thumb.colorHex" class="thumb-dot" :style="{ background: thumb.colorHex }"></span>
-              </div>
-            </div>
+  <div
+    v-for="(thumb, ti) in thumbList"
+    :key="ti"
+    class="thumb"
+    :class="{ active: activeThumbIdx === ti }"
+    @click="selectThumb(ti)"
+  >
+    <!-- Layered thumb (SVG+white+black) -->
+    <div v-if="thumb.isLayered" class="thumb-layer-wrap">
+      <img v-if="thumb.svgSrc"   :src="thumb.svgSrc"   class="thumb-layer thumb-svg" />
+      <img v-if="thumb.whiteSrc" :src="thumb.whiteSrc" class="thumb-layer thumb-white" />
+      <img v-if="thumb.blackSrc" :src="thumb.blackSrc" class="thumb-layer thumb-black" />
+    </div>
+    <!-- Normal thumb -->
+    <img v-else :src="thumb.src" :alt="thumb.label" />
+    <span v-if="thumb.colorHex" class="thumb-dot" :style="{ background: thumb.colorHex }"></span>
+  </div>
+</div>
 
             <div
               :class="['main-image-wrapper', { 'is-model': isModel }]"
@@ -48,9 +55,15 @@ backgroundImage: `url(${isModel ? modelDisplayImage : displayImage})`,
                 }"
               ></div>
 
-
-             <template v-if="isModel">
-  <img :src="modelDisplayImage" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
+<template v-if="isModel">
+  <!-- Layered rendering — bilkul category page ki tarah -->
+  <div v-if="activeThumb && activeThumb.isLayered" class="model-layer-container">
+    <img v-if="activeThumb.svgSrc"   :src="activeThumb.svgSrc"   class="layer-img layer-svg" />
+    <img v-if="activeThumb.whiteSrc" :src="activeThumb.whiteSrc" class="layer-img layer-white" />
+    <img v-if="activeThumb.blackSrc" :src="activeThumb.blackSrc" class="layer-img layer-black" />
+  </div>
+  <!-- Merged thumbnail -->
+  <img v-else :src="modelDisplayImage" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
 </template>
 
               <template v-else>
@@ -75,7 +88,7 @@ backgroundImage: `url(${isModel ? modelDisplayImage : displayImage})`,
             </div>
           </div>
         </div>
-    
+
         <!-- ══ RIGHT: Product Info ══ -->
         <div class="product-info">
           <h1 class="product-title">{{ product.name }}</h1>
@@ -469,41 +482,59 @@ const globalGallery = computed(() => product.value.gallery_images || [])
 
 const thumbList = computed(() => {
   if (isModel.value) {
-    // Views directly product.value.views mein hain
     const views = product.value.views || {}
     const list = []
     const viewKeys = ['front', 'back', 'left', 'right']
     viewKeys.forEach(v => {
       const viewObj = views[v]
       if (!viewObj) return
-      // thumbnail jaise dikhna hai — white version use karo (actual design)
-const src =
-  viewObj.preview ||
-  viewObj.render ||
-  viewObj.output ||
-  viewObj.svg ||
-  viewObj.black ||
-  viewObj.white ||
-  null
-        if (src) list.push({ src, label: v.charAt(0).toUpperCase() + v.slice(1), colorHex: null })
+
+      // Agar backend ka merged thumbnail hai toh direct use karo
+      if (viewObj.thumbnail || product.value.thumbnail) {
+        list.push({
+          src: viewObj.thumbnail || product.value.thumbnail,
+          label: v.charAt(0).toUpperCase() + v.slice(1),
+          colorHex: null,
+          // layered rendering ke liye
+          isLayered: false,
+        })
+        return
+      }
+
+      // Warna layered approach
+     const hasSvg   = viewObj.svg   || viewObj.svg_url
+const hasWhite = viewObj.white || viewObj.white_image_url
+const hasBlack = viewObj.black || viewObj.black_image_url
+
+      if (hasSvg || hasWhite || hasBlack) {
+        list.push({
+          src: hasSvg || hasWhite || hasBlack, // fallback src
+          label: v.charAt(0).toUpperCase() + v.slice(1),
+          colorHex: null,
+          isLayered: true,
+          svgSrc:   hasSvg   || null,
+          whiteSrc: hasWhite || null,
+          blackSrc: hasBlack || null,
+        })
+      }
     })
-    // Fallback
+
     if (!list.length && product.value.thumbnail) {
-      list.push({ src: product.value.thumbnail, label: 'Front', colorHex: null })
+      list.push({ src: product.value.thumbnail, label: 'Front', colorHex: null, isLayered: false })
     }
     return list
   }
 
-  // Normal product (unchanged)
+  // Normal product — unchanged
   const list = []
   const color = selectedColorIdx.value >= 0 ? productColors.value[selectedColorIdx.value] : null
   const colorHasImages = color && (color.image || (color.gallery && color.gallery.length > 0))
   if (colorHasImages) {
-    if (color.image) list.push({ src: color.image, label: color.name, colorHex: color.hex })
-    ;(color.gallery || []).forEach((src, i) => list.push({ src, label: `${color.name} #${i + 1}`, colorHex: null }))
+    if (color.image) list.push({ src: color.image, label: color.name, colorHex: color.hex, isLayered: false })
+    ;(color.gallery || []).forEach((src, i) => list.push({ src, label: `${color.name} #${i + 1}`, colorHex: null, isLayered: false }))
   } else {
-    if (product.value.image) list.push({ src: product.value.image, label: 'Original', colorHex: null })
-    globalGallery.value.forEach((src, i) => list.push({ src, label: `Gallery #${i + 1}`, colorHex: null }))
+    if (product.value.image) list.push({ src: product.value.image, label: 'Original', colorHex: null, isLayered: false })
+    globalGallery.value.forEach((src, i) => list.push({ src, label: `Gallery #${i + 1}`, colorHex: null, isLayered: false }))
   }
   return list
 })
@@ -514,6 +545,13 @@ const selectThumb = (idx) => {
   previewImage.value   = null
 }
 
+const activeThumb = computed(() => {
+  if (thumbList.value.length > 0 && activeThumbIdx.value < thumbList.value.length) {
+    return thumbList.value[activeThumbIdx.value]
+  }
+  return null
+})
+
 const displayImage = computed(() => {
   if (previewImage.value) return previewImage.value
   if (thumbList.value.length > 0 && activeThumbIdx.value < thumbList.value.length) {
@@ -522,15 +560,13 @@ const displayImage = computed(() => {
   return product.value.image || ''
 })
 const modelDisplayImage = computed(() => {
-  // Active thumb ki image dikhao
-  if (thumbList.value.length > 0 && activeThumbIdx.value < thumbList.value.length) {
-    return thumbList.value[activeThumbIdx.value].src
-  }
-  // Fallback: front white ya thumbnail
+  // Agar active thumb merged/thumbnail hai
+  const thumb = activeThumb.value
+  if (thumb && !thumb.isLayered) return thumb.src
+
+  // Fallback: product thumbnail
   const views = product.value.views || {}
-  return views.front?.white
-    || views.front?.black
-    || views.front?.svg
+  return views.front?.thumbnail
     || product.value.thumbnail
     || product.value.image
     || ''
@@ -737,6 +773,8 @@ const res = await axios.get(`/api/models/${route.params.id}/product`)
 }
 
 const fetchRelated = async () => {
+    relatedfetch.value=[]
+
   relatedLoading.value = true; relatedItems.value = []
   try {
     if (isModel.value) {
@@ -835,6 +873,49 @@ watch(() => route.params.id, async (newId) => {
 .img-action-btn:hover,.img-action-btn.active{background:#000;color:#fff;border-color:#000}
 .wishlist-btn{right:14px}.share-btn{right:66px}
 
+
+
+
+
+
+/* Thumb layered wrapper */
+.thumb-layer-wrap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.thumb-layer {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  object-fit: contain;
+  padding: 2px;
+}
+.thumb-svg   { z-index: 1; }
+.thumb-white { z-index: 2; mix-blend-mode: multiply; }
+.thumb-black { z-index: 3; mix-blend-mode: screen; }
+
+/* Main image layered container */
+.model-layer-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.layer-img {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  object-fit: contain;
+  padding: 16px;
+}
+.layer-svg   { z-index: 1; }
+.layer-white { z-index: 2; mix-blend-mode: multiply; }
+.layer-black { z-index: 3; mix-blend-mode: screen; }
 /* ══ ZOOM LENS ══ */
 .zoom-lens {
   position: absolute;

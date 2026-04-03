@@ -318,7 +318,7 @@
                 </div>
 
                 {{-- Tab Content: COLORS --}}
-                <div id="colorsTabContent" class="tab-content" style="display:block;">
+                <div id="colorsTabContent" class="tab-content"  style="display:block;">
                     <div style="display:flex; gap:5px; align-items:flex-start;">
 
                         <div id="currentOutlineDisplay" onclick="openAccentsModal()"
