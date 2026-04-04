@@ -186,7 +186,6 @@
             box.style.width = '32px';
             box.style.height = '32px';
             box.style.background = color;
-            box.style.borderRadius = '6px';
             box.style.cursor = 'pointer';
             box.style.border = color.toUpperCase() === selectedColor.toUpperCase() ? '3px solid #007bff' : '2px solid #ddd';
             box.style.transition = 'all 0.2s';
@@ -678,7 +677,6 @@
         const rad = rotDeg * Math.PI / 180;
         const cos = Math.cos(rad);
         const sin = Math.sin(rad);
-        if (flipX === -1) dx = -dx;
         return { dx: dx * cos + dy * sin, dy: -dx * sin + dy * cos };
     }
 
@@ -751,13 +749,86 @@
         if (event) event.stopPropagation();
         const layer = window.findLayerById ? window.findLayerById(layerId) : null;
         if (!layer) return;
-        layer.flipX = (layer.flipX || 1) * -1;
-        _applyFlipTransform(layer, window.getMainSvg ? window.getMainSvg() : null);
+
+        // 4-state cycle: 0=normal, 1=flipX, 2=flipY, 3=flipBoth
+        const current = layer._flipState || 0;
+        const next = (current + 1) % 4;
+        layer._flipState = next;
+
+        switch (next) {
+            case 0: layer.flipX = 1; layer.flipY = 1; break; // normal
+            case 1: layer.flipX = -1; layer.flipY = 1; break; // left-right
+            case 2: layer.flipX = 1; layer.flipY = -1; break; // top-bottom
+            case 3: layer.flipX = -1; layer.flipY = -1; break; // dono
+        }
+
+        _applyFlipTransformXY(layer, window.getMainSvg ? window.getMainSvg() : null);
         _updateFlipBtnUI(layerId, layer);
         if (window.saveCustomizations) window.saveCustomizations();
         setTimeout(() => { _showPlusIcon(layerId); }, 100);
     };
 
+    window._applyFlipTransformXY = function (layer, mainSvg) {
+        if (!mainSvg) return;
+        const el = mainSvg.querySelector('#' + layer.id);
+        if (!el) return;
+
+        const flipX = layer.flipX || 1;
+        const flipY = layer.flipY || 1;
+        const rot = layer.rotation || 0;
+        let transform;
+
+        if (layer.type === 'direct-mascot') {
+            const cx = (layer._cx || 0) + (layer.x || 0);
+            const cy = (layer._cy || 0) + (layer.y || 0);
+            transform = `translate(${cx},${cy}) rotate(${rot}) scale(${flipX},${flipY}) translate(${-cx},${-cy})`;
+        } else {
+            const x = parseFloat(el.getAttribute('x') || 0);
+            const y = parseFloat(el.getAttribute('y') || 0);
+            const sx = layer.scaleX || 1;
+            const sy = layer.scaleY || 1;
+
+            if (flipX !== 1 || flipY !== 1) {
+                transform = `translate(${x},${y}) scale(${flipX * sx},${flipY * sy}) translate(${-x},${-y})`;
+                if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
+            } else {
+                if (sx !== 1 || sy !== 1) {
+                    transform = `translate(${x},${y}) scale(${sx},${sy}) translate(${-x},${-y})`;
+                    if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
+                } else {
+                    transform = rot !== 0 ? `rotate(${rot} ${x} ${y})` : null;
+                }
+            }
+
+            // Outline elements bhi update karo
+            mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
+                if (transform) o.setAttribute('transform', transform);
+                else o.removeAttribute('transform');
+            });
+        }
+
+        if (transform) el.setAttribute('transform', transform);
+        else el.removeAttribute('transform');
+    };
+
+    function _applyFlipTransformXY(layer, mainSvg) { window._applyFlipTransformXY(layer, mainSvg); }
+    function _updateFlipBtnUI(layerId, layer) {
+        const icons = { 0: '↔', 1: '↔', 2: '↕', 3: '↕↔' };
+        const state = layer._flipState || 0;
+
+        document.querySelectorAll('.application-layer-item').forEach(item => {
+            if (item.dataset.layerId !== layerId) return;
+            const btn = item.querySelector('.flip-btn-h');
+            if (btn) {
+                btn.textContent = icons[state];
+                btn.style.background = state !== 0 ? '#1a1a1a' : 'transparent';
+                btn.style.color = state !== 0 ? '#fff' : 'inherit';
+            }
+            // Inline flip div bhi update karo (jo ↔ show karta hai)
+            const allDivs = item.querySelectorAll('div[onclick*="flipApplicationLayer"]');
+            allDivs.forEach(d => { d.textContent = icons[state]; });
+        });
+    }
     // ============================================================
     // =================== DRAGGABLE (MASCOT) ===================
     // ============================================================
@@ -844,17 +915,34 @@
             const mainSvg = element.ownerSVGElement;
             if (mainSvg && layer.flipX === -1) _applyFlipTransform(layer, mainSvg);
             _updatePlusIconPosition(layer.id);
+            const partEl2 = document.querySelector('#' + layer.partId);
+            if (partEl2) {
+                const bb2 = partEl2.getBBox();
+                const dispX = Math.round(newX - (bb2.x + bb2.width / 2));
+                const dispY = Math.round(newY - (bb2.y + bb2.height / 2));
+                const pxEl2 = document.getElementById('posX');
+                const pyEl2 = document.getElementById('posY');
+                if (pxEl2) { pxEl2.value = dispX; document.getElementById('posXValue').textContent = dispX; appFillSlider(pxEl2); }
+                if (pyEl2) { pyEl2.value = dispY; document.getElementById('posYValue').textContent = dispY; appFillSlider(pyEl2); }
+                window._showPositionIndicator(dispX, dispY);
+            }
         });
 
         document.addEventListener('mouseup', function () {
             if (!isDragging) return;
             isDragging = false;
+            window._hidePositionIndicator();
             const partElement = document.querySelector(`#${layer.partId}`);
             if (partElement) {
                 const bbox = partElement.getBBox();
                 layer.x = Math.round(parseFloat(element.getAttribute('x')) - (bbox.x + bbox.width / 2));
                 layer.y = Math.round(parseFloat(element.getAttribute('y')) - (bbox.y + bbox.height / 2));
                 if (window.currentApplicationLayer === layer.id) updateApplicationControls(layer);
+                const pxSlider = document.getElementById('posX');
+                const pySlider = document.getElementById('posY');
+                if (pxSlider) appFillSlider(pxSlider);
+                if (pySlider) appFillSlider(pySlider);
+
                 // ── Pattern/Mascot update after drag ──
                 if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
                 if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
@@ -867,7 +955,7 @@
     // =================== LAYER LIST ===================
     // ============================================================
 
-    window.updateApplicationLayersList = function () {
+   window.updateApplicationLayersList = function () {
         const container = document.getElementById('applicationLayersList');
         if (!container) return;
         container.innerHTML = '';
@@ -877,10 +965,22 @@
             return;
         }
 
-        let layerNum = 1;
+        // Pehle saari layers flat array mein collect karo
+        let allLayerEntries = [];
         Object.entries(window.applicationsApplied).forEach(([view, parts]) => {
             Object.entries(parts).forEach(([partId, layers]) => {
                 layers.forEach((layer, index) => {
+                    allLayerEntries.push({ view, partId, layer, index });
+                });
+            });
+        });
+
+        // REVERSE — SVG mein jo sabse upar hai woh list mein #1 pe aaye
+        allLayerEntries.reverse();
+
+        let layerNum = 1;
+        allLayerEntries.forEach(({ view, partId, layer, index }) => {
+
                     const viewShort = view.charAt(0).toUpperCase();
                     const isActive = window.currentApplicationLayer === layer.id;
                     const labelText = layer.type === 'direct-mascot'
@@ -896,30 +996,82 @@
                     item.dataset.view = view;
                     item.dataset.partId = partId;
                     item.dataset.index = index;
-                    item.style.cssText = `display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;margin-bottom:6px;border-radius:8px;background:${isActive ? '#000' : '#fff'};color:${isActive ? '#fff' : '#000'};border:2px solid ${isActive ? '#000' : '#e0e0e0'};cursor:pointer;transition:all 0.2s;user-select:none;`;
 
-                    item.innerHTML = `
-                        <div class="drag-handle" style="cursor:grab;font-size:16px;opacity:0.5;padding:0 4px;flex-shrink:0;" title="Drag to reorder">⠿</div>
-                        <div style="font-weight:700;font-size:13px;flex-shrink:0;">#${layerNum}</div>
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                ${labelText}
-                                <span style="background:#333;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:6px;">${viewShort}</span>
-                            </div>
-                            <div style="font-size:11px;opacity:.7">${typeLabel} • ${partId}</div>
-                        </div>
-                        <div class="flip-btn-h" onclick="window.flipApplicationLayer('${layer.id}',event)"
-                            style="cursor:pointer;font-size:14px;padding:4px 6px;border-radius:4px;flex-shrink:0;user-select:none;transition:all .15s;background:${flipOn ? '#1a1a1a' : '#eee'};color:${flipOn ? '#fff' : '#000'};">↔</div>
-                        <div onclick="duplicateApplicationLayer('${layer.id}',event)"
-                            style="cursor:pointer;font-size:13px;padding:4px 6px;border-radius:4px;background:#eee;color:#000;flex-shrink:0;">⧉</div>
-                        <div onclick="removeApplicationLayer('${layer.id}',event)"
-                            style="cursor:pointer;padding:0 6px;font-weight:700;flex-shrink:0;">×</div>`;
+item.style.cssText = `
+display:flex;
+align-items:center;
+gap:10px;
+width:100%;
+padding:8px 10px;
+margin-bottom:6px;
+background:${isActive ? '#5a5a5a' : '#7a7a7a'};
+color:#fff;
+border:none;
+border-radius:0;
+cursor:pointer;
+transition:all 0.2s;
+user-select:none;
+`;
+
+item.innerHTML = `
+<div style="
+background:#2f2f2f;
+color:#fff;
+font-weight:700;
+font-size:13px;
+padding:4px 8px;
+flex-shrink:0;
+">
+#${layerNum}
+</div>
+
+<div style="
+flex:1;
+display:flex;
+align-items:center;
+gap:8px;
+font-weight:700;
+font-size:14px;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+">
+<span style="
+overflow:hidden;
+text-overflow:ellipsis;
+white-space:nowrap;
+">
+${labelText.toUpperCase()}
+</span>
+</div>
+
+<div style="display:flex;gap:12px;align-items:center;flex-shrink:0;">
+<span style="
+background:#2f2f2f;
+color:#fff;
+padding:2px 6px;
+font-size:11px;
+font-weight:700;
+">
+${viewShort}
+</span>
+<div onclick="window.flipApplicationLayer('${layer.id}',event)"
+style="cursor:pointer;">↔</div>
+
+<div onclick="duplicateApplicationLayer('${layer.id}',event)"
+style="cursor:pointer;">⧉</div>
+
+<div onclick="removeApplicationLayer('${layer.id}',event)"
+style="cursor:pointer;">×</div>
+</div>
+`;
 
                     item.onclick = function (e) {
                         if (e.target.closest('.drag-handle')) return;
                         selectApplicationLayer(layer.id);
                     };
 
+                    // ── Drag & Drop ──
                     item.addEventListener('dragstart', e => {
                         e.dataTransfer.effectAllowed = 'move';
                         e.dataTransfer.setData('text/plain', layer.id);
@@ -928,29 +1080,46 @@
                         window._draggingView = view;
                         window._draggingPartId = partId;
                     });
-                    item.addEventListener('dragend', () => { item.style.opacity = '1'; window._draggingLayerId = null; });
-                    item.addEventListener('dragover', e => { e.preventDefault(); if (window._draggingLayerId !== layer.id) item.style.borderColor = '#007bff'; });
-                    item.addEventListener('dragleave', () => { item.style.borderColor = isActive ? '#000' : '#e0e0e0'; });
+
+                    item.addEventListener('dragend', () => {
+                        item.style.opacity = '1';
+                        window._draggingLayerId = null;
+                    });
+
+                    item.addEventListener('dragover', e => {
+                        e.preventDefault();
+                        if (window._draggingLayerId !== layer.id) item.style.outline = '2px solid #000000';
+                    });
+
+                    item.addEventListener('dragleave', () => {
+                        item.style.outline = 'none';
+                    });
+
                     item.addEventListener('drop', e => {
                         e.preventDefault();
+                        item.style.outline = 'none';
+
                         const fromId = window._draggingLayerId;
-                        if (fromId === layer.id || window._draggingView !== view || window._draggingPartId !== partId) return;
+                        if (!fromId || fromId === layer.id) return;
+                        if (window._draggingView !== view || window._draggingPartId !== partId) return;
+
                         const arr = window.applicationsApplied[view][partId];
                         const fromIdx = arr.findIndex(l => l.id === fromId);
-                        const toIdx = arr.findIndex(l => l.id === layer.id);
-                        if (fromIdx !== -1 && toIdx !== -1) {
-                            const [removed] = arr.splice(fromIdx, 1);
-                            arr.splice(toIdx, 0, removed);
-                            reorderSvgLayers(view, partId, arr);
-                            updateApplicationLayersList();
-                            if (window.saveCustomizations) window.saveCustomizations();
-                        }
+                        const toIdx   = arr.findIndex(l => l.id === layer.id);
+                        if (fromIdx === -1 || toIdx === -1) return;
+
+                        // List reverse hai isliye SVG array mein opposite direction mein move karo
+                        const [removed] = arr.splice(fromIdx, 1);
+                        const adjustedToIdx = toIdx <= fromIdx ? toIdx + 1 : toIdx;
+                        arr.splice(adjustedToIdx, 0, removed);
+
+                        reorderSvgLayers(view, partId, arr);
+                        updateApplicationLayersList();
+                        if (window.saveCustomizations) window.saveCustomizations();
                     });
 
                     container.appendChild(item);
                     layerNum++;
-                });
-            });
         });
     };
 
@@ -996,95 +1165,95 @@
         setTimeout(() => { _showPlusIcon(layerId); }, 80);
     };
 
- // ============================================================
-// =================== PLUS DRAG ICON + PART CLICK SELECT ===================
-// ============================================================
+    // ============================================================
+    // =================== PLUS DRAG ICON + PART CLICK SELECT ===================
+    // ============================================================
 
-var _plusState = {
-    layerId: null,
-    isDragging: false,
-    startClient: { x: 0, y: 0 },
-    startLayerX: 0,
-    startLayerY: 0
-};
+    var _plusState = {
+        layerId: null,
+        isDragging: false,
+        startClient: { x: 0, y: 0 },
+        startLayerX: 0,
+        startLayerY: 0
+    };
 
-function _ensurePlusIcon() {
-    let icon = document.getElementById('appPlusDragIcon');
-    if (!icon) {
-        icon = document.createElement('div');
-        icon.id = 'appPlusDragIcon';
-        icon.innerHTML = '✥';
+    function _ensurePlusIcon() {
+        let icon = document.getElementById('appPlusDragIcon');
+        if (!icon) {
+            icon = document.createElement('div');
+            icon.id = 'appPlusDragIcon';
+            icon.innerHTML = '<i class="fa-sharp fa-solid fa-up-down-left-right"></i>';
+            icon.style.cssText = [
+                'position:fixed',
+                'width:28px',
+                'height:28px',
+                'color:#ffffff',                          // ✅ White color
+                'font-size:28px',
+                'font-weight:200',
+                'line-height:28px',
+                'text-align:center',
+                'cursor:grab',
+                'z-index:10000',
+                'transform:translate(-50%,-50%)',
+                'user-select:none',
+                'display:none',
+                'pointer-events:all',
+                '-webkit-text-stroke:1px #000000',        // ✅ Black stroke around icon
+            ].join(';');
 
-        icon.style.cssText = [
-            'position:fixed',
-            'width:28px',
-            'height:28px',
-            'color:#000',           // Pure black
-            'font-size:28px',
-            'font-weight:900',
-            'line-height:28px',
-            'text-align:center',
-            'cursor:grab',
-            'z-index:10000',
-            'transform:translate(-50%,-50%)',
-            'user-select:none',
-            'display:none',
-            'pointer-events:all'
-            // Background aur transition intentionally nahi diya
-        ].join(';');
-
-        document.body.appendChild(icon);
-        icon.addEventListener('mousedown', _plusDragStart);
+            document.body.appendChild(icon);
+            icon.addEventListener('mousedown', _plusDragStart);
+        }
+        return icon;
     }
-    return icon;
-}
+    function _plusDragStart(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
 
-function _plusDragStart(e) {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    e.stopPropagation();
+        const layerId = _plusState.layerId;
+        if (!layerId) return;
 
-    const layerId = _plusState.layerId;
-    if (!layerId) return;
+        const layer = findLayerById(layerId);
+        if (!layer) return;
 
-    const layer = findLayerById(layerId);
-    if (!layer) return;
+        _plusState.isDragging = true;
+        _plusState.startClient = { x: e.clientX, y: e.clientY };
+        _plusState.startLayerX = layer.x || 0;
+        _plusState.startLayerY = layer.y || 0;
 
-    _plusState.isDragging = true;
-    _plusState.startClient = { x: e.clientX, y: e.clientY };
-    _plusState.startLayerX = layer.x || 0;
-    _plusState.startLayerY = layer.y || 0;
+        const icon = document.getElementById('appPlusDragIcon');
+        if (icon) {
+            icon.style.cursor = 'grabbing';
+            icon.style.background = 'transparent';
+            icon.style.color = '#000';
+        }
 
-    const icon = document.getElementById('appPlusDragIcon');
-    if (icon) {
-        icon.style.cursor = 'grabbing';     // Sirf cursor change
-        // ←←← Background color change wali line completely hata di
-    }
-
-    document.addEventListener('mousemove', _plusDragMove);
-    document.addEventListener('mouseup', _plusDragEnd);
-}
-
-function _plusDragEnd() {
-    _plusState.isDragging = false;
-
-    const icon = document.getElementById('appPlusDragIcon');
-    if (icon) {
-        icon.style.cursor = 'grab';
-        // ←←← Background color reset bhi hata diya
+        document.addEventListener('mousemove', _plusDragMove);
+        document.addEventListener('mouseup', _plusDragEnd);
     }
 
-    document.removeEventListener('mousemove', _plusDragMove);
-    document.removeEventListener('mouseup', _plusDragEnd);
+    function _plusDragEnd() {
+        _plusState.isDragging = false;
+        window._hidePositionIndicator();
 
-    if (_plusState.layerId) {
-        const layer = findLayerById(_plusState.layerId);
-        if (layer && layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
-        if (layer && layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
+        const icon = document.getElementById('appPlusDragIcon');
+        if (icon) {
+            icon.style.cursor = 'grab';
+            // ←←← Background color reset bhi hata diya
+        }
+
+        document.removeEventListener('mousemove', _plusDragMove);
+        document.removeEventListener('mouseup', _plusDragEnd);
+
+        if (_plusState.layerId) {
+            const layer = findLayerById(_plusState.layerId);
+            if (layer && layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
+            if (layer && layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
+        }
+
+        if (window.saveCustomizations) window.saveCustomizations();
     }
-
-    if (window.saveCustomizations) window.saveCustomizations();
-}
 
     function _getTextCenterScreen(layerId) {
         const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
@@ -1132,6 +1301,22 @@ function _plusDragEnd() {
         return pt.matrixTransform(mainSvg.getScreenCTM().inverse());
     }
 
+    function _plusDragStart(e) {
+        if (e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const layerId = _plusState.layerId;
+        if (!layerId) return;
+        const layer = findLayerById(layerId);
+        if (!layer) return;
+        _plusState.isDragging = true;
+        _plusState.startClient = { x: e.clientX, y: e.clientY };
+        _plusState.startLayerX = layer.x || 0;
+        _plusState.startLayerY = layer.y || 0;
+        const icon = document.getElementById('appPlusDragIcon');
+        if (icon) { icon.style.cursor = 'grabbing'; icon.style.color = '#ffffff'; }
+        document.addEventListener('mousemove', _plusDragMove);
+        document.addEventListener('mouseup', _plusDragEnd);
+    }
 
     function _plusDragMove(e) {
         if (!_plusState.isDragging) return;
@@ -1164,11 +1349,21 @@ function _plusDragEnd() {
             }
         }
 
-        const pxEl = document.getElementById('posX');
-        const pyEl = document.getElementById('posY');
+
         if (pxEl) { pxEl.value = newX; document.getElementById('posXValue').textContent = newX; }
         if (pyEl) { pyEl.value = newY; document.getElementById('posYValue').textContent = newY; }
+        if (pxEl) appFillSlider(pxEl);
+        if (pyEl) appFillSlider(pyEl);
+
         _updatePlusIconPosition(layerId);
+
+        // Slider fill + indicator
+        const pxEl = document.getElementById('posX');
+        const pyEl = document.getElementById('posY');
+        if (pxEl) { pxEl.value = newX; document.getElementById('posXValue').textContent = newX; appFillSlider(pxEl); }
+        if (pyEl) { pyEl.value = newY; document.getElementById('posYValue').textContent = newY; appFillSlider(pyEl); }
+        window._showPositionIndicator(newX, newY);
+
     }
 
 
@@ -1224,7 +1419,7 @@ function _plusDragEnd() {
         if (!box) {
             box = document.createElement('div');
             box.id = 'appMascotDragBox';
-            box.style.cssText = ['position:fixed','border:2px dashed #000','border-radius:4px','background:transparent','z-index:9998','display:none','cursor:move','pointer-events:all','box-sizing:border-box'].join(';');
+            box.style.cssText = ['position:fixed', 'border:2px dashed #000', 'border-radius:4px', 'background:transparent', 'z-index:9998', 'display:none', 'cursor:move', 'pointer-events:all', 'box-sizing:border-box'].join(';');
             document.body.appendChild(box);
             box.addEventListener('mousedown', _mascotBoxDragStart);
         }
@@ -1386,7 +1581,7 @@ function _plusDragEnd() {
         layer._detectedColors = detectedColors;
         if (!layer._colorMap) layer._colorMap = {};
         const backendColors = (window.selectedColors?.length) ? window.selectedColors : (window.backendColors || []).map(c => c.code || c);
-        const palette = backendColors.length ? backendColors : ['#FF0000','#FF6600','#FFFF00','#00FF00','#0000FF','#800080','#FFFFFF','#000000'];
+        const palette = backendColors.length ? backendColors : ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000'];
         detectedColors.forEach(detectedHex => {
             const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;';
             const fromBox = document.createElement('div'); fromBox.style.cssText = `width:26px;height:26px;border-radius:5px;border:2px solid #ccc;flex-shrink:0;background:${detectedHex}`;
@@ -1416,15 +1611,15 @@ function _plusDragEnd() {
 
     function _getContrastColor(hex) {
         if (!hex) return '#000000'; hex = hex.replace('#', '');
-        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-        const r = parseInt(hex.substr(0,2),16); const g = parseInt(hex.substr(2,2),16); const b = parseInt(hex.substr(4,2),16);
-        return (0.299*r+0.587*g+0.114*b)/255 > 0.5 ? '#000000' : '#ffffff';
+        if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        const r = parseInt(hex.substr(0, 2), 16); const g = parseInt(hex.substr(2, 2), 16); const b = parseInt(hex.substr(4, 2), 16);
+        return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5 ? '#000000' : '#ffffff';
     }
 
     function _normalizeColor(color) {
         if (!color) return null; color = color.trim().toLowerCase();
         if (color.match(/^#[0-9a-f]{6}$/)) return color;
-        if (color.match(/^#[0-9a-f]{3}$/)) return '#'+color[1]+color[1]+color[2]+color[2]+color[3]+color[3];
+        if (color.match(/^#[0-9a-f]{3}$/)) return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
         return null;
     }
 
@@ -1449,8 +1644,8 @@ function _plusDragEnd() {
                 if (alphaMask?.length) { const px = pixelIndex % canvas.width; const py = Math.floor(pixelIndex / canvas.width); const mx = Math.round(px * maskW / canvas.width); const my = Math.round(py * maskH / canvas.height); const maskIndex = my * maskW + mx; if (alphaMask[maskIndex] !== undefined && alphaMask[maskIndex] < 30) { data[i + 3] = 0; continue; } }
                 if (data[i + 3] < 30) continue;
                 let bestMatch = null, bestDist = 60;
-                colorMappings.forEach(m => { const dist = Math.sqrt(Math.pow(data[i]-m.old.r,2)+Math.pow(data[i+1]-m.old.g,2)+Math.pow(data[i+2]-m.old.b,2)); if (dist < bestDist) { bestDist = dist; bestMatch = m; } });
-                if (bestMatch) { data[i] = bestMatch.new.r; data[i+1] = bestMatch.new.g; data[i+2] = bestMatch.new.b; }
+                colorMappings.forEach(m => { const dist = Math.sqrt(Math.pow(data[i] - m.old.r, 2) + Math.pow(data[i + 1] - m.old.g, 2) + Math.pow(data[i + 2] - m.old.b, 2)); if (dist < bestDist) { bestDist = dist; bestMatch = m; } });
+                if (bestMatch) { data[i] = bestMatch.new.r; data[i + 1] = bestMatch.new.g; data[i + 2] = bestMatch.new.b; }
             }
             ctx.putImageData(imageData, 0, 0);
             const newPngDataUrl = canvas.toDataURL('image/png');
@@ -1468,7 +1663,7 @@ function _plusDragEnd() {
         const svgEl = mainSvg.querySelector('#' + layer.id); if (!svgEl) return;
         const parser = new DOMParser();
         const newSvg = parser.parseFromString(modifiedSvg, 'image/svg+xml').documentElement.cloneNode(true);
-        ['id','x','y','width','height','transform','opacity'].forEach(a => { const v = svgEl.getAttribute(a); if (v) newSvg.setAttribute(a, v); });
+        ['id', 'x', 'y', 'width', 'height', 'transform', 'opacity'].forEach(a => { const v = svgEl.getAttribute(a); if (v) newSvg.setAttribute(a, v); });
         newSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); newSvg.style.cursor = 'move';
         svgEl.parentNode.replaceChild(newSvg, svgEl);
         newSvg.addEventListener('click', e => { e.stopPropagation(); window.selectApplicationLayer(layer.id); });
@@ -1479,8 +1674,8 @@ function _plusDragEnd() {
 
     function _hexToRgb(hex) {
         if (!hex) return null; hex = hex.replace('#', '');
-        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-        return { r: parseInt(hex.substr(0,2),16), g: parseInt(hex.substr(2,2),16), b: parseInt(hex.substr(4,2),16) };
+        if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        return { r: parseInt(hex.substr(0, 2), 16), g: parseInt(hex.substr(2, 2), 16), b: parseInt(hex.substr(4, 2), 16) };
     }
 
     // ============================================================
@@ -1605,18 +1800,20 @@ function _plusDragEnd() {
 
     window.updateApplicationControls = function (layer) {
         if (layer.type === 'direct-mascot') return;
-        document.getElementById('applicationText').value = layer.text || '';
-        document.getElementById('fontSize').value = layer.fontSize || 500;
-        document.getElementById('fontSizeValue').textContent = layer.fontSize || 500;
-        const outlineSlider = document.getElementById('outlineWidthSlider');
-        if (outlineSlider) { outlineSlider.value = layer.strokeWidth || 5; document.getElementById('outlineWidthValue').textContent = layer.strokeWidth || 5; }
+
+        // ... existing code ...
         document.getElementById('posX').value = layer.x || 0;
         document.getElementById('posXValue').textContent = layer.x || 0;
         document.getElementById('posY').value = layer.y || 0;
         document.getElementById('posYValue').textContent = layer.y || 0;
-        document.getElementById('rotation').value = layer.rotation || 0;
-        document.getElementById('rotationValue').textContent = layer.rotation || 0;
-        if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
+
+        // YEH ADD KARO — select hone par fill restore ho:
+        const pxSlider = document.getElementById('posX');
+        const pySlider = document.getElementById('posY');
+        const fsSlider = document.getElementById('fontSize');
+        if (pxSlider) appFillSlider(pxSlider);
+        if (pySlider) appFillSlider(pySlider);
+        if (fsSlider) appFillSlider(fsSlider);
     };
 
     // ── MISSING FUNCTION FIX ── HTML mein updateFontSize call ho raha tha
@@ -1637,33 +1834,74 @@ function _plusDragEnd() {
     };
 
     window.updateApplicationText = function (value) {
+
         if (!window.currentApplicationLayer) return;
+
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
+
         layer.text = value;
+
         const textEl = document.getElementById(layer.id);
         if (textEl) textEl.textContent = value;
-        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.textContent = value);
-        // Text change ke baad pattern bbox update karo
-        if (layer.hasPattern && layer.patternId) setTimeout(() => _updatePatternPosition(layer), 50);
-        if (layer.hasMascot && layer.mascotId) setTimeout(() => _updateMascotPatternPosition(layer), 50);
-        if (window.saveCustomizations) window.saveCustomizations();
-        updateApplicationLayersList();
-        setTimeout(() => _showPlusIcon(layer.id), 80);
+
+        const btn = document.getElementById('selectFontBtn');
+        if (btn) btn.textContent = value || 'Aa';
+
+        if (window.saveCustomizations)
+            window.saveCustomizations();
     };
 
     window.updateFontFamily = function (value) {
+
         if (!window.currentApplicationLayer) return;
+
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
+
         layer.fontFamily = value;
+
         const textEl = document.getElementById(layer.id);
-        if (textEl) textEl.style.fontFamily = value;
-        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.style.fontFamily = value);
-        if (layer.hasPattern && layer.patternId) setTimeout(() => _updatePatternPosition(layer), 100);
-        if (layer.hasMascot && layer.mascotId) setTimeout(() => _updateMascotPatternPosition(layer), 100);
-        if (window.saveCustomizations) window.saveCustomizations();
+
+        if (textEl)
+            textEl.style.fontFamily = value;
+
+        // ✅ Select Font button realtime preview + font name
+        const btn = document.getElementById('selectFontBtn');
+
+        if (btn) {
+
+            btn.style.fontFamily = value;
+
+            // backend font name extract
+            const fontObj = window.backendFonts?.find(f =>
+                ('font_' + f.id) === value
+            );
+
+            btn.textContent = fontObj ? fontObj.name : 'Font';
+
+        }
+
+        // outline sync
+        document
+            .querySelectorAll(`[data-outline-for="${layer.id}"]`)
+            .forEach(o => o.style.fontFamily = value);
+
+
+        if (layer.hasPattern && layer.patternId)
+            setTimeout(() => _updatePatternPosition(layer), 100);
+
+
+        if (layer.hasMascot && layer.mascotId)
+            setTimeout(() => _updateMascotPatternPosition(layer), 100);
+
+
+        if (window.saveCustomizations)
+            window.saveCustomizations();
+
+
         setTimeout(() => _showPlusIcon(layer.id), 80);
+
     };
 
     window.updatePosition = function (x, y) {
@@ -1711,6 +1949,104 @@ function _plusDragEnd() {
         if (type === 'outline2' && outlines.length) outlines[0].setAttribute('stroke-width', value);
         if (window.saveCustomizations) window.saveCustomizations();
     };
+
+    /* ====================================================
+         STROKE SHAPE SELECTORS — Line Cap & Line Join
+         ==================================================== */
+
+    window.selectStrokeLinecap = function (value, btn) {
+        document.querySelectorAll('[id^="cap-"]').forEach(function (b) {
+            b.classList.remove('selected');
+        });
+        if (btn) btn.classList.add('selected');
+
+        if (!window.currentApplicationLayer) return;
+        var layer = window.findLayerById ? window.findLayerById(window.currentApplicationLayer) : null;
+        if (!layer) return;
+        layer.strokeLinecap = value;
+        var textEl = document.getElementById(layer.id);
+        if (textEl) textEl.setAttribute('stroke-linecap', value);
+        document.querySelectorAll('[data-outline-for="' + layer.id + '"]').forEach(function (o) {
+            o.setAttribute('stroke-linecap', value);
+        });
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
+
+    window.selectStrokeLinejoin = function (value, btn) {
+        document.querySelectorAll('[id^="join-"]').forEach(function (b) {
+            b.classList.remove('selected');
+        });
+        if (btn) btn.classList.add('selected');
+
+        if (!window.currentApplicationLayer) return;
+        var layer = window.findLayerById ? window.findLayerById(window.currentApplicationLayer) : null;
+        if (!layer) return;
+        layer.strokeLinejoin = value;
+        var textEl = document.getElementById(layer.id);
+        if (textEl) textEl.setAttribute('stroke-linejoin', value);
+        document.querySelectorAll('[data-outline-for="' + layer.id + '"]').forEach(function (o) {
+            o.setAttribute('stroke-linejoin', value);
+        });
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
+
+    /* Restore stroke shape UI when layer is selected */
+    window.restoreStrokeShapeUI = function (layer) {
+        if (!layer) return;
+
+        /* Line Cap */
+        var cap = layer.strokeLinecap || 'butt';
+        document.querySelectorAll('[id^="cap-"]').forEach(function (b) { b.classList.remove('selected'); });
+        var capBtn = document.getElementById('cap-' + cap);
+        if (capBtn) capBtn.classList.add('selected');
+
+        /* Line Join */
+        var join = layer.strokeLinejoin || 'miter';
+        document.querySelectorAll('[id^="join-"]').forEach(function (b) { b.classList.remove('selected'); });
+        var joinBtn = document.getElementById('join-' + join);
+        if (joinBtn) joinBtn.classList.add('selected');
+    };
+
+    /* ====================================================
+       ROTATION RANGE SLIDER sync with existing wheel
+       ==================================================== */
+    (function () {
+        var rangeSlider = document.getElementById('rotationRangeSlider');
+        if (!rangeSlider) return;
+
+        /* Patch updateRotation to also sync range slider */
+        var _origUpdateRotation = window.updateRotation;
+        window.updateRotation = function (value) {
+            if (rangeSlider) rangeSlider.value = value;
+            var rv = document.getElementById('rotationValue');
+            if (rv) rv.textContent = value;
+            if (_origUpdateRotation) _origUpdateRotation(value);
+        };
+
+        /* Patch setWheelAngle to also sync range slider */
+        var _origSetWheelAngle = window.setWheelAngle;
+        window.setWheelAngle = function (a) {
+            if (rangeSlider) rangeSlider.value = Math.round(((a % 360) + 360) % 360);
+            if (_origSetWheelAngle) _origSetWheelAngle(a);
+        };
+    })();
+
+    /* ====================================================
+       HOOK: restore stroke shape UI on selectApplicationLayer
+       ==================================================== */
+    (function () {
+        var _origSelect = window.selectApplicationLayer;
+        window.selectApplicationLayer = function (layerId) {
+            if (_origSelect) _origSelect(layerId);
+            var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+            if (layer && layer.type !== 'direct-mascot') {
+                window.restoreStrokeShapeUI(layer);
+            }
+        };
+    })();
+
+
+
 
     window.updateShadowOffset = function (val) {
         if (!window.currentApplicationLayer) return;
@@ -1809,7 +2145,7 @@ function _plusDragEnd() {
         try {
             const bb = textEl.getBBox();
             if (bb.width > 0 && bb.height > 0) return bb;
-        } catch(e) {}
+        } catch (e) { }
         return null;
     }
 
@@ -1920,7 +2256,7 @@ function _plusDragEnd() {
         if (!bb) {
             // Font load nahi hua — default part bbox use karo
             const partEl = mainSvg.querySelector(`#${layer.partId}`);
-            if (partEl) { const pb = partEl.getBBox(); bb = { x: pb.x + pb.width/2 - 100, y: pb.y + pb.height/2 - 50, width: 200, height: 100 }; }
+            if (partEl) { const pb = partEl.getBBox(); bb = { x: pb.x + pb.width / 2 - 100, y: pb.y + pb.height / 2 - 50, width: 200, height: 100 }; }
             else { bb = { x: 0, y: 0, width: 200, height: 100 }; }
         }
 
@@ -2154,7 +2490,7 @@ function _plusDragEnd() {
         let bb = _getTextBBox(textEl);
         if (!bb) {
             const partEl = mainSvg.querySelector(`#${layer.partId}`);
-            if (partEl) { const pb = partEl.getBBox(); bb = { x: pb.x + pb.width/2 - 100, y: pb.y + pb.height/2 - 50, width: 200, height: 100 }; }
+            if (partEl) { const pb = partEl.getBBox(); bb = { x: pb.x + pb.width / 2 - 100, y: pb.y + pb.height / 2 - 50, width: 200, height: 100 }; }
             else { bb = { x: 0, y: 0, width: 200, height: 100 }; }
         }
 
@@ -2190,8 +2526,8 @@ function _plusDragEnd() {
         const preview = document.getElementById('textMascotPreview');
         if (preview) { preview.innerHTML = svgContent; const s = preview.querySelector('svg'); if (s) { s.style.maxWidth = '60px'; s.style.maxHeight = '60px'; } }
 
-        ['mascotSizeTabSlider','mascotOpacityTabSlider','mascotCountTabSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = id.includes('Count') ? count : 100; });
-        ['mascotSizeValueTab','mascotOpacityValueTab'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '100'; });
+        ['mascotSizeTabSlider', 'mascotOpacityTabSlider', 'mascotCountTabSlider'].forEach(id => { const el = document.getElementById(id); if (el) el.value = id.includes('Count') ? count : 100; });
+        ['mascotSizeValueTab', 'mascotOpacityValueTab'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '100'; });
         const cve = document.getElementById('mascotCountValueTab'); if (cve) cve.textContent = count;
 
         // Font load hone ke baad position update karo
@@ -2425,27 +2761,111 @@ function _plusDragEnd() {
     // ============================================================
 
     function initRotationWheel() {
-        const wheel = document.getElementById('rotationWheel');
+        const svg = document.getElementById('rotationSvg');
+        const arc = document.getElementById('rotationArc');
         const dot = document.getElementById('rotationDot');
-        if (!wheel || !dot) { setTimeout(initRotationWheel, 400); return; }
+        if (!svg || !arc || !dot) { setTimeout(initRotationWheel, 400); return; }
+
+        const cx = 80, cy = 80, r = 68;
+const circumference = 2 * Math.PI * r;
+        const snapPoints = [0, 90, 180, 270, 360];
+        const snapThreshold = 25; // degrees
+
         let angle = 0, dragging = false, startAngle = 0, startRot = 0;
-        function getCenter() { const r = wheel.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
-        function getAngle(cx, cy, ex, ey) { return Math.atan2(ey - cy, ex - cx) * (180 / Math.PI) + 90; }
+
+        function getCenter() {
+            const rect = svg.getBoundingClientRect();
+            return [rect.left + rect.width / 2, rect.top + rect.height / 2];
+        }
+
+        function getAngle(cx2, cy2, ex, ey) {
+            let a = Math.atan2(ey - cy2, ex - cx2) * (180 / Math.PI) + 90;
+            return ((a % 360) + 360) % 360;
+        }
+
+        function snapAngle(a) {
+            for (let s of snapPoints) {
+                if (Math.abs(a - s) <= snapThreshold) return s;
+            }
+            return a;
+        }
+
+        function updateArc(a) {
+            // Progress arc
+            const progress = (a / 360) * circumference;
+            arc.setAttribute('stroke-dasharray', progress + ' ' + circumference);
+
+            // Dot position on edge
+            const rad = (a - 90) * Math.PI / 180;
+            const dx = cx + r * Math.cos(rad);
+            const dy = cy + r * Math.sin(rad);
+            dot.setAttribute('cx', dx);
+            dot.setAttribute('cy', dy);
+        }
+
         window.setWheelAngle = function (a) {
             angle = ((a % 360) + 360) % 360;
-            dot.style.transformOrigin = '50% 56px';
-            dot.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-            const manual = document.getElementById('rotationManual'); const hidden = document.getElementById('rotation'); const display = document.getElementById('rotationValue');
-            if (manual) manual.value = Math.round(angle); if (hidden) hidden.value = Math.round(angle); if (display) display.textContent = Math.round(angle);
+            updateArc(angle);
+            const manual = document.getElementById('rotationManual');
+            const hidden = document.getElementById('rotation');
+            const display = document.getElementById('rotationValue');
+            if (manual) manual.value = Math.round(angle);
+            if (hidden) hidden.value = Math.round(angle);
+            if (display) display.textContent = Math.round(angle);
         };
-        wheel.addEventListener('mousedown', e => { if (e.target.tagName === 'INPUT') return; dragging = true; const c = getCenter(); startAngle = getAngle(c[0], c[1], e.clientX, e.clientY); startRot = angle; wheel.style.cursor = 'grabbing'; e.preventDefault(); });
-        window.addEventListener('mousemove', e => { if (!dragging) return; const c = getCenter(); const a = getAngle(c[0], c[1], e.clientX, e.clientY); const newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360; window.setWheelAngle(newAngle); window.updateRotation(Math.round(newAngle)); });
-        window.addEventListener('mouseup', () => { if (!dragging) return; dragging = false; wheel.style.cursor = 'grab'; });
-        wheel.addEventListener('touchstart', e => { if (e.target.tagName === 'INPUT') return; dragging = true; const t = e.touches[0]; const c = getCenter(); startAngle = getAngle(c[0], c[1], t.clientX, t.clientY); startRot = angle; e.preventDefault(); }, { passive: false });
-        window.addEventListener('touchmove', e => { if (!dragging) return; const t = e.touches[0]; const c = getCenter(); const a = getAngle(c[0], c[1], t.clientX, t.clientY); const newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360; window.setWheelAngle(newAngle); window.updateRotation(Math.round(newAngle)); });
-        window.addEventListener('touchend', () => { dragging = false; });
-    }
 
+        svg.addEventListener('mousedown', function (e) {
+            if (e.target.tagName === 'INPUT') return;
+            dragging = true;
+            const c = getCenter();
+            startAngle = getAngle(c[0], c[1], e.clientX, e.clientY);
+            startRot = angle;
+            svg.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', function (e) {
+            if (!dragging) return;
+            const c = getCenter();
+            let a = getAngle(c[0], c[1], e.clientX, e.clientY);
+            let newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360;
+            newAngle = snapAngle(newAngle);
+            window.setWheelAngle(newAngle);
+            window.updateRotation(Math.round(newAngle));
+        });
+
+        window.addEventListener('mouseup', function () {
+            if (!dragging) return;
+            dragging = false;
+            svg.style.cursor = 'grab';
+        });
+
+        // Touch support
+        svg.addEventListener('touchstart', function (e) {
+            if (e.target.tagName === 'INPUT') return;
+            dragging = true;
+            const t = e.touches[0];
+            const c = getCenter();
+            startAngle = getAngle(c[0], c[1], t.clientX, t.clientY);
+            startRot = angle;
+            e.preventDefault();
+        }, { passive: false });
+
+        window.addEventListener('touchmove', function (e) {
+            if (!dragging) return;
+            const t = e.touches[0];
+            const c = getCenter();
+            let a = getAngle(c[0], c[1], t.clientX, t.clientY);
+            let newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360;
+            newAngle = snapAngle(newAngle);
+            window.setWheelAngle(newAngle);
+            window.updateRotation(Math.round(newAngle));
+        });
+
+        window.addEventListener('touchend', function () { dragging = false; });
+
+        updateArc(0);
+    }
     (function () {
         const observer = new MutationObserver(mutations => {
             mutations.forEach(m => {
@@ -2475,5 +2895,41 @@ function _plusDragEnd() {
     }
 
     console.log('✅ applications.js — complete fix loaded');
+
+
+
+
+
+
+    // ===== LIVE POSITION INDICATOR =====
+    window._showPositionIndicator = function (x, y) {
+        let ind = document.getElementById('appPositionIndicator');
+        if (!ind) {
+            ind = document.createElement('div');
+            ind.id = 'appPositionIndicator';
+            ind.style.cssText = 'position:fixed;background:#1a1a1a;color:#fff;padding:5px 12px;border-radius:6px;font-size:13px;font-weight:700;pointer-events:none;z-index:99999;display:none;white-space:nowrap;transform:translate(-50%,-130%);';
+            document.body.appendChild(ind);
+        }
+        const icon = document.getElementById('appPlusDragIcon');
+        if (icon && icon.style.display !== 'none') {
+            ind.style.left = icon.style.left;
+            ind.style.top = icon.style.top;
+        }
+        ind.textContent = 'X: ' + x + '   Y: ' + y;
+        ind.style.display = 'block';
+    };
+
+    window._hidePositionIndicator = function () {
+        const ind = document.getElementById('appPositionIndicator');
+        if (ind) ind.style.display = 'none';
+    };
+
+
+
+
+
+
+
+
 
 })();

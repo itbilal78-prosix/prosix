@@ -10,27 +10,68 @@
             ×
         </button>
     </div>
+    <div style="
+padding:0px 15px 0px;
+font-size:15px;
+color:#777;
+text-align:center;
+line-height:1.4;
+">
 
+        Drag the layers to adjust which Application is below or above another Application
+
+    </div>
     {{-- Layers List --}}
     <div id="applicationLayersList" class="sidebar-layers-list">
     </div>
 
-    <div style="padding:15px; border-bottom:1px solid #e0e0e0;">
-        <button onclick="openApplicationModal()" class="add-new-layer-btn"
-            style="width:100%; padding:14px; background:#000000; color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.3s;">
-            <i class="fas fa-plus-circle"></i>
-            Add New Free Form Application
-        </button>
-    </div>
+    <div style="
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+padding:12px 15px;
+">
 
-    {{-- Show Location Markers Toggle --}}
-    <div style="padding:15px; border-top:1px solid #e0e0e0; margin-top:auto;">
-        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; color:#666;">
-            <input type="checkbox" id="showLocationMarkers" onchange="toggleLocationMarkers(this.checked)"
-                style="width:16px; height:16px; cursor:pointer;">
+        <!-- LEFT SIDE -->
+        <label onclick="toggleLocationMarkers()"
+            style="
+display:flex;
+align-items:center;
+gap:8px;
+cursor:pointer;
+font-size:13px;
+color:#666;
+white-space:nowrap;
+">
+
             <i class="fas fa-map-marker-alt"></i>
             Show Location Markers
+
         </label>
+
+
+        <!-- RIGHT SIDE BUTTON -->
+        <button onclick="openApplicationModal()"
+            style="
+padding:10px 14px;
+background:#888888;
+color:white;
+border:none;
+border-radius:6px;
+font-weight:600;
+cursor:pointer;
+font-size:13px;
+display:flex;
+align-items:center;
+gap:6px;
+">
+
+            <i class="fas fa-plus-circle"></i>
+            Add New free form Application
+
+        </button>
+
     </div>
 
 </div>
@@ -137,165 +178,252 @@
         {{-- ============================================================ --}}
         <div id="textLayerControls" style="display:block;">
 
-            {{-- ===== ROW 1: Text label + Select Font button ===== --}}
+
+            <!-- ===== ROW 1: Text label + Select Font button ===== -->
             <div class="control-group" style="margin-bottom:15px;">
 
-                <label style="font-weight:600; font-size:14px; color:#333; margin-bottom:6px;">
-                    Text
-                </label>
+                <!-- LABEL ROW -->
+               <div style="display:flex; gap:45px; margin-bottom:6px;">
 
+    <label style="flex:1; font-weight:600; font-size:14px; color:#333;">
+        Text
+    </label>
+
+    <label style="flex:1; font-weight:600; font-size:14px;  color:#333;">
+        Font
+    </label>
+
+</div>
+
+                <!-- INPUT ROW -->
                 <div style="display:flex; gap:30px;">
 
-                    <input type="text" id="applicationText" placeholder="Enter text..."
+                    <!-- TEXT INPUT -->
+                    <input type="text" id="applicationText" placeholder="23"
                         oninput="updateApplicationText(this.value)"
-                        style="flex:1; padding:10px;
-                      border:2px solid #ddd;
-                      border-radius:6px;
-                      font-size:14px;">
+                        style="
+                    flex:1;
+                    height:42px;
+                    padding:10px;
+                    font-size:14px;
+                ">
 
-                    <button onclick="openFontModal()"
-                        style="padding:10px 14px;
-                       background:#fff;
-                       color:#000;
-                       border:2px solid #000;
-                       border-radius:6px;
-                       font-weight:600;
-                       font-size:12px;
-                       cursor:pointer;">
+                    <!-- FONT BUTTON -->
+                    <button id="selectFontBtn" onclick="openFontModal()"
+                        style="
+                    flex:1;
+                    height:42px;
+                    border:1px solid #ddd;
+                    background:#f5f5f5;
+                    font-size:22px;
+                    font-weight:500;
+                    cursor:pointer;
+                    font-family:inherit;
+                ">
                         Select Font
                     </button>
 
-
                 </div>
 
             </div>
 
-            {{-- ===== ROW 2: Font Size + Letter Spacing side by side ===== --}}
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-                <div class="control-group">
-                    <label style="display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#333;">
-                        Font Size: <span id="fontSizeValue">100</span>
-                    </label>
-                    <input type="range" id="fontSize" min="50" max="5500" value="100"
-                        oninput="updateFontSize(this.value)" class="app-slider" style="width:100%; cursor:pointer;">
-                </div>
-                <div class="control-group">
-                    <label style="display:block; font-weight:600; font-size:13px; margin-bottom:6px; color:#333;">
-                        Letter Spacing: <span id="letterSpacingValue">0</span>px
-                    </label>
-                    <input type="number" value="0"
-                        oninput="updateLetterSpacing(this.value); document.getElementById('letterSpacingValue').textContent=this.value;"
-                        style="width:30%; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; box-sizing:border-box;">
-                </div>
-            </div>
+
+
+
+
 
             {{-- ===== ROW 3: Position Controls ===== --}}
             <div class="control-group" style="margin-bottom:15px;">
-                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-                    Position
-                </label>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div>
-                        <label style="font-size:12px; color:#666;">X: <span id="posXValue">0</span></label>
-                        <input type="range" id="posX" min="-200" max="200" value="0"
-                            oninput="updatePosition(this.value, null)" class="app-slider"
-                            style="width:100%; cursor:pointer;">
-                    </div>
-                    <div>
-                        <label style="font-size:12px; color:#666;">Y: <span id="posYValue">0</span></label>
-                        <input type="range" id="posY" min="-200" max="200" value="0"
-                            oninput="updatePosition(null, this.value)" class="app-slider"
-                            style="width:100%; cursor:pointer;">
+
+                {{-- SIZE ROW --}}
+                <div style="display:flex; align-items:center; gap:30%; margin-bottom:14px;">
+                    <label style="font-weight:600; font-size:13px; color:#333; width:60px; flex-shrink:0;">Size</label>
+                    <div style="flex:1; min-width:0; position:relative; padding-top:26px;">
+                        <div id="fontSizeBubble"
+                            style="
+            position:absolute; top:0; left:0%;
+            transform:translateX(-50%);
+            background:#fff; border:1.5px solid #ccc;
+            border-radius:5px; padding:1px 6px;
+            font-size:11px; font-weight:600; color:#333;
+            display:none; pointer-events:none; white-space:nowrap;">
+                            50</div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                            <span style="font-size:10px; color:#aaa;">Small</span>
+                            <span style="font-size:10px; color:#aaa;">Large</span>
+                        </div>
+                        <input type="range" id="fontSize" min="50" max="5500" value="50"
+                            class="app-slider"
+                            style="width:100%; cursor:pointer; box-sizing:border-box;
+                   background:linear-gradient(to right, #000 0%, #ddd 0%);"
+                            oninput="
+                updateFontSize(this.value);
+                document.getElementById('fontSizeValue').textContent = this.value;
+                appMoveBub(this, 'fontSizeBubble');
+                appFillSlider(this);
+                appHideBub('posXBubble');
+                appHideBub('posYBubble');
+            ">
+                        <span id="fontSizeValue" style="display:none;">50</span>
                     </div>
                 </div>
+
+                {{-- POSITION ROW --}}
+                <div style="display:flex; align-items:flex-start; gap:30%; margin-bottom:12px;">
+                    <label
+                        style="font-weight:600; font-size:13px; color:#333; width:60px; flex-shrink:0; padding-top:4px;">Position</label>
+                    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:10px;">
+
+                        {{-- Left / Right --}}
+                        <div style="position:relative; padding-top:26px;">
+                            <div id="posXBubble"
+                                style="
+                position:absolute; top:0; left:50%;
+                transform:translateX(-50%);
+                background:#fff; border:1.5px solid #ccc;
+                border-radius:5px; padding:1px 6px;
+                font-size:11px; font-weight:600; color:#333;
+                display:none; pointer-events:none; white-space:nowrap;">
+                                0</div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                <span style="font-size:10px; color:#aaa;">Left</span>
+                                <span style="font-size:10px; color:#aaa;">Right</span>
+                            </div>
+                            <input type="range" id="posX" min="-200" max="200" value="0"
+                                class="app-slider"
+                                style="width:100%; cursor:pointer; box-sizing:border-box;
+                       background:linear-gradient(to right, #000 50%, #ddd 50%);"
+                                oninput="
+                    updatePosition(this.value, null);
+                    document.getElementById('posXValue').textContent = this.value;
+                    appMoveBub(this, 'posXBubble');
+                    appFillSlider(this);
+                    appHideBub('posYBubble');
+                    appHideBub('fontSizeBubble');
+                ">
+                            <span id="posXValue" style="display:none;">0</span>
+                        </div>
+
+                        {{-- Up / Down --}}
+                        <div style="position:relative; padding-top:26px;">
+                            <div id="posYBubble"
+                                style="
+                position:absolute; top:0; left:50%;
+                transform:translateX(-50%);
+                background:#fff; border:1.5px solid #ccc;
+                border-radius:5px; padding:1px 6px;
+                font-size:11px; font-weight:600; color:#333;
+                display:none; pointer-events:none; white-space:nowrap;">
+                                0</div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                                <span style="font-size:10px; color:#aaa;">Up</span>
+                                <span style="font-size:10px; color:#aaa;">Down</span>
+                            </div>
+                            <input type="range" id="posY" min="-200" max="200" value="0"
+                                class="app-slider"
+                                style="width:100%; cursor:pointer; box-sizing:border-box;
+                       background:linear-gradient(to right, #000 50%, #ddd 50%);"
+                                oninput="
+                    updatePosition(null, this.value);
+                    document.getElementById('posYValue').textContent = this.value;
+                    appMoveBub(this, 'posYBubble');
+                    appFillSlider(this);
+                    appHideBub('posXBubble');
+                    appHideBub('fontSizeBubble');
+                ">
+                            <span id="posYValue" style="display:none;">0</span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
             </div>
 
-            {{-- ===== ROW 4: Width + Height (left) | Rotation (right) ===== --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;">
+            {{-- ===== ROW 2 + Rotation: Side by Side ===== --}}
+            <div
+                style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px; align-items:center;">
 
-                    {{-- Left: Width + Height --}}
-                    <div>
-                        <div style="margin-bottom:10px;">
-                            <label
-                                style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
-                                Width %
-                            </label>
-                            <input type="range" min="10" max="300" value="100"
-                                oninput="updateTextScale('x',this.value); this.nextElementSibling.textContent=this.value+'%';"
-                                class="app-slider app-slider-small" style="width:100%; cursor:pointer;">
-                            <span style="font-size:11px; color:#888;">100%</span>
-                        </div>
-                        <div>
-                            <label
-                                style="display:block; font-weight:600; font-size:12px; margin-bottom:5px; color:#333;">
-                                Height %
-                            </label>
-                            <input type="range" min="10" max="300" value="100"
-                                oninput="updateTextScale('y',this.value); this.nextElementSibling.textContent=this.value+'%';"
-                                class="app-slider app-slider-small" style="width:100%; cursor:pointer;">
-                            <span style="font-size:11px; color:#888;">100%</span>
-                        </div>
+                {{-- LEFT: Letter Spacing + Width + Height --}}
+                <div style="display:flex; flex-direction:column; gap:10px;">
+
+                    <!-- Letter Spacing -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <label style="font-weight:600; font-size:12px; color:#333; white-space:nowrap;">Letter
+                            Spacing</label>
+                        <input type="number" value="0" oninput="updateLetterSpacing(this.value)"
+                            style="width:70px; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; text-align:center;">
                     </div>
 
-
-
-
-
-
-                    {{-- Right: Rotation --}}
-                    <div
-                        style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:6px;">
-                        <label style="font-weight:600; font-size:12px; color:#333; text-align:center;">Rotation</label>
-
-                        <input type="hidden" id="rotation" value="0">
-
-                        {{-- Wheel --}}
-                        <div id="rotationWheel"
-                            style="position:relative; width:100px; height:100px; border-radius:50%;
-                border:2.5px solid #bbb; background:#ececec; cursor:grab; flex-shrink:0;">
-
-                            {{-- Dot — wheel ke EDGE par ghoomega --}}
-                            <div id="rotationDot"
-                                style="position:absolute; width:13px; height:13px; border-radius:50%;
-                    background:#222; top:-6px; left:50%;
-                    transform:translateX(-50%);
-                    box-shadow:0 1px 4px rgba(0,0,0,0.3);
-                    pointer-events:none;">
-                            </div>
-
-                            {{-- Center: rounded square input box --}}
-                            <div
-                                style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
-                                <input type="number" id="rotationManual" min="0" max="360"
-                                    value="0"
-                                    style="width:54px; height:40px; text-align:center;
-                          border-radius:8px; border:2px solid #ccc;
-                          font-weight:700; font-size:13px;
-                          background:#fff; color:#222;
-                          -moz-appearance:textfield;"
-                                    oninput="
-                       var v=Math.min(360,Math.max(0,parseInt(this.value)||0));
-                       setWheelAngle(v);
-                       updateRotation(v);
-                   ">
-                            </div>
-                        </div>
-
-                        <span style="font-size:12px; color:#666; font-weight:600;">
-                            <span id="rotationValue">0</span>°
-                        </span>
+                    <!-- Width -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <label style="font-weight:600; font-size:12px; color:#333; white-space:nowrap;">Width %</label>
+                        <input type="number" value="100" min="10" max="300"
+                            oninput="updateTextScale('x', this.value)"
+                            style="width:70px; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; text-align:center;">
                     </div>
 
-
-
-
-
-
-
-
+                    <!-- Height -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <label style="font-weight:600; font-size:12px; color:#333; white-space:nowrap;">Height
+                            %</label>
+                        <input type="number" value="100" min="10" max="300"
+                            oninput="updateTextScale('y', this.value)"
+                            style="width:70px; padding:6px 8px; border:2px solid #ddd; border-radius:6px; font-size:13px; text-align:center;">
+                    </div>
 
                 </div>
+
+                {{-- RIGHT: Rotation Wheel --}}
+                {{-- Rotation Wheel --}}
+               <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
+    <label style="font-weight:600; font-size:13px; color:#333;">Rotation</label>
+    <input type="hidden" id="rotation" value="0">
+
+    <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+
+        <svg id="rotationSvg" width="160" height="160"
+            style="position:absolute; top:0; left:0; cursor:grab;">
+            {{-- Background circle --}}
+            <circle cx="80" cy="80" r="68" fill="#e0e0e0" stroke="#bbb" stroke-width="3" />
+            {{-- Progress arc --}}
+            <circle id="rotationArc" cx="80" cy="80" r="68" fill="none"
+                stroke="#333" stroke-width="14" stroke-linecap="butt"
+                stroke-dasharray="0 427.26"
+                transform="rotate(-90 80 80)" style="transition:none;" />
+            {{-- Inner circle --}}
+            <circle cx="80" cy="80" r="52" fill="#888" />
+            {{-- Dot at top (cy = 80 - 68 = 12) --}}
+            <circle id="rotationDot" cx="80" cy="12" r="9" fill="#222"
+                stroke="#fff" stroke-width="2.5" />
+        </svg>
+
+        {{-- Center input --}}
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+            <input type="number" id="rotationManual" min="0" max="360" value="0"
+                style="width:56px; height:40px; text-align:center;
+                       border-radius:8px; border:2px solid #ccc;
+                       font-weight:700; font-size:14px;
+                       background:#fff; color:#222;
+                       -moz-appearance:textfield;
+                       pointer-events:all;"
+                oninput="
+                    var v = Math.min(360, Math.max(0, parseInt(this.value) || 0));
+                    setWheelAngle(v);
+                    updateRotation(v);
+                ">
+        </div>
+    </div>
+
+    <span style="font-size:13px; color:#666; font-weight:600;">
+        <span id="rotationValue">0</span>°
+    </span>
+</div>
+
             </div>
 
             {{-- ========== COLORS/PATTERN/MASCOT TABS ========== --}}
@@ -304,21 +432,21 @@
                 {{-- Tab Headers --}}
                 <div style="display:flex; gap:15px; border-bottom:2px solid #e0e0e0; margin-bottom:20px;">
                     <button onclick="switchTextCustomizationTab('colors')" id="tabColors" class="text-custom-tab"
-                        style="flex:1; padding:12px; background:#fff; border:none; border-bottom:3px solid #000; font-weight:600; cursor:pointer; transition:all 0.3s; color:#333;">
+                        style="flex:1; padding:12px; background:#fff; border:none; border-bottom:13px solid #000; font-weight:600; cursor:pointer; transition:all 0.3s; color:#333;">
                         Colors
                     </button>
                     <button onclick="switchTextCustomizationTab('pattern')" id="tabPattern" class="text-custom-tab"
-                        style="flex:1; padding:12px; background:#fff; border:none; border-bottom:3px solid transparent; font-weight:600; cursor:pointer; transition:all 0.3s; color:#999;">
+                        style="flex:1; padding:12px; background:#fff; border:none; border-bottom:13px solid transparent; font-weight:600; cursor:pointer; transition:all 0.3s; color:#999;">
                         Pattern
                     </button>
                     <button onclick="switchTextCustomizationTab('mascot')" id="tabMascot" class="text-custom-tab"
-                        style="flex:1; padding:12px; background:#fff; border:none; border-bottom:3px solid transparent; font-weight:600; cursor:pointer; transition:all 0.3s; color:#999;">
+                        style="flex:1; padding:12px; background:#fff; border:none; border-bottom:13px solid transparent; font-weight:600; cursor:pointer; transition:all 0.3s; color:#999;">
                         Mascot
                     </button>
                 </div>
 
                 {{-- Tab Content: COLORS --}}
-                <div id="colorsTabContent" class="tab-content"  style="display:block;">
+                <div id="colorsTabContent" class="tab-content" style="display:block;">
                     <div style="display:flex; gap:5px; align-items:flex-start;">
 
                         <div id="currentOutlineDisplay" onclick="openAccentsModal()"
@@ -327,9 +455,9 @@
                                 style="font-size:65px; font-weight:900; margin-bottom:8px; line-height:1;"></div>
                             <div id="outlineStyleName" style="font-size:13px; color:#333; font-weight:600;"></div>
                         </div>
-
                         <div id="outlineColorsSection" style="display:none; width:100%;">
 
+                            <!-- Text-Color -->
                             <div class="control-group"
                                 style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
@@ -338,6 +466,7 @@
                                     style="display:flex; gap:5px; flex-wrap:nowrap; align-items:center;"></div>
                             </div>
 
+                            <!-- Outline 1 -->
                             <div id="outline1Section" class="control-group"
                                 style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
@@ -351,6 +480,7 @@
                                     style="width:55px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:12px; text-align:center; flex-shrink:0;">
                             </div>
 
+                            <!-- Outline 2 -->
                             <div id="outline2Section" class="control-group"
                                 style="display:none; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
@@ -364,6 +494,7 @@
                                     style="width:55px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:12px; text-align:center; flex-shrink:0;">
                             </div>
 
+                            <!-- Shadow -->
                             <div id="shadowSection" class="control-group"
                                 style="display:none; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
                                 <label
@@ -375,8 +506,40 @@
                                     onchange="updateShadowOffset(this.value)"
                                     style="width:55px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:12px; text-align:center; flex-shrink:0;">
                             </div>
+
+                            <!-- ✅ Corners — ab yahan andar hai, same column mein -->
+                            <div id="cornersSection" class="control-group"
+                                style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:nowrap;">
+                                <label
+                                    style="font-weight:500; font-size:12px; color:#333; width:75px; flex-shrink:0;">Corners</label>
+
+                                <!-- Miter -->
+                                <button class="stroke-shape-btn selected" id="join-miter"
+                                    onclick="selectStrokeLinejoin('miter', this)">
+                                    <i class="fa-solid fa-angle-up" style="font-size:16px;"></i>
+                                    <span style="font-size:10px;">Miter</span>
+                                </button>
+
+                                <!-- Round -->
+                                <button class="stroke-shape-btn" id="join-round"
+                                    onclick="selectStrokeLinejoin('round', this)">
+                                    <i class="fa-solid fa-circle-notch" style="font-size:16px;"></i>
+                                    <span style="font-size:10px;">Round</span>
+                                </button>
+
+                                <!-- Bevel -->
+                                <button class="stroke-shape-btn" id="join-bevel"
+                                    onclick="selectStrokeLinejoin('bevel', this)">
+                                    <i class="fa-solid fa-diamond" style="font-size:16px;"></i>
+                                    <span style="font-size:10px;">Bevel</span>
+                                </button>
+
+
+                            </div>
+
                         </div>
                     </div>
+
                 </div>
 
                 {{-- Tab Content: PATTERN --}}
@@ -746,13 +909,38 @@
     }
 
     /* ===== SQUARE SLIDER THUMB ===== */
+    /* ===== SQUARE FILLED SLIDER ===== */
     .app-slider {
         -webkit-appearance: none;
         appearance: none;
         height: 4px;
-        background: #ddd;
+        background: linear-gradient(to right, #000 0%, #000 0%, #ddd 0%, #ddd 100%);
         border-radius: 2px;
         outline: none;
+        cursor: pointer;
+    }
+
+    /* Square thumb - webkit */
+    .app-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #000;
+        border-radius: 3px;
+        /* square box */
+        cursor: pointer;
+        border: none;
+    }
+
+    /* Square thumb - firefox */
+    .app-slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: #000;
+        border-radius: 3px;
+        cursor: pointer;
+        border: none;
     }
 
     text:focus {
@@ -886,10 +1074,50 @@
     #rotationManual {
         -moz-appearance: textfield;
     }
+    .stroke-shape-btn {
+  display: flex;
+  flex-direction: column;  /* icon upar, text neeche */
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px;
+}
+
+.stroke-shape-btn i {
+  font-size: 18px;
+  display: block;
+}
+
+.stroke-shape-btn span {
+  font-size: 10px;
+  display: block;
+  line-height: 1;
+}
 </style>
 
 @include('admin.models.partials.mascot-select-modal')
 
 <script>
     window.backendFonts = @json($fonts ?? []);
+</script>
+{{-- HELPER FUNCTIONS - page mein ek dafa add karo --}}
+<script>
+    function appMoveBub(sl, bubId) {
+        var b = document.getElementById(bubId);
+        var p = (sl.value - sl.min) / (sl.max - sl.min);
+        b.style.left = 'calc(' + Math.round(p * 100) + '% + ' + (8 - p * 16) + 'px)';
+        b.textContent = sl.value;
+        b.style.display = 'block';
+    }
+
+    function appFillSlider(sl) {
+        var p = (sl.value - sl.min) / (sl.max - sl.min);
+        sl.style.background = 'linear-gradient(to right, #000 ' + Math.round(p * 100) + '%, #ddd ' + Math.round(p *
+            100) + '%)';
+    }
+
+    function appHideBub(bubId) {
+        var b = document.getElementById(bubId);
+        if (b) b.style.display = 'none';
+    }
 </script>

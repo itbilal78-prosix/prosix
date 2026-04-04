@@ -46,7 +46,7 @@
     top: 70px;
     width: 320px;
 height: calc(97vh - 60px);
-    background: #ffffff;
+    background: #acacac;
     box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
     z-index: 900;
     display: none;
@@ -60,11 +60,10 @@ height: calc(97vh - 60px);
 
 .sidebar-header {
     padding: 20px;
-    border-bottom: 2px solid #e0e0e0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #f8f9fa;
+    background: #acacac;
 }
 
 .sidebar-close-btn {
