@@ -92,27 +92,59 @@ gap:6px;
         <div id="directMascotControls" style="display:none;">
 
             {{-- Mascot Preview --}}
-            <div style="margin-bottom:20px; padding:16px; background:#f5f5f5; border-radius:10px; text-align:center;">
-                <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">MASCOT
-                    PREVIEW</div>
-                <div id="directMascotPreview"
-                    style="width:100px; height:100px; margin:0 auto 12px; background:#e8e8e8; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                    <span style="color:#aaa; font-size:11px;">No mascot</span>
-                </div>
-                <button onclick="changeDirectMascot()"
-                    style="width:100%; padding:10px; background:#1a1a1a; color:#fff; border:none; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; letter-spacing:.5px;">
-                    Change Mascot
-                </button>
-                {{-- Mascot Colors --}}
-                <div id="directMascotColorSection"
-                    style="margin-bottom:20px; padding:16px; background:#f5f5f5; border-radius:10px;">
-                    <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
-                        MASCOT COLORS</div>
-                    <div id="directMascotColorSwatches" style="display:flex; flex-direction:column; gap:10px;">
-                        <p style="font-size:12px; color:#aaa; text-align:center;">Loading colors...</p>
-                    </div>
-                </div>
-            </div>
+            <div style="display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;">
+
+    <!-- LEFT: Mascot Preview -->
+    <div style="padding:16px;  border-radius:10px; text-align:center;">
+
+        <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
+            MASCOT PREVIEW
+        </div>
+
+        <div id="directMascotPreview"
+            style="width:100px; height:100px; margin:0 auto 12px; background:#e8e8e8; border-radius:8px;
+            display:flex; align-items:center; justify-content:center; overflow:hidden;">
+
+            <!-- mascot image inject hogi -->
+            <img id="directMascotPreviewImg"
+                 src=""
+                 style="max-width:100%; max-height:100%; object-fit:contain; display:none;" />
+
+            <span id="directMascotPlaceholder"
+                  style="color:#aaa; font-size:11px;">
+                  No mascot
+            </span>
+
+        </div>
+
+        <button onclick="changeDirectMascot()"
+            style="width:100%; padding:10px; background:#1a1a1a; color:#fff;
+            border:none; border-radius:6px; font-weight:700; font-size:12px;
+            cursor:pointer; letter-spacing:.5px;">
+            Change Mascot
+        </button>
+
+    </div>
+
+
+    <!-- RIGHT: Mascot Colors -->
+    <div id="directMascotColorSection"
+        style="flex:1; padding:16px;  border-radius:10px;">
+
+        <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
+            MASCOT COLORS
+        </div>
+
+        <div id="directMascotColorSwatches"
+            style="display:flex; flex-direction:column; gap:12px;">
+
+            <!-- dynamic rows here -->
+
+        </div>
+
+    </div>
+
+</div>
 
             {{-- Scale --}}
             <div class="control-group" style="margin-bottom:15px;">

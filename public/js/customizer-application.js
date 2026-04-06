@@ -546,6 +546,7 @@
         makeDraggable(text, layer);
         text.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layer.id); });
 
+
         if (layer.outlineStyle) {
             window.currentOutlineStyle = layer.outlineStyle;
             if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
@@ -680,45 +681,114 @@
         return { dx: dx * cos + dy * sin, dy: -dx * sin + dy * cos };
     }
 
-    window._applyFlipTransform = function (layer, mainSvg) {
+    // window._applyFlipTransform = function (layer, mainSvg) {
+    //     if (!mainSvg) mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+    //     if (!mainSvg) return;
+    //     const el = mainSvg.querySelector('#' + layer.id);
+    //     if (!el) return;
+    //     const flipX = layer.flipX || 1;
+    //     const rot = layer.rotation || 0;
+    //     let transform;
+
+    //     if (layer.type === 'direct-mascot') {
+    //         const cx = (layer._cx || 0) + (layer.x || 0);
+    //         const cy = (layer._cy || 0) + (layer.y || 0);
+    //         if (flipX === -1) {
+    //             transform = `translate(${cx},${cy}) rotate(${rot}) scale(-1,1) translate(${-cx},${-cy})`;
+    //         } else {
+    //             transform = rot !== 0 ? `rotate(${rot} ${cx} ${cy})` : null;
+    //         }
+    //     } else {
+    //         const x = parseFloat(el.getAttribute('x') || 0);
+    //         const y = parseFloat(el.getAttribute('y') || 0);
+    //         const sx = layer.scaleX || 1;
+    //         const sy = layer.scaleY || 1;
+    //         if (flipX === -1) {
+    //             transform = `translate(${x},${y}) scale(${-sx},${sy}) translate(${-x},${-y})`;
+    //             if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
+    //         } else {
+    //             if (sx !== 1 || sy !== 1) {
+    //                 transform = `translate(${x},${y}) scale(${sx},${sy}) translate(${-x},${-y})`;
+    //                 if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
+    //             } else {
+    //                 transform = rot !== 0 ? `rotate(${rot} ${x} ${y})` : null;
+    //             }
+    //         }
+    //         mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
+    //             if (transform) o.setAttribute('transform', transform); else o.removeAttribute('transform');
+    //         });
+    //     }
+
+    //     if (transform) el.setAttribute('transform', transform); else el.removeAttribute('transform');
+    // };
+
+
+
+    window._applyFlipTransform = function (layer, mainSvg = null) {
         if (!mainSvg) mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-        if (!mainSvg) return;
+        if (!mainSvg || !layer) return;
+
         const el = mainSvg.querySelector('#' + layer.id);
         if (!el) return;
-        const flipX = layer.flipX || 1;
-        const rot = layer.rotation || 0;
-        let transform;
 
         if (layer.type === 'direct-mascot') {
+            // Mascot ke liye special center calculation
             const cx = (layer._cx || 0) + (layer.x || 0);
             const cy = (layer._cy || 0) + (layer.y || 0);
-            if (flipX === -1) {
-                transform = `translate(${cx},${cy}) rotate(${rot}) scale(-1,1) translate(${-cx},${-cy})`;
-            } else {
-                transform = rot !== 0 ? `rotate(${rot} ${cx} ${cy})` : null;
+            const rot = layer.rotation || 0;
+            const flipX = layer.flipX || 1;
+            const flipY = layer.flipY || 1;
+
+            let transform = `translate(${cx} ${cy}) `;
+
+            if (flipX !== 1 || flipY !== 1) {
+                transform += `scale(${flipX} ${flipY}) `;
             }
-        } else {
-            const x = parseFloat(el.getAttribute('x') || 0);
-            const y = parseFloat(el.getAttribute('y') || 0);
+
+            if (rot !== 0) {
+                transform += `rotate(${rot}) `;
+            }
+
+            transform += `translate(${-cx} ${-cy})`;
+
+            el.setAttribute('transform', transform.trim());
+        }
+        else {
+            // Text ke liye purana logic
+            const { cx, cy } = getTextCenterForTransform(layer);
+            el.setAttribute('x', cx);
+            el.setAttribute('y', cy);
+
+            const rot = layer.rotation || 0;
+            const flipX = layer.flipX || 1;
+            const flipY = layer.flipY || 1;
             const sx = layer.scaleX || 1;
             const sy = layer.scaleY || 1;
-            if (flipX === -1) {
-                transform = `translate(${x},${y}) scale(${-sx},${sy}) translate(${-x},${-y})`;
-                if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
-            } else {
-                if (sx !== 1 || sy !== 1) {
-                    transform = `translate(${x},${y}) scale(${sx},${sy}) translate(${-x},${-y})`;
-                    if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
-                } else {
-                    transform = rot !== 0 ? `rotate(${rot} ${x} ${y})` : null;
-                }
+
+            let transform = `translate(${cx} ${cy}) `;
+
+            if (flipX !== 1 || flipY !== 1 || sx !== 1 || sy !== 1) {
+                transform += `scale(${flipX * sx} ${flipY * sy}) `;
             }
+
+            if (rot !== 0) {
+                transform += `rotate(${rot}) `;
+            }
+
+            transform += `translate(${-cx} ${-cy})`;
+
+            el.setAttribute('transform', transform.trim());
+
+            // Outlines update
             mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
-                if (transform) o.setAttribute('transform', transform); else o.removeAttribute('transform');
+                o.setAttribute('x', cx);
+                o.setAttribute('y', cy);
+                o.setAttribute('transform', transform.trim());
             });
         }
 
-        if (transform) el.setAttribute('transform', transform); else el.removeAttribute('transform');
+        // Plus icon update
+        setTimeout(() => _updatePlusIconPosition(layer.id), 20);
     };
 
     function _applyFlipTransform(layer, mainSvg) { window._applyFlipTransform(layer, mainSvg); }
@@ -762,56 +832,14 @@
             case 3: layer.flipX = -1; layer.flipY = -1; break; // dono
         }
 
-        _applyFlipTransformXY(layer, window.getMainSvg ? window.getMainSvg() : null);
+        _applyFlipTransform(layer, window.getMainSvg ? window.getMainSvg() : null);
         _updateFlipBtnUI(layerId, layer);
         if (window.saveCustomizations) window.saveCustomizations();
         setTimeout(() => { _showPlusIcon(layerId); }, 100);
     };
 
-    window._applyFlipTransformXY = function (layer, mainSvg) {
-        if (!mainSvg) return;
-        const el = mainSvg.querySelector('#' + layer.id);
-        if (!el) return;
 
-        const flipX = layer.flipX || 1;
-        const flipY = layer.flipY || 1;
-        const rot = layer.rotation || 0;
-        let transform;
 
-        if (layer.type === 'direct-mascot') {
-            const cx = (layer._cx || 0) + (layer.x || 0);
-            const cy = (layer._cy || 0) + (layer.y || 0);
-            transform = `translate(${cx},${cy}) rotate(${rot}) scale(${flipX},${flipY}) translate(${-cx},${-cy})`;
-        } else {
-            const x = parseFloat(el.getAttribute('x') || 0);
-            const y = parseFloat(el.getAttribute('y') || 0);
-            const sx = layer.scaleX || 1;
-            const sy = layer.scaleY || 1;
-
-            if (flipX !== 1 || flipY !== 1) {
-                transform = `translate(${x},${y}) scale(${flipX * sx},${flipY * sy}) translate(${-x},${-y})`;
-                if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
-            } else {
-                if (sx !== 1 || sy !== 1) {
-                    transform = `translate(${x},${y}) scale(${sx},${sy}) translate(${-x},${-y})`;
-                    if (rot !== 0) transform += ` rotate(${rot} ${x} ${y})`;
-                } else {
-                    transform = rot !== 0 ? `rotate(${rot} ${x} ${y})` : null;
-                }
-            }
-
-            // Outline elements bhi update karo
-            mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => {
-                if (transform) o.setAttribute('transform', transform);
-                else o.removeAttribute('transform');
-            });
-        }
-
-        if (transform) el.setAttribute('transform', transform);
-        else el.removeAttribute('transform');
-    };
-
-    function _applyFlipTransformXY(layer, mainSvg) { window._applyFlipTransformXY(layer, mainSvg); }
     function _updateFlipBtnUI(layerId, layer) {
         const icons = { 0: '↔', 1: '↔', 2: '↕', 3: '↕↔' };
         const state = layer._flipState || 0;
@@ -832,57 +860,15 @@
     // ============================================================
     // =================== DRAGGABLE (MASCOT) ===================
     // ============================================================
-
+    // Ab mascot ko directly drag nahi kar sakte — sirf Plus Icon se
     window.makeMascotDraggable = function (element, layer) {
-        let isDragging = false, startX, startY, initOffX, initOffY;
-
-        element.addEventListener('mousedown', function (e) {
-            if (e.button !== 0) return;
-            isDragging = true;
-            const svg = element.ownerSVGElement || element.closest('svg');
-            const pt = svg.createSVGPoint();
-            pt.x = e.clientX; pt.y = e.clientY;
-            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-            startX = svgP.x; startY = svgP.y;
-            initOffX = layer.x || 0; initOffY = layer.y || 0;
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', function (e) {
-            if (!isDragging) return;
-            const svg = element.ownerSVGElement || element.closest('svg');
-            const pt = svg.createSVGPoint();
-            pt.x = e.clientX; pt.y = e.clientY;
-            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-            const d = _rotateDelta(svgP.x - startX, svgP.y - startY, layer.rotation || 0, layer.flipX || 1);
-            layer.x = Math.round(initOffX + d.dx);
-            layer.y = Math.round(initOffY + d.dy);
-            const sz = layer._mascotSize || 100;
-            element.setAttribute('x', (layer._cx || 0) - sz / 2 + layer.x);
-            element.setAttribute('y', (layer._cy || 0) - sz / 2 + layer.y);
-            const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-            if (mainSvg && (layer.flipX === -1 || layer.rotation)) {
-                _applyFlipTransform(layer, mainSvg);
-            }
-        });
-
-        document.addEventListener('mouseup', function () {
-            if (!isDragging) return;
-            isDragging = false;
-            if (window.currentApplicationLayer === layer.id) {
-                const xInput = document.getElementById('mascotDirectPosX');
-                const yInput = document.getElementById('mascotDirectPosY');
-                if (xInput) { xInput.value = layer.x; document.getElementById('mascotDirectPosXValue').textContent = layer.x; }
-                if (yInput) { yInput.value = layer.y; document.getElementById('mascotDirectPosYValue').textContent = layer.y; }
-            }
-            if (window.saveCustomizations) window.saveCustomizations();
-        });
+        // Direct dragging disabled
+        element.style.cursor = 'default';   // cursor normal rakho
+        // koi mousedown listener nahi lagao
     };
-
     // ============================================================
     // =================== DRAGGABLE (TEXT) ===================
     // ============================================================
-
     window.makeDraggable = function (element, layer) {
         let isDragging = false, startX, startY, initialX, initialY;
 
@@ -894,37 +880,40 @@
             pt.x = e.clientX; pt.y = e.clientY;
             const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
             startX = svgP.x; startY = svgP.y;
-            initialX = parseFloat(element.getAttribute('x'));
-            initialY = parseFloat(element.getAttribute('y'));
+            initialX = parseFloat(element.getAttribute('x') || 0);
+            initialY = parseFloat(element.getAttribute('y') || 0);
             e.preventDefault();
         });
 
-        document.addEventListener('mousemove', function (e) {
+        document.addEventListener('mouseup', function () {
             if (!isDragging) return;
-            const svg = element.ownerSVGElement;
-            const pt = svg.createSVGPoint();
-            pt.x = e.clientX; pt.y = e.clientY;
-            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-            const d = _rotateDelta(svgP.x - startX, svgP.y - startY, layer.rotation || 0, layer.flipX || 1);
-            const newX = Math.round(initialX + d.dx);
-            const newY = Math.round(initialY + d.dy);
-            element.setAttribute('x', newX);
-            element.setAttribute('y', newY);
-            const outlines = element.parentElement.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-            outlines.forEach(o => { o.setAttribute('x', newX); o.setAttribute('y', newY); });
-            const mainSvg = element.ownerSVGElement;
-            if (mainSvg && layer.flipX === -1) _applyFlipTransform(layer, mainSvg);
-            _updatePlusIconPosition(layer.id);
-            const partEl2 = document.querySelector('#' + layer.partId);
-            if (partEl2) {
-                const bb2 = partEl2.getBBox();
-                const dispX = Math.round(newX - (bb2.x + bb2.width / 2));
-                const dispY = Math.round(newY - (bb2.y + bb2.height / 2));
-                const pxEl2 = document.getElementById('posX');
-                const pyEl2 = document.getElementById('posY');
-                if (pxEl2) { pxEl2.value = dispX; document.getElementById('posXValue').textContent = dispX; appFillSlider(pxEl2); }
-                if (pyEl2) { pyEl2.value = dispY; document.getElementById('posYValue').textContent = dispY; appFillSlider(pyEl2); }
-                window._showPositionIndicator(dispX, dispY);
+            isDragging = false;
+            window._hidePositionIndicator();
+
+            const partElement = document.querySelector(`#${layer.partId}`);
+            if (partElement) {
+                const bbox = partElement.getBBox();
+
+                const currentX = parseFloat(element.getAttribute('x') || 0);
+                const currentY = parseFloat(element.getAttribute('y') || 0);
+
+                // Layer offset update (sahi tareeka)
+                layer.x = Math.round(currentX - (bbox.x + bbox.width / 2));
+                layer.y = Math.round(currentY - (bbox.y + bbox.height / 2));
+
+
+                if (window.currentApplicationLayer === layer.id) {
+                    updateApplicationControls(layer);
+                }
+
+                const pxSlider = document.getElementById('posX');
+                const pySlider = document.getElementById('posY');
+                if (pxSlider) appFillSlider(pxSlider);
+                if (pySlider) appFillSlider(pySlider);
+
+                if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
+                if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
+                if (window.saveCustomizations) window.saveCustomizations();
             }
         });
 
@@ -932,22 +921,35 @@
             if (!isDragging) return;
             isDragging = false;
             window._hidePositionIndicator();
-            const partElement = document.querySelector(`#${layer.partId}`);
-            if (partElement) {
-                const bbox = partElement.getBBox();
-                layer.x = Math.round(parseFloat(element.getAttribute('x')) - (bbox.x + bbox.width / 2));
-                layer.y = Math.round(parseFloat(element.getAttribute('y')) - (bbox.y + bbox.height / 2));
-                if (window.currentApplicationLayer === layer.id) updateApplicationControls(layer);
-                const pxSlider = document.getElementById('posX');
-                const pySlider = document.getElementById('posY');
-                if (pxSlider) appFillSlider(pxSlider);
-                if (pySlider) appFillSlider(pySlider);
 
-                // ── Pattern/Mascot update after drag ──
-                if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
-                if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
-                if (window.saveCustomizations) window.saveCustomizations();
+            const partElement = document.querySelector(`#${layer.partId}`);
+            if (!partElement) return;
+
+            const bbox = partElement.getBBox();
+            const currentScreenX = parseFloat(element.getAttribute('x') || 0);
+            const currentScreenY = parseFloat(element.getAttribute('y') || 0);
+
+            // Sahi offset calculate
+            layer.x = Math.round(currentScreenX - (bbox.x + bbox.width / 2));
+            layer.y = Math.round(currentScreenY - (bbox.y + bbox.height / 2));
+
+            // Drag ke baad text ko sahi center par reset karo
+            if (window.currentApplicationLayer === layer.id) {
+                updateApplicationControls(layer);
+                setTimeout(() => {
+                    _applyFlipTransform(layer, element.ownerSVGElement);
+                }, 10);   // chhota delay diya taaki DOM update ho jaye
             }
+
+            const pxSlider = document.getElementById('posX');
+            const pySlider = document.getElementById('posY');
+            if (pxSlider) appFillSlider(pxSlider);
+            if (pySlider) appFillSlider(pySlider);
+
+            if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
+            if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
+
+            if (window.saveCustomizations) window.saveCustomizations();
         });
     };
 
@@ -955,7 +957,7 @@
     // =================== LAYER LIST ===================
     // ============================================================
 
-   window.updateApplicationLayersList = function () {
+    window.updateApplicationLayersList = function () {
         const container = document.getElementById('applicationLayersList');
         if (!container) return;
         container.innerHTML = '';
@@ -981,23 +983,23 @@
         let layerNum = 1;
         allLayerEntries.forEach(({ view, partId, layer, index }) => {
 
-                    const viewShort = view.charAt(0).toUpperCase();
-                    const isActive = window.currentApplicationLayer === layer.id;
-                    const labelText = layer.type === 'direct-mascot'
-                        ? (layer.mascotTitle || (layer.mascotSvg ? 'Mascot' : 'Mascot (pending)'))
-                        : (layer.text || 'Empty');
-                    const typeLabel = layer.type === 'direct-mascot' ? 'mascot' : layer.type;
-                    const flipOn = layer.flipX === -1;
+            const viewShort = view.charAt(0).toUpperCase();
+            const isActive = window.currentApplicationLayer === layer.id;
+            const labelText = layer.type === 'direct-mascot'
+                ? (layer.mascotTitle || (layer.mascotSvg ? 'Mascot' : 'Mascot (pending)'))
+                : (layer.text || 'Empty');
+            const typeLabel = layer.type === 'direct-mascot' ? 'mascot' : layer.type;
+            const flipOn = layer.flipX === -1;
 
-                    const item = document.createElement('div');
-                    item.className = 'application-layer-item';
-                    item.setAttribute('draggable', 'true');
-                    item.dataset.layerId = layer.id;
-                    item.dataset.view = view;
-                    item.dataset.partId = partId;
-                    item.dataset.index = index;
+            const item = document.createElement('div');
+            item.className = 'application-layer-item';
+            item.setAttribute('draggable', 'true');
+            item.dataset.layerId = layer.id;
+            item.dataset.view = view;
+            item.dataset.partId = partId;
+            item.dataset.index = index;
 
-item.style.cssText = `
+            item.style.cssText = `
 display:flex;
 align-items:center;
 gap:10px;
@@ -1013,7 +1015,7 @@ transition:all 0.2s;
 user-select:none;
 `;
 
-item.innerHTML = `
+            item.innerHTML = `
 <div style="
 background:#2f2f2f;
 color:#fff;
@@ -1066,60 +1068,60 @@ style="cursor:pointer;">×</div>
 </div>
 `;
 
-                    item.onclick = function (e) {
-                        if (e.target.closest('.drag-handle')) return;
-                        selectApplicationLayer(layer.id);
-                    };
+            item.onclick = function (e) {
+                if (e.target.closest('.drag-handle')) return;
+                selectApplicationLayer(layer.id);
+            };
 
-                    // ── Drag & Drop ──
-                    item.addEventListener('dragstart', e => {
-                        e.dataTransfer.effectAllowed = 'move';
-                        e.dataTransfer.setData('text/plain', layer.id);
-                        item.style.opacity = '0.4';
-                        window._draggingLayerId = layer.id;
-                        window._draggingView = view;
-                        window._draggingPartId = partId;
-                    });
+            // ── Drag & Drop ──
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', layer.id);
+                item.style.opacity = '0.4';
+                window._draggingLayerId = layer.id;
+                window._draggingView = view;
+                window._draggingPartId = partId;
+            });
 
-                    item.addEventListener('dragend', () => {
-                        item.style.opacity = '1';
-                        window._draggingLayerId = null;
-                    });
+            item.addEventListener('dragend', () => {
+                item.style.opacity = '1';
+                window._draggingLayerId = null;
+            });
 
-                    item.addEventListener('dragover', e => {
-                        e.preventDefault();
-                        if (window._draggingLayerId !== layer.id) item.style.outline = '2px solid #000000';
-                    });
+            item.addEventListener('dragover', e => {
+                e.preventDefault();
+                if (window._draggingLayerId !== layer.id) item.style.outline = '2px solid #000000';
+            });
 
-                    item.addEventListener('dragleave', () => {
-                        item.style.outline = 'none';
-                    });
+            item.addEventListener('dragleave', () => {
+                item.style.outline = 'none';
+            });
 
-                    item.addEventListener('drop', e => {
-                        e.preventDefault();
-                        item.style.outline = 'none';
+            item.addEventListener('drop', e => {
+                e.preventDefault();
+                item.style.outline = 'none';
 
-                        const fromId = window._draggingLayerId;
-                        if (!fromId || fromId === layer.id) return;
-                        if (window._draggingView !== view || window._draggingPartId !== partId) return;
+                const fromId = window._draggingLayerId;
+                if (!fromId || fromId === layer.id) return;
+                if (window._draggingView !== view || window._draggingPartId !== partId) return;
 
-                        const arr = window.applicationsApplied[view][partId];
-                        const fromIdx = arr.findIndex(l => l.id === fromId);
-                        const toIdx   = arr.findIndex(l => l.id === layer.id);
-                        if (fromIdx === -1 || toIdx === -1) return;
+                const arr = window.applicationsApplied[view][partId];
+                const fromIdx = arr.findIndex(l => l.id === fromId);
+                const toIdx = arr.findIndex(l => l.id === layer.id);
+                if (fromIdx === -1 || toIdx === -1) return;
 
-                        // List reverse hai isliye SVG array mein opposite direction mein move karo
-                        const [removed] = arr.splice(fromIdx, 1);
-                        const adjustedToIdx = toIdx <= fromIdx ? toIdx + 1 : toIdx;
-                        arr.splice(adjustedToIdx, 0, removed);
+                // List reverse hai isliye SVG array mein opposite direction mein move karo
+                const [removed] = arr.splice(fromIdx, 1);
+                const adjustedToIdx = toIdx <= fromIdx ? toIdx + 1 : toIdx;
+                arr.splice(adjustedToIdx, 0, removed);
 
-                        reorderSvgLayers(view, partId, arr);
-                        updateApplicationLayersList();
-                        if (window.saveCustomizations) window.saveCustomizations();
-                    });
+                reorderSvgLayers(view, partId, arr);
+                updateApplicationLayersList();
+                if (window.saveCustomizations) window.saveCustomizations();
+            });
 
-                    container.appendChild(item);
-                    layerNum++;
+            container.appendChild(item);
+            layerNum++;
         });
     };
 
@@ -1145,6 +1147,8 @@ style="cursor:pointer;">×</div>
 
     window.selectApplicationLayer = function (layerId) {
         window.currentApplicationLayer = layerId;
+        activateTab('applicationBtn');
+openApplicationsSidebar();
         const foundLayer = findLayerById(layerId);
         if (!foundLayer) { console.warn('Layer not found:', layerId); return; }
 
@@ -1162,7 +1166,15 @@ style="cursor:pointer;">×</div>
             showTextLayerControls(foundLayer);
         }
 
-        setTimeout(() => { _showPlusIcon(layerId); }, 80);
+        setTimeout(() => {
+            _showPlusIcon(layerId);
+
+            // Mascot ke liye box hide kar do
+            if (foundLayer && foundLayer.type === 'direct-mascot') {
+                _hideMascotBox();
+            }
+        }, 80);
+
     };
 
     // ============================================================
@@ -1269,14 +1281,41 @@ style="cursor:pointer;">×</div>
 
     function _showPlusIcon(layerId) {
         const layer = findLayerById(layerId);
-        if (!layer || layer.type === 'direct-mascot') { _hidePlusIcon(); return; }
-        const center = _getTextCenterScreen(layerId);
-        if (!center) { _hidePlusIcon(); return; }
+        if (!layer) {
+            _hidePlusIcon();
+            return;
+        }
+
+        let center = null;
+
+        if (layer.type === 'direct-mascot') {
+            center = _getMascotVisualCenter(layerId);
+        } else {
+            center = getTextVisualCenter(layerId);
+        }
+
+        if (!center) {
+            _hidePlusIcon();
+            return;
+        }
+
         const icon = _ensurePlusIcon();
         icon.style.left = center.x + 'px';
         icon.style.top = center.y + 'px';
         icon.style.display = 'block';
         _plusState.layerId = layerId;
+    }
+
+    function _updatePlusIconPosition(layerId) {
+        if (_plusState.layerId !== layerId) return;
+        const center = getTextVisualCenter(layerId);
+        if (!center) return;
+
+        const icon = document.getElementById('appPlusDragIcon');
+        if (icon && icon.style.display !== 'none') {
+            icon.style.left = center.x + 'px';
+            icon.style.top = center.y + 'px';
+        }
     }
 
     function _hidePlusIcon() {
@@ -1323,49 +1362,66 @@ style="cursor:pointer;">×</div>
         const layerId = _plusState.layerId;
         const layer = findLayerById(layerId);
         if (!layer) return;
+
         const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
         if (!mainSvg) return;
 
         const startSvg = _clientToSvgCoord(_plusState.startClient.x, _plusState.startClient.y);
         const curSvg = _clientToSvgCoord(e.clientX, e.clientY);
+
         const rawDx = curSvg.x - startSvg.x;
         const rawDy = curSvg.y - startSvg.y;
+
         const d = _rotateDelta(rawDx, rawDy, layer.rotation || 0, layer.flipX || 1);
+
         const newX = Math.round(_plusState.startLayerX + d.dx);
         const newY = Math.round(_plusState.startLayerY + d.dy);
-        layer.x = newX; layer.y = newY;
 
-        const partEl = mainSvg.querySelector('#' + layer.partId);
-        if (partEl) {
-            const bbox = partEl.getBBox();
-            const cx = bbox.x + bbox.width / 2;
-            const cy = bbox.y + bbox.height / 2;
-            const textEl = mainSvg.querySelector('#' + layerId);
-            if (textEl) {
-                textEl.setAttribute('x', cx + newX);
-                textEl.setAttribute('y', cy + newY);
-                mainSvg.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => { o.setAttribute('x', cx + newX); o.setAttribute('y', cy + newY); });
-                if (layer.flipX === -1) _applyFlipTransform(layer, mainSvg);
+        layer.x = newX;
+        layer.y = newY;
+
+        if (layer.type === 'direct-mascot') {
+            const el = mainSvg.querySelector('#' + layerId);
+            if (el) {
+                const sz = layer._mascotSize || 100;
+                el.setAttribute('x', (layer._cx || 0) - sz / 2 + newX);
+                el.setAttribute('y', (layer._cy || 0) - sz / 2 + newY);
+            }
+        } else {
+            const partEl = mainSvg.querySelector('#' + layer.partId);
+            if (partEl) {
+                const bbox = partEl.getBBox();
+                const cx = bbox.x + bbox.width / 2;
+                const cy = bbox.y + bbox.height / 2;
+                const textEl = mainSvg.querySelector('#' + layerId);
+                if (textEl) {
+                    textEl.setAttribute('x', cx + newX);
+                    textEl.setAttribute('y', cy + newY);
+                    mainSvg.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => {
+                        o.setAttribute('x', cx + newX);
+                        o.setAttribute('y', cy + newY);
+                    });
+                }
             }
         }
 
-
-        if (pxEl) { pxEl.value = newX; document.getElementById('posXValue').textContent = newX; }
-        if (pyEl) { pyEl.value = newY; document.getElementById('posYValue').textContent = newY; }
-        if (pxEl) appFillSlider(pxEl);
-        if (pyEl) appFillSlider(pyEl);
-
         _updatePlusIconPosition(layerId);
 
-        // Slider fill + indicator
-        const pxEl = document.getElementById('posX');
-        const pyEl = document.getElementById('posY');
-        if (pxEl) { pxEl.value = newX; document.getElementById('posXValue').textContent = newX; appFillSlider(pxEl); }
-        if (pyEl) { pyEl.value = newY; document.getElementById('posYValue').textContent = newY; appFillSlider(pyEl); }
+        // Position inputs update
+        if (layer.type === 'direct-mascot') {
+            const mxEl = document.getElementById('mascotDirectPosX');
+            const myEl = document.getElementById('mascotDirectPosY');
+            if (mxEl) { mxEl.value = newX; document.getElementById('mascotDirectPosXValue').textContent = newX; }
+            if (myEl) { myEl.value = newY; document.getElementById('mascotDirectPosYValue').textContent = newY; }
+        } else {
+            const pxEl = document.getElementById('posX');
+            const pyEl = document.getElementById('posY');
+            if (pxEl) { pxEl.value = newX; document.getElementById('posXValue').textContent = newX; appFillSlider(pxEl); }
+            if (pyEl) { pyEl.value = newY; document.getElementById('posYValue').textContent = newY; appFillSlider(pyEl); }
+        }
+
         window._showPositionIndicator(newX, newY);
-
     }
-
 
 
     document.addEventListener('click', function (e) {
@@ -1425,6 +1481,25 @@ style="cursor:pointer;">×</div>
         }
         return box;
     }
+    // Mascot ka visual center nikalne ke liye
+    function _getMascotVisualCenter(layerId) {
+        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return null;
+
+        const mascotEl = mainSvg.querySelector('#' + layerId);
+        if (!mascotEl) return null;
+
+        try {
+            const rect = mascotEl.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) return null;
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        } catch (e) {
+            return null;
+        }
+    }
 
     function _getMascotScreenRect(layerId) {
         const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
@@ -1435,16 +1510,7 @@ style="cursor:pointer;">×</div>
     }
 
     function _showMascotBox(layerId) {
-        const layer = findLayerById(layerId);
-        if (!layer || layer.type !== 'direct-mascot') { _hideMascotBox(); return; }
-        const rect = _getMascotScreenRect(layerId);
-        if (!rect) { _hideMascotBox(); return; }
-        const box = _ensureMascotBox();
-        const pad = 4;
-        box.style.left = (rect.left - pad) + 'px'; box.style.top = (rect.top - pad) + 'px';
-        box.style.width = (rect.width + pad * 2) + 'px'; box.style.height = (rect.height + pad * 2) + 'px';
-        box.style.display = 'block';
-        _mascotBox.layerId = layerId;
+        _hideMascotBox(); // hamesha hide rakho
     }
 
     function _hideMascotBox() { const box = document.getElementById('appMascotDragBox'); if (box) box.style.display = 'none'; _mascotBox.layerId = null; }
@@ -1518,93 +1584,327 @@ style="cursor:pointer;">×</div>
                 child.style.display = child.id !== 'directMascotControls' ? 'none' : 'block';
             });
         }
+
         const preview = document.getElementById('directMascotPreview');
         if (preview && layer.mascotSvg) {
             preview.innerHTML = layer.mascotSvg;
             const svg = preview.querySelector('svg');
-            if (svg) { svg.style.maxWidth = '80px'; svg.style.maxHeight = '80px'; svg.style.transform = layer.flipX === -1 ? 'scaleX(-1)' : ''; }
-        } else if (preview) { preview.innerHTML = '<span style="color:#aaa;font-size:12px;">No mascot selected</span>'; }
-        const sync = (id, valId, val) => { const el = document.getElementById(id); const ve = document.getElementById(valId); if (el) el.value = val; if (ve) ve.textContent = val; };
+            if (svg) {
+                svg.style.maxWidth = '80px';
+                svg.style.maxHeight = '80px';
+                svg.style.transform = layer.flipX === -1 ? 'scaleX(-1)' : '';
+            }
+        } else if (preview) {
+            preview.innerHTML = '<span style="color:#aaa;font-size:12px;">No mascot selected</span>';
+        }
+
+        const sync = (id, valId, val) => {
+            const el = document.getElementById(id);
+            const ve = document.getElementById(valId);
+            if (el) el.value = val;
+            if (ve) ve.textContent = val;
+        };
+
         sync('directMascotScale', 'directMascotScaleValue', Math.round((layer.mascotScaleX || 1) * 100));
         sync('directMascotOpacity', 'directMascotOpacityValue', layer.mascotOpacity ?? 100);
         sync('directMascotRotation', 'directMascotRotationValue', layer.rotation || 0);
         sync('mascotDirectPosX', 'mascotDirectPosXValue', layer.x || 0);
         sync('mascotDirectPosY', 'mascotDirectPosYValue', layer.y || 0);
-        _renderDirectMascotColors(layer);
+
+        // ✅ FIX: delay ke saath render karo
+        setTimeout(() => _renderDirectMascotColors(layer), 100);
+
         setTimeout(() => _showMascotBox(layer.id), 80);
     }
+
 
     function _renderDirectMascotColors(layer) {
         const container = document.getElementById('directMascotColorSwatches');
         if (!container) return;
-        if (!layer.mascotSvg) { container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>'; return; }
+
+        if (!layer.mascotSvg) {
+            container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
+            return;
+        }
+
         container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Detecting colors...</p>';
-        const maxColors = layer._selectedColorCount || window.selectedMascotColorCount || (window.selectedColors ? window.selectedColors.length : 6) || 6;
+
+        // ✅ PRIORITY ORDER: _selectedColorCount > selectedColors.length > 3
+        const maxColors = (layer._selectedColorCount && layer._selectedColorCount > 0)
+            ? layer._selectedColorCount
+            : (window.selectedColors ? window.selectedColors.length : 3);
+
+        console.log('🎨 maxColors:', maxColors, '| _selectedColorCount:', layer._selectedColorCount);
+
         const parser = new DOMParser();
         const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+
         const imgTag = doc.querySelector('image');
         if (imgTag) {
             const href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || '';
-            if (href.startsWith('data:image/png')) { _detectColorsFromPng(href, layer, container); return; }
+            if (href.startsWith('data:image')) {
+                _detectColorsFromPng(href, layer, container);
+                return;
+            }
         }
+
         const colorCounts = {};
-        doc.querySelectorAll('[fill]').forEach(el => { const hex = _normalizeColor(el.getAttribute('fill') || ''); if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1; });
-        doc.querySelectorAll('[style]').forEach(el => { const m = (el.getAttribute('style') || '').match(/fill:\s*(#[0-9a-fA-F]{3,6})/); if (!m) return; const hex = _normalizeColor(m[1]); if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1; });
-        const detected = Object.keys(colorCounts).sort((a, b) => colorCounts[b] - colorCounts[a]).slice(0, maxColors);
+        doc.querySelectorAll('[fill]').forEach(el => {
+            const hex = _normalizeColor(el.getAttribute('fill') || '');
+            if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+        });
+
+        const detected = Object.keys(colorCounts)
+            .sort((a, b) => colorCounts[b] - colorCounts[a])
+            .slice(0, maxColors);
+
         layer._detectedColors = detected;
         _buildColorSwatches(detected, layer, container);
     }
 
+
     function _detectColorsFromPng(dataUrl, layer, container) {
-        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const img = new Image();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+
         img.onload = function () {
-            const SIZE = 100; canvas.width = SIZE; canvas.height = SIZE; ctx.drawImage(img, 0, 0, SIZE, SIZE);
-            const data = ctx.getImageData(0, 0, SIZE, SIZE).data; const colorCounts = {};
-            for (let i = 0; i < data.length; i += 4) {
-                if (data[i + 3] < 30) continue;
-                const r = Math.min(Math.round(data[i] / 32) * 32, 255); const g = Math.min(Math.round(data[i + 1] / 32) * 32, 255); const b = Math.min(Math.round(data[i + 2] / 32) * 32, 255);
-                if (r > 230 && g > 230 && b > 230) continue;
-                const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-                colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+            // ✅ Full size pe draw karo — accurate sampling
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+            // ✅ Raw pixel colors collect karo — NO quantization
+            const rawColors = [];
+            const step = Math.max(1, Math.floor(data.length / 4 / 5000)); // max 5000 samples
+
+            for (let i = 0; i < data.length; i += 4 * step) {
+                if (data[i + 3] < 128) continue; // transparent skip
+                rawColors.push({
+                    r: data[i],
+                    g: data[i + 1],
+                    b: data[i + 2]
+                });
             }
-            const maxColors = layer._selectedColorCount || 6;
-            const detected = Object.keys(colorCounts).sort((a, b) => colorCounts[b] - colorCounts[a]).slice(0, maxColors);
-            _buildColorSwatches(detected, layer, container);
+
+            const maxColors = (layer._selectedColorCount && layer._selectedColorCount > 0)
+                ? layer._selectedColorCount
+                : (window.selectedColors ? window.selectedColors.length : 3);
+
+            // ✅ K-means clustering on actual colors
+            const clustered = _kMeansColors(rawColors, maxColors);
+
+            console.log('🎨 K-means clustered colors:', clustered);
+
+            // ✅ Save karo
+            layer._detectedColors = clustered;
+            layer._detectedRgbs = clustered.map(hex => _hexToRgb(hex));
+
+            if (!clustered.length) {
+                container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No colors detected</p>';
+                return;
+            }
+
+            _buildColorSwatches(clustered, layer, container);
         };
-        img.onerror = () => { container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Could not load image</p>'; };
+
+        img.onerror = () => {
+            container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Could not load image</p>';
+        };
+
+        img.crossOrigin = 'anonymous';
         img.src = dataUrl;
+    }
+
+    // ✅ Real K-means clustering
+    function _kMeansColors(pixels, k) {
+        if (!pixels.length || k <= 0) return [];
+
+        // Initialize centroids from most spread pixels
+        let centroids = [];
+        centroids.push(pixels[0]);
+
+        // K-means++ initialization
+        for (let c = 1; c < k; c++) {
+            let maxDist = -1;
+            let farthest = pixels[0];
+
+            pixels.forEach(p => {
+                let minDist = Infinity;
+                centroids.forEach(cent => {
+                    const d = Math.sqrt(
+                        Math.pow(p.r - cent.r, 2) +
+                        Math.pow(p.g - cent.g, 2) +
+                        Math.pow(p.b - cent.b, 2)
+                    );
+                    if (d < minDist) minDist = d;
+                });
+                if (minDist > maxDist) {
+                    maxDist = minDist;
+                    farthest = p;
+                }
+            });
+
+            centroids.push(farthest);
+        }
+
+        // ✅ K-means iterations (10 iterations enough)
+        for (let iter = 0; iter < 10; iter++) {
+            const clusters = centroids.map(() => ({ r: 0, g: 0, b: 0, count: 0 }));
+
+            pixels.forEach(p => {
+                let nearest = 0;
+                let nearestDist = Infinity;
+
+                centroids.forEach((c, idx) => {
+                    const dist = Math.sqrt(
+                        Math.pow(p.r - c.r, 2) +
+                        Math.pow(p.g - c.g, 2) +
+                        Math.pow(p.b - c.b, 2)
+                    );
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearest = idx;
+                    }
+                });
+
+                clusters[nearest].r += p.r;
+                clusters[nearest].g += p.g;
+                clusters[nearest].b += p.b;
+                clusters[nearest].count++;
+            });
+
+            // Update centroids
+            centroids = clusters.map((c, i) => {
+                if (c.count === 0) return centroids[i];
+                return {
+                    r: Math.round(c.r / c.count),
+                    g: Math.round(c.g / c.count),
+                    b: Math.round(c.b / c.count),
+                    count: c.count
+                };
+            });
+        }
+
+        // Sort by count (most dominant first), convert to hex
+        return centroids
+            .filter(c => c.count > 0)
+            .sort((a, b) => (b.count || 0) - (a.count || 0))
+            .map(c => '#' + [c.r, c.g, c.b].map(v =>
+                Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')
+            ).join(''));
+    }
+
+    // ✅ Clustering helper
+    function _clusterDetectedColors(colorCounts, maxColors) {
+        const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
+        const clusters = [];
+
+        sorted.forEach(([hex, count]) => {
+            const rgb = _hexToRgb(hex);
+            if (!rgb) return;
+
+            let merged = false;
+            for (let c of clusters) {
+                const cRgb = _hexToRgb(c.hex);
+                const dist = Math.sqrt(
+                    Math.pow(rgb.r - cRgb.r, 2) +
+                    Math.pow(rgb.g - cRgb.g, 2) +
+                    Math.pow(rgb.b - cRgb.b, 2)
+                );
+                if (dist < 60) {
+                    c.count += count;
+                    merged = true;
+                    break;
+                }
+            }
+
+            if (!merged) {
+                clusters.push({ hex, count });
+            }
+        });
+
+        return clusters
+            .sort((a, b) => b.count - a.count)
+            .slice(0, maxColors)
+            .map(c => c.hex);
     }
 
     function _buildColorSwatches(detectedColors, layer, container) {
         container.innerHTML = '';
-        if (!detectedColors.length) { container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No colors detected</p>'; return; }
+
+        const maxColors = layer._selectedColorCount ||
+            (window.selectedColors ? window.selectedColors.length : 4);
+
+        detectedColors = detectedColors.slice(0, maxColors); // ← FIX
+
+        if (!detectedColors.length) {
+            container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No colors detected</p>';
+            return;
+        }
+
         layer._detectedColors = detectedColors;
+
         if (!layer._colorMap) layer._colorMap = {};
-        const backendColors = (window.selectedColors?.length) ? window.selectedColors : (window.backendColors || []).map(c => c.code || c);
-        const palette = backendColors.length ? backendColors : ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000'];
+
+        const backendColors = (window.selectedColors?.length) ? window.selectedColors :
+            (window.backendColors || []).map(c => c.code || c);
+
+        const palette = backendColors.length ? backendColors :
+            ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#0000FF', '#800080', '#FFFFFF', '#000000'];
+
         detectedColors.forEach(detectedHex => {
-            const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;';
-            const fromBox = document.createElement('div'); fromBox.style.cssText = `width:26px;height:26px;border-radius:5px;border:2px solid #ccc;flex-shrink:0;background:${detectedHex}`;
-            const arrow = document.createElement('span'); arrow.textContent = '→'; arrow.style.cssText = 'font-size:13px;color:#888;flex-shrink:0;';
-            const swatchRow = document.createElement('div'); swatchRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;';
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;';
+
+            const fromBox = document.createElement('div');
+            fromBox.style.cssText = `width:26px;height:26px;border-radius:5px;border:2px solid #ccc;flex-shrink:0;background:${detectedHex}`;
+
+            const arrow = document.createElement('span');
+            arrow.textContent = '→';
+            arrow.style.cssText = 'font-size:13px;color:#888;flex-shrink:0;';
+
+            const swatchRow = document.createElement('div');
+            swatchRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;';
+
             const currentReplacement = layer._colorMap[detectedHex.toLowerCase()] || null;
+
             palette.forEach(hex => {
                 const isSelected = currentReplacement && hex.toLowerCase() === currentReplacement.toLowerCase();
                 const box = document.createElement('div');
                 box.style.cssText = `width:22px;height:22px;border-radius:4px;cursor:pointer;box-sizing:border-box;position:relative;display:flex;align-items:center;justify-content:center;background:${hex};border:${isSelected ? '3px solid #1a1a1a' : '2px solid #ddd'};`;
-                if (isSelected) { const check = document.createElement('span'); check.textContent = '✓'; check.style.cssText = `font-size:13px;font-weight:900;line-height:1;color:${_getContrastColor(hex)};`; box.appendChild(check); }
+
+                if (isSelected) {
+                    const check = document.createElement('span');
+                    check.textContent = '✓';
+                    check.style.cssText = `font-size:13px;font-weight:900;line-height:1;color:${_getContrastColor(hex)};`;
+                    box.appendChild(check);
+                }
+
                 box.onclick = (function (dHex, nHex, b, sRow) {
                     return function () {
                         layer._colorMap[dHex.toLowerCase()] = nHex;
-                        sRow.querySelectorAll('div').forEach(x => { x.style.border = '2px solid #ddd'; x.innerHTML = ''; });
+                        sRow.querySelectorAll('div').forEach(x => {
+                            x.style.border = '2px solid #ddd';
+                            x.innerHTML = '';
+                        });
                         b.style.border = '3px solid #1a1a1a';
-                        const ck = document.createElement('span'); ck.textContent = '✓'; ck.style.cssText = `font-size:13px;font-weight:900;line-height:1;color:${_getContrastColor(nHex)};`; b.appendChild(ck);
+                        const ck = document.createElement('span');
+                        ck.textContent = '✓';
+                        ck.style.cssText = `font-size:13px;font-weight:900;line-height:1;color:${_getContrastColor(nHex)};`;
+                        b.appendChild(ck);
                         _applyDirectMascotColorMap(layer);
                     };
                 })(detectedHex, hex, box, swatchRow);
+
                 swatchRow.appendChild(box);
             });
-            row.appendChild(fromBox); row.appendChild(arrow); row.appendChild(swatchRow);
+
+            row.appendChild(fromBox);
+            row.appendChild(arrow);
+            row.appendChild(swatchRow);
             container.appendChild(row);
         });
     }
@@ -1633,27 +1933,101 @@ style="cursor:pointer;">×</div>
     }
 
     function _applyColorMapToPng(dataUrl, layer) {
-        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const img = new Image();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+
         img.onload = function () {
-            canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); const data = imageData.data;
-            const alphaMask = layer._alphaMask || null; const maskW = layer._alphaMaskW || 0; const maskH = layer._alphaMaskH || 0;
-            const colorMappings = Object.entries(layer._colorMap).map(([oldHex, newHex]) => ({ old: _hexToRgb(oldHex), new: _hexToRgb(newHex) })).filter(m => m.old && m.new);
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            const alphaMask = layer._alphaMask || null;
+            const maskW = layer._alphaMaskW || 0;
+            const maskH = layer._alphaMaskH || 0;
+
+            const colorMap = layer._colorMap || {};
+            const detectedColors = layer._detectedColors || [];
+
+            if (!Object.keys(colorMap).length) return;
+
+            // ✅ Detected colors ke actual RGB values
+            const detectedRgbs = detectedColors.map(hex => ({
+                hex: hex.toLowerCase(),
+                rgb: _hexToRgb(hex)
+            })).filter(d => d.rgb);
+
+            // ✅ Replacement RGB cache
+            const replacementCache = {};
+            Object.entries(colorMap).forEach(([dHex, rHex]) => {
+                replacementCache[dHex.toLowerCase()] = _hexToRgb(rHex);
+            });
+
             for (let i = 0; i < data.length; i += 4) {
                 const pixelIndex = i / 4;
-                if (alphaMask?.length) { const px = pixelIndex % canvas.width; const py = Math.floor(pixelIndex / canvas.width); const mx = Math.round(px * maskW / canvas.width); const my = Math.round(py * maskH / canvas.height); const maskIndex = my * maskW + mx; if (alphaMask[maskIndex] !== undefined && alphaMask[maskIndex] < 30) { data[i + 3] = 0; continue; } }
+
+                // Alpha mask
+                if (alphaMask?.length) {
+                    const px = pixelIndex % canvas.width;
+                    const py = Math.floor(pixelIndex / canvas.width);
+                    const mx = Math.round(px * maskW / canvas.width);
+                    const my = Math.round(py * maskH / canvas.height);
+                    const maskIndex = my * maskW + mx;
+                    if (alphaMask[maskIndex] !== undefined && alphaMask[maskIndex] < 30) {
+                        data[i + 3] = 0;
+                        continue;
+                    }
+                }
+
                 if (data[i + 3] < 30) continue;
-                let bestMatch = null, bestDist = 60;
-                colorMappings.forEach(m => { const dist = Math.sqrt(Math.pow(data[i] - m.old.r, 2) + Math.pow(data[i + 1] - m.old.g, 2) + Math.pow(data[i + 2] - m.old.b, 2)); if (dist < bestDist) { bestDist = dist; bestMatch = m; } });
-                if (bestMatch) { data[i] = bestMatch.new.r; data[i + 1] = bestMatch.new.g; data[i + 2] = bestMatch.new.b; }
+
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // ✅ Nearest detected color find karo
+                let nearestHex = null;
+                let nearestDist = Infinity;
+
+                detectedRgbs.forEach(d => {
+                    const dist = Math.sqrt(
+                        Math.pow(r - d.rgb.r, 2) +
+                        Math.pow(g - d.rgb.g, 2) +
+                        Math.pow(b - d.rgb.b, 2)
+                    );
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearestHex = d.hex;
+                    }
+                });
+
+                // ✅ Replacement apply karo
+                if (nearestHex && replacementCache[nearestHex]) {
+                    const newRgb = replacementCache[nearestHex];
+                    data[i] = newRgb.r;
+                    data[i + 1] = newRgb.g;
+                    data[i + 2] = newRgb.b;
+                }
             }
+
             ctx.putImageData(imageData, 0, 0);
-            const newPngDataUrl = canvas.toDataURL('image/png');
-            const parser = new DOMParser(); const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+            const newPngDataUrl = canvas.toDataURL('image/png', 1.0);
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
             const imgEl = doc.querySelector('image');
-            if (imgEl) { imgEl.setAttribute('href', newPngDataUrl); if (imgEl.getAttribute('xlink:href')) imgEl.setAttribute('xlink:href', newPngDataUrl); }
+            if (imgEl) {
+                imgEl.setAttribute('href', newPngDataUrl);
+                if (imgEl.getAttribute('xlink:href'))
+                    imgEl.setAttribute('xlink:href', newPngDataUrl);
+            }
+
             _replaceElementInSvg(layer, new XMLSerializer().serializeToString(doc.documentElement));
         };
+
         img.onerror = () => console.error('PNG load failed');
         img.src = dataUrl;
     }
@@ -1742,16 +2116,58 @@ style="cursor:pointer;">×</div>
     // =================== DIRECT MASCOT SLIDER CONTROLS ===================
     // ============================================================
 
-    window.updateDirectMascotScale = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer || layer.type !== 'direct-mascot') return;
-        layer.mascotScaleX = value / 100; layer.mascotScaleY = value / 100;
-        if (layer.mascotSvg) { applyDirectMascotToLayer(layer.mascotSvg, layer.id, false); if (layer._colorMap && Object.keys(layer._colorMap).length) setTimeout(() => _applyDirectMascotColorMap(layer), 150); }
-        document.getElementById('directMascotScaleValue').textContent = value;
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+    // window.updateDirectMascotScale = function (value) {
+    //     if (!window.currentApplicationLayer) return;
+    //     const layer = findLayerById(window.currentApplicationLayer);
+    //     if (!layer || layer.type !== 'direct-mascot') return;
+    //     layer.mascotScaleX = value / 100; layer.mascotScaleY = value / 100;
+    //     if (layer.mascotSvg) { applyDirectMascotToLayer(layer.mascotSvg, layer.id, false); if (layer._colorMap && Object.keys(layer._colorMap).length) setTimeout(() => _applyDirectMascotColorMap(layer), 150); }
+    //     document.getElementById('directMascotScaleValue').textContent = value;
+    //     if (window.saveCustomizations) window.saveCustomizations();
+    // };
 
+    window.updateDirectMascotScale = function (value) {
+    if (!window.currentApplicationLayer) return;
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer || layer.type !== 'direct-mascot') return;
+
+    layer.mascotScaleX = value / 100;
+    layer.mascotScaleY = value / 100;
+
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) return;
+
+    const partEl = mainSvg.querySelector('#' + layer.partId);
+    if (!partEl) return;
+
+    const bbox = partEl.getBBox();
+    const newSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
+
+    const mascotEl = mainSvg.querySelector('#' + layer.id);
+    if (mascotEl) {
+        const cx = layer._cx || 0;
+        const cy = layer._cy || 0;
+
+        mascotEl.setAttribute('width', newSize);
+        mascotEl.setAttribute('height', newSize);
+        mascotEl.setAttribute('x', cx - newSize / 2 + (layer.x || 0));
+        mascotEl.setAttribute('y', cy - newSize / 2 + (layer.y || 0));
+
+        layer._mascotSize = newSize;
+
+        // Flip/rotation preserve karo
+        _applyFlipTransform(layer, mainSvg);
+    }
+
+    document.getElementById('directMascotScaleValue').textContent = value;
+
+    // Color map preserve karo — sirf agar already apply tha
+    if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
+        setTimeout(() => _applyDirectMascotColorMap(layer), 100);
+    }
+
+    if (window.saveCustomizations) window.saveCustomizations();
+};
     window.updateDirectMascotOpacity = function (value) {
         if (!window.currentApplicationLayer) return;
         const layer = findLayerById(window.currentApplicationLayer);
@@ -1767,13 +2183,20 @@ style="cursor:pointer;">×</div>
         if (!window.currentApplicationLayer) return;
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || layer.type !== 'direct-mascot') return;
+
         layer.rotation = parseInt(value);
+
         const mainSvg = window.getMainSvg();
-        if (mainSvg) _applyFlipTransform(layer, mainSvg);
+        if (mainSvg) {
+            _applyFlipTransform(layer, mainSvg);   // Important
+        }
+
         document.getElementById('directMascotRotationValue').textContent = value;
         if (window.saveCustomizations) window.saveCustomizations();
-    };
 
+        // Plus icon update
+        setTimeout(() => _showPlusIcon(layer.id), 30);
+    };
     window.updateDirectMascotPosition = function (axis, value) {
         if (!window.currentApplicationLayer) return;
         const layer = findLayerById(window.currentApplicationLayer);
@@ -1834,9 +2257,7 @@ style="cursor:pointer;">×</div>
     };
 
     window.updateApplicationText = function (value) {
-
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
@@ -1845,65 +2266,46 @@ style="cursor:pointer;">×</div>
         const textEl = document.getElementById(layer.id);
         if (textEl) textEl.textContent = value;
 
+        // Font button ka text update (agar font already selected hai)
         const btn = document.getElementById('selectFontBtn');
-        if (btn) btn.textContent = value || 'Aa';
+        if (btn) {
+            const fontObj = window.backendFonts?.find(f => `font_${f.id}` === layer.fontFamily);
+            btn.textContent = fontObj ? fontObj.name : 'Select Font';
+        }
 
-        if (window.saveCustomizations)
-            window.saveCustomizations();
+        if (window.saveCustomizations) window.saveCustomizations();
     };
 
     window.updateFontFamily = function (value) {
-
         if (!window.currentApplicationLayer) return;
-
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
 
         layer.fontFamily = value;
 
         const textEl = document.getElementById(layer.id);
+        if (textEl) textEl.style.fontFamily = value;
 
-        if (textEl)
-            textEl.style.fontFamily = value;
-
-        // ✅ Select Font button realtime preview + font name
+        // Font button par asli naam dikhao
         const btn = document.getElementById('selectFontBtn');
-
         if (btn) {
-
             btn.style.fontFamily = value;
 
-            // backend font name extract
-            const fontObj = window.backendFonts?.find(f =>
-                ('font_' + f.id) === value
-            );
-
-            btn.textContent = fontObj ? fontObj.name : 'Font';
-
+            // Backend se font ka naam dhoondo
+            const fontObj = window.backendFonts?.find(f => `font_${f.id}` === value);
+            btn.textContent = fontObj ? fontObj.name : 'Select Font';
         }
 
-        // outline sync
-        document
-            .querySelectorAll(`[data-outline-for="${layer.id}"]`)
+        // Outlines update
+        document.querySelectorAll(`[data-outline-for="${layer.id}"]`)
             .forEach(o => o.style.fontFamily = value);
 
+        if (layer.hasPattern && layer.patternId) setTimeout(() => _updatePatternPosition(layer), 100);
+        if (layer.hasMascot && layer.mascotId) setTimeout(() => _updateMascotPatternPosition(layer), 100);
 
-        if (layer.hasPattern && layer.patternId)
-            setTimeout(() => _updatePatternPosition(layer), 100);
-
-
-        if (layer.hasMascot && layer.mascotId)
-            setTimeout(() => _updateMascotPatternPosition(layer), 100);
-
-
-        if (window.saveCustomizations)
-            window.saveCustomizations();
-
-
+        if (window.saveCustomizations) window.saveCustomizations();
         setTimeout(() => _showPlusIcon(layer.id), 80);
-
     };
-
     window.updatePosition = function (x, y) {
         if (!window.currentApplicationLayer) return;
         const layer = findLayerById(window.currentApplicationLayer);
@@ -1932,10 +2334,16 @@ style="cursor:pointer;">×</div>
         if (!window.currentApplicationLayer) return;
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer) return;
+
         layer.rotation = parseInt(value);
-        const textEl = document.getElementById(layer.id);
-        if (textEl) _applyFlipTransform(layer, textEl.ownerSVGElement);
+
+        const mainSvg = window.getMainSvg();
+        if (mainSvg) {
+            _applyFlipTransform(layer, mainSvg);   // Important
+        }
+
         if (window.saveCustomizations) window.saveCustomizations();
+        setTimeout(() => _showPlusIcon(layer.id), 30);
     };
 
     window.updateOutlineStroke = function (type, value) {
@@ -2118,19 +2526,47 @@ style="cursor:pointer;">×</div>
 
     window.openFontModal = function () { document.getElementById('fontModal').style.display = 'flex'; renderFontGrid(); };
     window.closeFontModal = function () { document.getElementById('fontModal').style.display = 'none'; };
-
     function renderFontGrid() {
-        const grid = document.getElementById('fontGrid'); grid.innerHTML = '';
-        const previewText = document.getElementById('applicationText')?.value || '85';
+        const grid = document.getElementById('fontGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        // Real-time text lo (jo user ne abhi likha hai)
+        let previewText = 'Aa';   // fallback
+
         const currentLayer = findLayerById(window.currentApplicationLayer);
+        if (currentLayer && currentLayer.text && currentLayer.text.trim() !== '') {
+            previewText = currentLayer.text.trim();
+        } else {
+            const textInput = document.getElementById('applicationText');
+            if (textInput && textInput.value.trim() !== '') {
+                previewText = textInput.value.trim();
+            }
+        }
+
         window.backendFonts.forEach(f => {
             const div = document.createElement('div');
             div.style.cssText = 'border:2px solid #ddd;padding:20px;text-align:center;border-radius:8px;cursor:pointer;background:#fff';
-            div.innerHTML = `<div style="font-size:42px;font-family:font_${f.id}">${previewText}</div><p style="margin-top:10px;font-weight:600">${f.name}</p>`;
-            if (currentLayer?.fontFamily === `font_${f.id}`) { div.style.border = '2px solid #000'; div.style.background = '#8d8d8d'; }
-            div.onmouseenter = () => { if (currentLayer?.fontFamily !== `font_${f.id}`) div.style.background = '#f2f2f2'; };
-            div.onmouseleave = () => { if (currentLayer?.fontFamily !== `font_${f.id}`) div.style.background = '#fff'; };
-            div.onclick = () => { window.updateFontFamily(`font_${f.id}`); closeFontModal(); };
+
+            div.innerHTML = `
+            <div style="font-size:42px; font-family:font_${f.id}; line-height:1.1; min-height:55px; display:flex; align-items:center; justify-content:center;">
+                ${previewText}
+            </div>
+            <p style="margin-top:12px; font-weight:600; margin-bottom:0;">${f.name}</p>
+        `;
+
+            // Selected font highlight
+            if (currentLayer && currentLayer.fontFamily === `font_${f.id}`) {
+                div.style.border = '2px solid #000';
+                div.style.background = '#8d8d8d';
+                div.style.color = '#fff';
+            }
+
+            div.onclick = () => {
+                window.updateFontFamily(`font_${f.id}`);
+                closeFontModal();
+            };
+
             grid.appendChild(div);
         });
     }
@@ -2767,7 +3203,7 @@ style="cursor:pointer;">×</div>
         if (!svg || !arc || !dot) { setTimeout(initRotationWheel, 400); return; }
 
         const cx = 80, cy = 80, r = 68;
-const circumference = 2 * Math.PI * r;
+        const circumference = 2 * Math.PI * r;    // 427.26
         const snapPoints = [0, 90, 180, 270, 360];
         const snapThreshold = 25; // degrees
 
@@ -2926,10 +3362,41 @@ const circumference = 2 * Math.PI * r;
 
 
 
+    // Text ka true center nikaalne ka best function
+    function getTextCenterForTransform(layer) {
+        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return { cx: 0, cy: 0 };
+
+        const partEl = mainSvg.querySelector('#' + layer.partId);
+        if (!partEl) return { cx: 0, cy: 0 };
+
+        const bbox = partEl.getBBox();
+        const centerX = bbox.x + bbox.width / 2 + (layer.x || 0);
+        const centerY = bbox.y + bbox.height / 2 + (layer.y || 0);
+
+        return { cx: centerX, cy: centerY };
+    }
 
 
 
+    // Helper: Text ka center nikaalne ke liye (visual center)
+    function getTextVisualCenter(layerId) {
+        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return null;
 
+        const textEl = mainSvg.querySelector('#' + layerId);
+        if (!textEl) return null;
 
+        // Get bounding box (visual bounds after transform)
+        try {
+            const rect = textEl.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        } catch (e) {
+            return null;
+        }
+    }
 
 })();

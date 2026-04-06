@@ -913,16 +913,16 @@ background-repeat:no-repeat;
 
     // =================== MASCOT TEMPLATE ===================
 
-window.openMascotTemplateModal = function() {
-    // ⭐ selectedSvgElement check HATA DIYA - seedha modal open hoga
-    document.getElementById('mascotTemplateModal').style.display = 'flex';
+    window.openMascotTemplateModal = function () {
+        // ⭐ selectedSvgElement check HATA DIYA - seedha modal open hoga
+        document.getElementById('mascotTemplateModal').style.display = 'flex';
 
-    fetch('/api/mascot-templates')
-        .then(r => r.json())
-        .then(data => {
-            let html = '';
+        fetch('/api/mascot-templates')
+            .then(r => r.json())
+            .then(data => {
+                let html = '';
 
-            html += `
+                html += `
             <div style="border:2px dashed #999;padding:10px;border-radius:8px;text-align:center;cursor:pointer;background:#fafafa"
                 onclick="clearMascotForSelectedPart(); closeMascotTemplateModal();">
                 <div style="height:140px;display:flex;align-items:center;justify-content:center;font-weight:700;">
@@ -930,87 +930,87 @@ window.openMascotTemplateModal = function() {
                 </div>
             </div>`;
 
-            data.forEach(t => {
-                html += `
+                data.forEach(t => {
+                    html += `
                 <div style="border:1px solid #ddd;padding:10px;border-radius:8px;text-align:center;cursor:pointer"
                      onclick="selectMascotTemplate('${t.image_data}','${encodeURIComponent(t.svg_data || '')}')">
                     <img src="${t.image_data}" style="width:100%;height:140px;object-fit:contain;background:#f5f5f5">
                     <p style="margin-top:8px;font-weight:600">${t.title}</p>
                 </div>`;
+                });
+
+                document.getElementById('mascotTemplateGrid').innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                document.getElementById('mascotTemplateGrid').innerHTML =
+                    '<p style="color:red;">Error loading mascots</p>';
             });
+    };
 
-            document.getElementById('mascotTemplateGrid').innerHTML = html;
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            document.getElementById('mascotTemplateGrid').innerHTML =
-                '<p style="color:red;">Error loading mascots</p>';
-        });
-};
+    window.clearMascotForSelectedPart = function () {
+        if (!window.selectedSvgElement) return;
 
-window.clearMascotForSelectedPart = function() {
-    if (!window.selectedSvgElement) return;
+        const view = window.currentView;
+        const partId = window.selectedSvgElement.id;
+        const svg = window.getMainSvg();
 
-    const view = window.currentView;
-    const partId = window.selectedSvgElement.id;
-    const svg = window.getMainSvg();
+        svg.querySelector(`#mascot-overlay-${partId}`)?.remove();
+        svg.querySelector(`#mascot-pattern-${partId}-${view}`)?.remove();
+        svg.querySelector(`#mascot-clip-${partId}-${view}`)?.remove();
 
-    svg.querySelector(`#mascot-overlay-${partId}`)?.remove();
-    svg.querySelector(`#mascot-pattern-${partId}-${view}`)?.remove();
-    svg.querySelector(`#mascot-clip-${partId}-${view}`)?.remove();
+        if (window.mascotsApplied?.[view]?.[partId]) {
+            delete window.mascotsApplied[view][partId];
+        }
 
-    if (window.mascotsApplied?.[view]?.[partId]) {
-        delete window.mascotsApplied[view][partId];
-    }
+        delete window.selectedSvgElement.dataset.hasMascot;
+        delete window.selectedSvgElement.dataset.mascotId;
 
-    delete window.selectedSvgElement.dataset.hasMascot;
-    delete window.selectedSvgElement.dataset.mascotId;
+        // ⭐ BUTTONS WAPAS SHOW KAR DO
+        const btns = document.querySelector('.pattern-top-buttons');
+        if (btns) btns.style.display = 'flex';
 
-    // ⭐ BUTTONS WAPAS SHOW KAR DO
-    const btns = document.querySelector('.pattern-top-buttons');
-    if (btns) btns.style.display = 'flex';
+        document.getElementById('mascotControls').style.display = 'none';
 
-    document.getElementById('mascotControls').style.display = 'none';
-
-    if (window.saveCustomizations) window.saveCustomizations();
-    console.log("✅ Mascot cleared");
-};
+        if (window.saveCustomizations) window.saveCustomizations();
+        console.log("✅ Mascot cleared");
+    };
 
     window.closeMascotTemplateModal = function () {
         document.getElementById('mascotTemplateModal').style.display = 'none';
     };
 
     // ⭐ YEH FUNCTION MASCOT KO REPEAT KAREGA ⭐
-window.selectMascotTemplate = function(img, svg) {
-    if (!window.selectedSvgElement) {
+    window.selectMascotTemplate = function (img, svg) {
+        if (!window.selectedSvgElement) {
+            closeMascotTemplateModal();
+            alert("Pehle jersey ka koi part select karo, phir dobara SELECT MASCOT click karo!");
+            return;
+        }
+
+        const decodedSvg = svg ? decodeURIComponent(svg) : null;
+
+        if (!decodedSvg || !decodedSvg.includes('<svg')) {
+            fetch(img)
+                .then(r => r.text())
+                .then(content => {
+                    if (content.includes('<svg')) {
+                        window.uploadedSvgContent = content;
+                        window.applyUploadedMascot();
+                        closeMascotTemplateModal();
+                        const btns = document.querySelector('.pattern-top-buttons');
+                        if (btns) btns.style.display = 'none';
+                    }
+                });
+            return;
+        }
+
+        window.uploadedSvgContent = decodedSvg;
+        window.applyUploadedMascot();
         closeMascotTemplateModal();
-        alert("Pehle jersey ka koi part select karo, phir dobara SELECT MASCOT click karo!");
-        return;
-    }
-
-    const decodedSvg = svg ? decodeURIComponent(svg) : null;
-
-    if (!decodedSvg || !decodedSvg.includes('<svg')) {
-        fetch(img)
-            .then(r => r.text())
-            .then(content => {
-                if (content.includes('<svg')) {
-                    window.uploadedSvgContent = content;
-                    window.applyUploadedMascot();
-                    closeMascotTemplateModal();
-                    const btns = document.querySelector('.pattern-top-buttons');
-                    if (btns) btns.style.display = 'none';
-                }
-            });
-        return;
-    }
-
-    window.uploadedSvgContent = decodedSvg;
-    window.applyUploadedMascot();
-    closeMascotTemplateModal();
-    const btns = document.querySelector('.pattern-top-buttons');
-    if (btns) btns.style.display = 'none';
-};
+        const btns = document.querySelector('.pattern-top-buttons');
+        if (btns) btns.style.display = 'none';
+    };
 
     // ⭐ NAYA FUNCTION - MASCOT KO REPEAT KARTA HAI ⭐
     window.applyUploadedMascot = function () {
@@ -1142,6 +1142,8 @@ window.selectMascotTemplate = function(img, svg) {
         if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
 
         console.log("✅ Mascot applied safely");
+        if (window.updateMascotPreview)
+            window.updateMascotPreview();
 
         const mascotControls = document.getElementById('mascotControls');
         if (mascotControls) {
@@ -1163,10 +1165,12 @@ window.selectMascotTemplate = function(img, svg) {
 
     // Mascot Size Control
     window.updateMascotSize = function (value) {
+
         if (!window.selectedSvgElement?.dataset.hasMascot) return;
 
         const view = window.currentView;
         const partId = window.selectedSvgElement.id;
+
         const mascotData = window.mascotsApplied[view]?.[partId];
         if (!mascotData) return;
 
@@ -1176,26 +1180,87 @@ window.selectMascotTemplate = function(img, svg) {
         const svg = pattern.querySelector('svg');
         if (!svg) return;
 
-        const tileSize = mascotData.tileSize || 60;
-        const scale = value / 100;
-        const newSize = tileSize * scale;
-        const offset = (tileSize - newSize) / 2;
+        const tileSize = mascotData.tileSize;
 
-        // ← YAHAN FIX HAI: x/y SVG pe kaam nahi karta, transform use karo
-        let g = svg.querySelector('g.mascot-scale');
+        const scale = value / 100;
+
+        let g = svg.querySelector('.mascot-scale');
+
         if (!g) {
-            g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            g.classList.add('mascot-scale');
-            while (svg.firstChild) g.appendChild(svg.firstChild);
+
+            g = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g"
+            );
+
+            g.classList.add("mascot-scale");
+
+            while (svg.firstChild)
+                g.appendChild(svg.firstChild);
+
             svg.appendChild(g);
         }
-        g.setAttribute('transform', `translate(${offset} ${offset}) scale(${scale})`);
+
+        // ⭐ VERY IMPORTANT CENTER SCALE FIX
+        g.setAttribute(
+            "transform",
+            `translate(${tileSize / 2} ${tileSize / 2})
+         scale(${scale})
+         translate(${-tileSize / 2} ${-tileSize / 2})`
+        );
 
         mascotData.size = value;
-        document.getElementById('mascotSizeValue').textContent = value;
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
 
+        document.getElementById("mascotSizeValue").textContent = value;
+
+        if (window.saveCustomizations)
+            window.saveCustomizations();
+    };
+    window.updateMascotPreview = function () {
+
+        const previewBox = document.getElementById('mascotPreviewBox');
+        if (!previewBox) return;
+
+        const view = window.currentView;
+        const partId = window.selectedSvgElement?.id;
+
+        if (window.selectedSvgElement?.dataset.hasMascot && partId) {
+
+            const mascotData = window.mascotsApplied?.[view]?.[partId];
+
+            if (mascotData && mascotData.svgContent) {
+
+                previewBox.innerHTML = `
+            <div style="
+                width:100%;
+                height:100%;
+                background-image:url('data:image/svg+xml;utf8,${encodeURIComponent(mascotData.svgContent)}');
+                background-size:contain;
+                background-position:center;
+                background-repeat:no-repeat;
+            ">
+            </div>
+            `;
+
+                // ⭐ CLICKABLE PREVIEW
+                previewBox.style.cursor = "pointer";
+                previewBox.onclick = openMascotTemplateModal;
+
+            } else {
+
+                previewBox.innerHTML =
+                    '<span style="color:#999;">No mascot applied</span>';
+
+            }
+
+        } else {
+
+            previewBox.innerHTML =
+                '<span style="color:#999;">No mascot applied</span>';
+
+        }
+
+    };
 
     // Mascot Opacity Control
     window.updateMascotOpacity = function (value) {
@@ -1424,6 +1489,7 @@ window.selectMascotTemplate = function(img, svg) {
             console.log('No saved patterns');
             return;
         }
+        window.patternsApplied = window.patternsApplied || {};
 
         const mainSvg = window.getMainSvg?.() || document.querySelector('svg');
         if (!mainSvg) {
@@ -1434,25 +1500,28 @@ window.selectMascotTemplate = function(img, svg) {
 
 
         Object.keys(window.patternsApplied).forEach(view => {
-            console.log(`Initializing patterns for ${view}`);
 
             Object.keys(window.patternsApplied[view]).forEach(partId => {
+
                 const part = mainSvg.querySelector(`[id="${partId}"]`);
 
-                if (part) {
-                    const patternData = window.patternsApplied[view][partId];
+                if (!part) return;
 
-                    part.dataset.hasPattern = 'true';
-                    part.dataset.patternId = patternData.patternId;
-                    part.dataset.patternView = view;
+                const patternData = window.patternsApplied[view][partId];
 
-                    console.log(`✅ Initialized ${partId}`);
-                } else {
-                    console.warn(`⚠️ Part ${partId} not found`);
-                }
+                part.dataset.hasPattern = 'true';
+                part.dataset.patternId = patternData.patternId;
+                part.dataset.patternView = view;
+
+                // ⭐ FIX — SELECT PART AGAIN
+                window.selectedSvgElement = part;
+
+                // ⭐ FIX — RESTORE CONTROLS AGAIN
+                window.restorePatternStateForPart(partId, view);
+
             });
-        });
 
+        });
         console.log('✅ Pattern initialization complete');
     };
 
@@ -1548,59 +1617,17 @@ window.selectMascotTemplate = function(img, svg) {
                 const part = svg.querySelector(`[id="${partId}"]`);
                 if (!part) return;
 
-                // dataset restore
                 part.dataset.hasMascot = 'true';
                 part.dataset.mascotId = data.patternId;
 
-                // 🔥 recreate pattern + overlay properly
-                let defs = svg.querySelector('defs');
-                if (!defs) {
-                    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-                    svg.insertBefore(defs, svg.firstChild);
-                }
+                // ⭐ SELECT AGAIN
+                window.selectedSvgElement = part;
 
-                // create clip
-                const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-                const clipId = `mascot-clip-${partId}-${view}`;
-                clip.setAttribute('id', clipId);
-                clip.appendChild(part.cloneNode(true));
-                defs.appendChild(clip);
-
-                // create pattern
-                const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-                pattern.setAttribute('id', data.patternId);
-                pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-                pattern.setAttribute('x', data.bbox?.x || 0);   // ← YAHA ADD KARO
-                pattern.setAttribute('y', data.bbox?.y || 0);   // ← YAHA ADD KARO
-                pattern.setAttribute('width', data.tileSize);
-                pattern.setAttribute('height', data.tileSize);
-
-                const doc = new DOMParser().parseFromString(data.svgContent, 'image/svg+xml');
-                const msvg = doc.querySelector('svg');
-
-                msvg.setAttribute('width', data.tileSize);
-                msvg.setAttribute('height', data.tileSize);
-
-                pattern.appendChild(msvg);
-                defs.appendChild(pattern);
-
-                // overlay
-                let group = svg.querySelector('#mascot-overlay-group');
-                if (!group) {
-                    group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                    group.setAttribute('id', 'mascot-overlay-group');
-                    svg.appendChild(group);
-                }
-
-                const over = part.cloneNode(true);
-                over.setAttribute('id', `mascot-overlay-${partId}`);
-                over.setAttribute('fill', `url(#${data.patternId})`);
-                over.setAttribute('clip-path', `url(#${clipId})`);
-                over.style.pointerEvents = 'none';
-
-                group.appendChild(over);
+                // ⭐ RESTORE SLIDERS AGAIN
+                window.restoreMascotStateForPart(partId, view);
 
             });
+
         });
 
         console.log("✅ Mascots restored properly");

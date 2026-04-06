@@ -793,49 +793,63 @@
     };
 
     // ------- Canvas init -------
+    // ✅ FIXED mcInitCanvas — original size maintain karo
     function mcInitCanvas() {
         var canvasEl = document.getElementById('mcCanvas');
         if (!canvasEl) return;
 
-        var SIZE = 460;
-        canvasEl.width = SIZE;
-        canvasEl.height = SIZE;
-
         var svg = window._mc.currentSvg || '';
-        var imageUrl = window._mc.imageUrl || ''; // base64 PNG from image_data
-        var ctx = canvasEl.getContext('2d');
-        ctx.clearRect(0, 0, SIZE, SIZE);
+        var imageUrl = window._mc.imageUrl || '';
+
+        var ctx;
 
         function _drawImageOnCanvas(src) {
             var img = new Image();
             img.crossOrigin = 'anonymous';
+
             img.onload = function() {
-                ctx.clearRect(0, 0, SIZE, SIZE);
-                // Fit image proportionally
-                var ratio = Math.min(SIZE / img.naturalWidth, SIZE / img.naturalHeight);
-                var dw = img.naturalWidth * ratio;
-                var dh = img.naturalHeight * ratio;
-                var dx = (SIZE - dw) / 2;
-                var dy = (SIZE - dh) / 2;
-                ctx.drawImage(img, dx, dy, dw, dh);
-                mcDetectColors(ctx, SIZE, SIZE);
+                // ✅ FIX: original size use karo — 460 nahi
+                var MAX = 800;
+                var ratio = Math.min(MAX / img.naturalWidth, MAX / img.naturalHeight, 1);
+                var W = Math.round(img.naturalWidth * ratio);
+                var H = Math.round(img.naturalHeight * ratio);
+
+                canvasEl.width = W;
+                canvasEl.height = H;
+
+                // Canvas display size fix
+                canvasEl.style.maxWidth = '460px';
+                canvasEl.style.maxHeight = '460px';
+                canvasEl.style.width = 'auto';
+                canvasEl.style.height = 'auto';
+
+                ctx = canvasEl.getContext('2d');
+                ctx.clearRect(0, 0, W, H);
+                ctx.drawImage(img, 0, 0, W, H);
+
+                mcDetectColors(ctx, W, H);
                 window._mc.undoStack = [];
                 mcPushUndo();
                 mcSetupEraserEvents(canvasEl);
             };
+
             img.onerror = function() {
-                console.error('mcInitCanvas: image load failed', src.substring(0, 80));
+                console.error('mcInitCanvas: image load failed');
+                canvasEl.width = 460;
+                canvasEl.height = 460;
+                ctx = canvasEl.getContext('2d');
                 ctx.fillStyle = '#eee';
-                ctx.fillRect(0, 0, SIZE, SIZE);
+                ctx.fillRect(0, 0, 460, 460);
                 ctx.fillStyle = '#999';
                 ctx.font = '16px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('Image could not load', SIZE / 2, SIZE / 2);
+                ctx.fillText('Image could not load', 230, 230);
             };
+
             img.src = src;
         }
 
-        // CASE 1: image_data available (base64 PNG) — use directly
+        // CASE 1: base64 PNG directly
         if (imageUrl && imageUrl.startsWith('data:')) {
             _drawImageOnCanvas(imageUrl);
             return;
@@ -843,10 +857,10 @@
 
         // CASE 2: SVG string
         if (svg && svg.trim().startsWith('<')) {
-            // Check if SVG has an <image> tag with href (wrapped PNG)
             var parser = new DOMParser();
             var doc = parser.parseFromString(svg, 'image/svg+xml');
             var imgTag = doc.querySelector('image');
+
             if (imgTag) {
                 var href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || '';
                 if (href.startsWith('data:')) {
@@ -855,25 +869,26 @@
                 }
             }
 
-            // Pure SVG — convert to data URL (avoids blob CORS issues)
             var encoded = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
             _drawImageOnCanvas(encoded);
             return;
         }
 
-        // CASE 3: imageUrl is a regular URL
+        // CASE 3: regular URL
         if (imageUrl) {
             _drawImageOnCanvas(imageUrl);
             return;
         }
 
-        // Nothing to show
+        canvasEl.width = 460;
+        canvasEl.height = 460;
+        ctx = canvasEl.getContext('2d');
         ctx.fillStyle = '#f0f0f0';
-        ctx.fillRect(0, 0, SIZE, SIZE);
+        ctx.fillRect(0, 0, 460, 460);
         ctx.fillStyle = '#aaa';
         ctx.font = '14px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('No mascot data', SIZE / 2, SIZE / 2);
+        ctx.fillText('No mascot data', 230, 230);
     }
 
     function mcSetupEraserEvents(canvas) {
@@ -1168,24 +1183,26 @@
         });
     }
 
-    window.mcSelectColorCount = function(n, btn) {
-        window._mc.colorCount = n;
-        document.querySelectorAll('#mcColorCountBtns button').forEach(function(b) {
-            b.style.background = '#fff';
-            b.style.color = '#333';
-            b.style.borderColor = '#ddd';
-        });
-        if (btn) {
-            btn.style.background = '#1a1a1a';
-            btn.style.color = '#fff';
-            btn.style.borderColor = '#1a1a1a';
-        }
-        var canvas = document.getElementById('mcCanvas');
-        if (canvas) {
-            var ctx = canvas.getContext('2d');
-            mcDetectColors(ctx, canvas.width, canvas.height);
-        }
-    };
+   window.mcSelectColorCount = function(n, btn) {
+    window._mc.colorCount = n;
+    console.log('🔢 User ne select kiya:', n); // ← add karo
+
+    document.querySelectorAll('#mcColorCountBtns button').forEach(function(b) {
+        b.style.background = '#fff';
+        b.style.color = '#333';
+        b.style.borderColor = '#ddd';
+    });
+    if (btn) {
+        btn.style.background = '#1a1a1a';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#1a1a1a';
+    }
+    var canvas = document.getElementById('mcCanvas');
+    if (canvas) {
+        var ctx = canvas.getContext('2d');
+        mcDetectColors(ctx, canvas.width, canvas.height);
+    }
+};
 
     // ✅ NAYA CODE — selectedColors (color wheel) use karega
     function mcRenderColorSwatches(detectedColors) {
@@ -1193,16 +1210,19 @@
         if (!container) return;
         container.innerHTML = '';
 
+        // FIX: sirf colorCount tak rows dikhao
+        detectedColors = detectedColors.slice(0, window._mc.colorCount || 2);
 
-        // YEH LAGAO:
         var backendColors = (window.selectedColors && window.selectedColors.length) ?
             window.selectedColors :
             (window.backendColors || []).map(function(c) {
                 return c.code || c.hex || c.color || c;
             });
-        if (!backendColors.length) backendColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#000000', '#FFFF00',
-            '#FF00FF', '#00FFFF'
+
+        if (!backendColors.length) backendColors = [
+            '#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#000000', '#FFFF00', '#FF00FF', '#00FFFF'
         ];
+
         detectedColors.forEach(function(detectedHex) {
             var row = document.createElement('div');
             row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
@@ -1220,7 +1240,6 @@
             var swatchRow = document.createElement('div');
             swatchRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;';
 
-            // Current replacement (if any)
             var currentReplacement = window._mc.colorMap[detectedHex.toLowerCase()] || null;
 
             backendColors.slice(0, 12).forEach(function(hex) {
@@ -1234,10 +1253,10 @@
                     ';box-sizing:border-box;transition:border .1s;';
                 box.style.background = hex;
                 box.title = hex;
+
                 box.onclick = (function(dHex, nHex, b, swRow) {
                     return function() {
                         window._mc.colorMap[dHex.toLowerCase()] = nHex;
-                        // Isi row ke baaki swatch deselect karo
                         swRow.querySelectorAll('.mc-swatch-box').forEach(function(x) {
                             x.style.border = '2px solid #ddd';
                         });
@@ -1245,6 +1264,7 @@
                         mcApplyColorReplacements();
                     };
                 })(detectedHex, hex, box, swatchRow);
+
                 swatchRow.appendChild(box);
             });
 
@@ -1388,67 +1408,186 @@
     };
 
     // ------- Save & Apply -------
-    window.mcSaveAndApply = function(doSave) {
-        var canvas = document.getElementById('mcCanvas');
-        if (!canvas) return;
+ // ✅ FIXED mcSaveAndApply — full original quality
+window.mcSaveAndApply = function (doSave) {
+    var canvas = document.getElementById('mcCanvas');
+    if (!canvas) return;
 
-        var nameEl = document.getElementById('mcMascotName');
-        var name = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : (window._mc.mascotName || 'My Mascot');
-        window._mc.mascotName = name;
+    // ✅ Button se colorCount lo
+    var selectedBtn = document.querySelector('#mcColorCountBtns button[style*="background: rgb(26, 26, 26)"], #mcColorCountBtns button[style*="background:#1a1a1a"], #mcColorCountBtns button[style*="background: #1a1a1a"]');
+    if (selectedBtn) {
+        var btnText = selectedBtn.textContent.trim();
+        window._mc.colorCount = btnText === '8+' ? 8 : parseInt(btnText) || 2;
+    }
 
-        // ✅ Transparent mask save karo (background remove permanent rahay)
-        var alphaMap = [];
-        try {
-            var maskImageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-            for (var i = 3; i < maskImageData.data.length; i += 4) {
-                alphaMap.push(maskImageData.data[i]);
-            }
-        } catch (e) {
-            console.warn('Alpha mask save failed:', e);
+    // ✅ colorCount global variable mein bhi save karo
+    var savedColorCount = window._mc.colorCount;
+    console.log('✅ savedColorCount:', savedColorCount);
+
+    var nameEl = document.getElementById('mcMascotName');
+    var name = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : (window._mc.mascotName || 'My Mascot');
+    window._mc.mascotName = name;
+
+    var alphaMap = [];
+    try {
+        var maskImageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+        for (var i = 3; i < maskImageData.data.length; i += 4) {
+            alphaMap.push(maskImageData.data[i]);
         }
+    } catch (e) {}
 
-        // Get final PNG from canvas
-        var dataUrl = canvas.toDataURL('image/png');
+    var offscreen = document.createElement('canvas');
+    offscreen.width  = canvas.width;
+    offscreen.height = canvas.height;
+    var offCtx = offscreen.getContext('2d');
+    offCtx.imageSmoothingEnabled = true;
+    offCtx.imageSmoothingQuality = 'high';
+    offCtx.drawImage(canvas, 0, 0);
+    var dataUrl = offscreen.toDataURL('image/png', 1.0);
 
-        // Wrap in SVG
-        var finalSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + canvas.width + ' ' + canvas
-            .height + '">' +
-            '<image href="' + dataUrl + '" x="0" y="0" width="' + canvas.width + '" height="' + canvas.height +
-            '" preserveAspectRatio="xMidYMid meet" opacity="' + (window._mc.opacity / 100) + '"/>' +
-            '</svg>';
+    var finalSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' +
+        canvas.width + ' ' + canvas.height + '">' +
+        '<image href="' + dataUrl + '" x="0" y="0" width="' + canvas.width +
+        '" height="' + canvas.height +
+        '" preserveAspectRatio="xMidYMid meet" opacity="' + (window._mc.opacity / 100) + '"/>' +
+        '</svg>';
 
-        var layerId = window._mc.layerId || window.currentApplicationLayer;
-        var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+    var layerId = window._mc.layerId || window.currentApplicationLayer;
 
-        if (layer) {
-            layer.mascotTitle = name;
+    document.getElementById('mascotCustomizeModal').style.display = 'none';
 
-            // ✅ Alpha mask layer mein store karo
-            if (alphaMap.length > 0) {
-                layer._alphaMask = alphaMap;
-                layer._alphaMaskW = canvas.width;
-                layer._alphaMaskH = canvas.height;
-            }
+    window.currentApplicationLayer = layerId;
+
+    // ✅ Pehle apply karo
+    if (window.applyDirectMascotToLayer) {
+        window.applyDirectMascotToLayer(finalSvg, layerId, true);
+    }
+
+    // ✅ BAAD MEIN layer update karo — applyDirectMascotToLayer ke baad
+    var layer = window.findLayerById ? window.findLayerById(layerId) : null;
+    if (layer) {
+        layer.mascotTitle = name;
+        layer._selectedColorCount = savedColorCount; // ✅ override karo
+        console.log('✅ layer._selectedColorCount SET TO:', layer._selectedColorCount);
+
+        if (alphaMap.length > 0) {
+            layer._alphaMask  = alphaMap;
+            layer._alphaMaskW = canvas.width;
+            layer._alphaMaskH = canvas.height;
         }
+    }
 
-        // Close customize modal
-        document.getElementById('mascotCustomizeModal').style.display = 'none';
+    // ✅ updateApplicationLayersList ke baad showDirectMascotControls dobara call karo
+    if (window.updateApplicationLayersList) window.updateApplicationLayersList();
 
-        // Apply to SVG
-        window.currentApplicationLayer = layerId;
-        if (window.applyDirectMascotToLayer) {
-            window.applyDirectMascotToLayer(finalSvg, layerId, true);
+
+setTimeout(function() {
+    var updatedLayer = window.findLayerById ? window.findLayerById(layerId) : null;
+    if (updatedLayer) {
+        updatedLayer._selectedColorCount = savedColorCount;
+        console.log('🎨 Rendering colors with count:', updatedLayer._selectedColorCount);
+        // ✅ FIX: _renderDirectMascotColors ki jagah showDirectMascotControls use karo
+        if (window.selectApplicationLayer) {
+            window.selectApplicationLayer(layerId);
         }
+    }
+}, 500);
 
-        // Update layers list name
-        if (window.updateApplicationLayersList) window.updateApplicationLayersList();
+    if (doSave) _mcSaveToBackend(name, dataUrl, finalSvg);
+};
 
-        // Save to backend
-        if (doSave) {
-            _mcSaveToBackend(name, dataUrl, finalSvg);
+// function _renderDirectMascotColors ke saath saath:
+window._renderDirectMascotColors = function(layer) {
+    const container = document.getElementById('directMascotColorSwatches');
+    if (!container) return;
+
+    if (!layer.mascotSvg) {
+        container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
+        return;
+    }
+
+    container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Detecting colors...</p>';
+
+    const maxColors = (layer._selectedColorCount && layer._selectedColorCount > 0)
+                      ? layer._selectedColorCount
+                      : (window.selectedColors ? window.selectedColors.length : 3);
+
+    console.log('🎨 maxColors:', maxColors, '| _selectedColorCount:', layer._selectedColorCount);
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
+
+    const imgTag = doc.querySelector('image');
+    if (imgTag) {
+        const href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || '';
+        if (href.startsWith('data:image')) {
+            _detectColorsFromPng(href, layer, container);
+            return;
         }
+    }
+
+    const colorCounts = {};
+    doc.querySelectorAll('[fill]').forEach(el => {
+        const hex = _normalizeColor(el.getAttribute('fill') || '');
+        if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+    });
+
+    const detected = Object.keys(colorCounts)
+                           .sort((a, b) => colorCounts[b] - colorCounts[a])
+                           .slice(0, maxColors);
+
+    layer._detectedColors = detected;
+    _buildColorSwatches(detected, layer, container);
+};
+
+// Private reference bhi rakho
+function _renderDirectMascotColors(layer) {
+    window._renderDirectMascotColors(layer);
+}
+// showDirectMascotControls function ko window pe lagao:
+window.showDirectMascotControls = function(layer) {
+    const appControls = document.getElementById('applicationLayerControls');
+    if (appControls) {
+        Array.from(appControls.children).forEach(child => {
+            child.style.display = child.id !== 'directMascotControls' ? 'none' : 'block';
+        });
+    }
+
+    const preview = document.getElementById('directMascotPreview');
+    if (preview && layer.mascotSvg) {
+        preview.innerHTML = layer.mascotSvg;
+        const svg = preview.querySelector('svg');
+        if (svg) {
+            svg.style.maxWidth = '80px';
+            svg.style.maxHeight = '80px';
+            svg.style.transform = layer.flipX === -1 ? 'scaleX(-1)' : '';
+        }
+    } else if (preview) {
+        preview.innerHTML = '<span style="color:#aaa;font-size:12px;">No mascot selected</span>';
+    }
+
+    const sync = (id, valId, val) => {
+        const el = document.getElementById(id);
+        const ve = document.getElementById(valId);
+        if (el) el.value = val;
+        if (ve) ve.textContent = val;
     };
 
+    sync('directMascotScale',    'directMascotScaleValue',    Math.round((layer.mascotScaleX || 1) * 100));
+    sync('directMascotOpacity',  'directMascotOpacityValue',  layer.mascotOpacity ?? 100);
+    sync('directMascotRotation', 'directMascotRotationValue', layer.rotation || 0);
+    sync('mascotDirectPosX',     'mascotDirectPosXValue',     layer.x || 0);
+    sync('mascotDirectPosY',     'mascotDirectPosYValue',     layer.y || 0);
+
+    setTimeout(() => {
+        // ✅ window pe expose karo
+        if (window._renderDirectMascotColors) {
+            window._renderDirectMascotColors(layer);
+        }
+    }, 100);
+
+    setTimeout(() => _showMascotBox(layer.id), 80);
+};
     function _mcSaveToBackend(name, dataUrl, svgData) {
         var csrfMeta = document.querySelector('meta[name="csrf-token"]');
         var csrf = csrfMeta ? csrfMeta.content : '';

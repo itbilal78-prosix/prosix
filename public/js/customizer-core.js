@@ -3826,4 +3826,8 @@ async function generateAndSaveThumbnail() {
 }
     document.addEventListener('DOMContentLoaded', init);
 
+
+
+
+
 })();

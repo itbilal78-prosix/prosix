@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" width="100%" height="100%" version="1.1" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 1250 2811">
- <defs>
+ <defs><style data-fonts="true">@font-face { font-family: 'font_1'; src: url('http://127.0.0.1:8000/storage/fonts/5ZIyXfnllvfea2c03RF0XvhB4s9AbiJS5UuPNvgP') format('truetype'); }@font-face { font-family: 'font_2'; src: url('http://127.0.0.1:8000/storage/fonts/HiTBF8CNdPuu1yhMAdkdrafbOxzCEGWugdII81Rt') format('truetype'); }@font-face { font-family: 'font_3'; src: url('http://127.0.0.1:8000/storage/fonts/NTEl0gVIgAt3bQrdxmwPc3g1o1VAdu4adzElDKs8') format('truetype'); }</style>
    <clipPath id="id0">
     <path d="M313 224l-55 43c-103,90 -131,237 -113,373 5,35 25,142 41,161 11,-36 23,-70 46,-89 88,-71 217,-66 329,-71 134,-6 357,-17 416,113 16,-36 -15,-210 -19,-255 -11,-18 -56,-381 -444,-331 -115,14 -175,51 -201,56z" id="svg-part-0"/>
    </clipPath>
