@@ -10,7 +10,6 @@ use App\Http\Controllers\CustomizerModelController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\FlipbookController;
 use App\Http\Controllers\FontController;
-use App\Http\Controllers\Frontend\CustomizerModelController as FrontModel;
 use App\Http\Controllers\MembershipRequestController;
 use App\Http\Controllers\NavigationController;
 use App\Http\Controllers\OrderController;
@@ -151,7 +150,6 @@ Route::patch('categories/{category}/toggle-status',
 )->name('categories.toggle-status');
 
 
-
 Route::post('/banners/reorder', [BannerController::class, 'reorder'])->name('banners.reorder');
 
 Route::get('/api/menu-categories/{slug}', [CategoryController::class, 'apiMenuCategories']);
@@ -169,10 +167,11 @@ Route::get('/api/colors', function () {
     return \App\Models\Color::select('id', 'name', 'code')->get();
 });
 // Frontend models (ye already hai aapke web.php mein)
-Route::get('/models', [FrontModel::class, 'index'])->name('frontend.models');
-Route::get('/models/{id}', [FrontModel::class, 'show'])->name('frontend.models.show');
-Route::get('/models/{id}/api', [FrontModel::class, 'api'])->name('frontend.models.api');
-Route::post('/models/{id}/save-design', [FrontModel::class, 'saveDesign'])->name('frontend.models.save-design');
+// Route::get('/models', [FrontModel::class, 'index'])->name('frontend.models');
+// Route::get('/models/{id}', [FrontModel::class, 'show'])->name('frontend.models.show');
+// Route::get('/models/{id}/api', [FrontModel::class, 'api'])->name('frontend.models.api');
+// Route::post('/models/{id}/save-design', [FrontModel::class, 'saveDesign'])->name('frontend.models.save-design');
+
 
 // Route::post('/models/reorder',[CustomizerModelController::class,'reorder'])->name('models.reorder');
 Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);

@@ -2384,101 +2384,151 @@ window.isDraggingKnob = false;
     }
 
     ////////////////
-    function loadSavedCustomizations() {
+    // function loadSavedCustomizations() {
 
-        const saved = localStorage.getItem(`model_${MODEL_ID}_customizations`);
-        if (!saved) return;
+    //     const saved = localStorage.getItem(`model_${MODEL_ID}_customizations`);
+    //     if (!saved) return;
 
-        try {
-            const data = JSON.parse(saved);
+    //     try {
+    //         const data = JSON.parse(saved);
 
-            if (data.colorChanges) {
-                colorChanges = data.colorChanges;
-            }
+    //         if (data.colorChanges) {
+    //             colorChanges = data.colorChanges;
+    //         }
 
-            if (data.gradientChanges) {
-                gradientChanges = data.gradientChanges;
-            }
-            if (data.mascot_changes) {
-                mascotsApplied = data.mascot_changes;   // ⭐ ADD THIS
-            }
-            if (data.patternsApplied) {
-                patternsApplied = data.patternsApplied;
+    //         if (data.gradientChanges) {
+    //             gradientChanges = data.gradientChanges;
+    //         }
+    //         if (data.mascot_changes) {
+    //             mascotsApplied = data.mascot_changes;   // ⭐ ADD THIS
+    //         }
+    //         if (data.patternsApplied) {
+    //             patternsApplied = data.patternsApplied;
 
-                // ✅ SAFETY: ensure svgContent exists
-                Object.values(patternsApplied).forEach(viewObj => {
-                    Object.values(viewObj).forEach(p => {
-                        if (!p.svgContent) {
-                            console.warn("⚠ Pattern missing svgContent", p);
-                        }
-                    });
-                });
-            }
+    //             // ✅ SAFETY: ensure svgContent exists
+    //             Object.values(patternsApplied).forEach(viewObj => {
+    //                 Object.values(viewObj).forEach(p => {
+    //                     if (!p.svgContent) {
+    //                         console.warn("⚠ Pattern missing svgContent", p);
+    //                     }
+    //                 });
+    //             });
+    //         }
 
-            console.log("✅ Saved customizations restored (patterns OK)");
+    //         console.log("✅ Saved customizations restored (patterns OK)");
 
-        } catch (e) {
-            console.error("❌ Failed to restore customizations", e);
-        }
-    }
-
+    //     } catch (e) {
+    //         console.error("❌ Failed to restore customizations", e);
+    //     }
+    // }
+function loadSavedCustomizations() {
+    // ⭐ DISABLED - ab server se load hota hai
+    return;
+}
 
     /* ================= MODEL ================= */
 
-    async function loadModel() {
+    // async function loadModel() {
 
-        try {
-            const response = await fetch(API_URL);
-            const data = await response.json();
-            currentModel = data;
-            if (data.pattern_changes) {
-                patternsApplied = data.pattern_changes;
-            }
-
-
-            if (data.color_changes) {
-                colorChanges = data.color_changes;
-            }
-            if (data.mascot_changes) {
-                mascotsApplied = data.mascot_changes;   // 🔥 REQUIRED
-            }
+    //     try {
+    //         const response = await fetch(API_URL);
+    //         const data = await response.json();
+    //         currentModel = data;
+    //         if (data.pattern_changes) {
+    //             patternsApplied = data.pattern_changes;
+    //         }
 
 
-            //             if (data.applications) {
-            //     window.applicationsApplied = data.applications;
-            // }
-            if (data.applications) {
-                Object.assign(window.applicationsApplied, data.applications);
-            }
+    //         if (data.color_changes) {
+    //             colorChanges = data.color_changes;
+    //         }
+    //         if (data.mascot_changes) {
+    //             mascotsApplied = data.mascot_changes;   // 🔥 REQUIRED
+    //         }
 
 
+    //         //             if (data.applications) {
+    //         //     window.applicationsApplied = data.applications;
+    //         // }
+    //         if (data.applications) {
+    //             Object.assign(window.applicationsApplied, data.applications);
+    //         }
 
 
 
-            modelViews.front = data.front_view || {};
-            modelViews.back = data.back_view || {};
-            modelViews.left = data.left_view || {};
-            modelViews.right = data.right_view || {};
 
-            displayView('front');
 
-            setTimeout(() => {
-                if (window.extractDefaultColors) {
-                    extractDefaultColors();
-                }
-            }, 500);
-        } catch (e) {
-            console.error('Error loading model:', e);
-            document.getElementById('modelDisplay').innerHTML =
-                '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
+    //         modelViews.front = data.front_view || {};
+    //         modelViews.back = data.back_view || {};
+    //         modelViews.left = data.left_view || {};
+    //         modelViews.right = data.right_view || {};
+
+    //         displayView('front');
+
+    //         setTimeout(() => {
+    //             if (window.extractDefaultColors) {
+    //                 extractDefaultColors();
+    //             }
+    //         }, 500);
+    //     } catch (e) {
+    //         console.error('Error loading model:', e);
+    //         document.getElementById('modelDisplay').innerHTML =
+    //             '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
+    //     }
+    // }
+
+async function loadModel() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        currentModel = data;
+
+        // ⭐ FIX: Sirf agar data exist kare aur empty na ho
+        if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
+            window.patternsApplied = data.pattern_changes;
+        } else {
+            window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
         }
-    }
 
+        if (data.color_changes && typeof data.color_changes === 'object') {
+            colorChanges = data.color_changes;
+        }
+
+        if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
+            window.mascotsApplied = data.mascot_changes;
+        } else {
+            window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
+        }
+
+        if (data.applications) {
+            Object.assign(window.applicationsApplied, data.applications);
+        }
+
+        modelViews.front = data.front_view || {};
+        modelViews.back = data.back_view || {};
+        modelViews.left = data.left_view || {};
+        modelViews.right = data.right_view || {};
+
+        displayView('front');
+
+        setTimeout(() => {
+            if (window.extractDefaultColors) {
+                extractDefaultColors();
+            }
+        }, 500);
+
+    } catch (e) {
+        console.error('Error loading model:', e);
+        document.getElementById('modelDisplay').innerHTML =
+            '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
+    }
+}
 
     /* ================= VIEW ================= */
 
     window.switchView = function (view) {
         displayView(view);
+        
     }
     function displayView(view) {
         currentView = view;
@@ -3104,8 +3154,8 @@ window.selectSvgElement = function (element) {
                 body: JSON.stringify({
                     svgs: allSvgs,
                     color_changes: colorChanges || {},
-                    pattern_changes: patternsApplied || {},
-                    mascot_changes: mascotsApplied || {},
+                    pattern_changes: window.patternsApplied || {},
+mascot_changes: window.mascotsApplied || {},
                     applications: window.applicationsApplied || {}
                 })
             });

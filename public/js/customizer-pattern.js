@@ -2,6 +2,12 @@
     'use strict';
 
     // =================== PATTERN LIBRARY ===================
+    if (!window.patternsApplied || Array.isArray(window.patternsApplied)) {
+        window.patternsApplied = {};
+    }
+    if (!window.mascotsApplied || Array.isArray(window.mascotsApplied)) {
+        window.mascotsApplied = {};
+    }
 
     let slider = document.getElementById("circularSlider");
     let angleValue = document.getElementById("angleValue");
@@ -336,8 +342,17 @@
         console.log(`✅ Created clip path: ${clipId}`);
 
         /* ================= STEP 4: CREATE PATTERN FOR THIS SPECIFIC PART ================= */
+        /* ================= STEP 4: CREATE PATTERN FOR THIS SPECIFIC PART ================= */
 
-        const bbox = targetPart.getBBox();
+        // ⭐ BBOX PEHLE DEFINE KARO
+        const rawBbox = targetPart.getBBox();
+        const bbox = {
+            x: rawBbox.x,
+            y: rawBbox.y,
+            width: rawBbox.width,
+            height: rawBbox.height
+        };
+
         const patternId = `pattern-${partId}-${view}`;
 
         const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
@@ -382,10 +397,11 @@
         if (!window.patternsApplied) window.patternsApplied = {};
         if (!window.patternsApplied[view]) window.patternsApplied[view] = {};
 
+
         window.patternsApplied[view][partId] = {
             patternId,
             svgContent: window.uploadedSvgContent,
-            bbox,
+            bbox: bbox,   // ← plainBbox ki jagah sirf bbox likho
             size: 50,
             opacity: 100,
             angle: 0,
@@ -420,7 +436,35 @@
 
 
     };
+window.getMascotUniqueColors = function (svgContent) {
 
+    if (!svgContent) return ['#000000'];
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+
+    const elements = doc.querySelectorAll('[fill], [stroke]');
+
+    const uniqueColors = new Set();
+
+    elements.forEach(el => {
+
+        const fill = el.getAttribute('fill');
+
+        if (fill && fill !== 'none' && !fill.startsWith('url')) {
+            uniqueColors.add(fill.toUpperCase());
+        }
+
+        const stroke = el.getAttribute('stroke');
+
+        if (stroke && stroke !== 'none' && !stroke.startsWith('url')) {
+            uniqueColors.add(stroke.toUpperCase());
+        }
+
+    });
+
+    return Array.from(uniqueColors);
+};
 
     // =================== PATTERN COLOR PALETTE ===================
 
@@ -1128,11 +1172,20 @@ background-repeat:no-repeat;
         if (!window.mascotsApplied) window.mascotsApplied = {};
         if (!window.mascotsApplied[view]) window.mascotsApplied[view] = {};
 
+        const mascotBbox = targetPart.getBBox();
+        const plainMascotBbox = {
+            x: mascotBbox.x,
+            y: mascotBbox.y,
+            width: mascotBbox.width,
+            height: mascotBbox.height
+        };
+
         window.mascotsApplied[view][partId] = {
             patternId,
             svgContent: new XMLSerializer().serializeToString(mascotSvg),
-            bbox,
-            tileSize
+            bbox: plainMascotBbox,
+            tileSize,
+            replacements: {}   // ⭐ ADD THIS LINE
         };
 
         targetPart.dataset.hasMascot = 'true';
@@ -1144,6 +1197,7 @@ background-repeat:no-repeat;
         console.log("✅ Mascot applied safely");
         if (window.updateMascotPreview)
             window.updateMascotPreview();
+        updateMascotColorPalette();
 
         const mascotControls = document.getElementById('mascotControls');
         if (mascotControls) {
@@ -1470,6 +1524,8 @@ background-repeat:no-repeat;
             controls.style.display = 'block';
             console.log('✅ Pattern controls shown');
         }
+        const btns = document.querySelector('.pattern-top-buttons');
+        if (btns) btns.style.display = 'none';
         const angleSlider = document.getElementById('patternAngle');
         if (angleSlider) {
             angleSlider.value = window.patternAngle;
@@ -1532,27 +1588,59 @@ background-repeat:no-repeat;
 
 
     window.onPartClickForPattern = function (partElement) {
+
         window.selectedSvgElement = partElement;
+
         const view = window.currentView;
         const partId = partElement.id;
+
         const topButtons = document.querySelector('.pattern-top-buttons');
 
+        // CASE 1 — pattern already applied
         if (partElement.dataset.hasPattern === 'true') {
+
             if (topButtons) topButtons.style.display = 'none';
-            document.getElementById('mascotControls').style.display = 'none'; // ← ADD
+
+            document.getElementById('mascotControls').style.display = 'none';
+
             window.restorePatternStateForPart(partId, view);
 
-        } else if (partElement.dataset.hasMascot === 'true') {
-            if (topButtons) topButtons.style.display = 'none';
-            document.getElementById('patternControls').style.display = 'none'; // ← ADD
-            window.restoreMascotStateForPart(partId, view); // ← ADD
+            return;
+        }
 
-        } else {
-            if (topButtons) topButtons.style.display = 'flex';
+        // CASE 2 — mascot already applied
+        if (partElement.dataset.hasMascot === 'true') {
+
+            if (topButtons) topButtons.style.display = 'none';
+
             document.getElementById('patternControls').style.display = 'none';
-            document.getElementById('mascotControls').style.display = 'none'; // ← ADD
-            const preview = document.getElementById('patternPreviewBox');
-            if (preview) preview.innerHTML = '<span style="color:#999;">No pattern applied</span>';
+
+            window.restoreMascotStateForPart(partId, view);
+
+            updateMascotColorPalette(); // ⭐ ADD THIS LINE
+
+            return;
+        }
+
+        // CASE 3 — NO pattern + NO mascot
+        if (topButtons) topButtons.style.display = 'flex';
+
+        document.getElementById('patternControls').style.display = 'none';
+
+        document.getElementById('mascotControls').style.display = 'none';
+
+        // reset preview
+        const preview = document.getElementById('patternPreviewBox');
+
+        if (preview) {
+
+            preview.innerHTML =
+                '<span style="color:#999;">No pattern applied</span>';
+
+            preview.style.cursor = "pointer";
+
+            preview.onclick = openPatternLibrary;
+
         }
     };
 
@@ -1583,6 +1671,7 @@ background-repeat:no-repeat;
         }
 
         document.getElementById('mascotControls').style.display = 'block';
+        updateMascotColorPalette();
         return true;
     };
 
@@ -1633,7 +1722,197 @@ background-repeat:no-repeat;
         console.log("✅ Mascots restored properly");
     };
 
+window.updateMascotColorPalette = function () {
+    const container = document.getElementById('mascotColorPalette');
+    if (!container) return;
 
+    container.innerHTML = '';
+
+    if (!window.selectedSvgElement?.dataset.hasMascot) return;
+
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const mascotData = window.mascotsApplied?.[view]?.[partId];
+
+    if (!mascotData || !mascotData.svgContent) {
+        console.warn(`No mascot data found for ${partId} in ${view}`);
+        return;
+    }
+
+    // Mascot ke colors detect karo (same as pattern)
+    let mascotColors = window.getPatternUniqueColors(mascotData.svgContent);
+
+    // Fallback agar koi color nahi mila
+    if (!mascotColors.length) {
+        mascotColors = ['#000000', '#FFFFFF'];
+    }
+
+    const userColors = window.selectedColors?.length > 0
+        ? [...window.selectedColors]
+        : ['#000000'];
+
+    mascotColors.forEach((mascotColor) => {
+        const row = document.createElement('div');
+        row.className = 'pattern-color-row'; // ✅ Same class as pattern
+
+        // Left box — detected mascot color (thumbnail)
+        const originalBox = document.createElement('div');
+        originalBox.className = 'original-color-box'; // ✅ Same class as pattern
+        originalBox.style.backgroundColor = mascotColor;
+
+        // Arrow
+        const arrow = document.createElement('div');
+        arrow.className = 'color-arrow';
+        arrow.textContent = '→';
+
+        // Right side — user color choices
+        const choicesContainer = document.createElement('div');
+        choicesContainer.className = 'color-choices'; // ✅ Same class as pattern
+
+        userColors.forEach((userColor) => {
+            const box = document.createElement('div');
+            box.className = 'user-color-box'; // ✅ Same class as pattern
+            box.style.backgroundColor = userColor;
+            box.dataset.userColor = userColor;
+            box.dataset.mascotColor = mascotColor;
+
+            // Checkmark
+            const check = document.createElement('div');
+            check.className = 'color-checkmark';
+            check.textContent = '✓';
+            box.appendChild(check);
+
+            box.onclick = function () {
+                // Pehle sab se selected class hata do
+                this.parentElement.querySelectorAll('.user-color-box').forEach(b => {
+                    b.classList.remove('selected');
+                });
+
+                // Selected mark karo
+                this.classList.add('selected');
+
+                // Replacement save karo
+                if (!window.mascotsApplied[view][partId].replacements) {
+                    window.mascotsApplied[view][partId].replacements = {};
+                }
+                window.mascotsApplied[view][partId].replacements[mascotColor.toUpperCase()] = userColor;
+
+                // Mascot redraw karo nayi colors ke saath
+                window.recreateMascotAndOverlayWithNewColors();
+            };
+
+            // Already selected replacement highlight karo
+            const currentReplacements = mascotData.replacements || {};
+            if (currentReplacements[mascotColor.toUpperCase()] === userColor) {
+                box.classList.add('selected');
+            }
+
+            choicesContainer.appendChild(box);
+        });
+
+        row.appendChild(originalBox);
+        row.appendChild(arrow);
+        row.appendChild(choicesContainer);
+        container.appendChild(row);
+    });
+
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '8px';
+};
+
+
+
+
+    window.recreateMascotAndOverlayWithNewColors =
+        function () {
+
+            if (!window.selectedSvgElement?.dataset.hasMascot)
+                return;
+
+            const view = window.currentView;
+            const partId = window.selectedSvgElement.id;
+
+            const mascotData =
+                window.mascotsApplied[view]?.[partId];
+
+            if (!mascotData) return;
+
+            const mainSvg = window.getMainSvg();
+
+            const defs =
+                mainSvg.querySelector("defs");
+
+            const patternId =
+                mascotData.patternId;
+
+            const oldPattern =
+                defs.querySelector(`#${patternId}`);
+
+            if (oldPattern) oldPattern.remove();
+
+            const bbox =
+                mascotData.bbox;
+
+            const pattern =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "pattern"
+                );
+
+            pattern.setAttribute("id", patternId);
+            pattern.setAttribute("patternUnits", "userSpaceOnUse");
+            pattern.setAttribute("width", mascotData.tileSize);
+            pattern.setAttribute("height", mascotData.tileSize);
+
+            const parser =
+                new DOMParser();
+
+            const doc =
+                parser.parseFromString(
+                    mascotData.svgContent,
+                    "image/svg+xml"
+                );
+
+            const svg =
+                doc.querySelector("svg");
+
+            if (!svg) return;
+
+            const replacements =
+                mascotData.replacements || {};
+
+            Object.entries(replacements)
+                .forEach(([oldColor, newColor]) => {
+
+                    svg.querySelectorAll("[fill]")
+                        .forEach(el => {
+
+                            if (
+                                el.getAttribute("fill")?.toUpperCase()
+                                === oldColor
+                            )
+                                el.setAttribute("fill", newColor);
+
+                        });
+
+                });
+
+            pattern.appendChild(svg);
+
+            defs.appendChild(pattern);
+
+            document.querySelector(
+                `#mascot-overlay-${partId}`
+            ).setAttribute(
+                "fill",
+                `url(#${patternId})`
+            );
+
+            if (window.saveCustomizations)
+                window.saveCustomizations();
+
+        };
     // =================== AUTO-INITIALIZE ===================
 
     if (document.readyState === 'loading') {
@@ -1651,28 +1930,31 @@ background-repeat:no-repeat;
         setTimeout(window.initializeMascotsOnLoad, 500);   // 🔥 THIS WAS MISSING
 
     }
+
+
     setTimeout(() => {
 
         const svg = window.getMainSvg?.() || document.querySelector('svg');
 
         if (!svg) return;
 
-        svg.querySelectorAll('[id]').forEach(part => {
+        svg.addEventListener('click', function (e) {
 
-            part.addEventListener('click', function (e) {
+            const clickedPart = e.target.closest('[id]');
 
-                window.selectedSvgElement = this;
+            if (!clickedPart) return;
 
-                if (window.onPartClickForPattern) {
-                    window.onPartClickForPattern(this);
-                }
+            window.selectedSvgElement = clickedPart;
 
-                e.stopPropagation();
-            });
+            if (window.onPartClickForPattern) {
+                window.onPartClickForPattern(clickedPart);
+            }
 
         });
 
-        console.log("✅ Pattern click listeners attached");
+        console.log("✅ Pattern global click handler attached");
 
     }, 700);
+
+
 })();

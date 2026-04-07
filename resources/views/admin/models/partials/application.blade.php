@@ -94,57 +94,53 @@ gap:6px;
             {{-- Mascot Preview --}}
             <div style="display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;">
 
-    <!-- LEFT: Mascot Preview -->
-    <div style="padding:16px;  border-radius:10px; text-align:center;">
+                <!-- LEFT: Mascot Preview -->
+                <div style="padding:16px;  border-radius:10px; text-align:center;">
 
-        <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
-            MASCOT PREVIEW
-        </div>
+                    <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
+                        MASCOT PREVIEW
+                    </div>
 
-        <div id="directMascotPreview"
-            style="width:100px; height:100px; margin:0 auto 12px; background:#e8e8e8; border-radius:8px;
+                    <div id="directMascotPreview"
+                        style="width:100px; height:100px; margin:0 auto 12px; background:#e8e8e8; border-radius:8px;
             display:flex; align-items:center; justify-content:center; overflow:hidden;">
 
-            <!-- mascot image inject hogi -->
-            <img id="directMascotPreviewImg"
-                 src=""
-                 style="max-width:100%; max-height:100%; object-fit:contain; display:none;" />
+                        <!-- mascot image inject hogi -->
+                        <img id="directMascotPreviewImg" src=""
+                            style="max-width:100%; max-height:100%; object-fit:contain; display:none;" />
 
-            <span id="directMascotPlaceholder"
-                  style="color:#aaa; font-size:11px;">
-                  No mascot
-            </span>
+                        <span id="directMascotPlaceholder" style="color:#aaa; font-size:11px;">
+                            No mascot
+                        </span>
 
-        </div>
+                    </div>
 
-        <button onclick="changeDirectMascot()"
-            style="width:100%; padding:10px; background:#1a1a1a; color:#fff;
+                    <button onclick="changeDirectMascot()"
+                        style="width:100%; padding:10px; background:#1a1a1a; color:#fff;
             border:none; border-radius:6px; font-weight:700; font-size:12px;
             cursor:pointer; letter-spacing:.5px;">
-            Change Mascot
-        </button>
+                        Change Mascot
+                    </button>
 
-    </div>
+                </div>
 
 
-    <!-- RIGHT: Mascot Colors -->
-    <div id="directMascotColorSection"
-        style="flex:1; padding:16px;  border-radius:10px;">
+                <!-- RIGHT: Mascot Colors -->
+                <div id="directMascotColorSection" style="flex:1; padding:16px;  border-radius:10px;">
 
-        <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
-            MASCOT COLORS
-        </div>
+                    <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
+                        MASCOT COLORS
+                    </div>
 
-        <div id="directMascotColorSwatches"
-            style="display:flex; flex-direction:column; gap:12px;">
+                    <div id="directMascotColorSwatches" style="display:flex; flex-direction:column; gap:12px;">
 
-            <!-- dynamic rows here -->
+                        <!-- dynamic rows here -->
 
-        </div>
+                    </div>
 
-    </div>
+                </div>
 
-</div>
+            </div>
 
             {{-- Scale --}}
             <div class="control-group" style="margin-bottom:15px;">
@@ -215,17 +211,17 @@ gap:6px;
             <div class="control-group" style="margin-bottom:15px;">
 
                 <!-- LABEL ROW -->
-               <div style="display:flex; gap:45px; margin-bottom:6px;">
+                <div style="display:flex; gap:45px; margin-bottom:6px;">
 
-    <label style="flex:1; font-weight:600; font-size:14px; color:#333;">
-        Text
-    </label>
+                    <label style="flex:1; font-weight:600; font-size:14px; color:#333;">
+                        Text
+                    </label>
 
-    <label style="flex:1; font-weight:600; font-size:14px;  color:#333;">
-        Font
-    </label>
+                    <label style="flex:1; font-weight:600; font-size:14px;  color:#333;">
+                        Font
+                    </label>
 
-</div>
+                </div>
 
                 <!-- INPUT ROW -->
                 <div style="display:flex; gap:30px;">
@@ -412,49 +408,50 @@ gap:6px;
 
                 {{-- RIGHT: Rotation Wheel --}}
                 {{-- Rotation Wheel --}}
-               <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
-    <label style="font-weight:600; font-size:13px; color:#333;">Rotation</label>
-    <input type="hidden" id="rotation" value="0">
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
+                    <label style="font-weight:600; font-size:13px; color:#333;">Rotation</label>
+                    <input type="hidden" id="rotation" value="0">
 
-    <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+                    <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
 
-        <svg id="rotationSvg" width="160" height="160"
-            style="position:absolute; top:0; left:0; cursor:grab;">
-            {{-- Background circle --}}
-            <circle cx="80" cy="80" r="68" fill="#e0e0e0" stroke="#bbb" stroke-width="3" />
-            {{-- Progress arc --}}
-            <circle id="rotationArc" cx="80" cy="80" r="68" fill="none"
-                stroke="#333" stroke-width="14" stroke-linecap="butt"
-                stroke-dasharray="0 427.26"
-                transform="rotate(-90 80 80)" style="transition:none;" />
-            {{-- Inner circle --}}
-            <circle cx="80" cy="80" r="52" fill="#888" />
-            {{-- Dot at top (cy = 80 - 68 = 12) --}}
-            <circle id="rotationDot" cx="80" cy="12" r="9" fill="#222"
-                stroke="#fff" stroke-width="2.5" />
-        </svg>
+                        <svg id="rotationSvg" width="160" height="160"
+                            style="position:absolute; top:0; left:0; cursor:grab;">
+                            {{-- Background circle --}}
+                            <circle cx="80" cy="80" r="68" fill="#e0e0e0" stroke="#bbb"
+                                stroke-width="3" />
+                            {{-- Progress arc --}}
+                            <circle id="rotationArc" cx="80" cy="80" r="68" fill="none"
+                                stroke="#333" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 427.26"
+                                transform="rotate(-90 80 80)" style="transition:none;" />
+                            {{-- Inner circle --}}
+                            <circle cx="80" cy="80" r="52" fill="#888" />
+                            {{-- Dot at top (cy = 80 - 68 = 12) --}}
+                            <circle id="rotationDot" cx="80" cy="12" r="9" fill="#222"
+                                stroke="#fff" stroke-width="2.5" />
+                        </svg>
 
-        {{-- Center input --}}
-        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
-            <input type="number" id="rotationManual" min="0" max="360" value="0"
-                style="width:56px; height:40px; text-align:center;
+                        {{-- Center input --}}
+                        <div
+                            style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+                            <input type="number" id="rotationManual" min="0" max="360" value="0"
+                                style="width:56px; height:40px; text-align:center;
                        border-radius:8px; border:2px solid #ccc;
                        font-weight:700; font-size:14px;
                        background:#fff; color:#222;
                        -moz-appearance:textfield;
                        pointer-events:all;"
-                oninput="
+                                oninput="
                     var v = Math.min(360, Math.max(0, parseInt(this.value) || 0));
                     setWheelAngle(v);
                     updateRotation(v);
                 ">
-        </div>
-    </div>
+                        </div>
+                    </div>
 
-    <span style="font-size:13px; color:#666; font-weight:600;">
-        <span id="rotationValue">0</span>°
-    </span>
-</div>
+                    <span style="font-size:13px; color:#666; font-weight:600;">
+                        <span id="rotationValue">0</span>°
+                    </span>
+                </div>
 
             </div>
 
@@ -1106,25 +1103,27 @@ gap:6px;
     #rotationManual {
         -moz-appearance: textfield;
     }
+
     .stroke-shape-btn {
-  display: flex;
-  flex-direction: column;  /* icon upar, text neeche */
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 5px;
-}
+        display: flex;
+        flex-direction: column;
+        /* icon upar, text neeche */
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 5px;
+    }
 
-.stroke-shape-btn i {
-  font-size: 18px;
-  display: block;
-}
+    .stroke-shape-btn i {
+        font-size: 18px;
+        display: block;
+    }
 
-.stroke-shape-btn span {
-  font-size: 10px;
-  display: block;
-  line-height: 1;
-}
+    .stroke-shape-btn span {
+        font-size: 10px;
+        display: block;
+        line-height: 1;
+    }
 </style>
 
 @include('admin.models.partials.mascot-select-modal')

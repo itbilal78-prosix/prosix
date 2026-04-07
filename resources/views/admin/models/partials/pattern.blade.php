@@ -98,13 +98,22 @@ font-weight:600;
 
 
     <!-- Mascot Controls (Hidden by default) -->
-    <div id="mascotControls"
-        style="display:none; background:#fff; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.25); margin-top:20px;">
+    <div id="mascotControls" style="display:none;  padding:20px; margin-top:20px;">
+
 
         <!-- Mascot Preview -->
-        <div id="mascotPreviewBox"
-            style="text-align:center; margin-bottom:20px; height:100px; background:#f0f0f0; border-radius:8px; display:flex; align-items:center; justify-content:center;">
-            <span style="color:#999;">No mascot applied</span>
+        <div style="display:flex; gap:15px; align-items:center;">
+
+            <!-- Mascot Preview Box -->
+            <div id="mascotPreviewBox"
+                style="text-align:center; height:100px; width:150px; background:#f0f0f0; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                <span style="color:#999;">No mascot applied</span>
+            </div>
+
+            <!-- Mascot Color Palette -->
+            <div id="mascotColorPalette" style="display:flex; flex-direction:column; gap:10px;">
+            </div>
+
         </div>
 
         <!-- Size Slider -->
