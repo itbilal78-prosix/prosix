@@ -16,7 +16,7 @@
 
           <!-- Personal Information -->
           <div class="form-card">
-            <h6 class="section-title">Personal Information</h6>
+            <h6 class="section-title">Personall Information</h6>
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Full Name *</label>
