@@ -34,7 +34,7 @@ const routes = [
 {
   path: '/catalogue',
   name: 'Catalogue',
-  component: () => import('@/Pages/FlipbookPage.vue'),
+component: () => import('@/Pages/Flipbookpage.vue'),
   meta: { breadcrumb: 'Catalogue' }
 },
 {
