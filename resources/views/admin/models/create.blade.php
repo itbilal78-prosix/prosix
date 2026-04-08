@@ -15,7 +15,7 @@
 .pf-grid-full{margin-bottom:20px}
 
 /* ── Card ── */
-.pf-card{background:#fff;border:1.5px solid #e8e8e8;border-radius:14px;padding:24px 28px;height:100%}
+.pf-card{background:#fff;border:1.5px solid #e8e8e8;border-radius:13px;padding:24px 28px;height:100%}
 .pf-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#000;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #000;display:flex;align-items:center;gap:8px}
 .pf-card-title i{font-size:14px}
 
