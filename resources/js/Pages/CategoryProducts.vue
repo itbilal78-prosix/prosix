@@ -482,7 +482,7 @@ const groupedFilteredModels = computed(() => {
 const handleCustomizerClick = (modelId) => {
   const token = localStorage.getItem('auth_token')
   if (token) {
-    router.push(`/models/${modelId}`)
+window.location.href = `/customize/${modelId}`
   } else {
     pendingModelId.value = modelId
     showLoginModal.value = true

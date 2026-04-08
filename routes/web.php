@@ -23,6 +23,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\UserCustomizationController;
 
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -150,6 +151,7 @@ Route::patch('categories/{category}/toggle-status',
 )->name('categories.toggle-status');
 
 
+
 Route::post('/banners/reorder', [BannerController::class, 'reorder'])->name('banners.reorder');
 
 Route::get('/api/menu-categories/{slug}', [CategoryController::class, 'apiMenuCategories']);
@@ -171,6 +173,16 @@ Route::get('/api/colors', function () {
 // Route::get('/models/{id}', [FrontModel::class, 'show'])->name('frontend.models.show');
 // Route::get('/models/{id}/api', [FrontModel::class, 'api'])->name('frontend.models.api');
 // Route::post('/models/{id}/save-design', [FrontModel::class, 'saveDesign'])->name('frontend.models.save-design');
+
+
+
+
+
+
+
+
+
+
 
 
 // Route::post('/models/reorder',[CustomizerModelController::class,'reorder'])->name('models.reorder');
@@ -230,13 +242,30 @@ Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSingle
     ->name('order.download.single');
 
 
+Route::get('/customize/{id}', function ($id) {
 
+    $model = \App\Models\CustomizerModel::findOrFail($id);
+
+    $colors = \App\Models\Color::all();
+
+    return view('admin.models.show', compact('model', 'colors'))
+        ->with('isUserMode', true);
+
+});
 
 
 
 Route::post('/models/update-order',
     [CustomizerModelController::class,'updateOrder']
 )->name('models.updateOrder');
+
+
+
+
+
+Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']);
+
+
 
 Route::get('/{any}', function () {
     return view('welcome');

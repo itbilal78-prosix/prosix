@@ -2136,62 +2136,62 @@ font-display: swap;
 
     //     console.log('✅ Applications initialized');
     // };
-window.initializeApplicationsOnLoad = function () {
+    window.initializeApplicationsOnLoad = function () {
 
-    const svg = window.getMainSvg();
-    if (!svg) {
-        console.warn('SVG not ready yet, retrying...');
-        setTimeout(window.initializeApplicationsOnLoad, 300);
-        return;
-    }
+        const svg = window.getMainSvg();
+        if (!svg) {
+            console.warn('SVG not ready yet, retrying...');
+            setTimeout(window.initializeApplicationsOnLoad, 300);
+            return;
+        }
 
-    // ✅ PEHLE SAARI PURANI APPLICATION ELEMENTS CLEAN KARO
-    const oldGroup = svg.querySelector('#application-group');
-    if (oldGroup) oldGroup.remove();
+        // ✅ PEHLE SAARI PURANI APPLICATION ELEMENTS CLEAN KARO
+        const oldGroup = svg.querySelector('#application-group');
+        if (oldGroup) oldGroup.remove();
 
-    svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+        svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
 
-    if (!window.applicationsApplied) return;
+        if (!window.applicationsApplied) return;
 
-    const view = window.currentView;
-    if (!window.applicationsApplied[view]) return;
-    if (Object.keys(window.applicationsApplied[view]).length === 0) return;
+        const view = window.currentView;
+        if (!window.applicationsApplied[view]) return;
+        if (Object.keys(window.applicationsApplied[view]).length === 0) return;
 
-    console.log('🎨 Initializing applications for view:', view);
+        console.log('🎨 Initializing applications for view:', view);
 
-    Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-        layers.forEach(layer => {
+        Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+            layers.forEach(layer => {
 
-            // addApplicationToSvg ke andar duplicate check hai - safe hai
-            addApplicationToSvg(layer);
+                // addApplicationToSvg ke andar duplicate check hai - safe hai
+                addApplicationToSvg(layer);
 
-            // ✅ Pattern restore
-            if (layer.hasPattern && layer.patternSvg) {
-                const prev = window.currentApplicationLayer;
-                window.currentApplicationLayer = layer.id;
-                applyPatternToText(layer.patternSvg, layer.id);
-                if (layer.patternSize) updateTextPatternSize(layer.patternSize);
-                if (layer.patternOpacity) updateTextPatternOpacity(layer.patternOpacity);
-                window.currentApplicationLayer = prev;
-            }
+                // ✅ Pattern restore
+                if (layer.hasPattern && layer.patternSvg) {
+                    const prev = window.currentApplicationLayer;
+                    window.currentApplicationLayer = layer.id;
+                    applyPatternToText(layer.patternSvg, layer.id);
+                    if (layer.patternSize) updateTextPatternSize(layer.patternSize);
+                    if (layer.patternOpacity) updateTextPatternOpacity(layer.patternOpacity);
+                    window.currentApplicationLayer = prev;
+                }
 
-            // ✅ Mascot restore
-            if (layer.hasMascot && layer.mascotSvg) {
-                const prev = window.currentApplicationLayer;
-                window.currentApplicationLayer = layer.id;
-                applyMascotToText(layer.mascotSvg, layer.id);
-                if (layer.mascotSize) updateTextMascotSize(layer.mascotSize);
-                if (layer.mascotOpacity) updateTextMascotOpacity(layer.mascotOpacity);
-                if (layer.mascotCount) updateTextMascotCount(layer.mascotCount);
-                window.currentApplicationLayer = prev;
-            }
+                // ✅ Mascot restore
+                if (layer.hasMascot && layer.mascotSvg) {
+                    const prev = window.currentApplicationLayer;
+                    window.currentApplicationLayer = layer.id;
+                    applyMascotToText(layer.mascotSvg, layer.id);
+                    if (layer.mascotSize) updateTextMascotSize(layer.mascotSize);
+                    if (layer.mascotOpacity) updateTextMascotOpacity(layer.mascotOpacity);
+                    if (layer.mascotCount) updateTextMascotCount(layer.mascotCount);
+                    window.currentApplicationLayer = prev;
+                }
 
+            });
         });
-    });
 
-    updateApplicationLayersList();
-    console.log('✅ Applications initialized for view:', view);
-};
+        updateApplicationLayersList();
+        console.log('✅ Applications initialized for view:', view);
+    };
     // Auto-initialize
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
@@ -2421,10 +2421,10 @@ window.isDraggingKnob = false;
     //         console.error("❌ Failed to restore customizations", e);
     //     }
     // }
-function loadSavedCustomizations() {
-    // ⭐ DISABLED - ab server se load hota hai
-    return;
-}
+    function loadSavedCustomizations() {
+        // ⭐ DISABLED - ab server se load hota hai
+        return;
+    }
 
     /* ================= MODEL ================= */
 
@@ -2477,58 +2477,58 @@ function loadSavedCustomizations() {
     //     }
     // }
 
-async function loadModel() {
-    try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        currentModel = data;
+    async function loadModel() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            currentModel = data;
 
-        // ⭐ FIX: Sirf agar data exist kare aur empty na ho
-        if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
-            window.patternsApplied = data.pattern_changes;
-        } else {
-            window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
-        }
-
-        if (data.color_changes && typeof data.color_changes === 'object') {
-            colorChanges = data.color_changes;
-        }
-
-        if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
-            window.mascotsApplied = data.mascot_changes;
-        } else {
-            window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
-        }
-
-        if (data.applications) {
-            Object.assign(window.applicationsApplied, data.applications);
-        }
-
-        modelViews.front = data.front_view || {};
-        modelViews.back = data.back_view || {};
-        modelViews.left = data.left_view || {};
-        modelViews.right = data.right_view || {};
-
-        displayView('front');
-
-        setTimeout(() => {
-            if (window.extractDefaultColors) {
-                extractDefaultColors();
+            // ⭐ FIX: Sirf agar data exist kare aur empty na ho
+            if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
+                window.patternsApplied = data.pattern_changes;
+            } else {
+                window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
             }
-        }, 500);
 
-    } catch (e) {
-        console.error('Error loading model:', e);
-        document.getElementById('modelDisplay').innerHTML =
-            '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
+            if (data.color_changes && typeof data.color_changes === 'object') {
+                colorChanges = data.color_changes;
+            }
+
+            if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
+                window.mascotsApplied = data.mascot_changes;
+            } else {
+                window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
+            }
+
+            if (data.applications) {
+                Object.assign(window.applicationsApplied, data.applications);
+            }
+
+            modelViews.front = data.front_view || {};
+            modelViews.back = data.back_view || {};
+            modelViews.left = data.left_view || {};
+            modelViews.right = data.right_view || {};
+
+            displayView('front');
+
+            setTimeout(() => {
+                if (window.extractDefaultColors) {
+                    extractDefaultColors();
+                }
+            }, 500);
+
+        } catch (e) {
+            console.error('Error loading model:', e);
+            document.getElementById('modelDisplay').innerHTML =
+                '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
+        }
     }
-}
 
     /* ================= VIEW ================= */
 
     window.switchView = function (view) {
         displayView(view);
-        
+
     }
     function displayView(view) {
         currentView = view;
@@ -2599,10 +2599,10 @@ async function loadModel() {
                 elements.forEach((el, index) => {
                     if (!el.id) el.id = `svg-part-${index}`;
                     // el.dataset.partName = el.id;
-el.dataset.partName = el.getAttribute('inkscape:label')
-    || el.getAttribute('data-name')
-    || el.getAttribute('id')
-    || `part-${index + 1}`;
+                    el.dataset.partName = el.getAttribute('inkscape:label')
+                        || el.getAttribute('data-name')
+                        || el.getAttribute('id')
+                        || `part-${index + 1}`;
                     el.classList.add('svg-hoverable');
                     el.style.cursor = 'pointer';
                     el.style.transition = 'all 0.3s ease';
@@ -2717,14 +2717,14 @@ el.dataset.partName = el.getAttribute('inkscape:label')
         }
 
         // 1. Clear previous selection
-     document.querySelectorAll('.selected').forEach(e => {
-    e.classList.remove('selected');
+        document.querySelectorAll('.selected').forEach(e => {
+            e.classList.remove('selected');
 
-});
+        });
 
         // 2. Set new selection
         window.selectedSvgElement = el;
-el.classList.add('selected');
+        el.classList.add('selected');
 
 
         const partId = el.id;
@@ -2865,7 +2865,7 @@ el.classList.add('selected');
 
             const centerBtn = document.getElementById('selectedColorBtn');
             if (centerBtn) centerBtn.style.background = solidColor;
-window.highlightWheelColor(solidColor);
+            window.highlightWheelColor(solidColor);
 
             window.gradientStops = [
                 { color: '#FFC000', position: 0 },
@@ -2934,12 +2934,12 @@ window.highlightWheelColor(solidColor);
 
         const active = allSvgParts[window.currentPartIndex];
 
-      if (active) {
-    const nameSpan = document.getElementById('partName');
-    if (nameSpan) {
-        nameSpan.textContent = active.dataset.partName || 'Part';
-    }
-}
+        if (active) {
+            const nameSpan = document.getElementById('partName');
+            if (nameSpan) {
+                nameSpan.textContent = active.dataset.partName || 'Part';
+            }
+        }
     }
 
 
@@ -2960,38 +2960,38 @@ window.highlightWheelColor(solidColor);
     };
 
     // PATCH selectSvgElement
-   // PATCH selectSvgElement
-// PATCH selectSvgElement
-const originalSelect = window.selectSvgElement;
-window.selectSvgElement = function (element) {
-    if (!element) return;
+    // PATCH selectSvgElement
+    // PATCH selectSvgElement
+    const originalSelect = window.selectSvgElement;
+    window.selectSvgElement = function (element) {
+        if (!element) return;
 
-    window.selectedSvgElement = element;
+        window.selectedSvgElement = element;
 
-    // ✅ Part name update karo - HAMESHA
-    const partName = document.getElementById('partName');
-    if (partName) {
-        partName.textContent = element.dataset.partName || element.id || 'Part';
-    }
+        // ✅ Part name update karo - HAMESHA
+        const partName = document.getElementById('partName');
+        if (partName) {
+            partName.textContent = element.dataset.partName || element.id || 'Part';
+        }
 
-    // ✅ Current index update karo
-    const idx = window.allSvgParts ? window.allSvgParts.indexOf(element) : -1;
-    if (idx !== -1) window.currentPartIndex = idx;
+        // ✅ Current index update karo
+        const idx = window.allSvgParts ? window.allSvgParts.indexOf(element) : -1;
+        if (idx !== -1) window.currentPartIndex = idx;
 
-    // ✅ Dropdown highlight update karo
-    document.querySelectorAll('#partDropdown li').forEach((li, i) => {
-        li.classList.toggle('active', i === window.currentPartIndex);
-    });
+        // ✅ Dropdown highlight update karo
+        document.querySelectorAll('#partDropdown li').forEach((li, i) => {
+            li.classList.toggle('active', i === window.currentPartIndex);
+        });
 
-    // ✅ Selected CSS class
-    document.querySelectorAll('.selected-svg-part').forEach(e => {
-        e.classList.remove('selected-svg-part');
-    });
-    element.classList.add('selected-svg-part');
+        // ✅ Selected CSS class
+        document.querySelectorAll('.selected-svg-part').forEach(e => {
+            e.classList.remove('selected-svg-part');
+        });
+        element.classList.add('selected-svg-part');
 
-    // ✅ Original function bhi call karo (color/gradient logic)
-    if (originalSelect) originalSelect(element);
-};
+        // ✅ Original function bhi call karo (color/gradient logic)
+        if (originalSelect) originalSelect(element);
+    };
 
 
     function updatePartDropdown() {
@@ -3002,12 +3002,12 @@ window.selectSvgElement = function (element) {
 
         const active = allSvgParts[window.currentPartIndex];
 
-       if (active) {
-    const nameSpan = document.getElementById('partName');
-    if (nameSpan) {
-        nameSpan.textContent = active.dataset.partName || 'Part';
-    }
-}
+        if (active) {
+            const nameSpan = document.getElementById('partName');
+            if (nameSpan) {
+                nameSpan.textContent = active.dataset.partName || 'Part';
+            }
+        }
     }
 
     // 🔥 ADD THIS FUNCTION:
@@ -3070,15 +3070,180 @@ window.selectSvgElement = function (element) {
     }
 
 
+    // window.saveDesign = async function () {
+    //     if (window.isSaving) return;
+    //     window.isSaving = true;
+
+    //     try {
+    //         const views = ['front', 'back', 'left', 'right'];
+    //         const allSvgs = {};
+
+    //         // 🔥 Font CSS embed karo SVG mein
+    //         function embedFontsInSvg(svgElement) {
+    //             let fontCSS = '';
+    //             if (window.backendFonts) {
+    //                 window.backendFonts.forEach(font => {
+    //                     fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }`;
+    //                 });
+    //             }
+
+    //             let defs = svgElement.querySelector('defs');
+    //             if (!defs) {
+    //                 defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    //                 svgElement.insertBefore(defs, svgElement.firstChild);
+    //             }
+
+    //             // Old style remove karo
+    //             const oldStyle = defs.querySelector('style[data-fonts]');
+    //             if (oldStyle) oldStyle.remove();
+
+    //             if (fontCSS) {
+    //                 const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    //                 style.setAttribute('data-fonts', 'true');
+    //                 style.textContent = fontCSS;
+    //                 defs.insertBefore(style, defs.firstChild);
+    //             }
+    //         }
+
+    //         for (const v of views) {
+    //             if (!modelViews[v]?.svg_url) continue;
+
+    //             if (v === window.currentView) {
+    //                 const liveSvg = window.getMainSvg();
+    //                 if (liveSvg) {
+    //                     const clone = liveSvg.cloneNode(true);
+    //                     embedFontsInSvg(clone);
+    //                     allSvgs[v] = new XMLSerializer().serializeToString(clone);
+    //                     continue;
+    //                 }
+    //             }
+
+    //             const res = await fetch(modelViews[v].svg_url);
+    //             const text = await res.text();
+    //             const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+    //             const svg = doc.querySelector('svg');
+    //             if (!svg) continue;
+
+    //             svg.setAttribute('width', '100%');
+    //             svg.setAttribute('height', '100%');
+
+    //             svg.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
+    //                 if (!el.id) el.id = `svg-part-${i}`;
+    //                 if (gradientChanges?.[v]?.[el.id]) {
+    //                     rebuildGradient(svg, el.id, gradientChanges[v][el.id], v);
+    //                     el.setAttribute('fill', `url(#gradient-${v}-${el.id})`);
+    //                 } else if (colorChanges?.[v]?.[el.id]) {
+    //                     el.setAttribute('fill', colorChanges[v][el.id]);
+    //                 }
+    //             });
+
+    //             if (window.applyPatternsToSvg) applyPatternsToSvg(svg, v);
+    //             if (window.applyMascotsToSvg) applyMascotsToSvg(svg, v);
+    //             if (window.applyApplicationsToSvg) applyApplicationsToSvg(svg, v);
+
+    //             embedFontsInSvg(svg);
+    //             allSvgs[v] = new XMLSerializer().serializeToString(svg);
+    //         }
+
+    //         const saveUrl = window.isUserMode
+    //             ? `/user/save-design/${MODEL_ID}`
+    //             : `/admin/models/${MODEL_ID}/save-design`;
+
+    //         const response = await fetch(saveUrl, {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+    //             },
+    //             body: JSON.stringify({
+    //                 svgs: allSvgs,
+    //                 color_changes: colorChanges || {},
+    //                 pattern_changes: window.patternsApplied || {},
+    //                 mascot_changes: window.mascotsApplied || {},
+    //                 applications: window.applicationsApplied || {}
+    //             })
+    //         });
+
+    //         // 🔥 Thumbnail generate karo
+    //         await generateAndSaveThumbnail();
+
+    //         alert("✅ Design Saved Successfully");
+
+    //     } catch (e) {
+    //         console.error(e);
+    //         alert("❌ Save Failed");
+    //     }
+
+    //     window.isSaving = false;
+    // };
+
     window.saveDesign = async function () {
         if (window.isSaving) return;
-        window.isSaving = true;
 
+        if (window.isUserMode) {
+
+            const designName = prompt('Apne design ka naam rakho:', 'My Design ' + new Date().toLocaleDateString());
+            if (!designName) return;
+
+            window.isSaving = true;
+
+            // ✅ DEBUG - dekho kya save ho raha hai
+            console.log('=== USER SAVE START ===');
+            console.log('colorChanges:', JSON.stringify(window.colorChanges));
+            console.log('patternsApplied:', JSON.stringify(window.patternsApplied));
+            console.log('mascotsApplied:', JSON.stringify(window.mascotsApplied));
+            console.log('applicationsApplied:', JSON.stringify(window.applicationsApplied));
+
+            try {
+                const token = localStorage.getItem('auth_token') || '';
+
+                // ✅ window.colorChanges use karo — local variable nahi
+                const payload = {
+                    name: designName,
+                    color_changes: window.colorChanges || {},
+                    pattern_changes: window.patternsApplied || {},
+                    mascot_changes: window.mascotsApplied || {},
+                    applications: window.applicationsApplied || {}
+                };
+
+                console.log('Payload:', JSON.stringify(payload));
+
+                const res = await fetch(`/api/user/save-design/${MODEL_ID}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const responseData = await res.json();
+                console.log('Server response:', responseData);
+
+                if (res.ok) {
+                    await generateAndSaveThumbnail();
+                    alert('✅ Design "' + designName + '" saved successfully!');
+                } else {
+                    alert('❌ Save failed: ' + (responseData.message || 'Please login first'));
+                }
+
+            } catch (e) {
+                console.error('Save error:', e);
+                alert('❌ Save Failed');
+            }
+
+            window.isSaving = false;
+            return;
+        }
+
+        // ============ ADMIN MODE ============
+        window.isSaving = true;
         try {
             const views = ['front', 'back', 'left', 'right'];
             const allSvgs = {};
 
-            // 🔥 Font CSS embed karo SVG mein
             function embedFontsInSvg(svgElement) {
                 let fontCSS = '';
                 if (window.backendFonts) {
@@ -3086,17 +3251,13 @@ window.selectSvgElement = function (element) {
                         fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }`;
                     });
                 }
-
                 let defs = svgElement.querySelector('defs');
                 if (!defs) {
                     defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
                     svgElement.insertBefore(defs, svgElement.firstChild);
                 }
-
-                // Old style remove karo
                 const oldStyle = defs.querySelector('style[data-fonts]');
                 if (oldStyle) oldStyle.remove();
-
                 if (fontCSS) {
                     const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
                     style.setAttribute('data-fonts', 'true');
@@ -3107,7 +3268,6 @@ window.selectSvgElement = function (element) {
 
             for (const v of views) {
                 if (!modelViews[v]?.svg_url) continue;
-
                 if (v === window.currentView) {
                     const liveSvg = window.getMainSvg();
                     if (liveSvg) {
@@ -3117,16 +3277,13 @@ window.selectSvgElement = function (element) {
                         continue;
                     }
                 }
-
-                const res = await fetch(modelViews[v].svg_url);
-                const text = await res.text();
+                const res2 = await fetch(modelViews[v].svg_url);
+                const text = await res2.text();
                 const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
                 const svg = doc.querySelector('svg');
                 if (!svg) continue;
-
                 svg.setAttribute('width', '100%');
                 svg.setAttribute('height', '100%');
-
                 svg.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
                     if (!el.id) el.id = `svg-part-${i}`;
                     if (gradientChanges?.[v]?.[el.id]) {
@@ -3136,43 +3293,38 @@ window.selectSvgElement = function (element) {
                         el.setAttribute('fill', colorChanges[v][el.id]);
                     }
                 });
-
                 if (window.applyPatternsToSvg) applyPatternsToSvg(svg, v);
                 if (window.applyMascotsToSvg) applyMascotsToSvg(svg, v);
                 if (window.applyApplicationsToSvg) applyApplicationsToSvg(svg, v);
-
                 embedFontsInSvg(svg);
                 allSvgs[v] = new XMLSerializer().serializeToString(svg);
             }
 
-            const response = await fetch(`/admin/models/${MODEL_ID}/save-design`, {
-                method: "POST",
+            await fetch(`/admin/models/${MODEL_ID}/save-design`, {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
                     svgs: allSvgs,
-                    color_changes: colorChanges || {},
+                    color_changes: window.colorChanges || {},
                     pattern_changes: window.patternsApplied || {},
-mascot_changes: window.mascotsApplied || {},
+                    mascot_changes: window.mascotsApplied || {},
                     applications: window.applicationsApplied || {}
                 })
             });
 
-            // 🔥 Thumbnail generate karo
             await generateAndSaveThumbnail();
-
-            alert("✅ Design Saved Successfully");
+            alert('✅ Design Saved Successfully');
 
         } catch (e) {
             console.error(e);
-            alert("❌ Save Failed");
+            alert('❌ Save Failed');
         }
 
         window.isSaving = false;
     };
-
 
 
 
@@ -3742,138 +3894,146 @@ mascot_changes: window.mascotsApplied || {},
     //         console.error('Thumbnail error:', e);
     //     }
     // }
-async function generateAndSaveThumbnail() {
-    try {
-        const view = window.currentView || 'front';
-        const viewData = window.modelViews?.[view];
+    async function generateAndSaveThumbnail() {
+        try {
+            const view = window.currentView || 'front';
+            const viewData = window.modelViews?.[view];
 
-        const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 800;
-        const ctx = canvas.getContext('2d');
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
 
-        function loadImg(src) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => resolve(img);
-                img.onerror = () => resolve(null);
-                img.src = src;
-            });
-        }
-
-        async function fontToBase64(url) {
-            try {
-                const res = await fetch(url);
-                const buf = await res.arrayBuffer();
-                const bytes = new Uint8Array(buf);
-                let binary = '';
-                bytes.forEach(b => binary += String.fromCharCode(b));
-                return 'data:font/truetype;base64,' + btoa(binary);
-            } catch (e) {
-                return url;
-            }
-        }
-
-        // ✅ LIVE SVG USE KARO - fresh fetch nahi
-        const liveSvg = window.getMainSvg();
-        if (liveSvg) {
-            const clone = liveSvg.cloneNode(true);
-
-            // Font embed karo
-            let defs = clone.querySelector('defs');
-            if (!defs) {
-                defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-                clone.insertBefore(defs, clone.firstChild);
+            function loadImg(src) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => resolve(img);
+                    img.onerror = () => resolve(null);
+                    img.src = src;
+                });
             }
 
-            if (window.backendFonts && window.backendFonts.length > 0) {
-                let fontCSS = '';
-                for (const f of window.backendFonts) {
-                    const base64 = await fontToBase64(f.file_url);
-                    fontCSS += `@font-face{font-family:'font_${f.id}';src:url('${base64}') format('truetype');}`;
+            async function fontToBase64(url) {
+                try {
+                    const res = await fetch(url);
+                    const buf = await res.arrayBuffer();
+                    const bytes = new Uint8Array(buf);
+                    let binary = '';
+                    bytes.forEach(b => binary += String.fromCharCode(b));
+                    return 'data:font/truetype;base64,' + btoa(binary);
+                } catch (e) {
+                    return url;
                 }
-                const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-                style.textContent = fontCSS;
-                defs.insertBefore(style, defs.firstChild);
             }
 
-            clone.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            if (!clone.getAttribute('viewBox')) {
-                clone.setAttribute('viewBox', '0 0 800 800');
+            // ✅ LIVE SVG USE KARO - fresh fetch nahi
+            const liveSvg = window.getMainSvg();
+            if (liveSvg) {
+                const clone = liveSvg.cloneNode(true);
+
+                // Font embed karo
+                let defs = clone.querySelector('defs');
+                if (!defs) {
+                    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                    clone.insertBefore(defs, clone.firstChild);
+                }
+
+                if (window.backendFonts && window.backendFonts.length > 0) {
+                    let fontCSS = '';
+                    for (const f of window.backendFonts) {
+                        const base64 = await fontToBase64(f.file_url);
+                        fontCSS += `@font-face{font-family:'font_${f.id}';src:url('${base64}') format('truetype');}`;
+                    }
+                    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+                    style.textContent = fontCSS;
+                    defs.insertBefore(style, defs.firstChild);
+                }
+
+                clone.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                if (!clone.getAttribute('viewBox')) {
+                    clone.setAttribute('viewBox', '0 0 800 800');
+                }
+
+                const serialized = new XMLSerializer().serializeToString(clone);
+                const blob = new Blob([serialized], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+
+                await new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const ratio = Math.min(800 / img.width, 800 / img.height);
+                        const w = img.width * ratio;
+                        const h = img.height * ratio;
+                        const x = (800 - w) / 2;
+                        const y = (800 - h) / 2;
+                        ctx.drawImage(img, x, y, w, h);
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    };
+                    img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+                    img.src = url;
+                });
             }
 
-            const serialized = new XMLSerializer().serializeToString(clone);
-            const blob = new Blob([serialized], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
-
-            await new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
+            // White overlay
+            if (viewData?.white_image_url) {
+                const img = await loadImg(viewData.white_image_url);
+                if (img) {
+                    ctx.globalCompositeOperation = 'multiply';
                     const ratio = Math.min(800 / img.width, 800 / img.height);
                     const w = img.width * ratio;
                     const h = img.height * ratio;
                     const x = (800 - w) / 2;
                     const y = (800 - h) / 2;
                     ctx.drawImage(img, x, y, w, h);
-                    URL.revokeObjectURL(url);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+            }
+
+            // Black overlay
+            if (viewData?.black_image_url) {
+                const img = await loadImg(viewData.black_image_url);
+                if (img) {
+                    ctx.globalCompositeOperation = 'screen';
+                    const ratio = Math.min(800 / img.width, 800 / img.height);
+                    const w = img.width * ratio;
+                    const h = img.height * ratio;
+                    const x = (800 - w) / 2;
+                    const y = (800 - h) / 2;
+                    ctx.drawImage(img, x, y, w, h);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+            }
+
+            return new Promise((resolve) => {
+                canvas.toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('thumbnail', blob, 'thumbnail.png');
+                    const thumbnailUrl = window.isUserMode
+                        ? `/api/user/save-thumbnail/${MODEL_ID}`
+                        : `/admin/models/${MODEL_ID}/save-thumbnail`;
+
+                    await fetch(thumbnailUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            // ✅ User mode mein token bhi bhejo
+                            ...(window.isUserMode && {
+                                'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+                            })
+                        },
+                        body: formData
+                    });
+                    console.log('✅ Thumbnail saved!');
                     resolve();
-                };
-                img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-                img.src = url;
+                }, 'image/png', 0.9);
             });
+
+        } catch (e) {
+            console.error('Thumbnail error:', e);
         }
-
-        // White overlay
-        if (viewData?.white_image_url) {
-            const img = await loadImg(viewData.white_image_url);
-            if (img) {
-                ctx.globalCompositeOperation = 'multiply';
-                const ratio = Math.min(800 / img.width, 800 / img.height);
-                const w = img.width * ratio;
-                const h = img.height * ratio;
-                const x = (800 - w) / 2;
-                const y = (800 - h) / 2;
-                ctx.drawImage(img, x, y, w, h);
-                ctx.globalCompositeOperation = 'source-over';
-            }
-        }
-
-        // Black overlay
-        if (viewData?.black_image_url) {
-            const img = await loadImg(viewData.black_image_url);
-            if (img) {
-                ctx.globalCompositeOperation = 'screen';
-                const ratio = Math.min(800 / img.width, 800 / img.height);
-                const w = img.width * ratio;
-                const h = img.height * ratio;
-                const x = (800 - w) / 2;
-                const y = (800 - h) / 2;
-                ctx.drawImage(img, x, y, w, h);
-                ctx.globalCompositeOperation = 'source-over';
-            }
-        }
-
-        return new Promise((resolve) => {
-            canvas.toBlob(async (blob) => {
-                const formData = new FormData();
-                formData.append('thumbnail', blob, 'thumbnail.png');
-                await fetch(`/admin/models/${MODEL_ID}/save-thumbnail`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                });
-                console.log('✅ Thumbnail saved!');
-                resolve();
-            }, 'image/png', 0.9);
-        });
-
-    } catch (e) {
-        console.error('Thumbnail error:', e);
     }
-}
     document.addEventListener('DOMContentLoaded', init);
 
 

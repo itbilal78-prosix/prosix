@@ -5,10 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script>
-        window.MODEL_ID = {{ $model->id }};
-        window.API_URL = "{{ route('models.api.get', $model->id) }}";
-    </script>
+<script>
+window.MODEL_ID = {{ $model->id }};
+window.isUserMode = {{ isset($isUserMode) && $isUserMode ? 'true' : 'false' }};
+
+window.API_URL = window.isUserMode
+    ? "/user/model-api/{{ $model->id }}"
+    : "{{ route('models.api.get', $model->id) }}";
+</script>
 
 
     <title>Customize Model</title>
@@ -37,14 +41,18 @@
     @endforeach
 
     <div class="customize-container">
-
+@php
+$backUrl = isset($isUserMode) && $isUserMode
+    ? url('/dashboard')
+    : route('models.index');
+    @endphp
         <!-- HEADER -->
         <div class="header-bar">
-            <a href="{{ route('models.index') }}" class="logo">
-                <img src="{{ asset('assets/images/PROSIX SPORTS LOGO PNG WHITE.png') }}" class="logo-img">
+<a href="{{ $backUrl }}" class="logo">
+                    <img src="{{ asset('assets/images/PROSIX SPORTS LOGO PNG WHITE.png') }}" class="logo-img">
             </a>
             <div class="model-title">Customize Model</div>
-            <a href="{{ route('models.index') }}" class="close-btn">✕ Close</a>
+<a href="{{ $backUrl }}" class="close-btn">✕ Close</a>
         </div>
 
         <div class="main-content">

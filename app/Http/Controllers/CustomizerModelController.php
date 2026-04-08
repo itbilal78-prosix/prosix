@@ -662,4 +662,81 @@ class CustomizerModelController extends Controller
         ])
             ->toArray();
     }
+
+
+
+
+
+public function userApi($id, $customization_id = null)
+{
+    // ✅ Query param se bhi lo
+    if (!$customization_id) {
+        $customization_id = request()->query('customization_id');
+    }
+
+    $model = CustomizerModel::findOrFail($id);
+
+    $userDesign = null;
+    if (auth()->check()) {
+        $query = \App\Models\UserCustomization::where('user_id', auth()->id())
+            ->where('customizer_model_id', $id);
+
+        if ($customization_id) {
+            $query->where('id', $customization_id);
+        }
+
+        $userDesign = $query->latest()->first();
+    }
+
+    // ✅ User ka design hai to uska, warna admin ka saved data
+    $colorChanges   = $userDesign?->color_changes   ?? $model->color_changes   ?? [];
+    $patternChanges = $userDesign?->pattern_changes ?? $model->pattern_changes ?? [];
+    $mascotChanges  = $userDesign?->mascot_changes  ?? $model->mascot_changes  ?? [];
+    $applications   = $userDesign?->applications    ?? $model->applications    ?? [];
+
+    // ✅ Agar user ka apna design hai to original SVG, warna admin ka custom SVG
+    $hasUserDesign = $userDesign !== null;
+
+    return response()->json([
+        'id'    => $model->id,
+        'title' => $model->title,
+
+        'color_changes'   => $colorChanges,
+        'pattern_changes' => $patternChanges,
+        'mascot_changes'  => $mascotChanges,
+        'applications'    => $applications,
+
+        'front_view' => [
+            // ✅ User ka design nahi = admin ka custom SVG use karo
+            'svg_url'         => $hasUserDesign
+                ? ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null)
+                : ($model->custom_front_svg ? asset('uploads/models/'.$model->custom_front_svg) : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null)),
+            'white_image_url' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
+            'black_image_url' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
+        ],
+        'back_view' => [
+            'svg_url'         => $hasUserDesign
+                ? ($model->back_svg ? asset('uploads/models/'.$model->back_svg) : null)
+                : ($model->custom_back_svg ? asset('uploads/models/'.$model->custom_back_svg) : ($model->back_svg ? asset('uploads/models/'.$model->back_svg) : null)),
+            'white_image_url' => $model->back_white ? asset('uploads/models/'.$model->back_white) : null,
+            'black_image_url' => $model->back_black ? asset('uploads/models/'.$model->back_black) : null,
+        ],
+        'left_view' => [
+            'svg_url'         => $hasUserDesign
+                ? ($model->left_svg ? asset('uploads/models/'.$model->left_svg) : null)
+                : ($model->custom_left_svg ? asset('uploads/models/'.$model->custom_left_svg) : ($model->left_svg ? asset('uploads/models/'.$model->left_svg) : null)),
+            'white_image_url' => $model->left_white ? asset('uploads/models/'.$model->left_white) : null,
+            'black_image_url' => $model->left_black ? asset('uploads/models/'.$model->left_black) : null,
+        ],
+        'right_view' => [
+            'svg_url'         => $hasUserDesign
+                ? ($model->right_svg ? asset('uploads/models/'.$model->right_svg) : null)
+                : ($model->custom_right_svg ? asset('uploads/models/'.$model->custom_right_svg) : ($model->right_svg ? asset('uploads/models/'.$model->right_svg) : null)),
+            'white_image_url' => $model->right_white ? asset('uploads/models/'.$model->right_white) : null,
+            'black_image_url' => $model->right_black ? asset('uploads/models/'.$model->right_black) : null,
+        ],
+    ]);
+}
+
+
 }

@@ -12,15 +12,19 @@ class UserCustomization extends Model
         'name',
         'color_changes',
         'pattern_changes',
+        'mascot_changes',
+        'applications',
+        'thumbnail',
         'notes',
         'is_public',
     ];
 
-    protected $casts = [
-        'color_changes'   => 'array',
-        'pattern_changes' => 'array',
-        'is_public'       => 'boolean',
-    ];
+   protected $casts = [
+    'color_changes'   => 'array',
+    'pattern_changes' => 'array',
+    'mascot_changes'  => 'array',
+    'applications'    => 'array',
+];
 
     public function user()
     {
@@ -29,6 +33,9 @@ class UserCustomization extends Model
 
     public function model()
     {
-        return $this->belongsTo(CustomizerModel::class, 'customizer_model_id');
+        return $this->belongsTo(
+            \App\Models\CustomizerModel::class,
+            'customizer_model_id'
+        );
     }
 }

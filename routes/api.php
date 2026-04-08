@@ -24,6 +24,8 @@ use App\Http\Controllers\UserRequestController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserCustomizationController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -174,15 +176,19 @@ Route::post('/create-payment-intent', [StripeController::class, 'createPaymentIn
 // USER DASHBOARD (Protected - Auth Required)
 // -----------------------------------------------
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/user/logout',          [UserController::class,        'logout']);
-    Route::get('/user/profile',          [UserController::class,        'profile']);
-    Route::put('/profile',               [UserController::class,        'updateProfile']);
-    Route::post('/user/change-password', [UserController::class,        'changePassword']);
-    Route::get('/user/my-requests',      [UserRequestController::class, 'index']);
+    Route::post('/user/logout',            [UserController::class,               'logout']);
+    Route::get('/user/profile',            [UserController::class,               'profile']);
+    Route::put('/profile',                 [UserController::class,               'updateProfile']);
+    Route::post('/user/change-password',   [UserController::class,               'changePassword']);
+    Route::get('/user/my-requests',        [UserRequestController::class,        'index']);
+    Route::get('/place-order/my-orders',   [PlaceOrderController::class,         'myOrders']);
 
-    // ✅ Place Orders — logged in user ke orders
-    Route::get('/place-order/my-orders', [PlaceOrderController::class, 'myOrders']);
+    // ✅ YEH ADD KARO
+    Route::post('/user/save-design/{id}',     [UserCustomizationController::class, 'store']);
+    Route::post('/user/save-thumbnail/{id}',  [UserCustomizationController::class, 'saveThumbnail']);
+    Route::get('/user/designs',               [UserCustomizationController::class, 'designs']);
 });
+
 
 // -----------------------------------------------
 // FALLBACK
@@ -197,4 +203,13 @@ Route::middleware('auth:sanctum')->get(
     '/dashboard/stats',
     [DashboardController::class, 'dashboardStats']
 );
+
+
+Route::middleware('auth:sanctum')->get(
+    '/user/designs',
+    [UserCustomizationController::class, 'designs']
+);
+
+
+
 
