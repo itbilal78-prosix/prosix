@@ -114,4 +114,30 @@ class UserCustomizationController extends Controller
 
     return response()->json(['success' => true, 'data' => $designs]);
 }
+
+
+
+public function destroy($id)
+{
+    $user = auth('sanctum')->user();
+    $design = \App\Models\UserCustomization::where('id', $id)
+                ->where('user_id', $user->id)  // ✅ ownership check
+                ->first();
+
+    if (!$design) {
+        return response()->json(['message' => 'Design not found'], 404);
+    }
+
+    if ($design->thumbnail) {
+        $path = public_path('uploads/user-designs/' . $design->thumbnail); // ✅ sahi folder
+        if (file_exists($path)) unlink($path);
+    }
+
+    $design->delete();
+
+    return response()->json(['message' => 'Deleted successfully']);
+}
+
+
+
 }

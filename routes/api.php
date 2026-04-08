@@ -205,6 +205,9 @@ Route::middleware('auth:sanctum')->get(
 );
 
 
+Route::middleware('auth:sanctum')->delete('/user/designs/{id}', [UserCustomizationController::class, 'destroy']);
+
+
 Route::middleware('auth:sanctum')->get(
     '/user/designs',
     [UserCustomizationController::class, 'designs']
