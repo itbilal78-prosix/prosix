@@ -19,10 +19,12 @@
         class="design-card"
       >
         <img
-          :src="design.thumbnail || '/assets/images/placeholder.png'"
-          class="thumb"
-          @error="e => e.target.src = '/assets/images/placeholder.png'"
-        />
+  :src="design.thumbnail
+    ? `/uploads/models/${design.thumbnail}`
+    : '/assets/images/placeholder.png'"
+  class="thumb"
+  @error="e => e.target.src = '/assets/images/placeholder.png'"
+/>
 
         <h4>{{ design.name }}</h4>
 
