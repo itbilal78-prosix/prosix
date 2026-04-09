@@ -31,19 +31,36 @@ class UserCustomizationController extends Controller
     ]);
 
     // ✅ Update karo agar exist kare, warna create karo
-    $customization = UserCustomization::updateOrCreate(
-        [
-            'user_id'             => $user->id,
-            'customizer_model_id' => $id,
-            'name'                => $request->name,
-        ],
-        [
-            'color_changes'   => $request->color_changes ?? [],
-            'pattern_changes' => $request->pattern_changes ?? [],
-            'mascot_changes'  => $request->mascot_changes ?? [],
-            'applications'    => $request->applications ?? [],
-        ]
-    );
+if ($request->design_id) {
+
+    $customization = UserCustomization::where('id',$request->design_id)
+        ->where('user_id',$user->id)
+        ->first();
+
+    if ($customization) {
+
+        $customization->update([
+            'color_changes'=>$request->color_changes ?? [],
+            'pattern_changes'=>$request->pattern_changes ?? [],
+            'mascot_changes'=>$request->mascot_changes ?? [],
+            'applications'=>$request->applications ?? [],
+        ]);
+
+    }
+
+} else {
+
+    $customization = UserCustomization::create([
+        'user_id'=>$user->id,
+        'customizer_model_id'=>$id,
+        'name'=>$request->name,
+        'color_changes'=>$request->color_changes ?? [],
+        'pattern_changes'=>$request->pattern_changes ?? [],
+        'mascot_changes'=>$request->mascot_changes ?? [],
+        'applications'=>$request->applications ?? [],
+    ]);
+
+}
 
     return response()->json([
         'success'          => true,

@@ -7,21 +7,13 @@
     <!-- Header -->
     <div class="fb-header mt-5">
       <h1 class="fb-heading">Catalogues</h1>
-      <div class="title-rule"></div>
     </div>
 
     <!-- Coming Soon Empty State -->
     <div v-if="flipbooks.length === 0" class="fb-coming-soon">
-      <div class="cs-icon">
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="8" y="8" width="48" height="48" rx="6" stroke="#000" stroke-width="2"/>
-          <path d="M32 20v24M20 32h24" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <p class="cs-eyebrow">Stay Tuned</p>
+
       <h2 class="cs-title">Coming Soon</h2>
-      <div class="cs-rule"></div>
-      <p class="cs-sub">Our flipbook catalogue is being prepared.<br/>Check back soon for exclusive content.</p>
+      <p class="cs-sub">Our  catalogue is being prepared.<br/>Check back soon for exclusive content.</p>
       <div class="cs-dots">
         <span></span><span></span><span></span>
       </div>
@@ -43,17 +35,13 @@
               scrolling="no"
               tabindex="-1"
             ></iframe>
-            <div class="fb-card-overlay">
-              <span class="fb-open-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-                Open Book
-              </span>
-            </div>
+           <div class="fb-card-overlay">
+  <span class="fb-open-btn">
+    <strong style="font-size:22px;">{{ book.page_count }}</strong>
+    Open Book
+  </span>
+</div>
           </div>
-          <div class="fb-card-edge"></div>
         </div>
         <div class="fb-card-shadow"></div>
         <div class="fb-card-title">{{ book.title }}</div>
@@ -98,7 +86,7 @@ export default {
 
 #fb-index {
   min-height: 100vh;
-  background: var(--paper);
+  background: white;
   padding: 48px 32px 80px;
   font-family: 'DM Sans', sans-serif;
 }
@@ -112,11 +100,7 @@ export default {
   margin: 0;
   line-height: 1.15;
 }
-.title-rule {
-  width: 52px; height: 2px;
-  background: linear-gradient(90deg, transparent, #000, transparent);
-  margin: 12px auto 0;
-}
+
 
 /* ── COMING SOON ── */
 .fb-coming-soon {
@@ -129,25 +113,8 @@ export default {
   text-align: center;
   padding: 20px;
 }
-.cs-icon {
-  width: 72px; height: 72px;
-  background: #fff;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  margin-bottom: 8px;
-}
-.cs-icon svg { width: 36px; height: 36px; }
-.cs-eyebrow {
-  font-size: 11px;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: #555;
-  margin: 0;
-  font-weight: 500;
-}
+
+
 .cs-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(32px, 5vw, 52px);
@@ -156,11 +123,7 @@ export default {
   margin: 0;
   line-height: 1.1;
 }
-.cs-rule {
-  width: 48px; height: 2px;
-  background: linear-gradient(90deg, transparent, #000, transparent);
-  margin: 4px auto;
-}
+
 .cs-sub {
   font-size: 14px;
   color: #777;
@@ -212,10 +175,9 @@ export default {
   box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
 }
 .fb-card-binding {
-  width: 16px; flex-shrink: 0;
-  border-radius: 2px 0 0 2px;
-  background: linear-gradient(to right, #1a1008 0%, #3a2a14 20%, #c9a84c 38%, #e8d5a3 50%, #c9a84c 62%, #3a2a14 80%, #1a1008 100%);
-  box-shadow: inset -2px 0 5px rgba(0,0,0,0.25);
+  width: 12px;
+  background: linear-gradient(to right, #111 0%, #333 40%, #555 50%, #333 60%, #111 100%);
+  box-shadow: none;
 }
 .fb-card-pages {
   width: 160px; height: 220px;
@@ -237,15 +199,7 @@ export default {
   letter-spacing: 2px; text-transform: uppercase; font-weight: 500;
 }
 .fb-open-btn svg { width: 22px; height: 22px; }
-.fb-card-edge {
-  width: 8px; flex-shrink: 0; border-radius: 0 2px 2px 0;
-  background: linear-gradient(to right, #e8e0d0, #f5f0e8, #e0d8c8);
-  position: relative; overflow: hidden;
-}
-.fb-card-edge::after {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
-}
+
 .fb-card-shadow {
   width: 70%; height: 14px;
   background: radial-gradient(ellipse at center, rgba(0,0,0,0.22) 0%, transparent 70%);

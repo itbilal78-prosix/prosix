@@ -402,25 +402,36 @@ class CustomizerModelController extends Controller
     }
 
     // ─── DUPLICATE ────────────────────────────────────────────────
-    public function duplicate($id)
-    {
-        $model = CustomizerModel::findOrFail($id);
-        $new = $model->replicate();
-        $new->title = $model->title;
-        $new->custom_front_svg = null;
-        $new->custom_back_svg = null;
-        $new->custom_left_svg = null;
-        $new->custom_right_svg = null;
-        $new->color_changes = null;
-        $new->pattern_changes = null;
-        $new->mascot_changes = null;
-        $new->applications = null;
-        $new->customized_at = null;
-        $new->save();
+    // public function duplicate($id)
+    // {
+    //     $model = CustomizerModel::findOrFail($id);
+    //     $new = $model->replicate();
+    //     $new->title = $model->title;
+    //     $new->custom_front_svg = null;
+    //     $new->custom_back_svg = null;
+    //     $new->custom_left_svg = null;
+    //     $new->custom_right_svg = null;
+    //     $new->color_changes = null;
+    //     $new->pattern_changes = null;
+    //     $new->mascot_changes = null;
+    //     $new->applications = null;
+    //     $new->customized_at = null;
+    //     $new->save();
 
-        return back()->with('success', 'Model Duplicated');
-    }
+    //     return back()->with('success', 'Model Duplicated');
+    // }
+public function duplicate($id)
+{
+    $model = CustomizerModel::findOrFail($id);
 
+    $new = $model->replicate();
+
+    $new->title = $model->title . ' (Copy)';
+
+    $new->save();
+
+    return back()->with('success', 'Model Duplicated with Design');
+}
     // ─── BULK DELETE ──────────────────────────────────────────────
     public function bulkDestroy(Request $request)
     {

@@ -102,7 +102,7 @@
             </div>
 
             {{-- ========== TAB 2: CREATE CUSTOM (inline) ========== --}}
-            <div id="msContent2" style="display:none; width:100%; height:100%; overflow:hidden; flex-direction:column;">
+            {{-- <div id="msContent2" style="display:none; width:100%; height:100%; overflow:hidden; flex-direction:column;">
                 <div style="flex:1; overflow:hidden; position:relative;">
                     <iframe id="mascotCreatorFrame" src=""
                         style="width:100%; height:100%; border:none; display:block;" title="Mascot Creator">
@@ -124,7 +124,20 @@
                         Use This Mascot
                     </button>
                 </div>
-            </div>
+            </div> --}}
+
+            <div id="msContent2"
+    style="display:none; width:100%; height:100%; align-items:center; justify-content:center; flex-direction:column;">
+
+    <div style="text-align:center;">
+        <h2 style="font-size:24px; font-weight:700; color:#333;">
+             Coming Soon
+        </h2>
+        <p style="font-size:14px; color:#888;">
+            Custom mascot creator will be available soon.
+        </p>
+    </div>
+</div>
 
             {{-- ========== TAB 3: UPLOAD ========== --}}
             <div id="msContent3" style="display:none; width:100%; height:100%; overflow-y:auto; padding:32px;">

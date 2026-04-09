@@ -177,14 +177,6 @@ Route::get('/api/colors', function () {
 
 
 
-
-
-
-
-
-
-
-
 // Route::post('/models/reorder',[CustomizerModelController::class,'reorder'])->name('models.reorder');
 Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
 
@@ -242,17 +234,49 @@ Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSingle
     ->name('order.download.single');
 
 
-Route::get('/customize/{id}', function ($id) {
+// Route::get('/customize/{id}', function ($id) {
+
+//     $model = \App\Models\CustomizerModel::findOrFail($id);
+
+//     $colors = \App\Models\Color::all();
+
+//     $fonts = \App\Models\Font::all()->map(function ($font) {
+//         return [
+//             'id' => $font->id,
+//             'name' => $font->name,
+//             'file_url' => asset('storage/' . $font->file),
+//         ];
+//     });
+
+//     return view('admin.models.show', compact('model', 'colors', 'fonts'))
+//         ->with('isUserMode', true);
+
+// });
+Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
 
     $model = \App\Models\CustomizerModel::findOrFail($id);
 
     $colors = \App\Models\Color::all();
 
-    return view('admin.models.show', compact('model', 'colors'))
+    $fonts = \App\Models\Font::all()->map(function ($font) {
+        return [
+            'id' => $font->id,
+            'name' => $font->name,
+            'file_url' => asset('storage/' . $font->file),
+        ];
+    });
+
+    // ✅ USER DESIGN LOAD KARO
+    $design = null;
+
+    if ($request->design_id) {
+        $design = \App\Models\UserCustomization::find($request->design_id);
+    }
+
+    return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
         ->with('isUserMode', true);
 
 });
-
 
 
 Route::post('/models/update-order',

@@ -3,7 +3,27 @@
 
     // =================== APPLICATION STATE ===================
     window.currentModelId = window.MODEL_ID;
+// ✅ LOAD USER SAVED DESIGN (VERY IMPORTANT)
+if (window.USER_DESIGN) {
 
+    console.log("User design found:", window.USER_DESIGN);
+
+    // restore applications
+    if (window.USER_DESIGN.applications) {
+        window.applicationsApplied = window.USER_DESIGN.applications;
+    }
+
+    // restore colors
+    if (window.USER_DESIGN.color_changes) {
+        window.selectedColors = window.USER_DESIGN.color_changes;
+    }
+
+    // restore patterns
+    if (window.USER_DESIGN.pattern_changes) {
+        window.patternChanges = window.USER_DESIGN.pattern_changes;
+    }
+
+}
 
     console.log('MODEL ID FOUND:', window.MODEL_ID);
 

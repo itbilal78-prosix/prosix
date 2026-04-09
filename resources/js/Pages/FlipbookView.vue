@@ -41,26 +41,21 @@
     <div class="book-header">
       <div class="book-label">Now Reading</div>
       <h1 class="book-title">{{ book.title }}</h1>
-      <div class="title-rule"></div>
     </div>
 
     <!-- Book Stage -->
     <div class="book-stage">
-      <div class="book-outer" ref="bookOuter">
 
         <!-- Top hard cover -->
-        <div class="book-cover-top"></div>
 
         <!-- Body -->
         <div class="book-body">
           <!-- Left gold binding -->
-          <div class="book-binding" :style="{ height: bookH + 'px' }"></div>
 
           <!-- PageFlip mounts here -->
           <div ref="flipbookContainer" class="flipbook-wrap"></div>
 
           <!-- Right stacked pages edge -->
-          <div class="book-right-edge" :style="{ height: bookH + 'px' }"></div>
 
           <!-- Center spine highlight -->
           <div class="spine-overlay"></div>
@@ -71,9 +66,7 @@
         </div>
 
         <!-- Bottom hard cover -->
-        <div class="book-cover-bottom"></div>
 
-      </div>
     </div>
 
     <!-- Table shadow -->
@@ -98,9 +91,7 @@
       </button>
     </div>
 
-    <div class="key-hint">
-      <kbd>←</kbd> Prev &nbsp;|&nbsp; Next <kbd>→</kbd> &nbsp;|&nbsp; Click edges to flip
-    </div>
+
 
   </div>
 
@@ -194,6 +185,7 @@ export default {
       // Must set explicit pixel size BEFORE PageFlip init
       container.style.width   = this.bookW + 'px'
       container.style.height  = this.bookH + 'px'
+      container.style.margin = '0 auto'
       container.style.display = 'block'
       container.style.flexShrink = '0'
 
@@ -205,7 +197,7 @@ export default {
         mobileScrollSupport: false,
         drawShadow: true,
         flippingTime: 680,
-        usePortrait: window.innerWidth < 600,
+usePortrait: false,
         startPage: 0,
         autoSize: false,
       })
@@ -247,6 +239,7 @@ export default {
         }
 
         this.pageFlip.loadFromHTML(pages)
+        this.pageFlip.turnToPage(0)
         setTimeout(() => { this.loading = false }, 400)
 
       } catch (e) {
@@ -324,10 +317,11 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 36px 20px 60px;
   font-family: 'DM Sans', sans-serif;
   box-sizing: border-box;
   position: relative;
+    overflow-x: hidden;
+
 }
 #fb-show * { box-sizing: border-box; }
 
@@ -344,7 +338,7 @@ export default {
 /* ── Loader ── */
 .loader-overlay {
   position: fixed; inset: 0;
-  background: #f5f3ef;
+  background: #ffffff;
   z-index: 9999;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 16px;
@@ -357,16 +351,22 @@ export default {
   top: 0; bottom: 0; width: 50%; border-radius: 2px;
   animation: bookFlip 1.1s ease-in-out infinite;
 }
-.loader-book::before { left: 0; background: var(--gold); transform-origin: center right; }
-.loader-book::after  { right: 0; background: var(--gold-light); transform-origin: center left; animation-delay: .55s; }
+.loader-book::before { left: 0; background: black; transform-origin: center right; }
+.loader-book::after  { right: 0; background: rgb(56, 56, 56); transform-origin: center left; animation-delay: .55s; }
 @keyframes bookFlip {
   0%,100% { transform: rotateY(0); opacity: 1; }
   50%      { transform: rotateY(-68deg); opacity: .35; }
 }
-.loader-text { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #bbb; }
-.loader-progress { width: 140px; height: 2px; background: #e8e4dc; border-radius: 2px; overflow: hidden; }
-.loader-bar { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 2px; transition: width .25s ease; }
-
+.loader-text { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #000000; }
+.loader-progress { width: 140px; height: 2px; background: #ffffff; border-radius: 2px; overflow: hidden; }
+.loader-bar { height: 100%; background: black; border-radius: 2px; transition: width .25s ease; }
+.book-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
 /* ── FAB ── */
 .fab-row {
   width: 100%; display: flex; justify-content: flex-end;
@@ -383,52 +383,26 @@ export default {
 }
 .fab-btn:hover {
   background: #fafafa; box-shadow: 0 4px 20px rgba(0,0,0,0.13);
-  transform: scale(1.08); border-color: var(--gold); color: var(--gold);
+  transform: scale(1.08); border-color: black; color: black;
 }
 .fab-btn:active { transform: scale(0.95); }
 .fab-btn svg { width: 18px; height: 18px; }
-.fab-btn.sound-on { background: var(--gold); border-color: var(--gold); color: #fff; }
-.fab-btn.fs-on    { background: var(--ink);  border-color: var(--ink);  color: #fff; }
+.fab-btn.sound-on { background: black; border-color: black; color: #fff; }
+.fab-btn.fs-on    { background: black;  border-color: black;  color: #fff; }
 
 /* ── Header ── */
 .book-header { text-align: center; margin-bottom: 32px; animation: fadeDown .6s ease both; }
-.book-label  { font-size: 10px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.book-label  { font-size: 10px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase; color: black; margin-bottom: 6px; }
 .book-title  { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px,3.5vw,42px); font-weight: 700; color: var(--ink); line-height: 1.15; margin: 0; }
-.title-rule  { width: 52px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 10px auto 0; }
 
 /* ── Book Stage ── */
 .book-stage { position: relative; display: flex; justify-content: center; animation: fadeUp .7s .15s ease both; }
 
-.book-outer {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.book-outer::before {
-  content: ''; position: absolute; inset: -2px; border-radius: 4px;
-  pointer-events: none; z-index: 1;
-  box-shadow:
-    0 8px 40px rgba(0,0,0,0.20),
-    0 2px 12px rgba(0,0,0,0.12),
-    0 0 0 1px rgba(0,0,0,0.06);
-}
+
 
 /* Hard covers */
-.book-cover-top {
-  height: 10px;
-  background: linear-gradient(180deg, #2a2016 0%, #3d3020 100%);
-  border-radius: 3px 3px 0 0;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.25);
-  position: relative; z-index: 5;
-}
-.book-cover-bottom {
-  height: 10px;
-  background: linear-gradient(0deg, #2a2016 0%, #3d3020 100%);
-  border-radius: 0 0 3px 3px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-  position: relative; z-index: 5;
-}
+
+
 
 /* Body row */
 .book-body {
@@ -438,47 +412,19 @@ export default {
 }
 
 /* Left gold spine/binding */
-.book-binding {
-  width: 22px;
-  flex-shrink: 0;
-  border-radius: 2px 0 0 2px;
-  z-index: 2;
-  background: linear-gradient(
-    to right,
-    #1a1008 0%,
-    #3a2a14 20%,
-    #c9a84c 38%,
-    #e8d5a3 50%,
-    #c9a84c 62%,
-    #3a2a14 80%,
-    #1a1008 100%
-  );
-  box-shadow: inset -3px 0 6px rgba(0,0,0,0.3), -2px 0 8px rgba(0,0,0,0.2);
-}
+
 
 /* Flipbook container */
 .flipbook-wrap {
   position: relative;
   z-index: 3;
+  margin: 0 auto;
+  display: block;
   flex-shrink: 0;
 }
 
 /* Right stacked-pages edge */
-.book-right-edge {
-  width: 10px;
-  flex-shrink: 0;
-  border-radius: 0 2px 2px 0;
-  background: linear-gradient(to right, #e8e0d0, #f5f0e8, #e0d8c8);
-  position: relative; overflow: hidden;
-}
-.book-right-edge::after {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px, transparent 3px,
-    rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
-  );
-}
+
 
 /* Center spine highlight */
 .spine-overlay {
@@ -526,15 +472,15 @@ export default {
   width: 34px; height: 34px; border-radius: 50%;
   transition: background .2s, color .2s, transform .15s;
 }
-.ctrl-btn:hover { background: rgba(201,168,76,0.10); color: var(--gold); transform: scale(1.1); }
+.ctrl-btn:hover { background: rgba(172, 172, 172, 0.1); color: black; transform: scale(1.1); }
 .ctrl-btn:active { transform: scale(0.95); }
 .ctrl-btn svg { width: 18px; height: 18px; }
-.ctrl-divider { width: 1px; height: 20px; background: #ece8e0; }
+.ctrl-divider { width: 1px; height: 20px; background: #fafafa; }
 .page-indicator {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 16px; color: #bbb; min-width: 76px; text-align: center; letter-spacing: 1px;
+  font-size: 16px; color: #cccbcb; min-width: 76px; text-align: center; letter-spacing: 1px;
 }
-.page-indicator span { color: var(--gold); font-weight: 600; }
+.page-indicator span { color: black; font-weight: 600; }
 
 .key-hint {
   margin-top: 16px; font-size: 10px; color: #c8c4bc;
@@ -549,7 +495,7 @@ export default {
 /* ── Fullscreen ── */
 :fullscreen #fb-show,
 :-webkit-full-screen #fb-show {
-  background: #1a1410 !important;
+  background: #292929 !important;
   justify-content: center;
   padding: 16px 20px;
 }
@@ -564,9 +510,6 @@ export default {
   .book-controls { gap: 8px; padding: 8px 14px; }
   .key-hint { display: none; }
   .fab-btn { width: 38px; height: 38px; }
-  .book-binding { width: 14px; }
-  .book-right-edge { width: 7px; }
-  .book-cover-top, .book-cover-bottom { height: 7px; }
   .page-edge-left { left: 14px; }
   .page-edge-right { right: 7px; }
 }
