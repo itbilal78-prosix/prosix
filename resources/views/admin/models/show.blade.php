@@ -25,7 +25,6 @@ window.API_URL = window.isUserMode
 </head>
 
 <body>
-
     @foreach (\App\Models\Font::all() as $font)
         @if ($font->file)
             <style>

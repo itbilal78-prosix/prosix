@@ -174,6 +174,44 @@
 
     window.clearPatternForSelectedPart = function () {
 
+
+
+
+// TEXT PATTERN REMOVE SUPPORT
+if (window.currentApplicationLayer && window.selectingPatternForText) {
+
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer) return;
+
+    const textEl = document.getElementById(layer.id);
+    if (!textEl) return;
+
+    const mainSvg = window.getMainSvg();
+
+    if (layer.patternId) {
+        const pattern = mainSvg.querySelector(`#${layer.patternId}`);
+        if (pattern) pattern.remove();
+    }
+
+    if (layer.baseColor) {
+        textEl.setAttribute('fill', layer.baseColor);
+    } else {
+        textEl.setAttribute('fill', '#ffffff');
+    }
+
+    delete layer.hasPattern;
+    delete layer.patternId;
+    delete layer.patternSvg;
+
+    window.selectingPatternForText = false;
+
+    if (window.saveCustomizations)
+        window.saveCustomizations();
+
+    return;
+}
+
+
         if (!window.selectedSvgElement) return;
 
         const view = window.currentView;
@@ -240,7 +278,14 @@
     // =================== APPLY PATTERN (ULTRA SAFE VERSION) ===================
 
     window.applyUploadedPattern = function () {
+if (window.selectingPatternForText && window.currentApplicationLayer) {
 
+    applyPatternToText(window.uploadedSvgContent);
+
+    window.selectingPatternForText = false;
+
+    return;
+}
         if (!window.selectedSvgElement) {
             alert("Please select a part first!");
             return;
@@ -993,6 +1038,45 @@ background-repeat:no-repeat;
     };
 
     window.clearMascotForSelectedPart = function () {
+
+
+if (window.currentApplicationLayer) {
+
+    const layer = findLayerById(window.currentApplicationLayer);
+
+    if (layer && layer.hasMascot) {
+
+        const mainSvg = window.getMainSvg();
+
+        const textEl = document.getElementById(layer.id);
+
+        if (textEl) {
+
+            textEl.removeAttribute('fill');
+
+        }
+
+        if (layer.mascotId) {
+
+            const pattern = mainSvg.querySelector(`#${layer.mascotId}`);
+
+            if (pattern) pattern.remove();
+
+        }
+
+        delete layer.hasMascot;
+        delete layer.mascotSvg;
+        delete layer.mascotId;
+
+        if (window.saveCustomizations)
+            window.saveCustomizations();
+
+        return;
+    }
+}
+
+
+
         if (!window.selectedSvgElement) return;
 
         const view = window.currentView;
@@ -1026,6 +1110,20 @@ background-repeat:no-repeat;
 
     // ⭐ YEH FUNCTION MASCOT KO REPEAT KAREGA ⭐
     window.selectMascotTemplate = function (img, svg) {
+
+
+if (window.selectingMascotForText && window.currentApplicationLayer) {
+
+    applyMascotToText(decodeURIComponent(svg));
+
+    window.selectingMascotForText = false;
+
+    closeMascotTemplateModal();
+
+    return;
+}
+
+
         if (!window.selectedSvgElement) {
             closeMascotTemplateModal();
             alert("Pehle jersey ka koi part select karo, phir dobara SELECT MASCOT click karo!");

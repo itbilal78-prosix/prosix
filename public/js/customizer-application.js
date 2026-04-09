@@ -560,6 +560,16 @@
     // ============================================================
 
     window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal) {
+
+
+        if (window.selectingMascotForText && window.currentApplicationLayer) {
+
+        applyMascotToText(svgContent);
+
+        window.selectingMascotForText = false;
+
+        return;
+    }
         const layerId = forcedLayerId || window.currentApplicationLayer;
         if (!layerId) return;
         const layer = findLayerById(layerId);

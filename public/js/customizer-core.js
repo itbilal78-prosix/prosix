@@ -569,11 +569,11 @@ if (window.USER_DESIGN) {
         text.classList.add('modal-preview-text');
         text.setAttribute('x', centerX);
         text.setAttribute('y', centerY);
-        text.setAttribute('font-size', '2000');  // 🔥 LARGER PREVIEW SIZE
+        text.setAttribute('font-size', '2000');  //  LARGER PREVIEW SIZE
         text.style.fontFamily = layer?.fontFamily || 'Arial Black';
         text.setAttribute('fill', textColor);
         text.setAttribute('stroke', strokeColor);
-        text.setAttribute('stroke-width', '6');  // 🔥 THICKER STROKE
+        text.setAttribute('stroke-width', '6');  //  THICKER STROKE
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('paint-order', 'stroke fill');
@@ -2448,54 +2448,6 @@ window.isDraggingKnob = false;
 
     /* ================= MODEL ================= */
 
-    // async function loadModel() {
-
-    //     try {
-    //         const response = await fetch(API_URL);
-    //         const data = await response.json();
-    //         currentModel = data;
-    //         if (data.pattern_changes) {
-    //             patternsApplied = data.pattern_changes;
-    //         }
-
-
-    //         if (data.color_changes) {
-    //             colorChanges = data.color_changes;
-    //         }
-    //         if (data.mascot_changes) {
-    //             mascotsApplied = data.mascot_changes;   // 🔥 REQUIRED
-    //         }
-
-
-    //         //             if (data.applications) {
-    //         //     window.applicationsApplied = data.applications;
-    //         // }
-    //         if (data.applications) {
-    //             Object.assign(window.applicationsApplied, data.applications);
-    //         }
-
-
-
-
-
-    //         modelViews.front = data.front_view || {};
-    //         modelViews.back = data.back_view || {};
-    //         modelViews.left = data.left_view || {};
-    //         modelViews.right = data.right_view || {};
-
-    //         displayView('front');
-
-    //         setTimeout(() => {
-    //             if (window.extractDefaultColors) {
-    //                 extractDefaultColors();
-    //             }
-    //         }, 500);
-    //     } catch (e) {
-    //         console.error('Error loading model:', e);
-    //         document.getElementById('modelDisplay').innerHTML =
-    //             '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
-    //     }
-    // }
 
     async function loadModel() {
         try {
