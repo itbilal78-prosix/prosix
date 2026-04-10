@@ -51,17 +51,20 @@ class TemplateController extends Controller
     }
 
     // Update template
- public function update(Request $request, $id)
+public function update(Request $request, $id)
 {
     $template = Template::findOrFail($id);
 
+    $request->validate([
+        'title' => 'required|string|max:255',
+    ]);
+
     $template->title = $request->title;
-    $template->svg_data = $request->svg_data;
-    $template->image_data = $request->image_data;
 
     $template->save();
 
-    return response()->json(['success'=>true]);
+    return redirect()->route('templates.index')
+        ->with('success', 'Template name updated successfully!');
 }
 
 

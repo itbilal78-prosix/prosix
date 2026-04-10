@@ -93,10 +93,14 @@
                         </div>
                         <div id="mascotSelectPreviewName"
                             style="font-size:13px; font-weight:700; color:#333; text-align:center;"></div>
-                        <button id="mascotEditBtn" onclick="editSelectedMascot()"
+                        <button id="mascotEditBtn" onclick="#"
                             style="display:none; width:100%; padding:10px; background:#1a1a1a; color:#fff; border:none; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; letter-spacing:.5px;">
                             Edit Mascot
                         </button>
+                        {{-- <button id="mascotEditBtn" onclick="editSelectedMascot()"
+                            style="display:none; width:100%; padding:10px; background:#1a1a1a; color:#fff; border:none; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; letter-spacing:.5px;">
+                            Edit Mascot
+                        </button> --}}
                     </div>
                 </div>
             </div>

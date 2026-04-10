@@ -20,6 +20,25 @@
             <header class="app-header">
                 <h1>Welcome to Mascot Customizer</h1>
             </header>
+            <form action="{{ route('templates.update', $template->id) }}" method="POST">
+    @csrf
+    @method('PUT')
+
+    <label>Template Name</label>
+
+    <input
+        type="text"
+        name="title"
+        value="{{ $template->title }}"
+        class="form-control"
+    >
+
+    <br>
+
+    <button class="btn btn-primary">
+        Update Name
+    </button>
+</form>
 <input type="hidden" id="editingTemplateId" value="{{ $template->id ?? '' }}">
 
             <div class="main-content">
