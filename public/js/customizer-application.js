@@ -484,195 +484,203 @@
     };
 
     // ============================================================
-    // =================== ADD TEXT APPLICATION TO SVG ===================
-    // ============================================================
+// ✅ FIX 2: addApplicationToSvg — POORA REPLACE KARO
+// ============================================================
 
-    window.addApplicationToSvg = function (layer) {
-        if (layer.type === 'direct-mascot') {
-            if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
-            return;
-        }
-        const mainSvg = window.getMainSvg();
-        if (!mainSvg) { setTimeout(() => addApplicationToSvg(layer), 300); return; }
-        if (mainSvg.querySelector(`#${layer.id}`)) return;
-
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) { defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs'); mainSvg.insertBefore(defs, mainSvg.firstChild); }
-
-        const partElement = mainSvg.querySelector(`#${layer.partId}`);
-        if (!partElement) { console.warn('Part not found', layer.partId); return; }
-
-        const clipId = `clip-${layer.id}`;
-        if (!defs.querySelector(`#${clipId}`)) {
-            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-            clip.setAttribute('id', clipId);
-            const clone = partElement.cloneNode(true);
-            clone.removeAttribute('id');
-            clip.appendChild(clone);
-            defs.appendChild(clip);
-        }
-
-        const layerGroupId = `app-group-${layer.id}`;
-        let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
-        if (!layerGroup) {
-            layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            layerGroup.setAttribute('id', layerGroupId);
-            layerGroup.setAttribute('clip-path', `url(#${clipId})`);
-            mainSvg.appendChild(layerGroup);
-        }
-
-        const bbox = partElement.getBBox();
-        const cx = bbox.x + bbox.width / 2;
-        const cy = bbox.y + bbox.height / 2;
-
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('id', layer.id);
-        text.setAttribute('x', cx + (layer.x || 0));
-        text.setAttribute('y', cy + (layer.y || 0));
-        text.setAttribute('font-size', layer.fontSize || 500);
-        text.style.fontFamily = layer.fontFamily;
-        text.setAttribute('fill', layer.fill);
-        text.setAttribute('stroke', layer.stroke);
-        text.setAttribute('stroke-width', layer.strokeWidth || 5);
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('dominant-baseline', 'middle');
-        text.setAttribute('paint-order', 'stroke fill');
-        text.setAttribute('stroke-linejoin', 'miter');
-        text.style.cursor = 'move';
-        text.textContent = layer.text;
-
-        layerGroup.appendChild(text);
-        makeDraggable(text, layer);
-        text.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layer.id); });
-
-        // Apply transform (flip + rotation)
-        _applyFlipTransform(layer, mainSvg);
-
-        if (layer.outlineStyle) {
-            window.currentOutlineStyle = layer.outlineStyle;
-            if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
-            applyOutlineStyleToText(layer.id);
-        }
-    };
-
-    // ============================================================
-    // =================== APPLY DIRECT MASCOT ===================
-    // ============================================================
-
-    window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal) {
-
-
-        if (window.selectingMascotForText && window.currentApplicationLayer) {
-
-        applyMascotToText(svgContent);
-
-        window.selectingMascotForText = false;
-
+window.addApplicationToSvg = function (layer) {
+    if (layer.type === 'direct-mascot') {
+        if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
         return;
     }
-        const layerId = forcedLayerId || window.currentApplicationLayer;
-        if (!layerId) return;
-        const layer = findLayerById(layerId);
-        if (!layer || layer.type !== 'direct-mascot') return;
-        const mainSvg = window.getMainSvg();
-        if (!mainSvg) return;
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) { setTimeout(() => addApplicationToSvg(layer), 300); return; }
+    if (mainSvg.querySelector(`#${layer.id}`)) return;
 
-        const savedFlipX = layer.flipX || 1;
-        const savedFlipY = layer.flipY || 1;
-        const savedFlipState = layer._flipState || 0;
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
 
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) { defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs'); mainSvg.insertBefore(defs, mainSvg.firstChild); }
+    const partElement = mainSvg.querySelector(`#${layer.partId}`);
+    if (!partElement) { console.warn('Part not found', layer.partId); return; }
 
-        const partElement = mainSvg.querySelector(`#${layer.partId}`);
-        if (!partElement) { console.warn('Part not found', layer.partId); return; }
+    const clipId = `clip-${layer.id}`;
+    if (!defs.querySelector(`#${clipId}`)) {
+        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clip.setAttribute('id', clipId);
+        const clone = partElement.cloneNode(true);
+        clone.removeAttribute('id');
+        clip.appendChild(clone);
+        defs.appendChild(clip);
+    }
 
-        const clipId = `clip-${layerId}`;
-        if (!defs.querySelector(`#${clipId}`)) {
-            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-            clip.setAttribute('id', clipId);
-            const clone = partElement.cloneNode(true);
-            clone.removeAttribute('id');
-            clip.appendChild(clone);
-            defs.appendChild(clip);
-        }
-
-        const layerGroupId = `app-group-${layerId}`;
-        let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
-        if (layerGroup) layerGroup.remove();
-
+    const layerGroupId = `app-group-${layer.id}`;
+    let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+    if (!layerGroup) {
         layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         layerGroup.setAttribute('id', layerGroupId);
         layerGroup.setAttribute('clip-path', `url(#${clipId})`);
-        mainSvg.appendChild(layerGroup);
+    }
 
-        const bbox = partElement.getBBox();
-        const cx = bbox.x + bbox.width / 2;
-        const cy = bbox.y + bbox.height / 2;
+    // ✅ KEY FIX: hamesha LAST mein append karo — yahi SVG mein top pe dikhega
+    mainSvg.appendChild(layerGroup);
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(svgContent, 'image/svg+xml');
-        let mascotSvg = doc.documentElement;
-        if (!mascotSvg || mascotSvg.nodeName !== 'svg') { alert('Mascot SVG load failed'); return; }
-        mascotSvg = mascotSvg.cloneNode(true);
+    const bbox = partElement.getBBox();
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
 
-        const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100').split(' ').map(Number);
-        mascotSvg.querySelectorAll('rect,polygon,circle,ellipse').forEach(el => {
-            const x = parseFloat(el.getAttribute('x') || 0);
-            const y = parseFloat(el.getAttribute('y') || 0);
-            const w = parseFloat(el.getAttribute('width') || 0);
-            const h = parseFloat(el.getAttribute('height') || 0);
-            if (x <= 1 && y <= 1 && w >= vb[2] * 0.7 && h >= vb[3] * 0.7) el.remove();
-        });
-        mascotSvg.querySelectorAll('*').forEach(el => {
-            const style = el.getAttribute('style') || '';
-            const fill = el.getAttribute('fill') || '';
-            const isWhite = fill === '#fff' || fill === '#ffffff' || fill === 'white' ||
-                style.includes('fill:#fff') || style.includes('fill:white') || style.includes('fill:#ffffff');
-            const tag = el.tagName.toLowerCase();
-            if (isWhite && (tag === 'rect' || tag === 'polygon')) el.remove();
-        });
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('id', layer.id);
+    text.setAttribute('x', cx + (layer.x || 0));
+    text.setAttribute('y', cy + (layer.y || 0));
+    text.setAttribute('font-size', layer.fontSize || 500);
+    text.style.fontFamily = layer.fontFamily;
+    text.setAttribute('fill', layer.fill);
+    text.setAttribute('stroke', layer.stroke);
+    text.setAttribute('stroke-width', layer.strokeWidth || 5);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('paint-order', 'stroke fill');
+    text.setAttribute('stroke-linejoin', 'miter');
+    text.style.cursor = 'move';
+    text.textContent = layer.text;
 
-        if (!mascotSvg.getAttribute('viewBox')) mascotSvg.setAttribute('viewBox', '0 0 100 100');
-        mascotSvg.style.background = 'transparent';
+    layerGroup.appendChild(text);
+    makeDraggable(text, layer);
+    text.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layer.id); });
 
-        const mascotSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
-        mascotSvg.setAttribute('width', mascotSize);
-        mascotSvg.setAttribute('height', mascotSize);
-        mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    _applyFlipTransform(layer, mainSvg);
 
-        const mascotX = cx - mascotSize / 2 + (layer.x || 0);
-        const mascotY = cy - mascotSize / 2 + (layer.y || 0);
-        mascotSvg.setAttribute('x', mascotX);
-        mascotSvg.setAttribute('y', mascotY);
-        mascotSvg.setAttribute('id', layerId);
-        mascotSvg.style.cursor = 'default';
-        if (layer.mascotOpacity !== undefined) mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
+    if (layer.outlineStyle) {
+        window.currentOutlineStyle = layer.outlineStyle;
+        if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
+        applyOutlineStyleToText(layer.id);
+    }
+};
 
-        layerGroup.appendChild(mascotSvg);
 
-        layer.mascotSvg = svgContent;
-        layer.mascotId = layerId;
-        layer._cx = cx;
-        layer._cy = cy;
-        layer._mascotSize = mascotSize;
-        layer._selectedColorCount = window.selectedMascotColorCount || (window.selectedColors ? window.selectedColors.length : 6);
-        layer.flipX = savedFlipX;
-        layer.flipY = savedFlipY;
-        layer._flipState = savedFlipState;
 
-        // Apply flip+rotation
-        setTimeout(() => {
-            _applyFlipTransform(layer, mainSvg);
-        }, 50);
+    // ============================================================
+// ✅ FIX 3: applyDirectMascotToLayer — POORA REPLACE KARO
+// ============================================================
 
-        mascotSvg.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layerId); });
+window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal) {
 
-        window.currentApplicationLayer = layerId;
-        updateApplicationLayersList();
-        selectApplicationLayer(layerId);
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+    if (window.selectingMascotForText && window.currentApplicationLayer) {
+        applyMascotToText(svgContent);
+        window.selectingMascotForText = false;
+        return;
+    }
+
+    const layerId = forcedLayerId || window.currentApplicationLayer;
+    if (!layerId) return;
+    const layer = findLayerById(layerId);
+    if (!layer || layer.type !== 'direct-mascot') return;
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) return;
+
+    const savedFlipX = layer.flipX || 1;
+    const savedFlipY = layer.flipY || 1;
+    const savedFlipState = layer._flipState || 0;
+
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
+
+    const partElement = mainSvg.querySelector(`#${layer.partId}`);
+    if (!partElement) { console.warn('Part not found', layer.partId); return; }
+
+    const clipId = `clip-${layerId}`;
+    if (!defs.querySelector(`#${clipId}`)) {
+        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clip.setAttribute('id', clipId);
+        const clone = partElement.cloneNode(true);
+        clone.removeAttribute('id');
+        clip.appendChild(clone);
+        defs.appendChild(clip);
+    }
+
+    const layerGroupId = `app-group-${layerId}`;
+    let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+    if (layerGroup) layerGroup.remove();
+
+    layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    layerGroup.setAttribute('id', layerGroupId);
+    layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+
+    // ✅ KEY FIX: hamesha LAST mein append karo
+    mainSvg.appendChild(layerGroup);
+
+    const bbox = partElement.getBBox();
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+    let mascotSvg = doc.documentElement;
+    if (!mascotSvg || mascotSvg.nodeName !== 'svg') { alert('Mascot SVG load failed'); return; }
+    mascotSvg = mascotSvg.cloneNode(true);
+
+    const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100').split(' ').map(Number);
+    mascotSvg.querySelectorAll('rect,polygon,circle,ellipse').forEach(el => {
+        const x = parseFloat(el.getAttribute('x') || 0);
+        const y = parseFloat(el.getAttribute('y') || 0);
+        const w = parseFloat(el.getAttribute('width') || 0);
+        const h = parseFloat(el.getAttribute('height') || 0);
+        if (x <= 1 && y <= 1 && w >= vb[2] * 0.7 && h >= vb[3] * 0.7) el.remove();
+    });
+    mascotSvg.querySelectorAll('*').forEach(el => {
+        const style = el.getAttribute('style') || '';
+        const fill = el.getAttribute('fill') || '';
+        const isWhite = fill === '#fff' || fill === '#ffffff' || fill === 'white' ||
+            style.includes('fill:#fff') || style.includes('fill:white') || style.includes('fill:#ffffff');
+        const tag = el.tagName.toLowerCase();
+        if (isWhite && (tag === 'rect' || tag === 'polygon')) el.remove();
+    });
+
+    if (!mascotSvg.getAttribute('viewBox')) mascotSvg.setAttribute('viewBox', '0 0 100 100');
+    mascotSvg.style.background = 'transparent';
+
+    const mascotSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
+    mascotSvg.setAttribute('width', mascotSize);
+    mascotSvg.setAttribute('height', mascotSize);
+    mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    const mascotX = cx - mascotSize / 2 + (layer.x || 0);
+    const mascotY = cy - mascotSize / 2 + (layer.y || 0);
+    mascotSvg.setAttribute('x', mascotX);
+    mascotSvg.setAttribute('y', mascotY);
+    mascotSvg.setAttribute('id', layerId);
+    mascotSvg.style.cursor = 'default';
+    if (layer.mascotOpacity !== undefined) mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
+
+    layerGroup.appendChild(mascotSvg);
+
+    layer.mascotSvg = svgContent;
+    layer.mascotId = layerId;
+    layer._cx = cx;
+    layer._cy = cy;
+    layer._mascotSize = mascotSize;
+    layer._selectedColorCount = window.selectedMascotColorCount || (window.selectedColors ? window.selectedColors.length : 6);
+    layer.flipX = savedFlipX;
+    layer.flipY = savedFlipY;
+    layer._flipState = savedFlipState;
+
+    setTimeout(() => {
+        _applyFlipTransform(layer, mainSvg);
+    }, 50);
+
+    mascotSvg.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layerId); });
+
+    window.currentApplicationLayer = layerId;
+    updateApplicationLayersList();
+    selectApplicationLayer(layerId);
+    if (window.saveCustomizations) window.saveCustomizations();
+};
+
 
     // ============================================================
     // =================== CORE TRANSFORM ENGINE ===================
@@ -2022,6 +2030,46 @@ user-select:none;
         removeApplicationLayer(window.currentApplicationLayer);
     };
 
+
+
+
+
+
+
+    window.embedFontsInSvg = function(svgElement) {
+    if (!window.backendFonts || !svgElement) return;
+
+    let defs = svgElement.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svgElement.insertBefore(defs, svgElement.firstChild);
+    }
+
+    // Purane font styles hata do
+    defs.querySelectorAll('style[data-fonts]').forEach(s => s.remove());
+
+    // SVG ke andar use ho rahe fonts nikalo
+    const usedFonts = new Set();
+    svgElement.querySelectorAll('text').forEach(t => {
+        const ff = t.style.fontFamily || t.getAttribute('font-family');
+        if (ff) usedFonts.add(ff.replace(/['"]/g, '').trim());
+    });
+
+    // Sirf use ho rahe fonts embed karo
+    let fontCSS = '';
+    window.backendFonts.forEach(font => {
+        if (usedFonts.has(`font_${font.id}`)) {
+            fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }\n`;
+        }
+    });
+
+    if (fontCSS) {
+        const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+        styleEl.setAttribute('data-fonts', '1');
+        styleEl.textContent = fontCSS;
+        defs.appendChild(styleEl);
+    }
+};
     // ============================================================
     // =================== FONT LOADING ===================
     // ============================================================
@@ -2647,60 +2695,79 @@ user-select:none;
 
     function findLayerById(id) { return window.findLayerById(id); }
 
-    // ============================================================
-    // =================== RESTORE ON LOAD ===================
-    // ============================================================
+   // ============================================================
+// ✅ FIX 4: initializeApplicationsOnLoad — POORA REPLACE KARO
+// ============================================================
 
-    window.initializeApplicationsOnLoad = function () {
-        if (!window.applicationsApplied) return;
-        const view = window.currentView;
-        if (!window.applicationsApplied[view] || !Object.keys(window.applicationsApplied[view]).length) return;
-        const svg = window.getMainSvg();
-        if (!svg) { setTimeout(window.initializeApplicationsOnLoad, 300); return; }
+window.initializeApplicationsOnLoad = function () {
+    if (!window.applicationsApplied) return;
+    const view = window.currentView;
+    if (!window.applicationsApplied[view] || !Object.keys(window.applicationsApplied[view]).length) return;
+    const svg = window.getMainSvg();
+    if (!svg) { setTimeout(window.initializeApplicationsOnLoad, 300); return; }
 
-        svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
-        svg.querySelectorAll('#application-group').forEach(g => g.remove());
-        svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+    svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
+    svg.querySelectorAll('#application-group').forEach(g => g.remove());
+    svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
 
-        Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-            layers.forEach(layer => {
-                // Ensure flip state initialized
-                if (layer.flipX === undefined) layer.flipX = 1;
-                if (layer.flipY === undefined) layer.flipY = 1;
-                if (layer._flipState === undefined) layer._flipState = 0;
+    Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+        layers.forEach(layer => {
+            if (layer.flipX === undefined) layer.flipX = 1;
+            if (layer.flipY === undefined) layer.flipY = 1;
+            if (layer._flipState === undefined) layer._flipState = 0;
 
-                addApplicationToSvg(layer);
+            addApplicationToSvg(layer);
 
-                if (layer.type === 'direct-mascot' && layer.mascotSvg && layer._colorMap && Object.keys(layer._colorMap).length) {
-                    (l => setTimeout(() => _applyDirectMascotColorMap(l), 400))(layer);
-                }
-                if (layer.hasPattern && layer.patternSvg) {
-                    const prev = window.currentApplicationLayer;
-                    window.currentApplicationLayer = layer.id;
-                    window.applyPatternToText(layer.patternSvg, layer.id);
-                    if (layer.patternOpacity) window.updateTextPatternOpacity(layer.patternOpacity);
-                    window.currentApplicationLayer = prev;
-                }
-                if (layer.hasMascot && layer.mascotSvg) {
-                    const prev = window.currentApplicationLayer;
-                    window.currentApplicationLayer = layer.id;
-                    window.applyMascotToText(layer.mascotSvg, layer.id);
-                    if (layer.mascotOpacity) window.updateTextMascotOpacity(layer.mascotOpacity);
-                    window.currentApplicationLayer = prev;
-                }
-            });
+            if (layer.type === 'direct-mascot' && layer.mascotSvg && layer._colorMap && Object.keys(layer._colorMap).length) {
+                (l => setTimeout(() => _applyDirectMascotColorMap(l), 400))(layer);
+            }
+            if (layer.hasPattern && layer.patternSvg) {
+                const prev = window.currentApplicationLayer;
+                window.currentApplicationLayer = layer.id;
+                window.applyPatternToText(layer.patternSvg, layer.id);
+                if (layer.patternOpacity) window.updateTextPatternOpacity(layer.patternOpacity);
+                window.currentApplicationLayer = prev;
+            }
+            if (layer.hasMascot && layer.mascotSvg) {
+                const prev = window.currentApplicationLayer;
+                window.currentApplicationLayer = layer.id;
+                window.applyMascotToText(layer.mascotSvg, layer.id);
+                if (layer.mascotOpacity) window.updateTextMascotOpacity(layer.mascotOpacity);
+                window.currentApplicationLayer = prev;
+            }
         });
-        updateApplicationLayersList();
-    };
+    });
 
-    window.reorderSvgLayers = function (view, partId, orderedLayers) {
-        const mainSvg = window.getMainSvg(); if (!mainSvg) return;
-        orderedLayers.forEach(layer => {
-            const group = mainSvg.querySelector(`#app-group-${layer.id}`);
-            if (group) mainSvg.appendChild(group);
-            setTimeout(() => _applyFlipTransform(layer, mainSvg), 50);
-        });
-    };
+    updateApplicationLayersList();
+
+    // ✅ KEY FIX: load hone ke baad application layers ko top pe lao
+    setTimeout(() => {
+        if (window.bringApplicationLayersToTop) {
+            window.bringApplicationLayersToTop();
+        }
+    }, 500);
+};
+
+
+    // ============================================================
+// ✅ FIX 5: reorderSvgLayers — POORA REPLACE KARO
+// ============================================================
+
+window.reorderSvgLayers = function (view, partId, orderedLayers) {
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) return;
+    orderedLayers.forEach(layer => {
+        const group = mainSvg.querySelector(`#app-group-${layer.id}`);
+        if (group) mainSvg.appendChild(group); // last = top
+        setTimeout(() => _applyFlipTransform(layer, mainSvg), 50);
+    });
+    // ✅ Sab layers reorder hone ke baad bhi top pe rakho
+    setTimeout(() => {
+        if (window.bringApplicationLayersToTop) {
+            window.bringApplicationLayersToTop();
+        }
+    }, 100);
+};
 
     // ============================================================
     // =================== ROTATION WHEEL ===================
@@ -2865,5 +2932,24 @@ user-select:none;
     };
 
     console.log('✅ applications.js — v2 FIXED: rotation+flip, drag direction, pattern/mascot inside text');
+
+
+window.bringApplicationLayersToTop = function () {
+    const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+    if (!mainSvg) return;
+
+    // Saare application groups collect karo
+    const appGroups = Array.from(mainSvg.querySelectorAll('[id^="app-group-"]'));
+
+    // Ek ek karke last mein append karo (yahi top pe aata hai SVG mein)
+    appGroups.forEach(group => {
+        mainSvg.appendChild(group);
+    });
+
+    console.log('✅ Application layers brought to top:', appGroups.length);
+};
+
+
+
 
 })();

@@ -9,9 +9,26 @@
 window.MODEL_ID = {{ $model->id }};
 window.isUserMode = {{ isset($isUserMode) && $isUserMode ? 'true' : 'false' }};
 
+@if(isset($design) && $design)
+window.DESIGN_ID = {{ $design->id }};
+window.USER_DESIGN = {!! json_encode([
+    'id'              => $design->id,
+    'color_changes'   => $design->color_changes   ?? [],
+    'pattern_changes' => $design->pattern_changes ?? [],
+    'mascot_changes'  => $design->mascot_changes  ?? [],
+    'applications'    => $design->applications    ?? [],
+]) !!};
+@else
+window.DESIGN_ID = null;
+window.USER_DESIGN = null;
+@endif
+
 window.API_URL = window.isUserMode
-    ? "/user/model-api/{{ $model->id }}"
-    : "{{ route('models.api.get', $model->id) }}";
+    ? '/user/model-api/{{ $model->id }}' + (window.DESIGN_ID ? '?customization_id=' + window.DESIGN_ID : '')
+    : '{{ route("models.api.get", $model->id) }}';
+
+console.log('API_URL:', window.API_URL);
+console.log('USER_DESIGN:', window.USER_DESIGN);
 </script>
 
 

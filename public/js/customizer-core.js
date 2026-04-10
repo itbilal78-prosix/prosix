@@ -2371,7 +2371,14 @@ window.isDraggingKnob = false;
     window.currentView = 'front';
     window.selectedSvgElement = null;
     window.allSvgParts = [];
+if (window.USER_DESIGN && window.USER_DESIGN.color_changes &&
+    typeof window.USER_DESIGN.color_changes === 'object' &&
+    !Array.isArray(window.USER_DESIGN.color_changes) &&
+    Object.keys(window.USER_DESIGN.color_changes).length > 0) {
+    window.colorChanges = window.USER_DESIGN.color_changes;
+} else {
     window.colorChanges = { front: {}, back: {}, left: {}, right: {} };
+}
     window.gradientChanges = { front: {}, back: {}, left: {}, right: {} };
 
     window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
@@ -2449,59 +2456,136 @@ window.isDraggingKnob = false;
     /* ================= MODEL ================= */
 
 
-    async function loadModel() {
-        try {
-            const response = await fetch(API_URL);
-            const data = await response.json();
-            currentModel = data;
+    // async function loadModel() {
+    //     try {
+    //         const response = await fetch(API_URL);
+    //         const data = await response.json();
+    //         currentModel = data;
 
-            // ⭐ FIX: Sirf agar data exist kare aur empty na ho
-            if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
-                window.patternsApplied = data.pattern_changes;
-            } else {
-                window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
-            }
+    //         // ⭐ FIX: Sirf agar data exist kare aur empty na ho
+    //         if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
+    //             window.patternsApplied = data.pattern_changes;
+    //         } else {
+    //             window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
+    //         }
 
-            if (data.color_changes && typeof data.color_changes === 'object') {
-                colorChanges = data.color_changes;
-            }
+    //         if (data.color_changes && typeof data.color_changes === 'object') {
+    //             colorChanges = data.color_changes;
+    //         }
 
-            if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
-                window.mascotsApplied = data.mascot_changes;
-            } else {
-                window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
-            }
+    //         if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
+    //             window.mascotsApplied = data.mascot_changes;
+    //         } else {
+    //             window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
+    //         }
 
-            if (data.applications) {
-                Object.assign(window.applicationsApplied, data.applications);
-            }
+    //         if (data.applications) {
+    //             Object.assign(window.applicationsApplied, data.applications);
+    //         }
 
-            modelViews.front = data.front_view || {};
-            modelViews.back = data.back_view || {};
-            modelViews.left = data.left_view || {};
-            modelViews.right = data.right_view || {};
+    //         modelViews.front = data.front_view || {};
+    //         modelViews.back = data.back_view || {};
+    //         modelViews.left = data.left_view || {};
+    //         modelViews.right = data.right_view || {};
 
-            displayView('front');
+    //         displayView('front');
 
-            setTimeout(() => {
-                if (window.extractDefaultColors) {
-                    extractDefaultColors();
-                }
-            }, 500);
+    //         setTimeout(() => {
+    //             if (window.extractDefaultColors) {
+    //                 extractDefaultColors();
+    //             }
+    //         }, 500);
 
-        } catch (e) {
-            console.error('Error loading model:', e);
-            document.getElementById('modelDisplay').innerHTML =
-                '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
+    //     } catch (e) {
+    //         console.error('Error loading model:', e);
+    //         document.getElementById('modelDisplay').innerHTML =
+    //             '<div style="color:#ff0000;padding:40px;">Error loading model</div>';
+    //     }
+    // }
+
+
+
+async function loadModel() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        currentModel = data;
+
+        console.log('=== LOAD MODEL DATA ===', data); // DEBUG
+
+        // ✅ Color changes load karo
+        if (data.color_changes && typeof data.color_changes === 'object' && !Array.isArray(data.color_changes)) {
+            colorChanges = data.color_changes;
+            window.colorChanges = data.color_changes; // ✅ window pe bhi set karo
+            console.log('Colors loaded:', colorChanges);
+        } else {
+            colorChanges = { front: {}, back: {}, left: {}, right: {} };
+            window.colorChanges = colorChanges;
         }
-    }
 
+        // Pattern changes
+        if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
+            window.patternsApplied = data.pattern_changes;
+        } else {
+            window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
+        }
+
+        // Mascot changes
+        if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
+            window.mascotsApplied = data.mascot_changes;
+        } else {
+            window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
+        }
+
+        // Applications
+        if (data.applications && typeof data.applications === 'object' && !Array.isArray(data.applications)) {
+            window.applicationsApplied = data.applications;
+        }
+
+       // ✅ USER_DESIGN se colors directly apply karo
+        if (window.USER_DESIGN && window.USER_DESIGN.color_changes) {
+            const uc = window.USER_DESIGN.color_changes;
+            if (typeof uc === 'object' && !Array.isArray(uc) && Object.keys(uc).length > 0) {
+                colorChanges = uc;
+                window.colorChanges = uc;
+                console.log('✅ User colors loaded from USER_DESIGN:', colorChanges);
+            }
+        }
+        if (window.USER_DESIGN && window.USER_DESIGN.pattern_changes) {
+            const up = window.USER_DESIGN.pattern_changes;
+            if (typeof up === 'object' && !Array.isArray(up)) {
+                window.patternsApplied = up;
+            }
+        }
+        if (window.USER_DESIGN && window.USER_DESIGN.applications) {
+            const ua = window.USER_DESIGN.applications;
+            if (typeof ua === 'object' && !Array.isArray(ua)) {
+                window.applicationsApplied = ua;
+            }
+        }
+
+        modelViews.front = data.front_view || {};
+        modelViews.back  = data.back_view  || {};
+        modelViews.left  = data.left_view  || {};
+        modelViews.right = data.right_view || {};
+
+        displayView('front');
+
+        setTimeout(() => {
+            if (window.extractDefaultColors) extractDefaultColors();
+        }, 500);
+
+    } catch (e) {
+        console.error('Error loading model:', e);
+    }
+}
     /* ================= VIEW ================= */
 
     window.switchView = function (view) {
-        displayView(view);
-
-    }
+    displayView(view);
+    // ✅ View switch hone ke baad us view ke colors bhi apply honge
+    // processSvg mein colorChanges[currentView] se apply hoga automatically
+}
     function displayView(view) {
         currentView = view;
         const viewData = modelViews[view];
@@ -2543,6 +2627,17 @@ window.isDraggingKnob = false;
         //         window.initializeApplicationsOnLoad();
         //     }
         // }, 400);
+        if (window.USER_DESIGN && window.USER_DESIGN.color_changes) {
+        const uc = window.USER_DESIGN.color_changes;
+        if (typeof uc === 'object' && !Array.isArray(uc)) {
+            ['front', 'back', 'left', 'right'].forEach(v => {
+                if (uc[v] && typeof uc[v] === 'object') {
+                    colorChanges[v] = uc[v];
+                    window.colorChanges[v] = uc[v];
+                }
+            });
+        }
+    }
 
     }
 
@@ -2600,9 +2695,14 @@ window.isDraggingKnob = false;
                             '#ffffff';
                     }
 
-                    if (colorChanges[currentView] && colorChanges[currentView][el.id]) {
-                        el.setAttribute('fill', colorChanges[currentView][el.id]);
-                    }
+                  // ✅ FIX: window.colorChanges aur local colorChanges dono check karo
+const savedColor = (window.colorChanges?.[currentView]?.[el.id])
+                || (colorChanges?.[currentView]?.[el.id]);
+
+if (savedColor) {
+    el.setAttribute('fill', savedColor);
+}
+
                 });
 
                 document.getElementById('svgImage').replaceWith(svgElement);
@@ -2651,207 +2751,160 @@ window.isDraggingKnob = false;
         updateStopMarkers();
     }
 
-    function selectSvgElement(el) {
+   function selectSvgElement(el) {
 
-
-
-        // 🔥 CLEAR ACTIVE APPLICATION LAYER WHEN PART CHANGES
-        if (window.currentApplicationLayer) {
-
-            // remove glow from old text
-            const oldText = document.getElementById(window.currentApplicationLayer);
-            if (oldText) {
-                oldText.style.filter = '';
-            }
-
-            window.currentApplicationLayer = null;
-
-            // hide application controls
-            const ctrl = document.getElementById('applicationLayerControls');
-            if (ctrl) ctrl.style.display = 'none';
-
-            // remove active class from sidebar layers
-            document.querySelectorAll('.application-layer-item').forEach(i => {
-                i.classList.remove('active');
-            });
-        }
-
-
-
-
-        // 🔥 SET CURRENT INDEX
-        window.currentPartIndex = allSvgParts.indexOf(el);
-
-        // 🔥 UPDATE ONLY PART NAME (TOP BUTTON)
-        const partName = document.getElementById('partName');
-        if (partName) {
-            partName.textContent = el.dataset.partName || 'Part';
-        }
-
-        // 1. Clear previous selection
-        document.querySelectorAll('.selected').forEach(e => {
-            e.classList.remove('selected');
-
+    // 🔥 CLEAR ACTIVE APPLICATION LAYER WHEN PART CHANGES
+    if (window.currentApplicationLayer) {
+        const oldText = document.getElementById(window.currentApplicationLayer);
+        if (oldText) oldText.style.filter = '';
+        window.currentApplicationLayer = null;
+        const ctrl = document.getElementById('applicationLayerControls');
+        if (ctrl) ctrl.style.display = 'none';
+        document.querySelectorAll('.application-layer-item').forEach(i => {
+            i.classList.remove('active');
         });
+    }
 
-        // 2. Set new selection
-        window.selectedSvgElement = el;
-        el.classList.add('selected');
+    // 🔥 SET CURRENT INDEX
+    window.currentPartIndex = allSvgParts.indexOf(el);
 
+    // 🔥 UPDATE PART NAME
+    const partName = document.getElementById('partName');
+    if (partName) {
+        partName.textContent = el.dataset.partName || 'Part';
+    }
 
-        const partId = el.id;
-        const activeTab = document.querySelector('.tab-btn.active');
-        const activeTabId = activeTab ? activeTab.id : 'colorBtn';
+    // Clear previous selection
+    document.querySelectorAll('.selected').forEach(e => {
+        e.classList.remove('selected');
+    });
 
+    // Set new selection
+    window.selectedSvgElement = el;
+    el.classList.add('selected');
 
+    const partId = el.id;
+    const view = window.currentView;
 
-        // ─────────────────────────────────────────────────────────────
-        // PATTERN TAB ACTIVE HAI → Pattern logic priority do
-        // ─────────────────────────────────────────────────────────────
-        if (activeTabId === 'patternBtn') {
-            const saved = window.patternsApplied?.[window.currentView]?.[partId];
+    // ✅ SMART TAB SWITCH - PEHLE CHECK KARO
+    const hasPattern = window.patternsApplied?.[view]?.[partId];
+    const hasMascot = window.mascotsApplied?.[view]?.[partId];
 
+    if (hasPattern || hasMascot) {
+        // ─── PATTERN/MASCOT TAB ───
+        activateTab('patternBtn');
+
+        if (hasPattern) {
+            const saved = window.patternsApplied[view][partId];
             if (saved && saved.svgContent) {
-                // ─── State restore ───
                 window.uploadedSvgContent = saved.svgContent;
                 window.selectedPatternReplacements = { ...(saved.replacements || {}) };
                 window.patternAngle = saved.angle || 0;
                 window.patternSize = saved.size || 50;
                 window.patternOpacity = saved.opacity || 100;
-                window.patternScale = (saved.size || 50) / 50;
 
-                // ─── UI controls update ───
                 const sizeSlider = document.getElementById('patternSize');
                 if (sizeSlider) {
                     sizeSlider.value = window.patternSize;
                     document.getElementById('sizeValue').textContent = window.patternSize;
                 }
-
                 const opacitySlider = document.getElementById('patternOpacity');
                 if (opacitySlider) {
                     opacitySlider.value = window.patternOpacity;
                     document.getElementById('opacityValue').textContent = window.patternOpacity + '%';
                 }
 
-                const angleDisplay = document.getElementById('angleValue');
-                if (angleDisplay) {
-                    angleDisplay.textContent = window.patternAngle + '°';
-                }
-
-                // Circular knob bhi update (agar tumhara circular slider hai)
-                if (window.updateKnobAndPattern) {
-                    window.updateKnobAndPattern(window.patternAngle);
-                }
-
-                // ─── Pattern ko turant re-apply / refresh karo ───
                 recreatePatternAndOverlayWithNewColors();
-
-                // Controls show karo
                 document.getElementById('patternControls').style.display = 'block';
 
-                // Preview aur palette update (thoda delay safe hai)
                 setTimeout(() => {
                     if (window.updatePatternPreview) window.updatePatternPreview();
                     if (window.updatePatternColorPalette) window.updatePatternColorPalette();
                 }, 80);
-
-                console.log(`Pattern restored & reapplied for part: ${partId}`);
             }
-            else {
-                // No pattern → reset UI
-                window.uploadedSvgContent = null;
-                window.selectedPatternReplacements = {};
-                window.patternAngle = 0;
-                window.patternSize = 50;
-                window.patternOpacity = 100;
-
-                document.getElementById('patternControls').style.display = 'none';
-
-                const previewBox = document.getElementById('patternPreviewBox');
-                if (previewBox) {
-                    previewBox.innerHTML = '<span style="color:#999;">No pattern applied on selected part</span>';
-                }
-
-                console.log(`No pattern found for part: ${partId}`);
-            }
-
-            return;  // ← Color/gradient logic skip karo
         }
 
-        // ─────────────────────────────────────────────────────────────
-        // COLOR / GRADIENT TAB → purana normal logic
-        // ─────────────────────────────────────────────────────────────
-        let savedGradient = gradientChanges[window.currentView]?.[partId];
-        if (!savedGradient) {
-            const svgGradient = extractStopsFromSvg(el);
-            if (svgGradient) savedGradient = svgGradient;
+        if (hasMascot) {
+            document.getElementById('mascotControls').style.display = 'block';
+            window.restoreMascotStateForPart(partId, view);
+            if (window.updateMascotColorPalette) window.updateMascotColorPalette();
         }
 
-        const currentFill = el.getAttribute('fill') || '#fff';
-        const isGradientFill = currentFill.startsWith('url(') || !!savedGradient;
+        return; // Color/gradient logic skip karo
+    }
 
-        if (isGradientFill) {
-            setFillType('gradient', false);
+    // ─── COLOR TAB ───
+    activateTab('colorBtn');
 
-            if (savedGradient) {
-                if (!gradientChanges[window.currentView][partId]) {
-                    gradientChanges[window.currentView][partId] = {
-                        type: savedGradient.type || 'linear',
-                        angle: savedGradient.angle || 90,
-                        stops: JSON.parse(JSON.stringify(savedGradient.stops))
-                    };
-                }
+    let savedGradient = gradientChanges[view]?.[partId];
+    if (!savedGradient) {
+        const svgGradient = extractStopsFromSvg(el);
+        if (svgGradient) savedGradient = svgGradient;
+    }
 
-                window.currentGradientType = savedGradient.type || 'linear';
-                window.gradientStops = JSON.parse(JSON.stringify(savedGradient.stops));
+    const currentFill = el.getAttribute('fill') || '#fff';
+    const isGradientFill = currentFill.startsWith('url(') || !!savedGradient;
 
-                const angleInput = document.getElementById('gradAngle');
-                if (angleInput) {
-                    angleInput.value = savedGradient.angle || 90;
-                    document.getElementById('angleDisplay').textContent = (savedGradient.angle || 90) + '°';
-                }
+    if (isGradientFill) {
+        setFillType('gradient', false);
 
-                const angleControls = document.getElementById('angleControls');
-                if (angleControls) {
-                    angleControls.style.display = window.currentGradientType === 'linear' ? 'block' : 'none';
-                }
-
-                document.getElementById('linearBtn')?.classList.toggle('active', window.currentGradientType === 'linear');
-                document.getElementById('radialBtn')?.classList.toggle('active', window.currentGradientType === 'radial');
-            } else {
-                window.currentGradientType = 'linear';
-                window.gradientStops = [
-                    { color: '#FFC000', position: 0 },
-                    { color: '#228B22', position: 100 }
-                ];
+        if (savedGradient) {
+            if (!gradientChanges[view][partId]) {
+                gradientChanges[view][partId] = {
+                    type: savedGradient.type || 'linear',
+                    angle: savedGradient.angle || 90,
+                    stops: JSON.parse(JSON.stringify(savedGradient.stops))
+                };
             }
 
-            const centerBtn = document.getElementById('selectedColorBtn');
-            if (centerBtn) {
-                centerBtn.style.background = 'linear-gradient(90deg, ' +
-                    window.gradientStops.map(s => s.color).join(', ') + ')';
+            window.currentGradientType = savedGradient.type || 'linear';
+            window.gradientStops = JSON.parse(JSON.stringify(savedGradient.stops));
+
+            const angleInput = document.getElementById('gradAngle');
+            if (angleInput) {
+                angleInput.value = savedGradient.angle || 90;
+                document.getElementById('angleDisplay').textContent = (savedGradient.angle || 90) + '°';
             }
+
+            const angleControls = document.getElementById('angleControls');
+            if (angleControls) {
+                angleControls.style.display = window.currentGradientType === 'linear' ? 'block' : 'none';
+            }
+
+            document.getElementById('linearBtn')?.classList.toggle('active', window.currentGradientType === 'linear');
+            document.getElementById('radialBtn')?.classList.toggle('active', window.currentGradientType === 'radial');
         } else {
-            setFillType('solid', false);
-            const solidColor = colorChanges[window.currentView]?.[partId] || currentFill;
-
-            const centerBtn = document.getElementById('selectedColorBtn');
-            if (centerBtn) centerBtn.style.background = solidColor;
-            window.highlightWheelColor(solidColor);
-
+            window.currentGradientType = 'linear';
             window.gradientStops = [
                 { color: '#FFC000', position: 0 },
                 { color: '#228B22', position: 100 }
             ];
         }
 
-        // UI refresh for color/gradient
-        if (window.renderGradientStops) window.renderGradientStops();
-        if (window.updateGradientPreview) window.updateGradientPreview();
-        if (window.updateStopMarkers) window.updateStopMarkers();
+        const centerBtn = document.getElementById('selectedColorBtn');
+        if (centerBtn) {
+            centerBtn.style.background = 'linear-gradient(90deg, ' +
+                window.gradientStops.map(s => s.color).join(', ') + ')';
+        }
 
-        console.log(`Color tab: Part ${partId} selected | Mode: ${isGradientFill ? 'GRADIENT' : 'SOLID'}`);
+    } else {
+        setFillType('solid', false);
+        const solidColor = colorChanges[view]?.[partId] || currentFill;
+
+        const centerBtn = document.getElementById('selectedColorBtn');
+        if (centerBtn) centerBtn.style.background = solidColor;
+        if (window.highlightWheelColor) window.highlightWheelColor(solidColor);
+
+        window.gradientStops = [
+            { color: '#FFC000', position: 0 },
+            { color: '#228B22', position: 100 }
+        ];
     }
+
+    if (window.renderGradientStops) window.renderGradientStops();
+    if (window.updateGradientPreview) window.updateGradientPreview();
+    if (window.updateStopMarkers) window.updateStopMarkers();
+}
 
 
 
@@ -3042,112 +3095,6 @@ window.isDraggingKnob = false;
     }
 
 
-    // window.saveDesign = async function () {
-    //     if (window.isSaving) return;
-    //     window.isSaving = true;
-
-    //     try {
-    //         const views = ['front', 'back', 'left', 'right'];
-    //         const allSvgs = {};
-
-    //         // 🔥 Font CSS embed karo SVG mein
-    //         function embedFontsInSvg(svgElement) {
-    //             let fontCSS = '';
-    //             if (window.backendFonts) {
-    //                 window.backendFonts.forEach(font => {
-    //                     fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }`;
-    //                 });
-    //             }
-
-    //             let defs = svgElement.querySelector('defs');
-    //             if (!defs) {
-    //                 defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    //                 svgElement.insertBefore(defs, svgElement.firstChild);
-    //             }
-
-    //             // Old style remove karo
-    //             const oldStyle = defs.querySelector('style[data-fonts]');
-    //             if (oldStyle) oldStyle.remove();
-
-    //             if (fontCSS) {
-    //                 const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-    //                 style.setAttribute('data-fonts', 'true');
-    //                 style.textContent = fontCSS;
-    //                 defs.insertBefore(style, defs.firstChild);
-    //             }
-    //         }
-
-    //         for (const v of views) {
-    //             if (!modelViews[v]?.svg_url) continue;
-
-    //             if (v === window.currentView) {
-    //                 const liveSvg = window.getMainSvg();
-    //                 if (liveSvg) {
-    //                     const clone = liveSvg.cloneNode(true);
-    //                     embedFontsInSvg(clone);
-    //                     allSvgs[v] = new XMLSerializer().serializeToString(clone);
-    //                     continue;
-    //                 }
-    //             }
-
-    //             const res = await fetch(modelViews[v].svg_url);
-    //             const text = await res.text();
-    //             const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-    //             const svg = doc.querySelector('svg');
-    //             if (!svg) continue;
-
-    //             svg.setAttribute('width', '100%');
-    //             svg.setAttribute('height', '100%');
-
-    //             svg.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
-    //                 if (!el.id) el.id = `svg-part-${i}`;
-    //                 if (gradientChanges?.[v]?.[el.id]) {
-    //                     rebuildGradient(svg, el.id, gradientChanges[v][el.id], v);
-    //                     el.setAttribute('fill', `url(#gradient-${v}-${el.id})`);
-    //                 } else if (colorChanges?.[v]?.[el.id]) {
-    //                     el.setAttribute('fill', colorChanges[v][el.id]);
-    //                 }
-    //             });
-
-    //             if (window.applyPatternsToSvg) applyPatternsToSvg(svg, v);
-    //             if (window.applyMascotsToSvg) applyMascotsToSvg(svg, v);
-    //             if (window.applyApplicationsToSvg) applyApplicationsToSvg(svg, v);
-
-    //             embedFontsInSvg(svg);
-    //             allSvgs[v] = new XMLSerializer().serializeToString(svg);
-    //         }
-
-    //         const saveUrl = window.isUserMode
-    //             ? `/user/save-design/${MODEL_ID}`
-    //             : `/admin/models/${MODEL_ID}/save-design`;
-
-    //         const response = await fetch(saveUrl, {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-    //             },
-    //             body: JSON.stringify({
-    //                 svgs: allSvgs,
-    //                 color_changes: colorChanges || {},
-    //                 pattern_changes: window.patternsApplied || {},
-    //                 mascot_changes: window.mascotsApplied || {},
-    //                 applications: window.applicationsApplied || {}
-    //             })
-    //         });
-
-    //         // 🔥 Thumbnail generate karo
-    //         await generateAndSaveThumbnail();
-
-    //         alert("✅ Design Saved Successfully");
-
-    //     } catch (e) {
-    //         console.error(e);
-    //         alert("❌ Save Failed");
-    //     }
-
-    //     window.isSaving = false;
-    // };
 
     window.saveDesign = async function () {
         if (window.isSaving) return;
@@ -3170,13 +3117,15 @@ window.isDraggingKnob = false;
                 const token = localStorage.getItem('auth_token') || '';
 
                 // ✅ window.colorChanges use karo — local variable nahi
-                const payload = {
-                    name: designName,
-                    color_changes: window.colorChanges || {},
-                    pattern_changes: window.patternsApplied || {},
-                    mascot_changes: window.mascotsApplied || {},
-                    applications: window.applicationsApplied || {}
-                };
+             const payload = {
+    name: designName,
+    color_changes: window.colorChanges || colorChanges || {},
+    pattern_changes: window.patternsApplied || {},
+    mascot_changes: window.mascotsApplied || {},
+    applications: window.applicationsApplied || {}
+};
+
+console.log('=== SAVING PAYLOAD ===', JSON.stringify(payload));
 
                 console.log('Payload:', JSON.stringify(payload));
 
@@ -3287,12 +3236,16 @@ window.isDraggingKnob = false;
                 })
             });
 
-            await generateAndSaveThumbnail();
-            alert('✅ Design Saved Successfully');
+          const liveSvgForThumb = window.getMainSvg();
+if (liveSvgForThumb && window.embedFontsInSvg) {
+    window.embedFontsInSvg(liveSvgForThumb);
+}
+await generateAndSaveThumbnail();
+alert('✅ Design Saved Successfully');
 
         } catch (e) {
             console.error(e);
-            alert('❌ Save Failed');
+            alert(' Save Failed');
         }
 
         window.isSaving = false;
@@ -3708,164 +3661,7 @@ window.isDraggingKnob = false;
         };
     }
 
-    // async function generateAndSaveThumbnail() {
-    //     try {
-    //         const view = window.currentView || 'front';
-    //         const viewData = window.modelViews?.[view];
 
-    //         const canvas = document.createElement('canvas');
-    //         canvas.width = 800;
-    //         canvas.height = 800;
-    //         const ctx = canvas.getContext('2d');
-    //         // ctx.fillStyle = '#ffffff';
-    //         // ctx.fillRect(0, 0, 800, 800);
-
-    //         function loadImg(src) {
-    //             return new Promise((resolve) => {
-    //                 const img = new Image();
-    //                 img.crossOrigin = 'anonymous';
-    //                 img.onload = () => resolve(img);
-    //                 img.onerror = () => resolve(null);
-    //                 img.src = src;
-    //             });
-    //         }
-
-    //         // 🔥 Font ko Base64 mein convert karo
-    //         async function fontToBase64(url) {
-    //             try {
-    //                 const res = await fetch(url);
-    //                 const buf = await res.arrayBuffer();
-    //                 const bytes = new Uint8Array(buf);
-    //                 let binary = '';
-    //                 bytes.forEach(b => binary += String.fromCharCode(b));
-    //                 return 'data:font/truetype;base64,' + btoa(binary);
-    //             } catch (e) {
-    //                 return url;
-    //             }
-    //         }
-
-    //         const svgUrl = viewData?.svg_url;
-    //         if (svgUrl) {
-    //             const res = await fetch(svgUrl);
-    //             const svgText = await res.text();
-
-    //             const parser = new DOMParser();
-    //             const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
-    //             const svgEl = svgDoc.querySelector('svg');
-
-    //             // Colors apply
-    //             svgEl.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
-    //                 const id = el.id || `svg-part-${i}`;
-    //                 if (window.colorChanges?.[view]?.[id]) {
-    //                     el.setAttribute('fill', window.colorChanges[view][id]);
-    //                 }
-    //             });
-
-    //             // Applications apply
-    //             if (window.applyApplicationsToSvg) {
-    //                 window.applyApplicationsToSvg(svgEl, view);
-    //             }
-
-    //             // 🔥 Font Base64 embed karo
-    //             let defs = svgEl.querySelector('defs');
-    //             if (!defs) {
-    //                 defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    //                 svgEl.insertBefore(defs, svgEl.firstChild);
-    //             }
-
-    //             if (window.backendFonts && window.backendFonts.length > 0) {
-    //                 let fontCSS = '';
-    //                 for (const f of window.backendFonts) {
-    //                     const base64 = await fontToBase64(f.file_url);
-    //                     fontCSS += `@font-face{font-family:'font_${f.id}';src:url('${base64}') format('truetype');}`;
-    //                 }
-    //                 const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-    //                 style.textContent = fontCSS;
-    //                 defs.insertBefore(style, defs.firstChild);
-    //             }
-
-    //             svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
-    //             if (!svgEl.getAttribute('viewBox')) {
-    //                 svgEl.setAttribute('viewBox', '0 0 800 800');
-    //             }
-
-
-    //             const serialized = new XMLSerializer().serializeToString(svgEl);
-    //             const blob = new Blob([serialized], { type: 'image/svg+xml' });
-    //             const url = URL.createObjectURL(blob);
-    //             //svg //
-    //             await new Promise((resolve) => {
-    //                 const img = new Image();
-    //                 img.onload = () => {
-    //                     const ratio = Math.min(800 / img.width, 800 / img.height);
-    //                     const w = img.width * ratio;
-    //                     const h = img.height * ratio;
-    //                     const x = (800 - w) / 2;
-    //                     const y = (800 - h) / 2;
-
-    //                     ctx.drawImage(img, x, y, w, h);
-    //                     URL.revokeObjectURL(url);
-    //                     resolve();
-    //                 };
-    //                 img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-    //                 img.src = url;
-    //             });
-    //         }
-
-    //         // White overlay
-    //         if (viewData?.white_image_url) {
-    //             const img = await loadImg(viewData.white_image_url);
-    //             if (img) {
-    //                 ctx.globalCompositeOperation = 'multiply';
-    //                 const ratio = Math.min(800 / img.width, 800 / img.height);
-    //                 const w = img.width * ratio;
-    //                 const h = img.height * ratio;
-    //                 const x = (800 - w) / 2;
-    //                 const y = (800 - h) / 2;
-
-    //                 ctx.drawImage(img, x, y, w, h);
-    //                 ctx.globalCompositeOperation = 'source-over';
-    //             }
-    //         }
-
-    //         // Black overlay
-    //         if (viewData?.black_image_url) {
-    //             const img = await loadImg(viewData.black_image_url);
-    //             if (img) {
-    //                 ctx.globalCompositeOperation = 'screen';
-    //                 const ratio = Math.min(800 / img.width, 800 / img.height);
-    //                 const w = img.width * ratio;
-    //                 const h = img.height * ratio;
-    //                 const x = (800 - w) / 2;
-    //                 const y = (800 - h) / 2;
-
-    //                 ctx.drawImage(img, x, y, w, h);
-    //                 ctx.globalCompositeOperation = 'source-over';
-    //             }
-    //         }
-
-
-    //         return new Promise((resolve) => {
-    //             canvas.toBlob(async (blob) => {
-    //                 const formData = new FormData();
-    //                 formData.append('thumbnail', blob, 'thumbnail.png');
-    //                 await fetch(`/admin/models/${MODEL_ID}/save-thumbnail`, {
-    //                     method: 'POST',
-    //                     headers: {
-    //                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-    //                     },
-    //                     body: formData
-    //                 });
-    //                 console.log('✅ Thumbnail saved with fonts!');
-    //                 resolve();
-    //             }, 'image/png', 0.9);
-    //         });
-
-    //     } catch (e) {
-    //         console.error('Thumbnail error:', e);
-    //     }
-    // }
     async function generateAndSaveThumbnail() {
         try {
             const view = window.currentView || 'front';
@@ -4007,6 +3803,39 @@ window.isDraggingKnob = false;
         }
     }
     document.addEventListener('DOMContentLoaded', init);
+
+
+// ============================================================
+// PART 2: Yeh function customizer-core.js mein
+// selectSvgElement function ke BAHAR add karo
+// (kisi bhi jagah, global scope mein)
+// ============================================================
+
+function _autoSwitchTabForPart(element) {
+    if (!element) return;
+
+    const partId = element.id;
+    const view = window.currentView;
+
+    // Check karo kya is part pe pattern hai
+    const hasPattern = window.patternsApplied?.[view]?.[partId];
+
+    // Check karo kya is part pe mascot hai
+    const hasMascot = window.mascotsApplied?.[view]?.[partId];
+
+    // Check karo kya is part pe color/gradient hai
+    const hasColor = window.colorChanges?.[view]?.[partId];
+    const hasGradient = window.gradientChanges?.[view]?.[partId];
+
+    if (hasPattern || hasMascot) {
+        // Pattern ya mascot wala part — Pattern tab open karo
+        activateTab('patternBtn');
+    } else {
+        // Normal part — Color tab open karo
+        activateTab('colorBtn');
+    }
+}
+
 
 
 

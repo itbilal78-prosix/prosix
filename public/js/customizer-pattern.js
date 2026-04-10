@@ -275,212 +275,188 @@ if (window.currentApplicationLayer && window.selectingPatternForText) {
             });
     };
 
-    // =================== APPLY PATTERN (ULTRA SAFE VERSION) ===================
+   // ============================================================
+// ✅ PATTERN.JS FIXES
+// Yeh 3 functions customizer-pattern.js mein replace karo
+// ============================================================
 
-    window.applyUploadedPattern = function () {
-if (window.selectingPatternForText && window.currentApplicationLayer) {
 
-    applyPatternToText(window.uploadedSvgContent);
+// ============================================================
+// FIX 1: applyUploadedPattern — POORA REPLACE KARO
+// (end mein bringApplicationLayersToTop add kiya)
+// ============================================================
 
-    window.selectingPatternForText = false;
+window.applyUploadedPattern = function () {
+    if (window.selectingPatternForText && window.currentApplicationLayer) {
+        applyPatternToText(window.uploadedSvgContent);
+        window.selectingPatternForText = false;
+        return;
+    }
 
-    return;
-}
-        if (!window.selectedSvgElement) {
-            alert("Please select a part first!");
-            return;
-        }
+    if (!window.selectedSvgElement) {
+        alert("Please select a part first!");
+        return;
+    }
 
-        if (!window.uploadedSvgContent) {
-            alert("Please select a pattern first!");
-            return;
-        }
+    if (!window.uploadedSvgContent) {
+        alert("Please select a pattern first!");
+        return;
+    }
 
-        // CRITICAL: Store the EXACT element reference
-        const targetPart = window.selectedSvgElement;
-        const partId = targetPart.id;
-        const view = window.currentView;
+    const targetPart = window.selectedSvgElement;
+    const partId = targetPart.id;
+    const view = window.currentView;
 
-        console.log(' APPLYING PATTERN');
-        console.log('Target Part ID:', partId);
-        console.log('Target Part Element:', targetPart);
-        console.log('Current View:', view);
+    if (!partId) {
+        alert("Selected part has no ID!");
+        return;
+    }
 
-        // Double check we have the right element
-        if (!partId) {
-            alert("Selected part has no ID!");
-            return;
-        }
+    if (window.saveToHistory) window.saveToHistory();
 
-        if (window.saveToHistory) window.saveToHistory();
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) return;
 
-        const mainSvg = window.getMainSvg();
-        if (!mainSvg) {
-            console.error('Main SVG not found');
-            return;
-        }
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
 
-        /* ================= STEP 1: CLEAN OLD PATTERN FOR THIS SPECIFIC PART ONLY ================= */
+    // Old pattern remove karo sirf is part ka
+    const oldPatternId = `pattern-${partId}-${view}`;
+    const oldClipId = `clip-${partId}-${view}`;
+    const oldPattern = defs.querySelector(`#${oldPatternId}`);
+    if (oldPattern) oldPattern.remove();
+    const oldClip = defs.querySelector(`#${oldClipId}`);
+    if (oldClip) oldClip.remove();
 
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
+    const oldOverlayId = `pattern-overlay-${partId}`;
+    const overlayGroup = mainSvg.querySelector('#pattern-overlay-group');
+    if (overlayGroup) {
+        const oldOverlay = overlayGroup.querySelector(`#${oldOverlayId}`);
+        if (oldOverlay) oldOverlay.remove();
+    }
 
-        // Remove ONLY this specific part's old pattern/clip
-        const oldPatternId = `pattern-${partId}-${view}`;
-        const oldClipId = `clip-${partId}-${view}`;
+    // Parse pattern SVG
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(window.uploadedSvgContent, 'image/svg+xml');
+    let patternSvg = doc.documentElement;
+    if (!patternSvg || patternSvg.nodeName !== 'svg') {
+        alert("Pattern SVG load failed");
+        return;
+    }
+    patternSvg = patternSvg.cloneNode(true);
+    if (!patternSvg.hasAttribute('viewBox')) {
+        patternSvg.setAttribute('viewBox', '0 0 100 100');
+    }
 
-        const oldPattern = defs.querySelector(`#${oldPatternId}`);
-        if (oldPattern) {
-            console.log(`Removing old pattern: ${oldPatternId}`);
-            oldPattern.remove();
-        }
+    // Clip path banao
+    const clipId = `clip-${partId}-${view}`;
+    const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+    clipPath.setAttribute('id', clipId);
+    const clonedPart = targetPart.cloneNode(true);
+    clonedPart.removeAttribute('id');
+    clipPath.appendChild(clonedPart);
+    defs.appendChild(clipPath);
 
-        const oldClip = defs.querySelector(`#${oldClipId}`);
-        if (oldClip) {
-            console.log(`Removing old clip: ${oldClipId}`);
-            oldClip.remove();
-        }
+    // BBox
+    const rawBbox = targetPart.getBBox();
+    const bbox = {
+        x: rawBbox.x,
+        y: rawBbox.y,
+        width: rawBbox.width,
+        height: rawBbox.height
+    };
 
-        // Remove ONLY this specific part's overlay
-        const oldOverlayId = `pattern-overlay-${partId}`;
-        const overlayGroup = mainSvg.querySelector('#pattern-overlay-group');
-        if (overlayGroup) {
-            const oldOverlay = overlayGroup.querySelector(`#${oldOverlayId}`);
-            if (oldOverlay) {
-                console.log(`Removing old overlay: ${oldOverlayId}`);
-                oldOverlay.remove();
-            }
-        }
+    // Pattern banao
+    const patternId = `pattern-${partId}-${view}`;
+    const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+    pattern.setAttribute('id', patternId);
+    pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+    pattern.setAttribute('x', bbox.x);
+    pattern.setAttribute('y', bbox.y);
+    pattern.setAttribute('width', bbox.width);
+    pattern.setAttribute('height', bbox.height);
+    patternSvg.setAttribute('width', bbox.width);
+    patternSvg.setAttribute('height', bbox.height);
+    patternSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    pattern.appendChild(patternSvg);
+    defs.appendChild(pattern);
 
-        /* ================= STEP 2: PARSE PATTERN SVG ================= */
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(window.uploadedSvgContent, 'image/svg+xml');
-        let patternSvg = doc.documentElement;
-
-        if (!patternSvg || patternSvg.nodeName !== 'svg') {
-            alert("Pattern SVG load failed");
-            return;
-        }
-
-        patternSvg = patternSvg.cloneNode(true);
-
-        if (!patternSvg.hasAttribute('viewBox')) {
-            patternSvg.setAttribute('viewBox', '0 0 100 100');
-        }
-
-        /* ================= STEP 3: CREATE CLIP PATH FOR THIS SPECIFIC PART ================= */
-
-        const clipId = `clip-${partId}-${view}`;
-        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        clipPath.setAttribute('id', clipId);
-
-        // Clone the TARGET part specifically
-        const clonedPart = targetPart.cloneNode(true);
-        clonedPart.removeAttribute('id');
-        clipPath.appendChild(clonedPart);
-        defs.appendChild(clipPath);
-
-        console.log(`✅ Created clip path: ${clipId}`);
-
-        /* ================= STEP 4: CREATE PATTERN FOR THIS SPECIFIC PART ================= */
-        /* ================= STEP 4: CREATE PATTERN FOR THIS SPECIFIC PART ================= */
-
-        // ⭐ BBOX PEHLE DEFINE KARO
-        const rawBbox = targetPart.getBBox();
-        const bbox = {
-            x: rawBbox.x,
-            y: rawBbox.y,
-            width: rawBbox.width,
-            height: rawBbox.height
-        };
-
-        const patternId = `pattern-${partId}-${view}`;
-
-        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-        pattern.setAttribute('id', patternId);
-        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-        pattern.setAttribute('x', bbox.x);
-        pattern.setAttribute('y', bbox.y);
-        pattern.setAttribute('width', bbox.width);
-        pattern.setAttribute('height', bbox.height);
-
-        patternSvg.setAttribute('width', bbox.width);
-        patternSvg.setAttribute('height', bbox.height);
-        patternSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-
-        pattern.appendChild(patternSvg);
-        defs.appendChild(pattern);
-
-        console.log(`✅ Created pattern: ${patternId}`);
-
-        /* ================= STEP 5: CREATE OVERLAY FOR THIS SPECIFIC PART ONLY ================= */
-
-        let og = mainSvg.querySelector('#pattern-overlay-group');
-        if (!og) {
-            og = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            og.setAttribute('id', 'pattern-overlay-group');
+    // Overlay group — pattern-overlay-group ko application groups se PEHLE banana hai
+    let og = mainSvg.querySelector('#pattern-overlay-group');
+    if (!og) {
+        og = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        og.setAttribute('id', 'pattern-overlay-group');
+        // ✅ Application groups se pehle insert karo
+        const firstAppGroup = mainSvg.querySelector('[id^="app-group-"]');
+        if (firstAppGroup) {
+            mainSvg.insertBefore(og, firstAppGroup);
+        } else {
             mainSvg.appendChild(og);
         }
-
-        // Create overlay specifically from the target part
-        const overlay = targetPart.cloneNode(true);
-        overlay.setAttribute('id', `pattern-overlay-${partId}`);
-        overlay.setAttribute('fill', `url(#${patternId})`);
-        overlay.setAttribute('clip-path', `url(#${clipId})`);
-        overlay.style.pointerEvents = 'none';
-
-        og.appendChild(overlay);
-
-        console.log(`✅ Created overlay: pattern-overlay-${partId}`);
-
-        /* ================= STEP 6: SAVE STATE FOR THIS SPECIFIC PART ================= */
-
-        if (!window.patternsApplied) window.patternsApplied = {};
-        if (!window.patternsApplied[view]) window.patternsApplied[view] = {};
-
-
-        window.patternsApplied[view][partId] = {
-            patternId,
-            svgContent: window.uploadedSvgContent,
-            bbox: bbox,   // ← plainBbox ki jagah sirf bbox likho
-            size: 50,
-            opacity: 100,
-            angle: 0,
-            replacements: {}
-        };
-
-        // Set attributes on the TARGET part only
-        targetPart.dataset.hasPattern = 'true';
-        targetPart.dataset.patternId = patternId;
-        targetPart.dataset.patternView = view;
-
-        console.log(`✅ Pattern applied successfully to ${partId}`);
-        console.log('Saved patterns:', window.patternsApplied);
-
-        if (window.saveCustomizations) window.saveCustomizations();
-
-        document.getElementById('patternControls').style.display = 'block';
-        // hide SELECT PATTERN button
-        const btns = document.querySelector('.pattern-top-buttons');
-        if (btns) btns.style.display = 'none';
-
-        // make preview clickable selector
-        const preview = document.getElementById('patternPreviewBox');
-        if (preview) {
-            preview.style.cursor = 'pointer';
-            preview.onclick = openPatternLibrary;
+    } else {
+        // ✅ Agar pehle se hai to application groups se pehle move karo
+        const firstAppGroup = mainSvg.querySelector('[id^="app-group-"]');
+        if (firstAppGroup && og.nextSibling !== firstAppGroup) {
+            mainSvg.insertBefore(og, firstAppGroup);
         }
+    }
 
-        if (window.updatePatternPreview) window.updatePatternPreview();
-        if (window.updatePatternColorPalette) window.updatePatternColorPalette();
-        if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
+    // Overlay banao
+    const overlay = targetPart.cloneNode(true);
+    overlay.setAttribute('id', `pattern-overlay-${partId}`);
+    overlay.setAttribute('fill', `url(#${patternId})`);
+    overlay.setAttribute('clip-path', `url(#${clipId})`);
+    overlay.style.pointerEvents = 'none';
+    og.appendChild(overlay);
 
-
+    // State save karo
+    if (!window.patternsApplied) window.patternsApplied = {};
+    if (!window.patternsApplied[view]) window.patternsApplied[view] = {};
+    window.patternsApplied[view][partId] = {
+        patternId,
+        svgContent: window.uploadedSvgContent,
+        bbox: bbox,
+        size: 50,
+        opacity: 100,
+        angle: 0,
+        replacements: {}
     };
+
+    targetPart.dataset.hasPattern = 'true';
+    targetPart.dataset.patternId = patternId;
+    targetPart.dataset.patternView = view;
+
+    if (window.saveCustomizations) window.saveCustomizations();
+
+    document.getElementById('patternControls').style.display = 'block';
+
+    const btns = document.querySelector('.pattern-top-buttons');
+    if (btns) btns.style.display = 'none';
+
+    const preview = document.getElementById('patternPreviewBox');
+    if (preview) {
+        preview.style.cursor = 'pointer';
+        preview.onclick = openPatternLibrary;
+    }
+
+    if (window.updatePatternPreview) window.updatePatternPreview();
+    if (window.updatePatternColorPalette) window.updatePatternColorPalette();
+    if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
+
+    // ✅ KEY FIX: Application layers wapas top pe lao
+    setTimeout(() => {
+        if (window.bringApplicationLayersToTop) {
+            window.bringApplicationLayersToTop();
+        }
+    }, 50);
+};
+
+
+
+
 window.getMascotUniqueColors = function (svgContent) {
 
     if (!svgContent) return ['#000000'];
@@ -614,103 +590,117 @@ window.getMascotUniqueColors = function (svgContent) {
         return Array.from(uniqueColors);
     }
 
-    window.recreatePatternAndOverlayWithNewColors = function () {
-        if (!window.selectedSvgElement?.dataset.hasPattern) return;
+   // ============================================================
+// FIX 3: recreatePatternAndOverlayWithNewColors — POORA REPLACE KARO
+// (end mein bringApplicationLayersToTop add kiya)
+// ============================================================
 
-        const view = window.currentView;
-        const partId = window.selectedSvgElement.id;
-        const patternData = window.patternsApplied[view]?.[partId];
+window.recreatePatternAndOverlayWithNewColors = function () {
+    if (!window.selectedSvgElement?.dataset.hasPattern) return;
 
-        if (!patternData || !patternData.svgContent) {
-            console.warn(`No pattern data for ${partId} in ${view}`);
-            return;
-        }
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
+    const patternData = window.patternsApplied[view]?.[partId];
 
-        const mainSvg = window.getMainSvg();
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
+    if (!patternData || !patternData.svgContent) {
+        console.warn(`No pattern data for ${partId} in ${view}`);
+        return;
+    }
 
-        const patternId = patternData.patternId;
+    const mainSvg = window.getMainSvg();
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
 
-        const oldPattern = defs.querySelector(`#${patternId}`);
-        if (oldPattern) oldPattern.remove();
+    const patternId = patternData.patternId;
+    const oldPattern = defs.querySelector(`#${patternId}`);
+    if (oldPattern) oldPattern.remove();
 
-        const bbox = patternData.bbox || window.selectedSvgElement.getBBox();
+    const bbox = patternData.bbox || window.selectedSvgElement.getBBox();
 
-        const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
-        pattern.setAttribute("id", patternId);
-        pattern.setAttribute("patternUnits", "userSpaceOnUse");
-        pattern.setAttribute("x", bbox.x);
-        pattern.setAttribute("y", bbox.y);
-        pattern.setAttribute("width", bbox.width);
-        pattern.setAttribute("height", bbox.height);
+    const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+    pattern.setAttribute("id", patternId);
+    pattern.setAttribute("patternUnits", "userSpaceOnUse");
+    pattern.setAttribute("x", bbox.x);
+    pattern.setAttribute("y", bbox.y);
+    pattern.setAttribute("width", bbox.width);
+    pattern.setAttribute("height", bbox.height);
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(patternData.svgContent, "image/svg+xml");
-        const patternSvg = doc.querySelector("svg");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(patternData.svgContent, "image/svg+xml");
+    const patternSvg = doc.querySelector("svg");
 
-        if (patternSvg) {
-            const replacements = patternData.replacements || {};
-
-            Object.entries(replacements).forEach(([oldColor, newColor]) => {
-                patternSvg.querySelectorAll("[fill]").forEach(el => {
-                    if (el.getAttribute("fill")?.toUpperCase() === oldColor.toUpperCase()) {
-                        el.setAttribute("fill", newColor);
-                    }
-                });
-                patternSvg.querySelectorAll("[stroke]").forEach(el => {
-                    if (el.getAttribute("stroke")?.toUpperCase() === oldColor.toUpperCase()) {
-                        el.setAttribute("stroke", newColor);
-                    }
-                });
+    if (patternSvg) {
+        const replacements = patternData.replacements || {};
+        Object.entries(replacements).forEach(([oldColor, newColor]) => {
+            patternSvg.querySelectorAll("[fill]").forEach(el => {
+                if (el.getAttribute("fill")?.toUpperCase() === oldColor.toUpperCase()) {
+                    el.setAttribute("fill", newColor);
+                }
             });
+            patternSvg.querySelectorAll("[stroke]").forEach(el => {
+                if (el.getAttribute("stroke")?.toUpperCase() === oldColor.toUpperCase()) {
+                    el.setAttribute("stroke", newColor);
+                }
+            });
+        });
 
-            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            const content = patternSvg.cloneNode(true);
-            const scale = (patternData.size || 50) / 50;
-            const angle = patternData.angle || 0;
-            const opacity = (patternData.opacity || 100) / 100;
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const content = patternSvg.cloneNode(true);
+        const scale = (patternData.size || 50) / 50;
+        const angle = patternData.angle || 0;
+        const opacity = (patternData.opacity || 100) / 100;
 
-            g.setAttribute("transform", `scale(${scale}) rotate(${angle})`);
-            g.setAttribute("opacity", opacity);
+        g.setAttribute("transform", `scale(${scale}) rotate(${angle})`);
+        g.setAttribute("opacity", opacity);
+        content.setAttribute("width", bbox.width);
+        content.setAttribute("height", bbox.height);
+        content.setAttribute("preserveAspectRatio", "xMidYMid slice");
+        g.appendChild(content);
+        pattern.appendChild(g);
+    }
 
-            content.setAttribute("width", bbox.width);
-            content.setAttribute("height", bbox.height);
-            content.setAttribute("preserveAspectRatio", "xMidYMid slice");
+    defs.appendChild(pattern);
 
-            g.appendChild(content);
-            pattern.appendChild(g);
-        }
-
-        defs.appendChild(pattern);
-
-        let overlayGroup = mainSvg.querySelector("#pattern-overlay-group");
-        if (!overlayGroup) {
-            overlayGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            overlayGroup.setAttribute("id", "pattern-overlay-group");
+    // Overlay group
+    let overlayGroup = mainSvg.querySelector("#pattern-overlay-group");
+    if (!overlayGroup) {
+        overlayGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        overlayGroup.setAttribute("id", "pattern-overlay-group");
+        // Application groups se pehle insert karo
+        const firstAppGroup = mainSvg.querySelector('[id^="app-group-"]');
+        if (firstAppGroup) {
+            mainSvg.insertBefore(overlayGroup, firstAppGroup);
+        } else {
             mainSvg.appendChild(overlayGroup);
         }
-
-        const oldOverlay = overlayGroup.querySelector(`#pattern-overlay-${partId}`);
-        if (oldOverlay) oldOverlay.remove();
-
-        const clipId = `clip-${partId}-${view}`;
-        const newOverlay = window.selectedSvgElement.cloneNode(true);
-        newOverlay.setAttribute("id", `pattern-overlay-${partId}`);
-        newOverlay.setAttribute("fill", `url(#${patternId})`);
-        newOverlay.setAttribute("clip-path", `url(#${clipId})`);
-        newOverlay.setAttribute("opacity", (patternData.opacity || 100) / 100);
-        newOverlay.style.pointerEvents = "none";
-
-        overlayGroup.appendChild(newOverlay);
-
-        if (window.saveCustomizations) window.saveCustomizations();
-
-        console.log(`✅ Pattern colors updated for ${partId}`);
     }
+
+    const oldOverlay = overlayGroup.querySelector(`#pattern-overlay-${partId}`);
+    if (oldOverlay) oldOverlay.remove();
+
+    const clipId = `clip-${partId}-${view}`;
+    const newOverlay = window.selectedSvgElement.cloneNode(true);
+    newOverlay.setAttribute("id", `pattern-overlay-${partId}`);
+    newOverlay.setAttribute("fill", `url(#${patternId})`);
+    newOverlay.setAttribute("clip-path", `url(#${clipId})`);
+    newOverlay.setAttribute("opacity", (patternData.opacity || 100) / 100);
+    newOverlay.style.pointerEvents = "none";
+    overlayGroup.appendChild(newOverlay);
+
+    if (window.saveCustomizations) window.saveCustomizations();
+
+    // ✅ KEY FIX: Application layers wapas top pe lao
+    setTimeout(() => {
+        if (window.bringApplicationLayersToTop) {
+            window.bringApplicationLayersToTop();
+        }
+    }, 50);
+
+    console.log(`✅ Pattern colors updated for ${partId}`);
+};
 
     // =================== PATTERN CONTROLS ===================
     window.updatePatternSize = function (value) {
@@ -876,129 +866,127 @@ background-repeat:no-repeat;
 
     // =================== APPLY PATTERNS TO SVG (FOR SAVE/PREVIEW) ===================
 
-    window.applyPatternsToSvg = function (svg, view, isPreview = false) {
-        if (!window.patternsApplied?.[view] || Object.keys(window.patternsApplied[view]).length === 0) {
-            console.log(`No patterns to apply for ${view}`);
-            return;
-        }
-        if (window.applyMascotsToSvg) {
-            window.applyMascotsToSvg(svg, view);
-        }
+   // ============================================================
+// FIX 4: applyPatternsToSvg — POORA REPLACE KARO
+// (save/preview ke liye — application layers ke baad call hoga)
+// ============================================================
 
-        console.log(`🎨 Applying ${Object.keys(window.patternsApplied[view]).length} patterns to ${view} view (preview: ${isPreview})`);
+window.applyPatternsToSvg = function (svg, view, isPreview = false) {
+    if (!window.patternsApplied?.[view] || Object.keys(window.patternsApplied[view]).length === 0) {
+        return;
+    }
+    if (window.applyMascotsToSvg) {
+        window.applyMascotsToSvg(svg, view);
+    }
 
-        let defs = svg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            svg.insertBefore(defs, svg.firstChild);
-        }
+    let defs = svg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svg.insertBefore(defs, svg.firstChild);
+    }
 
-        const groupId = isPreview ? 'overlay-preview' : 'pattern-overlay-group';
-        let group = svg.querySelector(`#${groupId}`);
-        if (!group) {
-            group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            group.setAttribute('id', groupId);
+    const groupId = isPreview ? 'overlay-preview' : 'pattern-overlay-group';
+    let group = svg.querySelector(`#${groupId}`);
+    if (!group) {
+        group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('id', groupId);
+        // ✅ Application groups se PEHLE insert karo
+        const firstAppGroup = svg.querySelector('[id^="app-group-"]');
+        if (firstAppGroup) {
+            svg.insertBefore(group, firstAppGroup);
+        } else {
             svg.appendChild(group);
         }
+    }
 
-        Object.entries(window.patternsApplied[view]).forEach(([partId, data]) => {
-            const base = svg.querySelector(`#${partId}`);
-            if (!base) {
-                console.warn(`⚠️ Part not found: ${partId}`);
-                return;
-            }
+    Object.entries(window.patternsApplied[view]).forEach(([partId, data]) => {
+        const base = svg.querySelector(`#${partId}`);
+        if (!base) return;
 
-            const pid = data.patternId + (isPreview ? '-preview' : '');
-            const clipId = `clip-${partId}-${view}` + (isPreview ? '-preview' : '');
+        const pid = data.patternId + (isPreview ? '-preview' : '');
+        const clipId = `clip-${partId}-${view}` + (isPreview ? '-preview' : '');
 
-            const oldPattern = defs.querySelector(`#${pid}`);
-            if (oldPattern) oldPattern.remove();
+        const oldPattern = defs.querySelector(`#${pid}`);
+        if (oldPattern) oldPattern.remove();
+        const oldClip = defs.querySelector(`#${clipId}`);
+        if (oldClip) oldClip.remove();
 
-            const oldClip = defs.querySelector(`#${clipId}`);
-            if (oldClip) oldClip.remove();
+        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clipPath.setAttribute('id', clipId);
+        const clonedBase = base.cloneNode(true);
+        clonedBase.removeAttribute('id');
+        clipPath.appendChild(clonedBase);
+        defs.appendChild(clipPath);
 
-            const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-            clipPath.setAttribute('id', clipId);
-            const clonedBase = base.cloneNode(true);
-            clonedBase.removeAttribute('id');
-            clipPath.appendChild(clonedBase);
-            defs.appendChild(clipPath);
+        const bbox = data.bbox || base.getBBox();
 
-            const bbox = data.bbox || base.getBBox();
+        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+        pattern.setAttribute('id', pid);
+        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+        pattern.setAttribute('x', bbox.x);
+        pattern.setAttribute('y', bbox.y);
+        pattern.setAttribute('width', bbox.width);
+        pattern.setAttribute('height', bbox.height);
+        pattern.setAttribute('preserveAspectRatio', 'xMidYMid slice');
 
-            const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-            pattern.setAttribute('id', pid);
-            pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-            pattern.setAttribute('x', bbox.x);
-            pattern.setAttribute('y', bbox.y);
-            pattern.setAttribute('width', bbox.width);
-            pattern.setAttribute('height', bbox.height);
-            pattern.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+        const doc = new DOMParser().parseFromString(data.svgContent, 'image/svg+xml');
+        const psvg = doc.querySelector('svg');
 
-            const doc = new DOMParser().parseFromString(data.svgContent, 'image/svg+xml');
-            const psvg = doc.querySelector('svg');
-
-            if (psvg) {
-                if (data.replacements) {
-                    Object.entries(data.replacements).forEach(([oldColor, newColor]) => {
-                        psvg.querySelectorAll('[fill]').forEach(e => {
-                            if (e.getAttribute('fill')?.toUpperCase() === oldColor.toUpperCase()) {
-                                e.setAttribute('fill', newColor);
-                            }
-                        });
-                        psvg.querySelectorAll('[stroke]').forEach(e => {
-                            if (e.getAttribute('stroke')?.toUpperCase() === oldColor.toUpperCase()) {
-                                e.setAttribute('stroke', newColor);
-                            }
-                        });
+        if (psvg) {
+            if (data.replacements) {
+                Object.entries(data.replacements).forEach(([oldColor, newColor]) => {
+                    psvg.querySelectorAll('[fill]').forEach(e => {
+                        if (e.getAttribute('fill')?.toUpperCase() === oldColor.toUpperCase()) {
+                            e.setAttribute('fill', newColor);
+                        }
                     });
-                }
-
-                if (!psvg.hasAttribute('viewBox')) {
-                    psvg.setAttribute('viewBox', '0 0 100 100');
-                }
-
-                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-
-                const userSize = data.size || 50;
-                const scale = userSize / 50;
-                const angle = data.angle || 0;
-                const opacity = (data.opacity || 100) / 100;
-
-                psvg.setAttribute('width', bbox.width);
-                psvg.setAttribute('height', bbox.height);
-                psvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-
-                g.setAttribute('transform', `scale(${scale}) rotate(${angle})`);
-                g.setAttribute('opacity', opacity);
-                g.appendChild(psvg.cloneNode(true));
-                pattern.appendChild(g);
+                    psvg.querySelectorAll('[stroke]').forEach(e => {
+                        if (e.getAttribute('stroke')?.toUpperCase() === oldColor.toUpperCase()) {
+                            e.setAttribute('stroke', newColor);
+                        }
+                    });
+                });
             }
 
-            defs.appendChild(pattern);
+            if (!psvg.hasAttribute('viewBox')) {
+                psvg.setAttribute('viewBox', '0 0 100 100');
+            }
 
-            const oldOverlay = group.querySelector(`#pattern-overlay-${partId}` + (isPreview ? '-preview' : ''));
-            if (oldOverlay) oldOverlay.remove();
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            const userSize = data.size || 50;
+            const scale = userSize / 50;
+            const angle = data.angle || 0;
+            const opacity = (data.opacity || 100) / 100;
 
-            const over = base.cloneNode(true);
-            over.setAttribute('id', `pattern-overlay-${partId}` + (isPreview ? '-preview' : ''));
-            over.setAttribute('fill', `url(#${pid})`);
-            over.setAttribute('clip-path', `url(#${clipId})`);
-            over.style.pointerEvents = 'none';
-            group.appendChild(over);
+            psvg.setAttribute('width', bbox.width);
+            psvg.setAttribute('height', bbox.height);
+            psvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+            g.setAttribute('transform', `scale(${scale}) rotate(${angle})`);
+            g.setAttribute('opacity', opacity);
+            g.appendChild(psvg.cloneNode(true));
+            pattern.appendChild(g);
+        }
 
-            base.dataset.hasPattern = "true";
-            base.dataset.patternId = pid;
-            base.dataset.patternSize = data.size || 50;
-            base.dataset.patternOpacity = data.opacity || 100;
-            base.dataset.patternAngle = data.angle || 0;
-            base.dataset.patternView = view;
+        defs.appendChild(pattern);
 
-            console.log(`✅ Applied pattern to ${partId}`);
-        });
+        const oldOverlay = group.querySelector(`#pattern-overlay-${partId}` + (isPreview ? '-preview' : ''));
+        if (oldOverlay) oldOverlay.remove();
 
-        console.log(`✅ Pattern application complete for ${view}`);
-    };
+        const over = base.cloneNode(true);
+        over.setAttribute('id', `pattern-overlay-${partId}` + (isPreview ? '-preview' : ''));
+        over.setAttribute('fill', `url(#${pid})`);
+        over.setAttribute('clip-path', `url(#${clipId})`);
+        over.style.pointerEvents = 'none';
+        group.appendChild(over);
+
+        base.dataset.hasPattern = "true";
+        base.dataset.patternId = pid;
+        base.dataset.patternSize = data.size || 50;
+        base.dataset.patternOpacity = data.opacity || 100;
+        base.dataset.patternAngle = data.angle || 0;
+        base.dataset.patternView = view;
+    });
+};
 
     // =================== MASCOT TEMPLATE ===================
 
@@ -1154,165 +1142,166 @@ if (window.selectingMascotForText && window.currentApplicationLayer) {
         if (btns) btns.style.display = 'none';
     };
 
-    // ⭐ NAYA FUNCTION - MASCOT KO REPEAT KARTA HAI ⭐
-    window.applyUploadedMascot = function () {
+   // ============================================================
+// FIX 2: applyUploadedMascot — POORA REPLACE KARO
+// (end mein bringApplicationLayersToTop add kiya)
+// ============================================================
 
-        if (!window.selectedSvgElement) {
-            alert("Please select a part first!");
-            return;
+window.applyUploadedMascot = function () {
+    if (!window.selectedSvgElement) {
+        alert("Please select a part first!");
+        return;
+    }
+
+    if (!window.uploadedSvgContent) {
+        alert("Please select a mascot first!");
+        return;
+    }
+
+    const targetPart = window.selectedSvgElement;
+    const partId = targetPart.id;
+    const view = window.currentView;
+
+    const mainSvg = window.getMainSvg();
+
+    // Old mascot remove karo sirf is part ka
+    mainSvg.querySelector(`#mascot-overlay-${partId}`)?.remove();
+    mainSvg.querySelector(`#mascot-pattern-${partId}-${view}`)?.remove();
+    mainSvg.querySelector(`#mascot-clip-${partId}-${view}`)?.remove();
+
+    if (!partId) {
+        alert("Selected part has no ID!");
+        return;
+    }
+
+    if (window.saveToHistory) window.saveToHistory();
+
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
+
+    // Parse mascot SVG
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(window.uploadedSvgContent, 'image/svg+xml');
+    let mascotSvg = doc.documentElement;
+    if (!mascotSvg || mascotSvg.nodeName !== 'svg') {
+        alert("Mascot SVG load failed");
+        return;
+    }
+    mascotSvg = mascotSvg.cloneNode(true);
+
+    // White bg remove karo
+    mascotSvg.querySelectorAll('rect,circle,path').forEach(el => {
+        const fill = el.getAttribute('fill');
+        if (fill && (fill === '#fff' || fill === '#ffffff' || fill === 'white')) {
+            el.remove();
         }
+    });
 
-        if (!window.uploadedSvgContent) {
-            alert("Please select a mascot first!");
-            return;
-        }
+    if (!mascotSvg.hasAttribute('viewBox')) {
+        mascotSvg.setAttribute('viewBox', '0 0 100 100');
+    }
 
-        const targetPart = window.selectedSvgElement;
-        const partId = targetPart.id;
-        const view = window.currentView;
+    // Clip path
+    const clipId = `mascot-clip-${partId}-${view}`;
+    const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+    clipPath.setAttribute('id', clipId);
+    const clonedPart = targetPart.cloneNode(true);
+    clonedPart.removeAttribute('id');
+    clipPath.appendChild(clonedPart);
+    defs.appendChild(clipPath);
 
-        const mainSvg = window.getMainSvg();
+    // Pattern
+    const bbox = targetPart.getBBox();
+    const patternId = `mascot-pattern-${partId}-${view}`;
+    const tileSize = Math.min(bbox.width, bbox.height) / 4;
 
-        // ✅ REMOVE OLD MASCOT FOR THIS PART ONLY
-        mainSvg.querySelector(`#mascot-overlay-${partId}`)?.remove();
-        mainSvg.querySelector(`#mascot-pattern-${partId}-${view}`)?.remove();
-        mainSvg.querySelector(`#mascot-clip-${partId}-${view}`)?.remove();
+    const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+    pattern.setAttribute('id', patternId);
+    pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+    pattern.setAttribute('x', bbox.x);
+    pattern.setAttribute('y', bbox.y);
+    pattern.setAttribute('width', tileSize);
+    pattern.setAttribute('height', tileSize);
+    mascotSvg.setAttribute('width', tileSize);
+    mascotSvg.setAttribute('height', tileSize);
+    mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    pattern.appendChild(mascotSvg);
+    defs.appendChild(pattern);
 
-        console.log('🎯 APPLYING MASCOT (WITH REPEAT)');
-        console.log('Target Part ID:', partId);
-
-        if (!partId) {
-            alert("Selected part has no ID!");
-            return;
-        }
-
-        if (window.saveToHistory) window.saveToHistory();
-
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
-
-        // ❌ REMOVED GLOBAL DELETES (THIS WAS BREAKING EVERYTHING)
-
-        // Parse mascot SVG
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(window.uploadedSvgContent, 'image/svg+xml');
-        let mascotSvg = doc.documentElement;
-
-        if (!mascotSvg || mascotSvg.nodeName !== 'svg') {
-            alert("Mascot SVG load failed");
-            return;
-        }
-
-        mascotSvg = mascotSvg.cloneNode(true);
-
-        // remove white bg
-        mascotSvg.querySelectorAll('rect,circle,path').forEach(el => {
-            const fill = el.getAttribute('fill');
-            if (fill && (fill === '#fff' || fill === '#ffffff' || fill === 'white')) {
-                el.remove();
-            }
-        });
-
-        if (!mascotSvg.hasAttribute('viewBox')) {
-            mascotSvg.setAttribute('viewBox', '0 0 100 100');
-        }
-
-        // Create clip
-        const clipId = `mascot-clip-${partId}-${view}`;
-        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        clipPath.setAttribute('id', clipId);
-
-        const clonedPart = targetPart.cloneNode(true);
-        clonedPart.removeAttribute('id');
-        clipPath.appendChild(clonedPart);
-        defs.appendChild(clipPath);
-
-        // Pattern
-        const bbox = targetPart.getBBox();
-        const patternId = `mascot-pattern-${partId}-${view}`;
-        const tileSize = Math.min(bbox.width, bbox.height) / 4;
-
-        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-        pattern.setAttribute('id', patternId);
-        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-        pattern.setAttribute('x', bbox.x);
-        pattern.setAttribute('y', bbox.y);
-        pattern.setAttribute('width', tileSize);
-        pattern.setAttribute('height', tileSize);
-
-        mascotSvg.setAttribute('width', tileSize);
-        mascotSvg.setAttribute('height', tileSize);
-        mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
-        pattern.appendChild(mascotSvg);
-        defs.appendChild(pattern);
-
-        // Overlay group
-        let mascotGroup = mainSvg.querySelector('#mascot-overlay-group');
-        if (!mascotGroup) {
-            mascotGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            mascotGroup.setAttribute('id', 'mascot-overlay-group');
+    // Mascot overlay group — application groups se PEHLE
+    let mascotGroup = mainSvg.querySelector('#mascot-overlay-group');
+    if (!mascotGroup) {
+        mascotGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        mascotGroup.setAttribute('id', 'mascot-overlay-group');
+        // ✅ Application groups se pehle insert karo
+        const firstAppGroup = mainSvg.querySelector('[id^="app-group-"]');
+        if (firstAppGroup) {
+            mainSvg.insertBefore(mascotGroup, firstAppGroup);
+        } else {
             mainSvg.appendChild(mascotGroup);
         }
+    } else {
+        // ✅ Agar pehle se hai to application groups se pehle move karo
+        const firstAppGroup = mainSvg.querySelector('[id^="app-group-"]');
+        if (firstAppGroup && mascotGroup.nextSibling !== firstAppGroup) {
+            mainSvg.insertBefore(mascotGroup, firstAppGroup);
+        }
+    }
 
-        const overlay = targetPart.cloneNode(true);
-        overlay.setAttribute('id', `mascot-overlay-${partId}`);
-        overlay.setAttribute('fill', `url(#${patternId})`);
-        overlay.setAttribute('clip-path', `url(#${clipId})`);
-        overlay.style.pointerEvents = 'none';
+    const overlay = targetPart.cloneNode(true);
+    overlay.setAttribute('id', `mascot-overlay-${partId}`);
+    overlay.setAttribute('fill', `url(#${patternId})`);
+    overlay.setAttribute('clip-path', `url(#${clipId})`);
+    overlay.style.pointerEvents = 'none';
+    mascotGroup.appendChild(overlay);
 
-        mascotGroup.appendChild(overlay);
+    // State save karo
+    if (!window.mascotsApplied) window.mascotsApplied = {};
+    if (!window.mascotsApplied[view]) window.mascotsApplied[view] = {};
 
-        // Save mascot
-        if (!window.mascotsApplied) window.mascotsApplied = {};
-        if (!window.mascotsApplied[view]) window.mascotsApplied[view] = {};
-
-        const mascotBbox = targetPart.getBBox();
-        const plainMascotBbox = {
+    const mascotBbox = targetPart.getBBox();
+    window.mascotsApplied[view][partId] = {
+        patternId,
+        svgContent: new XMLSerializer().serializeToString(mascotSvg),
+        bbox: {
             x: mascotBbox.x,
             y: mascotBbox.y,
             width: mascotBbox.width,
             height: mascotBbox.height
-        };
-
-        window.mascotsApplied[view][partId] = {
-            patternId,
-            svgContent: new XMLSerializer().serializeToString(mascotSvg),
-            bbox: plainMascotBbox,
-            tileSize,
-            replacements: {}   // ⭐ ADD THIS LINE
-        };
-
-        targetPart.dataset.hasMascot = 'true';
-        targetPart.dataset.mascotId = patternId;
-
-        if (window.saveCustomizations) window.saveCustomizations();
-        if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
-
-        console.log("✅ Mascot applied safely");
-        if (window.updateMascotPreview)
-            window.updateMascotPreview();
-        updateMascotColorPalette();
-
-        const mascotControls = document.getElementById('mascotControls');
-        if (mascotControls) {
-            mascotControls.style.display = 'block';
-
-            // Set default values
-            document.getElementById('mascotSize').value = 50;
-            document.getElementById('mascotSizeValue').textContent = '50';
-
-            document.getElementById('mascotOpacity').value = 100;
-            document.getElementById('mascotOpacityValue').textContent = '100%';
-
-            document.getElementById('mascotCount').value = 4; // default tile count
-            document.getElementById('mascotCountValue').textContent = '4';
-        }
+        },
+        tileSize,
+        replacements: {}
     };
 
+    targetPart.dataset.hasMascot = 'true';
+    targetPart.dataset.mascotId = patternId;
+
+    if (window.saveCustomizations) window.saveCustomizations();
+    if (window.updateUndoRedoButtons) window.updateUndoRedoButtons();
+    if (window.updateMascotPreview) window.updateMascotPreview();
+    if (window.updateMascotColorPalette) window.updateMascotColorPalette();
+
+    const mascotControls = document.getElementById('mascotControls');
+    if (mascotControls) {
+        mascotControls.style.display = 'block';
+        document.getElementById('mascotSize').value = 50;
+        document.getElementById('mascotSizeValue').textContent = '50';
+        document.getElementById('mascotOpacity').value = 100;
+        document.getElementById('mascotOpacityValue').textContent = '100%';
+        document.getElementById('mascotCount').value = 4;
+        document.getElementById('mascotCountValue').textContent = '4';
+    }
+
+    // ✅ KEY FIX: Application layers wapas top pe lao
+    setTimeout(() => {
+        if (window.bringApplicationLayersToTop) {
+            window.bringApplicationLayersToTop();
+        }
+    }, 50);
+};
 
 
     // Mascot Size Control

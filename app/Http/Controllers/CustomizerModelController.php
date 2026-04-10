@@ -344,6 +344,8 @@ class CustomizerModelController extends Controller
             'price' => (float) $model->price,
             'type' => 'model',
             'in_stock' => (bool) $model->in_stock,
+            'category_id'    => $model->category_id,
+'subcategory_id' => $model->subcategory_id,
             'stock_quantity' => $model->stock_quantity ? (int) $model->stock_quantity : null,
             'shipping_enabled' => (bool) $model->shipping_enabled,
             'shipping_cost' => (float) ($model->shipping_cost ?? 0),
@@ -420,18 +422,19 @@ class CustomizerModelController extends Controller
 
     //     return back()->with('success', 'Model Duplicated');
     // }
-public function duplicate($id)
-{
-    $model = CustomizerModel::findOrFail($id);
+    public function duplicate($id)
+    {
+        $model = CustomizerModel::findOrFail($id);
 
-    $new = $model->replicate();
+        $new = $model->replicate();
 
-    $new->title = $model->title . ' (Copy)';
+        $new->title = $model->title.' (Copy)';
 
-    $new->save();
+        $new->save();
 
-    return back()->with('success', 'Model Duplicated with Design');
-}
+        return back()->with('success', 'Model Duplicated with Design');
+    }
+
     // ─── BULK DELETE ──────────────────────────────────────────────
     public function bulkDestroy(Request $request)
     {
@@ -641,46 +644,42 @@ public function duplicate($id)
         )
             ->get()
             ->map(fn ($model) => [
-            'id' => $model->id,
-            'model_name' => $model->model_name,
-            'title' => $model->title,
-            'price' => $model->price ? number_format($model->price, 2) : '0.00',
-            'description' => $model->description ?? '',
-            'front_black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
-            'front_white' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
-            'front_svg' => $model->custom_front_svg
-                ? asset('uploads/models/'.$model->custom_front_svg)
-                : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
-            'thumbnail' => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
+                'id' => $model->id,
+                'model_name' => $model->model_name,
+                'title' => $model->title,
+                'price' => $model->price ? number_format($model->price, 2) : '0.00',
+                'description' => $model->description ?? '',
+                'front_black' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
+                'front_white' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
+                'front_svg' => $model->custom_front_svg
+                    ? asset('uploads/models/'.$model->custom_front_svg)
+                    : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
+                'thumbnail' => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
 
-            // ── NEW: colors with their view image full URLs ──
-            'colors_data' => collect($model->colors_data ?? [])->map(function ($c) {
-                $views = [];
-                foreach (['front', 'back', 'left', 'right'] as $view) {
-                    $views[$view] = [];
-                    foreach (['black', 'white', 'svg'] as $type) {
-                        $path = $c['views'][$view][$type] ?? null;
-                        $views[$view][$type] = $path ? asset('storage/'.$path) : null;
+                // ── NEW: colors with their view image full URLs ──
+                'colors_data' => collect($model->colors_data ?? [])->map(function ($c) {
+                    $views = [];
+                    foreach (['front', 'back', 'left', 'right'] as $view) {
+                        $views[$view] = [];
+                        foreach (['black', 'white', 'svg'] as $type) {
+                            $path = $c['views'][$view][$type] ?? null;
+                            $views[$view][$type] = $path ? asset('storage/'.$path) : null;
+                        }
                     }
-                }
 
-                return [
-                    'name' => $c['name'] ?? '',
-                    'hex' => $c['hex'] ?? '#000000',
-                    'views' => $views,
-                ];
-            })->values()->toArray(),
-        ])
+                    return [
+                        'name' => $c['name'] ?? '',
+                        'hex' => $c['hex'] ?? '#000000',
+                        'views' => $views,
+                    ];
+                })->values()->toArray(),
+            ])
             ->toArray();
     }
 
 
-
-
-
-public function userApi($id, $customization_id = null)
+  public function userApi($id, $customization_id = null)
 {
-    // ✅ Query param se bhi lo
     if (!$customization_id) {
         $customization_id = request()->query('customization_id');
     }
@@ -699,14 +698,16 @@ public function userApi($id, $customization_id = null)
         $userDesign = $query->latest()->first();
     }
 
-    // ✅ User ka design hai to uska, warna admin ka saved data
     $colorChanges   = $userDesign?->color_changes   ?? $model->color_changes   ?? [];
     $patternChanges = $userDesign?->pattern_changes ?? $model->pattern_changes ?? [];
     $mascotChanges  = $userDesign?->mascot_changes  ?? $model->mascot_changes  ?? [];
     $applications   = $userDesign?->applications    ?? $model->applications    ?? [];
 
-    // ✅ Agar user ka apna design hai to original SVG, warna admin ka custom SVG
     $hasUserDesign = $userDesign !== null;
+
+    // ✅ FIX: Jab user pehli baar open kare (no design) to original SVG do
+    // Jab user ka saved design ho to bhi original SVG do (colors JS apply karega)
+    // Admin ka custom_front_svg sirf admin mode mein use hoga
 
     return response()->json([
         'id'    => $model->id,
@@ -718,36 +719,25 @@ public function userApi($id, $customization_id = null)
         'applications'    => $applications,
 
         'front_view' => [
-            // ✅ User ka design nahi = admin ka custom SVG use karo
-            'svg_url'         => $hasUserDesign
-                ? ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null)
-                : ($model->custom_front_svg ? asset('uploads/models/'.$model->custom_front_svg) : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null)),
-            'white_image_url' => $model->front_white ? asset('uploads/models/'.$model->front_white) : null,
-            'black_image_url' => $model->front_black ? asset('uploads/models/'.$model->front_black) : null,
+            'svg_url'         => $model->front_svg ? asset('uploads/models/' . $model->front_svg) : null,
+            'white_image_url' => $model->front_white ? asset('uploads/models/' . $model->front_white) : null,
+            'black_image_url' => $model->front_black ? asset('uploads/models/' . $model->front_black) : null,
         ],
         'back_view' => [
-            'svg_url'         => $hasUserDesign
-                ? ($model->back_svg ? asset('uploads/models/'.$model->back_svg) : null)
-                : ($model->custom_back_svg ? asset('uploads/models/'.$model->custom_back_svg) : ($model->back_svg ? asset('uploads/models/'.$model->back_svg) : null)),
-            'white_image_url' => $model->back_white ? asset('uploads/models/'.$model->back_white) : null,
-            'black_image_url' => $model->back_black ? asset('uploads/models/'.$model->back_black) : null,
+            'svg_url'         => $model->back_svg ? asset('uploads/models/' . $model->back_svg) : null,
+            'white_image_url' => $model->back_white ? asset('uploads/models/' . $model->back_white) : null,
+            'black_image_url' => $model->back_black ? asset('uploads/models/' . $model->back_black) : null,
         ],
         'left_view' => [
-            'svg_url'         => $hasUserDesign
-                ? ($model->left_svg ? asset('uploads/models/'.$model->left_svg) : null)
-                : ($model->custom_left_svg ? asset('uploads/models/'.$model->custom_left_svg) : ($model->left_svg ? asset('uploads/models/'.$model->left_svg) : null)),
-            'white_image_url' => $model->left_white ? asset('uploads/models/'.$model->left_white) : null,
-            'black_image_url' => $model->left_black ? asset('uploads/models/'.$model->left_black) : null,
+            'svg_url'         => $model->left_svg ? asset('uploads/models/' . $model->left_svg) : null,
+            'white_image_url' => $model->left_white ? asset('uploads/models/' . $model->left_white) : null,
+            'black_image_url' => $model->left_black ? asset('uploads/models/' . $model->left_black) : null,
         ],
         'right_view' => [
-            'svg_url'         => $hasUserDesign
-                ? ($model->right_svg ? asset('uploads/models/'.$model->right_svg) : null)
-                : ($model->custom_right_svg ? asset('uploads/models/'.$model->custom_right_svg) : ($model->right_svg ? asset('uploads/models/'.$model->right_svg) : null)),
-            'white_image_url' => $model->right_white ? asset('uploads/models/'.$model->right_white) : null,
-            'black_image_url' => $model->right_black ? asset('uploads/models/'.$model->right_black) : null,
+            'svg_url'         => $model->right_svg ? asset('uploads/models/' . $model->right_svg) : null,
+            'white_image_url' => $model->right_white ? asset('uploads/models/' . $model->right_white) : null,
+            'black_image_url' => $model->right_black ? asset('uploads/models/' . $model->right_black) : null,
         ],
     ]);
 }
-
-
 }

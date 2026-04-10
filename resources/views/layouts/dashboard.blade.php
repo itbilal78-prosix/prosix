@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Dashboard</title>
+<title>Admin Dashboard</title>
 
+<link rel="icon" type="image/png" href="{{ asset('assets/images/P LOGO BLACK.png') }}">
     <!-- ✅ Smooch Sans Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,6 +77,36 @@ modeToggle.addEventListener('click', ()=>{
     document.documentElement.setAttribute('data-bs-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     modeIcon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const titles = [
+    "🚀 hurry up hurry up!",
+    "🔥 selling out fast!",
+    "⏰ come back come back!",
+    "💥 prosix brand!",
+    "⚡ prosix brand!"
+  ];
+
+  let index = 0;
+  let originalTitle = document.title;
+
+  const animateTitle = () => {
+    document.title = titles[index];
+    index = (index + 1) % titles.length;
+  };
+
+  let titleInterval = setInterval(animateTitle, 2000);
+
+  document.addEventListener("visibilitychange", function() {
+    if (!document.hidden) {
+      clearInterval(titleInterval);
+      document.title = originalTitle;
+    } else {
+      titleInterval = setInterval(animateTitle, 2000);
+    }
+  });
 });
 </script>
 </body>

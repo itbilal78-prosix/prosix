@@ -36,10 +36,10 @@
           -->
           <a
             :href="`/customize/${design.model?.id}?design_id=${design.id}`"
-            class="edit-btn"
-          >
-            Customize
-          </a>
+  class="edit-btn"
+>
+  Customize
+</a>
 
           <button
             class="delete-btn"

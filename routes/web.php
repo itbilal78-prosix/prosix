@@ -255,27 +255,22 @@ Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSingle
 Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
 
     $model = \App\Models\CustomizerModel::findOrFail($id);
-
     $colors = \App\Models\Color::all();
-
     $fonts = \App\Models\Font::all()->map(function ($font) {
         return [
-            'id' => $font->id,
-            'name' => $font->name,
+            'id'       => $font->id,
+            'name'     => $font->name,
             'file_url' => asset('storage/' . $font->file),
         ];
     });
 
-    // ✅ USER DESIGN LOAD KARO
     $design = null;
-
-    if ($request->design_id) {
+    if ($request->has('design_id')) {
         $design = \App\Models\UserCustomization::find($request->design_id);
     }
 
     return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
         ->with('isUserMode', true);
-
 });
 
 
