@@ -64,7 +64,7 @@ $backUrl = isset($isUserMode) && $isUserMode
     @endphp
         <!-- HEADER -->
         <div class="header-bar">
-<a href="{{ $backUrl }}" class="logo">
+<a href="/" class="logo">
                     <img src="{{ asset('assets/images/PROSIX SPORTS LOGO PNG WHITE.png') }}" class="logo-img">
             </a>
             <div class="model-title">Customize Model</div>
@@ -234,7 +234,7 @@ $backUrl = isset($isUserMode) && $isUserMode
                         <div style="display:flex; gap:15px; align-items:center;">
                             <!-- Download Button -->
                             <button id="downloadAllViews"
-                                style="padding:8px 16px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:500; font-size:14px;">
+                                style="padding:8px 16px; background:#000000; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:500; font-size:14px;">
                                 Download All (PNG)
                             </button>
 

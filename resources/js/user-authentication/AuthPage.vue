@@ -1,6 +1,11 @@
 <template>
   <div class="auth-body">
     <div class="wrapper" :class="{ active: isRegister }">
+
+  <button class="close-auth-btn" @click="goBack">
+    ✕
+  </button>
+
       <span class="bg-animate"></span>
       <span class="bg-animate2"></span>
 
@@ -22,6 +27,7 @@
               placeholder=" "
               required
             />
+
             <label>Email</label>
             <i class="bx bxs-envelope icon-left"></i>
             <span v-if="login.errors.email" class="field-err">{{ login.errors.email }}</span>
@@ -35,6 +41,7 @@
               placeholder=" "
               required
             />
+
             <label>Password</label>
             <button type="button" class="eye-toggle" @click="login.showPass = !login.showPass">
               <i :class="login.showPass ? 'bx bx-show' : 'bx bx-hide'"></i>
@@ -64,9 +71,20 @@
 
       <!-- LOGIN INFO TEXT -->
       <div class="info-text login">
-        <h2 class="animation" style="--i:0; --j:20;">Welcome<br />back!</h2>
-        <p class="animation" style="--i:1; --j:21;">We're happy to have you with us again! If you need anything, we're here to help.</p>
-      </div>
+
+  <h2 class="animation" style="--i:0; --j:20;">
+    <img
+      src="/public/assets/images/P LOGO WHITE.png"
+      alt="Prosix Logo"
+      style="max-width:150px;"
+    />
+  </h2>
+
+  <p class="animation" style="--i:1; --j:21;">
+    We're happy to have you with us again! If you need anything, we're here to help.
+  </p>
+
+</div>
 
       <!-- ===================== REGISTER FORM ===================== -->
       <div class="form-box register">
@@ -151,10 +169,21 @@
       </div>
 
       <!-- REGISTER INFO TEXT -->
-      <div class="info-text register">
-        <h2 class="animation" style="--i:17; --j:0;">Hello,<br />Friend!</h2>
-        <p class="animation" style="--i:18; --j:1;">We're delighted to have you here. If you need any assistance, feel free to reach out.</p>
-      </div>
+     <div class="info-text register">
+
+  <h2 class="animation" style="--i:17; --j:0;">
+    <img
+      src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png"
+      alt="Prosix Logo"
+      style="max-width:150px;"
+    />
+  </h2>
+
+  <p class="animation" style="--i:18; --j:1;">
+    We're delighted to have you here. If you need any assistance, feel free to reach out.
+  </p>
+
+</div>
     </div>
   </div>
 </template>
@@ -168,7 +197,9 @@ const router = useRouter()
 const route  = useRoute()
 
 const isRegister = ref(false)
-
+const goBack = () => {
+  router.back()
+}
 const login = reactive({
   loading : false,
   showPass: false,
@@ -285,7 +316,6 @@ const handleRegister = async () => {
   box-shadow: 0 8px 40px rgba(0,0,0,0.18);
   border-radius: 4px;
 }
-
 /* ─────────────── FORM BOX ─────────────── */
 .wrapper .form-box {
   position: absolute;
@@ -295,6 +325,22 @@ const handleRegister = async () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+.close-auth-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #8b8b8b;
+  cursor: pointer;
+  z-index: 10;
+  transition: 0.2s ease;
+}
+
+.close-auth-btn:hover {
+  transform: scale(1.2);
 }
 
 .wrapper .form-box.login  { left: 0;  padding: 0 50px 0 36px; }

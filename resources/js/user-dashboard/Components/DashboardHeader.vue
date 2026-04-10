@@ -14,16 +14,18 @@
 
     <!-- Center: 3D Flip Logo -->
    <div class="header-center">
-  <div class="logo-scene">
-    <div class="logo-cube">
-      <div class="logo-face logo-front">
-<img src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png"  class="logo-img" />
+  <a href="/">
+    <div class="logo-scene">
+      <div class="logo-cube">
+        <div class="logo-face logo-front">
+          <img src="/public/assets/images/PROSIX SPORTS LOGO PNG WHITE.png" class="logo-img" />
+        </div>
+        <div class="logo-face logo-back">
+          <img src="/public/assets/images/P LOGO WHITE.png" class="logo-img" />
+        </div>
       </div>
-      <div class="logo-face logo-back">
-<img src="/public/assets/images/P LOGO WHITE.png"  class="logo-img" />
-          </div>
     </div>
-  </div>
+  </a>
 </div>
 
     <!-- Right: Profile -->

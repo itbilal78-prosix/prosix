@@ -41,7 +41,9 @@
 
             <!-- SUBSCRIBE — center desktop, last on mobile -->
 <div class="col-12 col-md-4 mb-4 mb-md-0 text-center d-flex flex-column align-items-center justify-content-center order-3 order-md-2">
-                  <h1 class="subscribe-title mb-2">SUBSCRIBE</h1>
+<a href="/membership" style="text-decoration:none;">
+    <h1 class="subscribe-title mb-2">SUBSCRIBE</h1>
+</a>
               <p class="subscribe-subtitle mb-3">To our newsletter for latest updates</p>
               <div class="social-icons d-flex justify-content-center gap-3">
                 <a href="https://www.facebook.com/prosixsports/" class="social-link"><i class="bi bi-facebook"></i></a>
@@ -171,6 +173,7 @@
 /* ── Subscribe ── */
 .subscribe-title {
   font-size: 2.4rem;
+  color: rgb(255, 255, 255);
   font-weight: bold;
   letter-spacing: 2px;
 }

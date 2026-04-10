@@ -1336,7 +1336,6 @@ box-shadow:0 0 6px rgba(0,0,0,0.5);
 
         #previewPanel button:hover {
             background: rgba(255, 255, 255, 0.2) !important;
-            transform: rotate(90deg);
         }
 
         @media (max-width: 1600px) {
