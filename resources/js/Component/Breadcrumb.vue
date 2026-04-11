@@ -36,8 +36,8 @@ const crumbs = computed(() => {
   gap: 2px;
 }
 .bc-item { display: flex; align-items: center; gap: 4px; }
-.bc-link { font-size: 12px; color: #888; text-decoration: none; font-weight: 500; transition: color 0.2s; }
+.bc-link { font-size: 17px; color: #888; text-decoration: none; font-weight: 500; transition: color 0.2s; }
 .bc-link:hover { color: #000; }
-.bc-current { font-size: 12px; color: #111; font-weight: 700; }
+.bc-current { font-size: 17px; color: #111; font-weight: 700; }
 .bc-sep { font-size: 9px; color: #ccc; margin: 0 2px; }
 </style>

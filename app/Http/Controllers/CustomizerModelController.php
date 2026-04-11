@@ -445,39 +445,30 @@ class CustomizerModelController extends Controller
         $count = CustomizerModel::whereIn('id', $ids)->count();
         CustomizerModel::whereIn('id', $ids)->delete();
 
-        return response()->json(['success' => true, 'message' => $count.' model(s) delete ho gaye!']);
+        return response()->json(['success' => true, 'message' => $count.' Model(s) has been  delete ']);
     }
 
     // ─── BULK DUPLICATE ───────────────────────────────────────────
-    public function bulkDuplicate(Request $request)
-    {
-        $ids = $request->input('product_ids', []);
-        if (empty($ids) || ! is_array($ids)) {
-            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
-        }
-        $count = 0;
-        foreach ($ids as $id) {
-            $original = CustomizerModel::find($id);
-            if (! $original) {
-                continue;
-            }
-            $copy = $original->replicate();
-            $copy->title = $original->title.' (Copy)';
-            $copy->custom_front_svg = null;
-            $copy->custom_back_svg = null;
-            $copy->custom_left_svg = null;
-            $copy->custom_right_svg = null;
-            $copy->color_changes = null;
-            $copy->pattern_changes = null;
-            $copy->mascot_changes = null;
-            $copy->applications = null;
-            $copy->customized_at = null;
-            $copy->save();
-            $count++;
-        }
-
-        return response()->json(['success' => true, 'message' => $count.' model(s) duplicate ho gaye!']);
+public function bulkDuplicate(Request $request)
+{
+    $ids = $request->input('product_ids', []);
+    if (empty($ids) || ! is_array($ids)) {
+        return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
     }
+    $count = 0;
+    foreach ($ids as $id) {
+        $original = CustomizerModel::find($id);
+        if (! $original) {
+            continue;
+        }
+        $copy = $original->replicate();
+        $copy->title = $original->title.' (Copy)';
+        $copy->save();
+        $count++;
+    }
+
+    return response()->json(['success' => true, 'message' => $count.' Model(s) have been duplicated!']);
+}
 
     // ─── SAVE DESIGN ──────────────────────────────────────────────
     public function saveDesign(Request $request, $id)

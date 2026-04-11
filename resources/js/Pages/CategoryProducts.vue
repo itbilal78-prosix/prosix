@@ -737,7 +737,7 @@ onMounted(() => {
 
 /* ===== SELECT DESIGN HEADING ===== */
 .select-design-heading {
-  font-size: clamp(14px, 2.5vw, 20px);
+  font-size: clamp(14px, 2.5vw, 23px);
   font-weight: 800;
   letter-spacing: 2px;
   color: #111;
@@ -757,7 +757,7 @@ onMounted(() => {
 .model-group-heading::before { left: 0; }
 .model-group-heading::after  { right: 0; }
 .model-group-heading span {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, 1.8vw, 20px);
   font-weight: 700; background: #fff;
   padding: 0 12px; position: relative;
   z-index: 1; letter-spacing: .5px;
@@ -771,7 +771,7 @@ onMounted(() => {
 .model-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
+  gap: 40px;
   transition: grid-template-columns 0.35s ease, gap 0.35s ease;
 }
 .models-wrapper.sidebar-open .model-grid {
@@ -789,7 +789,7 @@ onMounted(() => {
 }
 .card-image-wrapper {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 4;
   background: #eee;
   position: relative;
   overflow: hidden;
@@ -812,11 +812,11 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 .model-card-title {
-  font-size: clamp(9px, 1vw, 14px);
-  color: #000; font-weight: 400; line-height: 1.3;
+  font-size: clamp(9px, 1vw, 17px);
+  color: #000000; font-weight: 400; line-height: 1.3;
 }
 .model-card-price {
-  font-size: clamp(9px, 0.9vw, 13px);
+  font-size: clamp(9px, 0.9vw, 17px);
   color: #000; font-weight: 600; white-space: nowrap;
 }
 
@@ -841,6 +841,7 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   height: 100%; width: 100%; object-fit: contain;
 }
+
 .black { z-index: 5; mix-blend-mode: screen; }
 .white { z-index: 4; mix-blend-mode: multiply; }
 .svg   { z-index: 3; }
@@ -852,8 +853,8 @@ onMounted(() => {
   display: flex;
   height: clamp(130px, 20vw, 230px);
 }
-.product-name  { font-size: clamp(10px, 1.3vw, 14px); }
-.product-price { font-size: clamp(10px, 1.3vw, 14px); font-weight: 700; }
+.product-name  { font-size: clamp(10px, 1.3vw, 17px); }
+.product-price { font-size: clamp(10px, 1.3vw, 17px); font-weight: 700; }
 .color-strip {
   display: flex; flex-direction: column; gap: 3px;
   padding: 5px 3px; background: #f5f5f5;

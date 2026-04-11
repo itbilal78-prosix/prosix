@@ -115,41 +115,7 @@
             padding: 0 16px 28px;
         }
 
-        /* Actual wood board rendered below books */
-        .shelf-plank::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 22px;
-            background: linear-gradient(to bottom, #6d6d6d 0%, #696867 40%, #000000 100%);
 
-            border-radius: 2px;
-            box-shadow:
-                0 6px 18px rgba(0, 0, 0, 0.18),
-                0 2px 4px rgba(0, 0, 0, 0.12),
-                inset 0 2px 0 rgba(255, 255, 255, 0.25),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-        }
-
-        /* Wood grain lines */
-        .shelf-plank::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 22px;
-            background-image: repeating-linear-gradient(90deg,
-                    transparent 0px,
-                    transparent 60px,
-                    rgba(255, 255, 255, 0.07) 60px,
-                    rgba(255, 255, 255, 0.07) 62px);
-            z-index: 2;
-            border-radius: 2px;
-            pointer-events: none;
-        }
 
         /* Shelf bracket left & right */
         .shelf-bracket {
@@ -516,8 +482,7 @@
 
             @foreach ($chunks as $row)
                 <div class="shelf-row">
-                    <div class="shelf-bracket left"></div>
-                    <div class="shelf-bracket right"></div>
+
                     <div class="shelf-plank">
                         <div class="books-grid">
                             @foreach ($row as $flipbook)

@@ -216,7 +216,7 @@ watch(() => route.params.slug, loadData)
 }
 
 .cat-name {
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
   color: #222;
   margin-top: 10px;
