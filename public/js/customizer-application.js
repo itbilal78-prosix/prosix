@@ -494,8 +494,11 @@ window.addApplicationToSvg = function (layer) {
     }
     const mainSvg = window.getMainSvg();
     if (!mainSvg) { setTimeout(() => addApplicationToSvg(layer), 300); return; }
-    if (mainSvg.querySelector(`#${layer.id}`)) return;
-
+// Purana element remove karo taake fresh rebuild ho
+const existing = mainSvg.querySelector(`#${layer.id}`);
+const existingGroup = mainSvg.querySelector(`#app-group-${layer.id}`);
+if (existing && existingGroup) return; // already properly built
+if (existingGroup) existingGroup.remove(); // incomplete — rebuild
     let defs = mainSvg.querySelector('defs');
     if (!defs) {
         defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
@@ -544,11 +547,14 @@ window.addApplicationToSvg = function (layer) {
     text.setAttribute('paint-order', 'stroke fill');
     text.setAttribute('stroke-linejoin', 'miter');
     text.style.cursor = 'move';
-    text.textContent = layer.text;
+ text.textContent = layer.text;
+if (layer.letterSpacing) text.style.letterSpacing = layer.letterSpacing + 'px';
 
     layerGroup.appendChild(text);
+
+
     makeDraggable(text, layer);
-    text.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layer.id); });
+layerGroup.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layer.id); });
 
     _applyFlipTransform(layer, mainSvg);
 
@@ -940,7 +946,7 @@ gap:10px;
 width:100%;
 padding:8px 10px;
 margin-bottom:6px;
-background:${isActive ? '#5a5a5a' : '#7a7a7a'};
+background:${isActive ? '#383838' : '#858585'};
 color:#fff;
 border:none;
 border-radius:0;
@@ -1656,7 +1662,7 @@ user-select:none;
     }
 
     // ============================================================
-    // =================== SHOW TEXT LAYER CONTROLS ===================
+    // =================== SHOW TEXT LAYER CONTROLS ===============
     // ============================================================
 
     function showTextLayerControls(layer) {
@@ -1708,7 +1714,13 @@ user-select:none;
             if (opacitySlider && layer.patternOpacity) { opacitySlider.value = layer.patternOpacity; document.getElementById('patternOpacityValueTab').textContent = layer.patternOpacity; }
             renderTextPatternPalette(layer.patternSvg);
         }
-
+// ✅ FIX: Outline count restore per layer
+const outline1Input = document.querySelector('#outline1Section input[type="number"]');
+const outline2Input = document.querySelector('#outline2Section input[type="number"]');
+const shadowInput = document.querySelector('#shadowSection input[type="number"]');
+if (outline1Input) outline1Input.value = layer.strokeWidth || 3;
+if (outline2Input) outline2Input.value = layer.strokeWidth2 || 3;
+if (shadowInput) shadowInput.value = layer.shadowOffset || 3;
         switchTextCustomizationTab('colors');
     }
 
@@ -1834,11 +1846,21 @@ user-select:none;
             if (layer.fontFamily) btn.style.fontFamily = layer.fontFamily;
         }
 
-        if (posX) appFillSlider(posX);
-        if (posY) appFillSlider(posY);
+      if (posX) appFillSlider(posX);
+if (posY) appFillSlider(posY);
 
-        // Restore rotation wheel
-        if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
+// ✅ FIX: Letter Spacing restore
+const allLetterSpacingInputs = document.querySelectorAll('input[oninput*="updateLetterSpacing"]');
+allLetterSpacingInputs.forEach(inp => { inp.value = layer.letterSpacing || 0; });
+
+// ✅ FIX: Width/Height restore
+const allWidthInputs = document.querySelectorAll('input[oninput*="updateTextScale(\'x\'"]');
+allWidthInputs.forEach(inp => { inp.value = Math.round((layer.scaleX || 1) * 100); });
+const allHeightInputs = document.querySelectorAll('input[oninput*="updateTextScale(\'y\'"]');
+allHeightInputs.forEach(inp => { inp.value = Math.round((layer.scaleY || 1) * 100); });
+
+// Restore rotation wheel
+if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
     };
 
     window.updateFontSize = function (value) {
@@ -1911,17 +1933,27 @@ user-select:none;
         setTimeout(() => _showPlusIcon(layer.id), 30);
     };
 
-    window.updateOutlineStroke = function (type, value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer) return;
-        const textEl = document.getElementById(layer.id);
-        if (!textEl) return;
-        if (type === 'outline1') { textEl.setAttribute('stroke-width', value); layer.strokeWidth = parseInt(value); }
+   window.updateOutlineStroke = function (type, value) {
+    if (!window.currentApplicationLayer) return;
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer) return;
+    const textEl = document.getElementById(layer.id);
+    if (!textEl) return;
+    if (type === 'outline1') {
+        textEl.setAttribute('stroke-width', value);
+        layer.strokeWidth = parseInt(value);
+    }
+    if (type === 'outline2') {
+        layer.strokeWidth2 = parseInt(value);
         const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        if (type === 'outline2' && outlines.length) outlines[0].setAttribute('stroke-width', value);
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+        if (outlines.length) outlines[0].setAttribute('stroke-width', value);
+    }
+    if (type === 'shadow') {
+        layer.shadowOffset = parseInt(value);
+        applyOutlineStyleToText(layer.id);
+    }
+    if (window.saveCustomizations) window.saveCustomizations();
+};
 
     window.selectStrokeLinecap = function (value, btn) {
         document.querySelectorAll('[id^="cap-"]').forEach(b => b.classList.remove('selected'));
@@ -2706,9 +2738,15 @@ window.initializeApplicationsOnLoad = function () {
     const svg = window.getMainSvg();
     if (!svg) { setTimeout(window.initializeApplicationsOnLoad, 300); return; }
 
-    svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
-    svg.querySelectorAll('#application-group').forEach(g => g.remove());
-    svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
+svg.querySelectorAll('#application-group').forEach(g => g.remove());
+svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+
+// ✅ Defs mein se clip paths bhi clean karo
+const defs = svg.querySelector('defs');
+if (defs) {
+    defs.querySelectorAll('[id^="clip-app-"]').forEach(c => c.remove());
+}
 
     Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
         layers.forEach(layer => {
@@ -2781,8 +2819,8 @@ window.reorderSvgLayers = function (view, partId, orderedLayers) {
 
         const cx = 80, cy = 80, r = 68;
         const circumference = 2 * Math.PI * r;
-        const snapPoints = [0, 90, 180, 270, 360];
-        const snapThreshold = 25;
+       const snapPoints = [0, 90, 180, 270, 360];
+const snapThreshold = 5;
 
         let angle = 0, dragging = false, startAngle = 0, startRot = 0;
 
@@ -2948,8 +2986,5 @@ window.bringApplicationLayersToTop = function () {
 
     console.log('✅ Application layers brought to top:', appGroups.length);
 };
-
-
-
 
 })();
