@@ -2729,12 +2729,17 @@ window.isDraggingKnob = false;
                     }
 
                     // ✅ FIX: window.colorChanges aur local colorChanges dono check karo
-                    const savedColor = (window.colorChanges?.[currentView]?.[el.id])
-                        || (colorChanges?.[currentView]?.[el.id]);
-
-                    if (savedColor) {
-                        el.setAttribute('fill', savedColor);
-                    }
+                   // Gradient check karo pehle
+if (gradientChanges?.[currentView]?.[el.id]) {
+    rebuildGradient(svgElement, el.id, gradientChanges[currentView][el.id], currentView);
+    el.setAttribute('fill', `url(#gradient-${currentView}-${el.id})`);
+} else {
+    const savedColor = (window.colorChanges?.[currentView]?.[el.id])
+        || (colorChanges?.[currentView]?.[el.id]);
+    if (savedColor && !savedColor.startsWith('url(')) {
+        el.setAttribute('fill', savedColor);
+    }
+}
 
                 });
 

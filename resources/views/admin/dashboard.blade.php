@@ -34,46 +34,7 @@
 .dash-card-link  { color: #ccc; font-size: 18px; text-decoration: none; transition: color .2s; }
 .dash-card-link:hover { color: #000; }
 
-/* ── PANELS ── */
-.dash-panel {
-    background: #fff;
-    border: 1px solid #efefef;
-    border-radius: 14px;
-    overflow: hidden;
-}
-.dash-panel-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f3f3f3;
-}
-.dash-panel-header h6 { font-size: 14px; font-weight: 600; color: #111; }
 
-/* ── TABLE ── */
-.dash-table thead th {
-    background: #f9f9f9;
-    font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .6px;
-    color: #777; padding: 11px 16px; border: none;
-}
-.dash-table tbody td {
-    padding: 11px 16px; font-size: 13px;
-    border-bottom: 1px solid #f5f5f5;
-    vertical-align: middle; color: #333;
-}
-.dash-table tbody tr:last-child td { border-bottom: none; }
-.dash-table tbody tr:hover { background: #fafafa; }
-
-/* ── QUICK LINKS ── */
-.quick-link {
-    display: flex; align-items: center;
-    padding: 10px 14px; border-radius: 8px;
-    color: #333; text-decoration: none;
-    font-size: 13px; font-weight: 500;
-    transition: all .2s;
-    border: 1px solid #eee;
-}
-.quick-link:hover { background: #000; color: #fff; border-color: #000; }
-.quick-link i { font-size: 15px; }
 
 /* ── CHART WRAPPER ── */
 .chart-wrap { padding: 16px 20px; }
@@ -98,8 +59,8 @@ canvas { max-height: 220px; }
     {{-- Revenue --}}
     <div class="col-6 col-xl-3">
         <div class="dash-card">
-            <div class="dash-card-icon" style="background:#111;">
-                <i class="bi bi-currency-rupee"></i>
+            <div class="dash-card-icon p-4" style="background:#111;">
+                <i class="bi bi-currency-rupee text-white"></i>
             </div>
             <div class="dash-card-info">
                 <span class="dash-card-label">Total Revenue</span>
@@ -112,12 +73,13 @@ canvas { max-height: 220px; }
     {{-- Orders --}}
     <div class="col-6 col-xl-3">
         <div class="dash-card">
-            <div class="dash-card-icon" style="background:#222;">
-                <i class="bi bi-bag-check"></i>
+            <div class="dash-card-icon p-4" style="background:#222;">
+                <i class="bi bi-bag-check text-white"></i>
             </div>
             <div class="dash-card-info">
                 <span class="dash-card-label">Total Orders</span>
                 <span class="dash-card-value">{{ $total_orders }}</span>
+                ,
                 <span class="dash-card-sub">{{ $pending_orders }} pending</span>
             </div>
             <a href="{{ route('admin.orders.index') }}" class="dash-card-link"><i class="bi bi-arrow-right"></i></a>
@@ -127,13 +89,13 @@ canvas { max-height: 220px; }
     {{-- Users --}}
     <div class="col-6 col-xl-3">
         <div class="dash-card">
-            <div class="dash-card-icon" style="background:#333;">
-                <i class="bi bi-people-fill"></i>
+            <div class="dash-card-icon p-4" style="background:#333;">
+                <i class="bi bi-people-fill text-white"></i>
             </div>
             <div class="dash-card-info">
                 <span class="dash-card-label">Total Users</span>
                 <span class="dash-card-value">{{ $total_users }}</span>
-                <span class="dash-card-sub">Registered customers</span>
+                <span class="dash-card-sub">Registered</span>
             </div>
             <a href="{{ route('admin.users.index') }}" class="dash-card-link"><i class="bi bi-arrow-right"></i></a>
         </div>
@@ -142,13 +104,12 @@ canvas { max-height: 220px; }
     {{-- Products --}}
     <div class="col-6 col-xl-3">
         <div class="dash-card">
-            <div class="dash-card-icon" style="background:#444;">
-                <i class="bi bi-box-seam"></i>
+            <div class="dash-card-icon p-4" style="background:#444;">
+                <i class="bi bi-box-seam  text-white"></i>
             </div>
             <div class="dash-card-info">
                 <span class="dash-card-label">Total Products</span>
                 <span class="dash-card-value">{{ $total_products }}</span>
-                <span class="dash-card-sub">In catalogue</span>
             </div>
             <a href="{{ route('products.index') }}" class="dash-card-link"><i class="bi bi-arrow-right"></i></a>
         </div>
@@ -156,55 +117,7 @@ canvas { max-height: 220px; }
 
 </div>
 
-{{-- ── CHARTS ROW ── --}}
-<div class="row g-3 mb-4">
 
-    {{-- Orders Line Chart --}}
-    <div class="col-12 col-xl-5">
-        <div class="dash-panel">
-            <div class="dash-panel-header">
-                <h6>Orders – Last 7 Days</h6>
-            </div>
-            <div class="chart-wrap">
-                <canvas id="ordersChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    {{-- Revenue Bar Chart --}}
-    <div class="col-12 col-xl-4">
-        <div class="dash-panel">
-            <div class="dash-panel-header">
-                <h6>Revenue – Last 7 Days</h6>
-            </div>
-            <div class="chart-wrap">
-                <canvas id="revenueChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    {{-- Order Status Pie --}}
-    <div class="col-12 col-xl-3">
-        <div class="dash-panel">
-            <div class="dash-panel-header">
-                <h6>Order Status</h6>
-            </div>
-            <div class="chart-wrap d-flex justify-content-center">
-                <canvas id="statusChart" style="max-height:200px;max-width:200px;"></canvas>
-            </div>
-            {{-- Legend --}}
-            <div class="px-3 pb-3">
-                @foreach($status_data as $s)
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="small text-capitalize">{{ $s->status }}</span>
-                    <span class="badge bg-dark">{{ $s->count }}</span>
-                </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-</div>
 
 {{-- ── RECENT ORDERS + QUICK ACTIONS ── --}}
 <div class="row g-3">
@@ -213,7 +126,7 @@ canvas { max-height: 220px; }
     <div class="col-12 col-xl-8">
         <div class="dash-panel">
             <div class="dash-panel-header">
-                <h6>Recent Orders</h6>
+                <h4>Recent Orders</h4>
                 <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-dark px-3">View All</a>
             </div>
             <div class="table-responsive">
@@ -261,22 +174,7 @@ canvas { max-height: 220px; }
         </div>
     </div>
 
-    {{-- Quick Actions --}}
-    <div class="col-12 col-xl-4">
-        <div class="dash-panel">
-            <div class="dash-panel-header"><h6>Quick Actions</h6></div>
-            <div class="d-flex flex-column gap-2 p-3">
-                <a href="{{ route('products.create') }}"         class="quick-link"><i class="bi bi-plus-circle me-2"></i> Add New Product</a>
-                <a href="{{ route('categories.index') }}"        class="quick-link"><i class="bi bi-tags me-2"></i> Manage Categories</a>
-                <a href="{{ route('banners.index') }}"           class="quick-link"><i class="bi bi-image me-2"></i> Manage Banners</a>
-                <a href="{{ route('deals.index') }}"             class="quick-link"><i class="bi bi-gift me-2"></i> Deals & Offers</a>
-                <a href="{{ route('blogs.index') }}"             class="quick-link"><i class="bi bi-newspaper me-2"></i> Blog / News</a>
-                <a href="{{ route('admin.flipbooks.index') }}"   class="quick-link"><i class="bi bi-book-half me-2"></i> Flipp Books</a>
-                <a href="{{ route('admin.users.index') }}"       class="quick-link"><i class="bi bi-people me-2"></i> All Users</a>
-                <a href="{{ route('admin.admins.index') }}"      class="quick-link"><i class="bi bi-person-gear me-2"></i> Manage Admins</a>
-            </div>
-        </div>
-    </div>
+
 
 </div>
 

@@ -403,49 +403,7 @@ window.highlightWheelColor = function(color) {
 };
     /* ================= APPLY COLOR TO SELECTED PART ================= */
 
-    // function applyColorToPart(color) {
-
-    //     if (!window.selectedSvgElement) {
-    //         alert("Please select a part first!");
-    //         return;
-    //     }
-
-    //     const partId = window.selectedSvgElement.id;
-
-    //     // 🔥 REMOVE GRADIENT FIRST (VERY IMPORTANT)
-    //     if (window.gradientChanges[currentView]?.[partId]) {
-    //         delete window.gradientChanges[currentView][partId];
-    //     }
-
-    //     // Save to history
-    //     if (window.saveToHistory) window.saveToHistory();
-
-    //     // Apply color
-    //     window.selectedSvgElement.setAttribute('fill', color);
-
-    //     // Store SOLID color
-    //     if (!window.colorChanges[currentView]) window.colorChanges[currentView] = {};
-    //     window.colorChanges[currentView][partId] = color;
-
-    //     // Update center button
-    //     const centerBtn = document.getElementById('selectedColorBtn');
-    //     if (centerBtn) centerBtn.style.background = color;
-
-    //     // Add to wheel if not present
-    //     const upperColor = color.toUpperCase();
-    //     if (!selectedColors.includes(upperColor)) {
-    //         selectedColors.push(upperColor);
-    //         if (selectedColors.length > 24) selectedColors.shift();
-    //         updateColorWheel();
-    //     }
-
-    //     // Save customizations
-
-    //     // Update undo/redo
-    //     if (window.updateUndoRedoButtons) updateUndoRedoButtons();
-
-    //     console.log(`✅ Applied SOLID ${color} to ${partId} in ${currentView}`);
-    // }
+   
 
 function applyColorToPart(color) {
     if (!window.selectedSvgElement) {

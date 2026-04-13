@@ -653,15 +653,21 @@ window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal
     if (!mascotSvg.getAttribute('viewBox')) mascotSvg.setAttribute('viewBox', '0 0 100 100');
     mascotSvg.style.background = 'transparent';
 
-    const mascotSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
-    mascotSvg.setAttribute('width', mascotSize);
-    mascotSvg.setAttribute('height', mascotSize);
-    mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+const scaleMultiplier = layer.mascotScaleX || 1;
+const mascotW = bbox.width * scaleMultiplier;
+const mascotH = bbox.height * scaleMultiplier;
+const offsetX = (bbox.width - mascotW) / 2;
+const offsetY = (bbox.height - mascotH) / 2;
 
-    const mascotX = cx - mascotSize / 2 + (layer.x || 0);
-    const mascotY = cy - mascotSize / 2 + (layer.y || 0);
-    mascotSvg.setAttribute('x', mascotX);
-    mascotSvg.setAttribute('y', mascotY);
+mascotSvg.setAttribute('width', mascotW);
+mascotSvg.setAttribute('height', mascotH);
+mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice'); // 🔥 KEY
+mascotSvg.setAttribute('x', bbox.x + offsetX + (layer.x || 0));
+mascotSvg.setAttribute('y', bbox.y + offsetY + (layer.y || 0));
+
+layer._mascotSize = Math.min(mascotW, mascotH);
+layer._bboxW = bbox.width;
+layer._bboxH = bbox.height;
     mascotSvg.setAttribute('id', layerId);
     mascotSvg.style.cursor = 'default';
     if (layer.mascotOpacity !== undefined) mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
@@ -672,7 +678,9 @@ window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal
     layer.mascotId = layerId;
     layer._cx = cx;
     layer._cy = cy;
-    layer._mascotSize = mascotSize;
+layer._mascotSize = Math.min(mascotW, mascotH);
+layer._bboxW = bbox.width;
+layer._bboxH = bbox.height;
     layer._selectedColorCount = window.selectedMascotColorCount || (window.selectedColors ? window.selectedColors.length : 6);
     layer.flipX = savedFlipX;
     layer.flipY = savedFlipY;
@@ -1731,41 +1739,55 @@ if (shadowInput) shadowInput.value = layer.shadowOffset || 3;
     // =================== DIRECT MASCOT SLIDER CONTROLS ===================
     // ============================================================
 
-    window.updateDirectMascotScale = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer || layer.type !== 'direct-mascot') return;
+  window.updateDirectMascotScale = function (value) {
+    if (!window.currentApplicationLayer) return;
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer || layer.type !== 'direct-mascot') return;
 
-        layer.mascotScaleX = value / 100;
-        layer.mascotScaleY = value / 100;
+    layer.mascotScaleX = value / 100;
+    layer.mascotScaleY = value / 100;
 
-        const mainSvg = window.getMainSvg();
-        if (!mainSvg) return;
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) return;
 
-        const partEl = mainSvg.querySelector('#' + layer.partId);
-        if (!partEl) return;
+    const partEl = mainSvg.querySelector('#' + layer.partId);
+    if (!partEl) return;
 
-        const bbox = partEl.getBBox();
-        const newSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
+    const bbox = partEl.getBBox();
+    const scale = value / 100;
 
-        const mascotEl = mainSvg.querySelector('#' + layer.id);
-        if (mascotEl) {
-            const cx = layer._cx || 0;
-            const cy = layer._cy || 0;
-            mascotEl.setAttribute('width', newSize);
-            mascotEl.setAttribute('height', newSize);
-            mascotEl.setAttribute('x', cx - newSize / 2 + (layer.x || 0));
-            mascotEl.setAttribute('y', cy - newSize / 2 + (layer.y || 0));
-            layer._mascotSize = newSize;
-            _applyFlipTransform(layer, mainSvg);
-        }
+    // ✅ Part ki actual width/height use karo
+    const mascotW = bbox.width * scale;
+    const mascotH = bbox.height * scale;
 
-        document.getElementById('directMascotScaleValue').textContent = value;
-        if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
-            setTimeout(() => _applyDirectMascotColorMap(layer), 100);
-        }
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+    // X/Y offset: center se nahi, bbox.x/y se — taake part properly cover ho
+    const offsetX = (bbox.width - mascotW) / 2;
+    const offsetY = (bbox.height - mascotH) / 2;
+
+    const mascotEl = mainSvg.querySelector('#' + layer.id);
+    if (mascotEl) {
+        mascotEl.setAttribute('width', mascotW);
+        mascotEl.setAttribute('height', mascotH);
+        mascotEl.setAttribute('x', bbox.x + offsetX + (layer.x || 0));
+        mascotEl.setAttribute('y', bbox.y + offsetY + (layer.y || 0));
+        mascotEl.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+        layer._mascotSize = Math.min(mascotW, mascotH);
+        layer._bboxW = bbox.width;
+        layer._bboxH = bbox.height;
+        layer._cx = bbox.x + bbox.width / 2;
+        layer._cy = bbox.y + bbox.height / 2;
+
+        _applyFlipTransform(layer, mainSvg);
+    }
+
+    document.getElementById('directMascotScaleValue').textContent = value;
+
+    if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
+        setTimeout(() => _applyDirectMascotColorMap(layer), 100);
+    }
+    if (window.saveCustomizations) window.saveCustomizations();
+};
 
     window.updateDirectMascotOpacity = function (value) {
         if (!window.currentApplicationLayer) return;
