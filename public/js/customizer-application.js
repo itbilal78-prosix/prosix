@@ -488,6 +488,9 @@
 // ============================================================
 
 window.addApplicationToSvg = function (layer) {
+    // ✅ Sirf current view ka layer show karo
+    if (layer.view !== window.currentView) return;
+
     if (layer.type === 'direct-mascot') {
         if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
         return;
@@ -2748,13 +2751,25 @@ if (defs) {
     defs.querySelectorAll('[id^="clip-app-"]').forEach(c => c.remove());
 }
 
-    Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+  Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
         layers.forEach(layer => {
             if (layer.flipX === undefined) layer.flipX = 1;
             if (layer.flipY === undefined) layer.flipY = 1;
             if (layer._flipState === undefined) layer._flipState = 0;
 
+            // ✅ Bbox restore karo agar missing hai
+            if (!layer._savedBbox || !layer._savedBbox.width) {
+                const partEl = svg.querySelector(`#${layer.partId}`);
+                if (partEl) {
+                    const bb = partEl.getBBox();
+                    if (bb.width > 0) {
+                        layer._savedBbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
+                    }
+                }
+            }
+
             addApplicationToSvg(layer);
+
 
             if (layer.type === 'direct-mascot' && layer.mascotSvg && layer._colorMap && Object.keys(layer._colorMap).length) {
                 (l => setTimeout(() => _applyDirectMascotColorMap(l), 400))(layer);

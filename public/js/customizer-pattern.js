@@ -1674,62 +1674,168 @@ window.applyUploadedMascot = function () {
 
 
 
+    // window.onPartClickForPattern = function (partElement) {
+
+    //     window.selectedSvgElement = partElement;
+
+    //     const view = window.currentView;
+    //     const partId = partElement.id;
+
+    //     const topButtons = document.querySelector('.pattern-top-buttons');
+
+    //     // CASE 1 — pattern already applied
+    //     if (partElement.dataset.hasPattern === 'true') {
+
+    //         if (topButtons) topButtons.style.display = 'none';
+
+    //         document.getElementById('mascotControls').style.display = 'none';
+
+    //         window.restorePatternStateForPart(partId, view);
+
+    //         return;
+    //     }
+
+    //     // CASE 2 — mascot already applied
+    //     if (partElement.dataset.hasMascot === 'true') {
+
+    //         if (topButtons) topButtons.style.display = 'none';
+
+    //         document.getElementById('patternControls').style.display = 'none';
+
+    //         window.restoreMascotStateForPart(partId, view);
+
+    //         updateMascotColorPalette(); // ⭐ ADD THIS LINE
+
+    //         return;
+    //     }
+
+    //     // CASE 3 — NO pattern + NO mascot
+    //     if (topButtons) topButtons.style.display = 'flex';
+
+    //     document.getElementById('patternControls').style.display = 'none';
+
+    //     document.getElementById('mascotControls').style.display = 'none';
+
+    //     // reset preview
+    //     const preview = document.getElementById('patternPreviewBox');
+
+    //     if (preview) {
+
+    //         preview.innerHTML =
+    //             '<span style="color:#999;">No pattern applied</span>';
+
+    //         preview.style.cursor = "pointer";
+
+    //         preview.onclick = openPatternLibrary;
+
+    //     }
+    // };
     window.onPartClickForPattern = function (partElement) {
+    window.selectedSvgElement = partElement;
+    const view = window.currentView;
+    const partId = partElement.id;
+    const topButtons = document.querySelector('.pattern-top-buttons');
 
-        window.selectedSvgElement = partElement;
+    // ✅ STEP 1: PEHLE SAARI UI RESET KARO
+    if (topButtons) topButtons.style.display = 'none';
 
-        const view = window.currentView;
-        const partId = partElement.id;
+    const patternControls = document.getElementById('patternControls');
+    if (patternControls) patternControls.style.display = 'none';
 
-        const topButtons = document.querySelector('.pattern-top-buttons');
+    const mascotControls = document.getElementById('mascotControls');
+    if (mascotControls) mascotControls.style.display = 'none';
 
-        // CASE 1 — pattern already applied
-        if (partElement.dataset.hasPattern === 'true') {
+    // Pattern preview reset
+    const preview = document.getElementById('patternPreviewBox');
+    if (preview) {
+        preview.innerHTML = '<span style="color:#999;">No pattern applied</span>';
+        preview.style.cursor = 'default';
+        preview.onclick = null;
+    }
 
-            if (topButtons) topButtons.style.display = 'none';
+    // Mascot preview reset
+    const mascotPreview = document.getElementById('mascotPreviewBox');
+    if (mascotPreview) {
+        mascotPreview.innerHTML = '<span style="color:#999;">No mascot applied</span>';
+        mascotPreview.style.cursor = 'default';
+        mascotPreview.onclick = null;
+    }
 
-            document.getElementById('mascotControls').style.display = 'none';
+    // Pattern color palette reset
+    const patternPalette = document.getElementById('patternColorPalette');
+    if (patternPalette) patternPalette.innerHTML = '';
 
-            window.restorePatternStateForPart(partId, view);
+    // Mascot color palette reset
+    const mascotPalette = document.getElementById('mascotColorPalette');
+    if (mascotPalette) mascotPalette.innerHTML = '';
 
-            return;
-        }
+    // ✅ STEP 2: CHECK KARO IS PART PAR KYA HAI
+    const hasPatternInState = window.patternsApplied?.[view]?.[partId];
+    const hasMascotInState = window.mascotsApplied?.[view]?.[partId];
 
-        // CASE 2 — mascot already applied
-        if (partElement.dataset.hasMascot === 'true') {
+    // ✅ CASE 1 — Is part par PATTERN hai
+    if (partElement.dataset.hasPattern === 'true' || hasPatternInState) {
+        // dataset sync karo
+        partElement.dataset.hasPattern = 'true';
 
-            if (topButtons) topButtons.style.display = 'none';
+        // Pattern controls dikhao, mascot hide
+        if (patternControls) patternControls.style.display = 'block';
+        if (mascotControls) mascotControls.style.display = 'none';
+        if (topButtons) topButtons.style.display = 'none';
 
-            document.getElementById('patternControls').style.display = 'none';
+        // Pattern state restore karo
+        window.restorePatternStateForPart(partId, view);
 
-            window.restoreMascotStateForPart(partId, view);
-
-            updateMascotColorPalette(); // ⭐ ADD THIS LINE
-
-            return;
-        }
-
-        // CASE 3 — NO pattern + NO mascot
-        if (topButtons) topButtons.style.display = 'flex';
-
-        document.getElementById('patternControls').style.display = 'none';
-
-        document.getElementById('mascotControls').style.display = 'none';
-
-        // reset preview
-        const preview = document.getElementById('patternPreviewBox');
-
+        // Preview clickable banao
         if (preview) {
-
-            preview.innerHTML =
-                '<span style="color:#999;">No pattern applied</span>';
-
-            preview.style.cursor = "pointer";
-
+            preview.style.cursor = 'pointer';
             preview.onclick = openPatternLibrary;
-
         }
-    };
+
+        console.log('✅ Pattern part selected:', partId);
+        return;
+    }
+
+    // ✅ CASE 2 — Is part par MASCOT hai
+    if (partElement.dataset.hasMascot === 'true' || hasMascotInState) {
+        // dataset sync karo
+        partElement.dataset.hasMascot = 'true';
+
+        // Mascot controls dikhao, pattern hide
+        if (mascotControls) mascotControls.style.display = 'block';
+        if (patternControls) patternControls.style.display = 'none';
+        if (topButtons) topButtons.style.display = 'none';
+
+        // Mascot state restore karo
+        window.restoreMascotStateForPart(partId, view);
+
+        // Mascot color palette update karo
+        if (window.updateMascotColorPalette) window.updateMascotColorPalette();
+
+        // Mascot preview clickable banao
+        if (mascotPreview) {
+            mascotPreview.style.cursor = 'pointer';
+            mascotPreview.onclick = openMascotTemplateModal;
+        }
+
+        console.log('✅ Mascot part selected:', partId);
+        return;
+    }
+
+    // ✅ CASE 3 — BILKUL BLANK PART — fresh buttons dikhao
+    if (topButtons) topButtons.style.display = 'flex';
+
+    if (patternControls) patternControls.style.display = 'none';
+    if (mascotControls) mascotControls.style.display = 'none';
+
+    // Preview clickable banao taake pattern select ho sake
+    if (preview) {
+        preview.style.cursor = 'pointer';
+        preview.onclick = openPatternLibrary;
+    }
+
+    console.log('✅ Blank part selected — showing fresh buttons:', partId);
+};
 
     window.restoreMascotStateForPart = function (partId, view) {
         const mascotData = window.mascotsApplied?.[view]?.[partId];

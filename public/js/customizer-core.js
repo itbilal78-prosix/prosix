@@ -3,27 +3,27 @@
 
     // =================== APPLICATION STATE ===================
     window.currentModelId = window.MODEL_ID;
-// ✅ LOAD USER SAVED DESIGN (VERY IMPORTANT)
-if (window.USER_DESIGN) {
+    // ✅ LOAD USER SAVED DESIGN (VERY IMPORTANT)
+    if (window.USER_DESIGN) {
 
-    console.log("User design found:", window.USER_DESIGN);
+        console.log("User design found:", window.USER_DESIGN);
 
-    // restore applications
-    if (window.USER_DESIGN.applications) {
-        window.applicationsApplied = window.USER_DESIGN.applications;
+        // restore applications
+        if (window.USER_DESIGN.applications) {
+            window.applicationsApplied = window.USER_DESIGN.applications;
+        }
+
+        // restore colors
+        if (window.USER_DESIGN.color_changes) {
+            window.selectedColors = window.USER_DESIGN.color_changes;
+        }
+
+        // restore patterns
+        if (window.USER_DESIGN.pattern_changes) {
+            window.patternChanges = window.USER_DESIGN.pattern_changes;
+        }
+
     }
-
-    // restore colors
-    if (window.USER_DESIGN.color_changes) {
-        window.selectedColors = window.USER_DESIGN.color_changes;
-    }
-
-    // restore patterns
-    if (window.USER_DESIGN.pattern_changes) {
-        window.patternChanges = window.USER_DESIGN.pattern_changes;
-    }
-
-}
 
     console.log('MODEL ID FOUND:', window.MODEL_ID);
 
@@ -559,6 +559,11 @@ if (window.USER_DESIGN) {
         const centerX = bbox.x + (bbox.width / 2);
         const centerY = bbox.y + (bbox.height / 2);
 
+        // ✅ Save bbox for preview
+        if (!layer._savedBbox) {
+            layer._savedBbox = { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
+        }
+
         clonedSvg.querySelectorAll('.modal-preview-text').forEach(t => t.remove());
 
         const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
@@ -607,22 +612,31 @@ if (window.USER_DESIGN) {
 
         const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
 
+        // ✅ Pehle bbox save karo
+        const partElForBbox = window.getMainSvg()?.querySelector(`#${partId}`);
+        let savedBbox = null;
+        if (partElForBbox) {
+            const bb = partElForBbox.getBBox();
+            savedBbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
+        }
+
         const layer = {
             id: layerId,
             type: window.selectedApplicationType,
             view: view,
             partId: partId,
             text: defaultText,
-            fontSize: 2000,  // 🔥 MUCH LARGER DEFAULT SIZE
+            fontSize: 2000,
             fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
             fill: globalColors[0] || '#FFFFFF',
             stroke: globalColors[1] || '#000000',
-            strokeWidth: 5,  // Thicker stroke for larger text
+            strokeWidth: 5,
             x: 0,
             y: 0,
             rotation: 0,
             outlineStyle: window.currentOutlineStyle,
-            outlineColors: { ...window.outlineColors }
+            outlineColors: { ...window.outlineColors },
+            _savedBbox: savedBbox  // ✅ Bbox save ho gaya
         };
 
         if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
@@ -2371,14 +2385,14 @@ window.isDraggingKnob = false;
     window.currentView = 'front';
     window.selectedSvgElement = null;
     window.allSvgParts = [];
-if (window.USER_DESIGN && window.USER_DESIGN.color_changes &&
-    typeof window.USER_DESIGN.color_changes === 'object' &&
-    !Array.isArray(window.USER_DESIGN.color_changes) &&
-    Object.keys(window.USER_DESIGN.color_changes).length > 0) {
-    window.colorChanges = window.USER_DESIGN.color_changes;
-} else {
-    window.colorChanges = { front: {}, back: {}, left: {}, right: {} };
-}
+    if (window.USER_DESIGN && window.USER_DESIGN.color_changes &&
+        typeof window.USER_DESIGN.color_changes === 'object' &&
+        !Array.isArray(window.USER_DESIGN.color_changes) &&
+        Object.keys(window.USER_DESIGN.color_changes).length > 0) {
+        window.colorChanges = window.USER_DESIGN.color_changes;
+    } else {
+        window.colorChanges = { front: {}, back: {}, left: {}, right: {} };
+    }
     window.gradientChanges = { front: {}, back: {}, left: {}, right: {} };
 
     window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
@@ -2505,89 +2519,108 @@ if (window.USER_DESIGN && window.USER_DESIGN.color_changes &&
 
 
 
-async function loadModel() {
-    try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        currentModel = data;
+    async function loadModel() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            currentModel = data;
 
-        console.log('=== LOAD MODEL DATA ===', data); // DEBUG
+            console.log('=== LOAD MODEL DATA ===', data); // DEBUG
 
-        // ✅ Color changes load karo
-        if (data.color_changes && typeof data.color_changes === 'object' && !Array.isArray(data.color_changes)) {
-            colorChanges = data.color_changes;
-            window.colorChanges = data.color_changes; // ✅ window pe bhi set karo
-            console.log('Colors loaded:', colorChanges);
-        } else {
-            colorChanges = { front: {}, back: {}, left: {}, right: {} };
-            window.colorChanges = colorChanges;
-        }
-
-        // Pattern changes
-        if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
-            window.patternsApplied = data.pattern_changes;
-        } else {
-            window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
-        }
-
-        // Mascot changes
-        if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
-            window.mascotsApplied = data.mascot_changes;
-        } else {
-            window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
-        }
-
-        // Applications
-        if (data.applications && typeof data.applications === 'object' && !Array.isArray(data.applications)) {
-            window.applicationsApplied = data.applications;
-        }
-
-       // ✅ USER_DESIGN se colors directly apply karo
-        if (window.USER_DESIGN && window.USER_DESIGN.color_changes) {
-            const uc = window.USER_DESIGN.color_changes;
-            if (typeof uc === 'object' && !Array.isArray(uc) && Object.keys(uc).length > 0) {
-                colorChanges = uc;
-                window.colorChanges = uc;
-                console.log('✅ User colors loaded from USER_DESIGN:', colorChanges);
+            // ✅ Color changes load karo
+            if (data.color_changes && typeof data.color_changes === 'object' && !Array.isArray(data.color_changes)) {
+                colorChanges = data.color_changes;
+                window.colorChanges = data.color_changes; // ✅ window pe bhi set karo
+                console.log('Colors loaded:', colorChanges);
+            } else {
+                colorChanges = { front: {}, back: {}, left: {}, right: {} };
+                window.colorChanges = colorChanges;
             }
-        }
-        if (window.USER_DESIGN && window.USER_DESIGN.pattern_changes) {
-            const up = window.USER_DESIGN.pattern_changes;
-            if (typeof up === 'object' && !Array.isArray(up)) {
-                window.patternsApplied = up;
+
+            // Pattern changes
+            if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
+                window.patternsApplied = data.pattern_changes;
+            } else {
+                window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
             }
-        }
-        if (window.USER_DESIGN && window.USER_DESIGN.applications) {
-            const ua = window.USER_DESIGN.applications;
-            if (typeof ua === 'object' && !Array.isArray(ua)) {
-                window.applicationsApplied = ua;
+
+            // Mascot changes
+            if (data.mascot_changes && typeof data.mascot_changes === 'object' && !Array.isArray(data.mascot_changes)) {
+                window.mascotsApplied = data.mascot_changes;
+            } else {
+                window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };
             }
+
+            // Applications
+            if (data.applications && typeof data.applications === 'object' && !Array.isArray(data.applications)) {
+                window.applicationsApplied = data.applications;
+            }
+
+            // ✅ USER_DESIGN se colors directly apply karo
+            if (window.USER_DESIGN && window.USER_DESIGN.color_changes) {
+                const uc = window.USER_DESIGN.color_changes;
+                if (typeof uc === 'object' && !Array.isArray(uc) && Object.keys(uc).length > 0) {
+                    colorChanges = uc;
+                    window.colorChanges = uc;
+                    console.log('✅ User colors loaded from USER_DESIGN:', colorChanges);
+                }
+            }
+            if (window.USER_DESIGN && window.USER_DESIGN.pattern_changes) {
+                const up = window.USER_DESIGN.pattern_changes;
+                if (typeof up === 'object' && !Array.isArray(up)) {
+                    window.patternsApplied = up;
+                }
+            }
+            if (window.USER_DESIGN && window.USER_DESIGN.applications) {
+                const ua = window.USER_DESIGN.applications;
+                if (typeof ua === 'object' && !Array.isArray(ua)) {
+                    window.applicationsApplied = ua;
+                }
+            }
+
+            modelViews.front = data.front_view || {};
+            modelViews.back = data.back_view || {};
+            modelViews.left = data.left_view || {};
+            modelViews.right = data.right_view || {};
+
+            displayView('front');
+
+            setTimeout(() => {
+                if (window.extractDefaultColors) extractDefaultColors();
+            }, 500);
+
+        } catch (e) {
+            console.error('Error loading model:', e);
         }
-
-        modelViews.front = data.front_view || {};
-        modelViews.back  = data.back_view  || {};
-        modelViews.left  = data.left_view  || {};
-        modelViews.right = data.right_view || {};
-
-        displayView('front');
-
-        setTimeout(() => {
-            if (window.extractDefaultColors) extractDefaultColors();
-        }, 500);
-
-    } catch (e) {
-        console.error('Error loading model:', e);
     }
-}
     /* ================= VIEW ================= */
 
     window.switchView = function (view) {
-    displayView(view);
-    // ✅ View switch hone ke baad us view ke colors bhi apply honge
-    // processSvg mein colorChanges[currentView] se apply hoga automatically
-}
+        // ✅ View change hone par text deselect karo
+        window.currentApplicationLayer = null;
+        const ctrl = document.getElementById('applicationLayerControls');
+        if (ctrl) ctrl.style.display = 'none';
+
+        displayView(view);
+
+        // ✅ Naye view ke layers load karo
+        setTimeout(() => {
+            if (window.initializeApplicationsOnLoad) {
+                window.initializeApplicationsOnLoad();
+            }
+            if (window.updateApplicationLayersList) {
+                window.updateApplicationLayersList();
+            }
+        }, 500);
+    }
+
     function displayView(view) {
         currentView = view;
+
+        // ✅ Plus icon hide karo
+        const plusIcon = document.getElementById('appPlusDragIcon');
+        if (plusIcon) plusIcon.style.display = 'none';
+
         const viewData = modelViews[view];
         const container = document.getElementById('modelDisplay');
         if (!container) return;
@@ -2628,16 +2661,16 @@ async function loadModel() {
         //     }
         // }, 400);
         if (window.USER_DESIGN && window.USER_DESIGN.color_changes) {
-        const uc = window.USER_DESIGN.color_changes;
-        if (typeof uc === 'object' && !Array.isArray(uc)) {
-            ['front', 'back', 'left', 'right'].forEach(v => {
-                if (uc[v] && typeof uc[v] === 'object') {
-                    colorChanges[v] = uc[v];
-                    window.colorChanges[v] = uc[v];
-                }
-            });
+            const uc = window.USER_DESIGN.color_changes;
+            if (typeof uc === 'object' && !Array.isArray(uc)) {
+                ['front', 'back', 'left', 'right'].forEach(v => {
+                    if (uc[v] && typeof uc[v] === 'object') {
+                        colorChanges[v] = uc[v];
+                        window.colorChanges[v] = uc[v];
+                    }
+                });
+            }
         }
-    }
 
     }
 
@@ -2695,13 +2728,13 @@ async function loadModel() {
                             '#ffffff';
                     }
 
-                  // ✅ FIX: window.colorChanges aur local colorChanges dono check karo
-const savedColor = (window.colorChanges?.[currentView]?.[el.id])
-                || (colorChanges?.[currentView]?.[el.id]);
+                    // ✅ FIX: window.colorChanges aur local colorChanges dono check karo
+                    const savedColor = (window.colorChanges?.[currentView]?.[el.id])
+                        || (colorChanges?.[currentView]?.[el.id]);
 
-if (savedColor) {
-    el.setAttribute('fill', savedColor);
-}
+                    if (savedColor) {
+                        el.setAttribute('fill', savedColor);
+                    }
 
                 });
 
@@ -2718,6 +2751,30 @@ if (savedColor) {
                     if (window.initializeApplicationsOnLoad) {
                         window.initializeApplicationsOnLoad();
                     }
+
+                    // ✅ YEH NAYA CODE ADD KARO — har view ka bbox save karo
+                    const svg = window.getMainSvg();
+                    if (svg && window.applicationsApplied?.[currentView]) {
+                        Object.entries(window.applicationsApplied[currentView]).forEach(([partId, layers]) => {
+                            const partEl = svg.querySelector(`#${partId}`);
+                            if (partEl) {
+                                try {
+                                    const bb = partEl.getBBox();
+                                    if (bb.width > 0) {
+                                        layers.forEach(layer => {
+                                            if (!layer._bboxByView) layer._bboxByView = {};
+                                            layer._bboxByView[currentView] = {
+                                                x: bb.x, y: bb.y,
+                                                width: bb.width, height: bb.height
+                                            };
+                                        });
+                                    }
+                                } catch (e) { }
+                            }
+                        });
+                    }
+                    // ✅ NAYA CODE KHATAM
+
                 }, 400);
             })
             .catch(err => console.error('SVG load error:', err));
@@ -2751,7 +2808,7 @@ if (savedColor) {
         updateStopMarkers();
     }
 
-   function selectSvgElement(el) {
+  function selectSvgElement(el) {
 
     // 🔥 CLEAR ACTIVE APPLICATION LAYER WHEN PART CHANGES
     if (window.currentApplicationLayer) {
@@ -2786,6 +2843,32 @@ if (savedColor) {
     const partId = el.id;
     const view = window.currentView;
 
+    // ✅ PEHLE SAARI UI RESET KARO
+    const patternControlsReset = document.getElementById('patternControls');
+    const mascotControlsReset = document.getElementById('mascotControls');
+    const topButtonsReset = document.querySelector('.pattern-top-buttons');
+    const patternPaletteReset = document.getElementById('patternColorPalette');
+    const mascotPaletteReset = document.getElementById('mascotColorPalette');
+
+    if (patternControlsReset) patternControlsReset.style.display = 'none';
+    if (mascotControlsReset) mascotControlsReset.style.display = 'none';
+    if (patternPaletteReset) patternPaletteReset.innerHTML = '';
+    if (mascotPaletteReset) mascotPaletteReset.innerHTML = '';
+
+    const previewReset = document.getElementById('patternPreviewBox');
+    if (previewReset) {
+        previewReset.innerHTML = '<span style="color:#999;">No pattern applied</span>';
+        previewReset.style.cursor = 'default';
+        previewReset.onclick = null;
+    }
+
+    const mascotPreviewReset = document.getElementById('mascotPreviewBox');
+    if (mascotPreviewReset) {
+        mascotPreviewReset.innerHTML = '<span style="color:#999;">No mascot applied</span>';
+        mascotPreviewReset.style.cursor = 'default';
+        mascotPreviewReset.onclick = null;
+    }
+
     // ✅ SMART TAB SWITCH - PEHLE CHECK KARO
     const hasPattern = window.patternsApplied?.[view]?.[partId];
     const hasMascot = window.mascotsApplied?.[view]?.[partId];
@@ -2793,6 +2876,9 @@ if (savedColor) {
     if (hasPattern || hasMascot) {
         // ─── PATTERN/MASCOT TAB ───
         activateTab('patternBtn');
+
+        // Top buttons hide karo
+        if (topButtonsReset) topButtonsReset.style.display = 'none';
 
         if (hasPattern) {
             const saved = window.patternsApplied[view][partId];
@@ -2815,7 +2901,13 @@ if (savedColor) {
                 }
 
                 recreatePatternAndOverlayWithNewColors();
-                document.getElementById('patternControls').style.display = 'block';
+                if (patternControlsReset) patternControlsReset.style.display = 'block';
+
+                // Preview clickable banao
+                if (previewReset) {
+                    previewReset.style.cursor = 'pointer';
+                    previewReset.onclick = openPatternLibrary;
+                }
 
                 setTimeout(() => {
                     if (window.updatePatternPreview) window.updatePatternPreview();
@@ -2825,12 +2917,26 @@ if (savedColor) {
         }
 
         if (hasMascot) {
-            document.getElementById('mascotControls').style.display = 'block';
+            if (mascotControlsReset) mascotControlsReset.style.display = 'block';
             window.restoreMascotStateForPart(partId, view);
             if (window.updateMascotColorPalette) window.updateMascotColorPalette();
+
+            // Mascot preview clickable banao
+            if (mascotPreviewReset) {
+                mascotPreviewReset.style.cursor = 'pointer';
+                mascotPreviewReset.onclick = openMascotTemplateModal;
+            }
         }
 
         return; // Color/gradient logic skip karo
+    }
+
+    // ✅ BLANK PART — Fresh buttons dikhao
+    if (topButtonsReset) topButtonsReset.style.display = 'flex';
+
+    if (previewReset) {
+        previewReset.style.cursor = 'pointer';
+        previewReset.onclick = openPatternLibrary;
     }
 
     // ─── COLOR TAB ───
@@ -3117,15 +3223,28 @@ if (savedColor) {
                 const token = localStorage.getItem('auth_token') || '';
 
                 // ✅ window.colorChanges use karo — local variable nahi
-             const payload = {
-    name: designName,
-    color_changes: window.colorChanges || colorChanges || {},
-    pattern_changes: window.patternsApplied || {},
-    mascot_changes: window.mascotsApplied || {},
-    applications: window.applicationsApplied || {}
-};
+                // ✅ Save se pehle _savedBbox clean karo (server pe save nahi karni)
+                // Aur baad mein restore karni hai
+                const appToSave = JSON.parse(JSON.stringify(window.applicationsApplied || {}));
 
-console.log('=== SAVING PAYLOAD ===', JSON.stringify(payload));
+                // _savedBbox remove karo saved data se (private data hai)
+                Object.values(appToSave).forEach(viewData => {
+                    Object.values(viewData).forEach(layers => {
+                        layers.forEach(layer => {
+                            delete layer._savedBbox;
+                        });
+                    });
+                });
+
+                const payload = {
+                    name: designName,
+                    color_changes: window.colorChanges || colorChanges || {},
+                    pattern_changes: window.patternsApplied || {},
+                    mascot_changes: window.mascotsApplied || {},
+                    applications: appToSave
+                };
+
+                console.log('=== SAVING PAYLOAD ===', JSON.stringify(payload));
 
                 console.log('Payload:', JSON.stringify(payload));
 
@@ -3236,12 +3355,12 @@ console.log('=== SAVING PAYLOAD ===', JSON.stringify(payload));
                 })
             });
 
-          const liveSvgForThumb = window.getMainSvg();
-if (liveSvgForThumb && window.embedFontsInSvg) {
-    window.embedFontsInSvg(liveSvgForThumb);
-}
-await generateAndSaveThumbnail();
-alert('✅ Design Saved Successfully');
+            const liveSvgForThumb = window.getMainSvg();
+            if (liveSvgForThumb && window.embedFontsInSvg) {
+                window.embedFontsInSvg(liveSvgForThumb);
+            }
+            await generateAndSaveThumbnail();
+            alert('✅ Design Saved Successfully');
 
         } catch (e) {
             console.error(e);
@@ -3391,125 +3510,434 @@ alert('✅ Design Saved Successfully');
     async function captureCurrentViewsForPreview() {
         const views = ['front', 'back', 'left', 'right'];
 
-        await Promise.all(views.map(async (view) => {
+        // ✅ Pehle current SVG se saare layers ka bbox save karo
+        const mainSvg = window.getMainSvg();
+        if (mainSvg) {
+            // ✅ Sirf current view ka bbox update karo (jo live SVG mein hai)
+            const currentV = window.currentView;
+            if (window.applicationsApplied?.[currentV]) {
+                Object.entries(window.applicationsApplied[currentV]).forEach(([partId, layers]) => {
+                    const partEl = mainSvg.querySelector(`#${partId}`);
+                    if (partEl) {
+                        try {
+                            const bb = partEl.getBBox();
+                            if (bb.width > 0) {
+                                const bbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
+                                layers.forEach(layer => {
+                                    layer._savedBbox = bbox;
+                                    if (!layer._bboxByView) layer._bboxByView = {};
+                                    layer._bboxByView[currentV] = bbox;
+                                });
+                            }
+                        } catch (e) { }
+                    }
+                });
+            }
+        }
+
+        // ✅ Sequential (ek ke baad ek) - parallel nahi
+        for (const view of views) {
             const container = document.getElementById(`preview${view.charAt(0).toUpperCase() + view.slice(1)}`);
-            if (!container) return;
+            if (!container) continue;
 
             container.innerHTML = '<div style="color:#999;padding:20px;">Loading...</div>';
 
             if (!modelViews[view]?.svg_url) {
                 container.innerHTML = '<div style="color:#999;padding:20px;text-align:center;">No view</div>';
-                return;
+                continue;
             }
 
             try {
-                // Create canvas for this view
                 const canvas = await createMergedCanvas(view);
-
-                // Convert canvas to image and show in preview
                 const img = document.createElement('img');
                 img.src = canvas.toDataURL('image/png');
                 img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
-
                 container.innerHTML = '';
                 container.appendChild(img);
-
             } catch (err) {
                 console.error(`Preview error (${view}):`, err);
                 container.innerHTML = '<div style="color:#f33;padding:20px;text-align:center;">Error</div>';
             }
-        }));
+        }
     }
 
     // ================= CREATE MERGED CANVAS (SVG + OVERLAYS) =================
+    // async function createMergedCanvas(view) {
+
+    //     // 1️⃣ Load SVG
+    //     const res = await fetch(modelViews[view].svg_url + '?t=' + Date.now());
+    //     const svgText = await res.text();
+
+    //     const parser = new DOMParser();
+    //     const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+    //     const svg = svgDoc.querySelector('svg');
+    //     // 🔥 APPLY APPLICATION TEXT INTO PREVIEW SVG
+    //     if (window.applyApplicationsToSvg) {
+    //         applyApplicationsToSvg(svg, view);
+    //     }
+
+
+    //     if (!svg) throw new Error("No SVG");
+
+    //     // Apply colors to SVG
+    //     svg.querySelectorAll('path, polygon, circle, rect, ellipse').forEach((el, i) => {
+    //         // ✅ APPLY PATTERNS FOR PREVIEW
+    //         if (window.applyPatternsToSvg) {
+    //             applyPatternsToSvg(svg, view, true);
+    //             applyMascotsToSvg(svg, view);   // 🔥 ADD
+    //         }
+
+    //         if (!el.id) el.id = `svg-part-${i}`;
+
+    //         if (gradientChanges[view]?.[el.id]) {
+
+    //             rebuildGradient(svg, el.id, gradientChanges[view][el.id], view);
+    //             el.setAttribute('fill', `url(#gradient-${view}-${el.id})`);
+
+    //         } else if (colorChanges[view]?.[el.id]) {
+
+    //             el.setAttribute('fill', colorChanges[view][el.id]);
+
+    //         }
+    //     });
+
+
+    //     // 2️⃣ Get SVG natural     size
+    //     const viewBox = svg.getAttribute('viewBox');
+    //     let width = 800;  // default
+    //     let height = 800;
+
+    //     if (viewBox) {
+    //         const [, , w, h] = viewBox.split(' ').map(Number);
+    //         width = w;
+    //         height = h;
+    //     }
+
+    //     // 3️⃣ Create canvas
+    //     const canvas = document.createElement('canvas');
+    //     canvas.width = width;
+    //     canvas.height = height;
+    //     const ctx = canvas.getContext('2d');
+
+    //     // ❌ NO BACKGROUND (transparent)
+    //     ctx.clearRect(0, 0, width, height);
+
+    //     // 4️⃣ Draw SVG
+    //     const svgData = new XMLSerializer().serializeToString(svg);
+    //     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    //     const svgUrl = URL.createObjectURL(svgBlob);
+    //     const svgImg = await loadImage(svgUrl);
+    //     ctx.drawImage(svgImg, 0, 0, width, height);
+    //     URL.revokeObjectURL(svgUrl);
+
+    //     // 5️⃣ Draw WHITE overlay (MULTIPLY)
+    //     if (modelViews[view]?.white_image_url) {
+    //         const whiteImg = await loadImage(modelViews[view].white_image_url);
+    //         ctx.globalCompositeOperation = 'multiply';
+    //         ctx.drawImage(whiteImg, 0, 0, width, height);
+    //         ctx.globalCompositeOperation = 'source-over';
+    //     }
+
+    //     // 6️⃣ Draw BLACK overlay (SCREEN)
+    //     if (modelViews[view]?.black_image_url) {
+    //         const blackImg = await loadImage(modelViews[view].black_image_url);
+    //         ctx.globalCompositeOperation = 'screen';
+    //         ctx.drawImage(blackImg, 0, 0, width, height);
+    //         ctx.globalCompositeOperation = 'source-over';
+    //     }
+
+    //     return canvas;
+    // }
+
     async function createMergedCanvas(view) {
 
-        // 1️⃣ Load SVG
-        const res = await fetch(modelViews[view].svg_url + '?t=' + Date.now());
-        const svgText = await res.text();
+        const isCurrentView = (view === window.currentView);
 
-        const parser = new DOMParser();
-        const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
-        const svg = svgDoc.querySelector('svg');
-        // 🔥 APPLY APPLICATION TEXT INTO PREVIEW SVG
-        if (window.applyApplicationsToSvg) {
-            applyApplicationsToSvg(svg, view);
+        async function embedFontsBase64(svg) {
+            if (!window.backendFonts || !window.backendFonts.length) return;
+            let defs = svg.querySelector('defs');
+            if (!defs) {
+                defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                svg.insertBefore(defs, svg.firstChild);
+            }
+            defs.querySelectorAll('style[data-fonts]').forEach(s => s.remove());
+            let fontCSS = '';
+            for (const f of window.backendFonts) {
+                try {
+                    const r = await fetch(f.file_url);
+                    const buf = await r.arrayBuffer();
+                    let binary = '';
+                    new Uint8Array(buf).forEach(b => binary += String.fromCharCode(b));
+                    fontCSS += `@font-face{font-family:'font_${f.id}';src:url('data:font/truetype;base64,${btoa(binary)}') format('truetype');}`;
+                } catch (e) {
+                    fontCSS += `@font-face{font-family:'font_${f.id}';src:url('${f.file_url}') format('truetype');}`;
+                }
+            }
+            if (fontCSS) {
+                const st = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+                st.setAttribute('data-fonts', '1');
+                st.textContent = fontCSS;
+                defs.insertBefore(st, defs.firstChild);
+            }
         }
 
+        let svgEl = null;
 
-        if (!svg) throw new Error("No SVG");
+        if (isCurrentView) {
+            const liveSvg = window.getMainSvg();
+            if (!liveSvg) throw new Error('No live SVG');
+            svgEl = liveSvg.cloneNode(true);
+            await embedFontsBase64(svgEl);
+            if (!svgEl.getAttribute('viewBox')) svgEl.setAttribute('viewBox', '0 0 800 800');
 
-        // Apply colors to SVG
-        svg.querySelectorAll('path, polygon, circle, rect, ellipse').forEach((el, i) => {
-            // ✅ APPLY PATTERNS FOR PREVIEW
-            if (window.applyPatternsToSvg) {
-                applyPatternsToSvg(svg, view, true);
-                applyMascotsToSvg(svg, view);   // 🔥 ADD
+            // ✅ Current view ke application layers ka bbox update karo
+            if (window.applicationsApplied?.[view]) {
+                Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+                    layers.forEach(layer => {
+                        const partEl = liveSvg.querySelector(`#${partId}`);
+                        if (partEl) {
+                            try {
+                                const bb = partEl.getBBox();
+                                if (bb.width > 0) {
+                                    layer._savedBbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
+                                }
+                            } catch (e) { }
+                        }
+                    });
+                });
             }
 
-            if (!el.id) el.id = `svg-part-${i}`;
+        } else {
+            if (!modelViews[view]?.svg_url) throw new Error('No SVG URL for ' + view);
 
-            if (gradientChanges[view]?.[el.id]) {
+            const res = await fetch(modelViews[view].svg_url + '?t=' + Date.now());
+            const svgText = await res.text();
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+            svgEl = svgDoc.querySelector('svg');
+            if (!svgEl) throw new Error('No SVG element');
 
-                rebuildGradient(svg, el.id, gradientChanges[view][el.id], view);
-                el.setAttribute('fill', `url(#gradient-${view}-${el.id})`);
+            svgEl.setAttribute('width', '100%');
+            svgEl.setAttribute('height', '100%');
+            svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-            } else if (colorChanges[view]?.[el.id]) {
+            await embedFontsBase64(svgEl);
 
-                el.setAttribute('fill', colorChanges[view][el.id]);
-
+            let defs = svgEl.querySelector('defs');
+            if (!defs) {
+                defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                svgEl.insertBefore(defs, svgEl.firstChild);
             }
+
+            // Colors apply karo
+            svgEl.querySelectorAll('path, polygon, circle, rect, ellipse').forEach((el, i) => {
+                if (!el.id) el.id = `svg-part-${i}`;
+                if (gradientChanges?.[view]?.[el.id]) {
+                    rebuildGradient(svgEl, el.id, gradientChanges[view][el.id], view);
+                    el.setAttribute('fill', `url(#gradient-${view}-${el.id})`);
+                } else if (window.colorChanges?.[view]?.[el.id]) {
+                    el.setAttribute('fill', window.colorChanges[view][el.id]);
+                }
+            });
+
+            if (window.applyPatternsToSvg) applyPatternsToSvg(svgEl, view, true);
+            if (window.applyMascotsToSvg) applyMascotsToSvg(svgEl, view);
+
+            // ✅ Application layers apply karo using _savedBbox
+            if (window.applicationsApplied?.[view]) {
+                Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+                    layers.forEach(layer => {
+
+                        // ✅ Fresh bbox from actual SVG element (not saved one)
+                        // Step 1: Pehle _bboxByView check karo (most reliable)
+                        let bbox = layer._bboxByView?.[view] || layer._savedBbox || null;
+
+                        // Step 2: Agar bbox nahi mila toh pura SVG hidden div mein render karo
+                        if (!bbox || !bbox.width) {
+                            const hiddenDiv = document.createElement('div');
+                            hiddenDiv.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:800px;visibility:hidden;';
+                            const tempSvg = svgEl.cloneNode(true);
+                            tempSvg.setAttribute('width', '800');
+                            tempSvg.setAttribute('height', '800');
+                            hiddenDiv.appendChild(tempSvg);
+                            document.body.appendChild(hiddenDiv);
+                            try {
+                                const el = tempSvg.querySelector(`#${partId}`);
+                                if (el) {
+                                    const bb = el.getBBox();
+                                    if (bb.width > 0) {
+                                        bbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
+                                    }
+                                }
+                            } catch (e) { }
+                            document.body.removeChild(hiddenDiv);
+                        }
+
+                        if (!bbox || !bbox.width) return;
+
+                        const cx = bbox.x + bbox.width / 2;
+                        const cy = bbox.y + bbox.height / 2;
+
+                        // Clip path banao
+                        const clipId = `preview-clip-${layer.id}`;
+                        if (!defs.querySelector(`#${clipId}`)) {
+                            const partEl = svgEl.querySelector(`#${partId}`);
+                            if (partEl) {
+                                const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+                                clip.setAttribute('id', clipId);
+                                const clonePart = partEl.cloneNode(true);
+                                clonePart.removeAttribute('id');
+                                clip.appendChild(clonePart);
+                                defs.appendChild(clip);
+                            }
+                        }
+
+                        const grp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        if (defs.querySelector(`#${clipId}`)) {
+                            grp.setAttribute('clip-path', `url(#${clipId})`);
+                        }
+
+                        // Direct Mascot type
+                        if (layer.type === 'direct-mascot') {
+                            if (!layer.mascotSvg) { svgEl.appendChild(grp); return; }
+                            const mDoc = new DOMParser().parseFromString(layer.mascotSvg, 'image/svg+xml');
+                            const mClone = mDoc.documentElement.cloneNode(true);
+                            if (!mClone || mClone.nodeName !== 'svg') { svgEl.appendChild(grp); return; }
+                            const sz = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
+                            mClone.setAttribute('width', sz);
+                            mClone.setAttribute('height', sz);
+                            mClone.setAttribute('x', cx - sz / 2 + (layer.x || 0));
+                            mClone.setAttribute('y', cy - sz / 2 + (layer.y || 0));
+                            mClone.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                            if (layer.mascotOpacity !== undefined) mClone.setAttribute('opacity', layer.mascotOpacity / 100);
+                            grp.appendChild(mClone);
+                            svgEl.appendChild(grp);
+                            return;
+                        }
+
+                        // Text layer
+                        const textX = cx + (layer.x || 0);
+                        const textY = cy + (layer.y || 0);
+                        const outlineStyle = layer.outlineStyle || 'single';
+                        const oc = layer.outlineColors || {};
+                        const baseColor = oc.baseColor || layer.fill || '#FFFFFF';
+                        const outline1 = oc.outline1 || '#000000';
+                        const outline2 = oc.outline2 || '#666666';
+                        const shadowCol = oc.shadow || '#333333';
+                        const shadowOff = layer.shadowOffset || 3;
+                        const sw = layer.strokeWidth || 5;
+
+                        function makeText(fill, stroke, strokeW, filterStr) {
+                            const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                            t.setAttribute('x', textX);
+                            t.setAttribute('y', textY);
+                            t.setAttribute('font-size', layer.fontSize || 500);
+                            t.style.fontFamily = layer.fontFamily || 'Arial Black';
+                            t.setAttribute('fill', fill);
+                            t.setAttribute('text-anchor', 'middle');
+                            t.setAttribute('dominant-baseline', 'middle');
+                            t.setAttribute('paint-order', 'stroke fill');
+                            t.setAttribute('stroke-linejoin', 'miter');
+                            if (stroke) { t.setAttribute('stroke', stroke); t.setAttribute('stroke-width', strokeW); }
+                            if (filterStr) t.style.filter = filterStr;
+                            if (layer.letterSpacing) t.style.letterSpacing = layer.letterSpacing + 'px';
+                            t.textContent = layer.text;
+                            return t;
+                        }
+
+                        function applyTransform(el) {
+                            const sx = (layer.scaleX || 1) * (layer.flipX || 1);
+                            const sy = (layer.scaleY || 1) * (layer.flipY || 1);
+                            const rot = layer.rotation || 0;
+                            let tr = '';
+                            if (sx !== 1 || sy !== 1) tr += `translate(${textX} ${textY}) scale(${sx} ${sy}) translate(${-textX} ${-textY}) `;
+                            if (rot) tr += `rotate(${rot} ${textX} ${textY})`;
+                            if (tr.trim()) el.setAttribute('transform', tr.trim());
+                        }
+
+                        const shadowFilter = `drop-shadow(${shadowOff}px ${shadowOff}px 0 ${shadowCol})`;
+
+                        switch (outlineStyle) {
+                            case 'single': {
+                                const t = makeText(baseColor, null, 0, null);
+                                applyTransform(t); grp.appendChild(t); break;
+                            }
+                            case 'single-shadow': {
+                                const t = makeText(baseColor, null, 0, shadowFilter);
+                                applyTransform(t); grp.appendChild(t); break;
+                            }
+                            case 'two-color': {
+                                const t = makeText(baseColor, outline1, sw, null);
+                                applyTransform(t); grp.appendChild(t); break;
+                            }
+                            case 'two-color-shadow': {
+                                const t = makeText(baseColor, outline1, sw, shadowFilter);
+                                applyTransform(t); grp.appendChild(t); break;
+                            }
+                            case 'three-color':
+                            case 'three-color-shadow': {
+                                const withShadow = outlineStyle === 'three-color-shadow';
+                                const outer = makeText(outline2, outline2, sw * 2, withShadow ? shadowFilter : null);
+                                applyTransform(outer); grp.appendChild(outer);
+                                const inner = makeText(baseColor, outline1, sw, null);
+                                applyTransform(inner); grp.appendChild(inner); break;
+                            }
+                            default: {
+                                const t = makeText(baseColor, outline1, sw, null);
+                                applyTransform(t); grp.appendChild(t);
+                            }
+                        }
+
+                        svgEl.appendChild(grp);
+                    });
+                });
+            }
+        }
+
+        // ViewBox se canvas size lo
+        const vbAttr = svgEl.getAttribute('viewBox');
+        let canvasW = 800, canvasH = 800;
+        if (vbAttr) {
+            const vbParts = vbAttr.trim().split(/\s+|,/).map(Number);
+            if (vbParts.length >= 4) { canvasW = vbParts[2] || 800; canvasH = vbParts[3] || 800; }
+        }
+
+        // SVG ko canvas pe draw karo
+        const svgString = new XMLSerializer().serializeToString(svgEl);
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvasW, canvasH);
+
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(blob);
+        await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => { ctx.drawImage(img, 0, 0, canvasW, canvasH); URL.revokeObjectURL(svgUrl); resolve(); };
+            img.onerror = () => { URL.revokeObjectURL(svgUrl); reject(new Error('SVG render failed')); };
+            img.src = svgUrl;
         });
 
-
-        // 2️⃣ Get SVG natural     size
-        const viewBox = svg.getAttribute('viewBox');
-        let width = 800;  // default
-        let height = 800;
-
-        if (viewBox) {
-            const [, , w, h] = viewBox.split(' ').map(Number);
-            width = w;
-            height = h;
-        }
-
-        // 3️⃣ Create canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-
-        // ❌ NO BACKGROUND (transparent)
-        ctx.clearRect(0, 0, width, height);
-
-        // 4️⃣ Draw SVG
-        const svgData = new XMLSerializer().serializeToString(svg);
-        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-        const svgUrl = URL.createObjectURL(svgBlob);
-        const svgImg = await loadImage(svgUrl);
-        ctx.drawImage(svgImg, 0, 0, width, height);
-        URL.revokeObjectURL(svgUrl);
-
-        // 5️⃣ Draw WHITE overlay (MULTIPLY)
+        // White overlay
         if (modelViews[view]?.white_image_url) {
-            const whiteImg = await loadImage(modelViews[view].white_image_url);
+            const wImg = await loadImage(modelViews[view].white_image_url);
             ctx.globalCompositeOperation = 'multiply';
-            ctx.drawImage(whiteImg, 0, 0, width, height);
+            ctx.drawImage(wImg, 0, 0, canvasW, canvasH);
             ctx.globalCompositeOperation = 'source-over';
         }
 
-        // 6️⃣ Draw BLACK overlay (SCREEN)
+        // Black overlay
         if (modelViews[view]?.black_image_url) {
-            const blackImg = await loadImage(modelViews[view].black_image_url);
+            const bImg = await loadImage(modelViews[view].black_image_url);
             ctx.globalCompositeOperation = 'screen';
-            ctx.drawImage(blackImg, 0, 0, width, height);
+            ctx.drawImage(bImg, 0, 0, canvasW, canvasH);
             ctx.globalCompositeOperation = 'source-over';
         }
 
         return canvas;
     }
-
-
 
 
     // 🔥 AUTO CLOSE DROPDOWN ON OUTSIDE CLICK
@@ -3805,36 +4233,36 @@ alert('✅ Design Saved Successfully');
     document.addEventListener('DOMContentLoaded', init);
 
 
-// ============================================================
-// PART 2: Yeh function customizer-core.js mein
-// selectSvgElement function ke BAHAR add karo
-// (kisi bhi jagah, global scope mein)
-// ============================================================
+    // ============================================================
+    // PART 2: Yeh function customizer-core.js mein
+    // selectSvgElement function ke BAHAR add karo
+    // (kisi bhi jagah, global scope mein)
+    // ============================================================
 
-function _autoSwitchTabForPart(element) {
-    if (!element) return;
+    function _autoSwitchTabForPart(element) {
+        if (!element) return;
 
-    const partId = element.id;
-    const view = window.currentView;
+        const partId = element.id;
+        const view = window.currentView;
 
-    // Check karo kya is part pe pattern hai
-    const hasPattern = window.patternsApplied?.[view]?.[partId];
+        // Check karo kya is part pe pattern hai
+        const hasPattern = window.patternsApplied?.[view]?.[partId];
 
-    // Check karo kya is part pe mascot hai
-    const hasMascot = window.mascotsApplied?.[view]?.[partId];
+        // Check karo kya is part pe mascot hai
+        const hasMascot = window.mascotsApplied?.[view]?.[partId];
 
-    // Check karo kya is part pe color/gradient hai
-    const hasColor = window.colorChanges?.[view]?.[partId];
-    const hasGradient = window.gradientChanges?.[view]?.[partId];
+        // Check karo kya is part pe color/gradient hai
+        const hasColor = window.colorChanges?.[view]?.[partId];
+        const hasGradient = window.gradientChanges?.[view]?.[partId];
 
-    if (hasPattern || hasMascot) {
-        // Pattern ya mascot wala part — Pattern tab open karo
-        activateTab('patternBtn');
-    } else {
-        // Normal part — Color tab open karo
-        activateTab('colorBtn');
+        if (hasPattern || hasMascot) {
+            // Pattern ya mascot wala part — Pattern tab open karo
+            activateTab('patternBtn');
+        } else {
+            // Normal part — Color tab open karo
+            activateTab('colorBtn');
+        }
     }
-}
 
 
 
