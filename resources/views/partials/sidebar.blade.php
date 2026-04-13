@@ -4,11 +4,11 @@
 
 <!-- Sidebar -->
 <div id="sidebar" class="bg-sidbare text-light position-fixed mt-5">
-    <div class="sidebar-header d-flex align-items-center justify-content-between border-bottom">
+    {{-- <div class="sidebar-header d-flex align-items-center justify-content-between border-bottom">
         <button class="btn btn-sm d-md-none text-light" id="sidebarClose">
             <i class="bi bi-x"></i>
         </button>
-    </div>
+    </div> --}}
 
     @if ($admin)
         <ul class="nav flex-column mt-3">

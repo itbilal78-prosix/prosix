@@ -143,6 +143,8 @@
               </div>
             </template>
 
+
+
             <!-- Specific model_name -->
             <template v-else>
               <div class="model-grid">
@@ -172,10 +174,8 @@
             </template>
 
           </div>
-          <!-- END models-grid-area -->
 
         </div>
-        <!-- END models-wrapper -->
 
       </div>
     </div>

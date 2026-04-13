@@ -82,7 +82,7 @@ canvas { max-height: 220px; }
                 ,
                 <span class="dash-card-sub">{{ $pending_orders }} pending</span>
             </div>
-            <a href="{{ route('admin.orders.index') }}" class="dash-card-link"><i class="bi bi-arrow-right"></i></a>
+            <a href="{{ route('admin.orders.index') }}" class="dash-card-link"><i class="bi bi-arrow-right text-dark"></i></a>
         </div>
     </div>
 
@@ -97,7 +97,7 @@ canvas { max-height: 220px; }
                 <span class="dash-card-value">{{ $total_users }}</span>
                 <span class="dash-card-sub">Registered</span>
             </div>
-            <a href="{{ route('admin.users.index') }}" class="dash-card-link"><i class="bi bi-arrow-right"></i></a>
+            <a href="{{ route('admin.users.index') }}" class="dash-card-link"><i class="bi bi-arrow-right text-dark"></i></a>
         </div>
     </div>
 
@@ -111,7 +111,7 @@ canvas { max-height: 220px; }
                 <span class="dash-card-label">Total Products</span>
                 <span class="dash-card-value">{{ $total_products }}</span>
             </div>
-            <a href="{{ route('products.index') }}" class="dash-card-link"><i class="bi bi-arrow-right"></i></a>
+            <a href="{{ route('products.index') }}" class="dash-card-link"><i class="bi bi-arrow-right text-dark"></i></a>
         </div>
     </div>
 

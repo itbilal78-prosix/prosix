@@ -5,31 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-<script>
-window.MODEL_ID = {{ $model->id }};
-window.isUserMode = {{ isset($isUserMode) && $isUserMode ? 'true' : 'false' }};
+    <script>
+        window.MODEL_ID = {{ $model->id }};
+        window.isUserMode = {{ isset($isUserMode) && $isUserMode ? 'true' : 'false' }};
 
-@if(isset($design) && $design)
-window.DESIGN_ID = {{ $design->id }};
-window.USER_DESIGN = {!! json_encode([
-    'id'              => $design->id,
-    'color_changes'   => $design->color_changes   ?? [],
-    'pattern_changes' => $design->pattern_changes ?? [],
-    'mascot_changes'  => $design->mascot_changes  ?? [],
-    'applications'    => $design->applications    ?? [],
-]) !!};
-@else
-window.DESIGN_ID = null;
-window.USER_DESIGN = null;
-@endif
+        @if (isset($design) && $design)
+            window.DESIGN_ID = {{ $design->id }};
+            window.USER_DESIGN = {!! json_encode([
+                'id' => $design->id,
+                'color_changes' => $design->color_changes ?? [],
+                'pattern_changes' => $design->pattern_changes ?? [],
+                'mascot_changes' => $design->mascot_changes ?? [],
+                'applications' => $design->applications ?? [],
+            ]) !!};
+        @else
+            window.DESIGN_ID = null;
+            window.USER_DESIGN = null;
+        @endif
 
-window.API_URL = window.isUserMode
-    ? '/user/model-api/{{ $model->id }}' + (window.DESIGN_ID ? '?customization_id=' + window.DESIGN_ID : '')
-    : '{{ route("models.api.get", $model->id) }}';
+        window.API_URL = window.isUserMode ?
+            '/user/model-api/{{ $model->id }}' + (window.DESIGN_ID ? '?customization_id=' + window.DESIGN_ID : '') :
+            '{{ route('models.api.get', $model->id) }}';
 
-console.log('API_URL:', window.API_URL);
-console.log('USER_DESIGN:', window.USER_DESIGN);
-</script>
+        console.log('API_URL:', window.API_URL);
+        console.log('USER_DESIGN:', window.USER_DESIGN);
+    </script>
 
 
     <title>Customize Model</title>
@@ -38,7 +38,7 @@ console.log('USER_DESIGN:', window.USER_DESIGN);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/customizer.css') }}">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
@@ -48,8 +48,7 @@ console.log('USER_DESIGN:', window.USER_DESIGN);
                 @font-face {
                     font-family: "font_{{ $font->id }}";
                     // ✅ SAHI
-                   src: url("{{ asset('storage/' . $font->file) }}")
- format("truetype");
+                    src: url("{{ asset('storage/' . $font->file) }}") format("truetype");
                     font-display: swap;
                 }
             </style>
@@ -57,18 +56,16 @@ console.log('USER_DESIGN:', window.USER_DESIGN);
     @endforeach
 
     <div class="customize-container">
-@php
-$backUrl = isset($isUserMode) && $isUserMode
-    ? url('/dashboard')
-    : route('models.index');
-    @endphp
+        @php
+            $backUrl = isset($isUserMode) && $isUserMode ? url('/dashboard') : route('models.index');
+        @endphp
         <!-- HEADER -->
         <div class="header-bar">
-<a href="/" class="logo">
-                    <img src="{{ asset('assets/images/PROSIX SPORTS LOGO PNG WHITE.png') }}" class="logo-img">
+            <a href="/" class="logo">
+                <img src="{{ asset('assets/images/PROSIX SPORTS LOGO PNG WHITE.png') }}" class="logo-img">
             </a>
             <div class="model-title">Customize Model</div>
-<a href="{{ $backUrl }}" class="close-btn">✕ Close</a>
+            <a href="{{ $backUrl }}" class="close-btn">✕ Close</a>
         </div>
 
         <div class="main-content">

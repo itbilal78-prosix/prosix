@@ -1114,7 +1114,7 @@ if (window.selectingMascotForText && window.currentApplicationLayer) {
 
         if (!window.selectedSvgElement) {
             closeMascotTemplateModal();
-            alert("Pehle jersey ka koi part select karo, phir dobara SELECT MASCOT click karo!");
+            alert("First select a part of the jersey, then click SELECT MASCOT again!");
             return;
         }
 
