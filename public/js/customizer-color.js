@@ -75,117 +75,7 @@
         ring.style.transform = `rotate(${-angle}deg)`;
     }
 
-//     window.updateColorWheel = function () {
 
-//         const wheel = document.getElementById('colorWheelRing');
-//         if (!wheel || selectedColors.length === 0) return;
-
-//         wheel.innerHTML = '';
-
-//         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-//         svg.setAttribute('width', '340');
-//         svg.setAttribute('height', '340');
-//         svg.style.position = 'absolute';
-//         svg.style.transition = 'transform .6s cubic-bezier(.22,.61,.36,1)';
-
-//         const center = 170;
-//         const radius = 160;
-//         const innerRadius = 110;
-
-//         const angleStep = 360 / selectedColors.length;
-
-//         selectedColors.forEach((color, i) => {
-
-//             const startAngle = (i * angleStep - 90) * Math.PI / 180;
-//             const endAngle = ((i + 1) * angleStep - 90) * Math.PI / 180;
-
-//             const x1 = center + radius * Math.cos(startAngle);
-//             const y1 = center + radius * Math.sin(startAngle);
-//             const x2 = center + radius * Math.cos(endAngle);
-//             const y2 = center + radius * Math.sin(endAngle);
-//             const x3 = center + innerRadius * Math.cos(endAngle);
-//             const y3 = center + innerRadius * Math.sin(endAngle);
-//             const x4 = center + innerRadius * Math.cos(startAngle);
-//             const y4 = center + innerRadius * Math.sin(startAngle);
-
-//             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-//             // clone for outer stroke only
-//             const strokePath = path.cloneNode();
-//             strokePath._isClone = true;
-
-
-//             strokePath.setAttribute('fill', 'none');
-//             strokePath.setAttribute('stroke', color);
-//             strokePath.setAttribute('stroke-width', '6');
-//             strokePath.style.pointerEvents = 'none';
-//             strokePath.style.display = 'none';
-
-//             svg.appendChild(strokePath);
-
-//             // link clone to main path
-//             path._strokeClone = strokePath;
-
-//             const largeArc = angleStep > 180 ? 1 : 0;
-
-//             path.setAttribute('d',
-//                 `M ${x1},${y1}
-//  A ${radius},${radius} 0 ${largeArc},1 ${x2},${y2}
-//  L ${x3},${y3}
-//  A ${innerRadius},${innerRadius} 0 ${largeArc},0 ${x4},${y4} Z`
-//             );
-
-//             path.setAttribute('fill', color);
-//             path.setAttribute('fill-rule', 'evenodd');
-
-//             path.setAttribute('stroke', 'none');
-//             path.style.color = color;   // 🔥 active outline ke liye
-
-//             path.style.cursor = 'pointer';
-//             path.style.transition = 'all .25s';
-
-//             // save angle for rotation
-//             path.setAttribute('data-angle', i * angleStep);
-
-//             // CLICK
-//             path.addEventListener('click', function () {
-
-//                 document.querySelectorAll('#colorWheelRing path').forEach(p => {
-//                     p.classList.remove('active');
-//                     if (p._strokeClone) p._strokeClone.style.display = 'none';
-//                 });
-
-//                 this.classList.add('active');
-
-//                 // show only THIS outline
-//                 if (this._strokeClone) {
-//                     this._strokeClone.style.display = 'block';
-//                     svg.appendChild(this._strokeClone); // bring outline top
-//                 }
-
-//                 svg.appendChild(this); // bring slice top
-
-//                 const deg = -(i * angleStep + angleStep / 2);
-//                 svg.style.transform = `rotate(${deg}deg)`;
-
-//                 applyColorToPart(color);
-//                 updateCenterColor(color);
-//             });
-
-
-//             path.addEventListener('mouseenter', () => path.style.filter = 'brightness(1.2)');
-//             path.addEventListener('mouseleave', () => path.style.filter = 'none');
-
-//             svg.appendChild(path);
-
-//         });
-
-//         wheel.appendChild(svg);
-//     };
-
-
-
-
-// Helper: hex color ko darken karo
 
 
 
@@ -209,6 +99,7 @@ window.updateColorWheel = function () {
     wheel.innerHTML = '';
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 340 340');
     svg.setAttribute('width', '340');
     svg.setAttribute('height', '340');
     svg.setAttribute('overflow', 'hidden');
@@ -306,11 +197,90 @@ this.setAttribute('stroke-width', '0');
     });
 
     wheel.appendChild(svg);
+
+    resizeColorWheelForLandscape();
+
+
+
 };
 
 
 
+function resizeColorWheelForLandscape() {
+    const isLandscape = window.innerWidth > window.innerHeight && window.innerHeight < 500;
+    const svg = document.querySelector('#colorWheelRing svg');
+    if (!svg) return;
 
+   if (isLandscape) {
+    const size = 160;
+
+    svg.style.width = size + 'px';
+    svg.style.height = size + 'px';
+    svg.style.position = 'relative';  // ← YEH ADD KARO
+    svg.style.top = '0';              // ← YEH ADD KARO
+    svg.style.left = '0';
+
+        const ring = document.getElementById('colorWheelRing');
+        if (ring) {
+            ring.style.marginTop = '0';
+            ring.style.width = size + 'px';
+            ring.style.height = size + 'px';
+        }
+
+        const container = document.querySelector('.color-wheel-container');
+        if (container) {
+            container.style.width = size + 'px';
+            container.style.height = size + 'px';
+            container.style.margin = '4px auto';
+        }
+
+        const outer = document.querySelector('.color-wheel-outer');
+        if (outer) {
+            outer.style.width = size + 'px';
+            outer.style.height = size + 'px';
+        }
+
+        const whiteRing = document.querySelector('.color-wheel-white-ring');
+        if (whiteRing) {
+            whiteRing.style.width = '80px';
+            whiteRing.style.height = '80px';
+        }
+
+        const center = document.querySelector('.color-wheel-center');
+        if (center) {
+            center.style.width = '80px';
+            center.style.height = '80px';
+            center.style.fontSize = '8px';
+        }
+    } else {
+        // Portrait — reset
+        svg.setAttribute('width', '340');
+        svg.setAttribute('height', '340');
+        svg.style.width = '';
+        svg.style.height = '';
+
+        const ring = document.getElementById('colorWheelRing');
+        if (ring) { ring.style.marginTop = ''; ring.style.width = ''; ring.style.height = ''; }
+
+        const container = document.querySelector('.color-wheel-container');
+        if (container) container.style.cssText = '';
+
+        const outer = document.querySelector('.color-wheel-outer');
+        if (outer) outer.style.cssText = '';
+
+        const whiteRing = document.querySelector('.color-wheel-white-ring');
+        if (whiteRing) whiteRing.style.cssText = '';
+
+        const center = document.querySelector('.color-wheel-center');
+        if (center) center.style.cssText = '';
+    }
+}
+
+// Orientation change par call karo
+window.addEventListener('resize', resizeColorWheelForLandscape);
+window.addEventListener('orientationchange', function () {
+    setTimeout(resizeColorWheelForLandscape, 300);
+});
 
 
 
@@ -403,7 +373,7 @@ window.highlightWheelColor = function(color) {
 };
     /* ================= APPLY COLOR TO SELECTED PART ================= */
 
-   
+
 
 function applyColorToPart(color) {
     if (!window.selectedSvgElement) {

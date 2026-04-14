@@ -4269,8 +4269,44 @@ if (gradientChanges?.[currentView]?.[el.id]) {
         }
     }
 
+// ===== ROTATE POPUP =====
+function showRotatePopup() {
+  var ov = document.getElementById('rotateOverlay');
+  var card = document.getElementById('rotateCard');
+  var icon = document.getElementById('phoneIcon');
 
+  ov.style.opacity = '1';
+  ov.style.pointerEvents = 'all';
+  card.style.transform = 'scale(1)';
+  icon.classList.add('rotating');
+}
 
+function hideRotatePopup() {
+  var ov = document.getElementById('rotateOverlay');
+  var card = document.getElementById('rotateCard');
+  var icon = document.getElementById('phoneIcon');
+
+  ov.style.opacity = '0';
+  ov.style.pointerEvents = 'none';
+  card.style.transform = 'scale(0.7)';
+  icon.classList.remove('rotating');
+}
+
+function checkOrientation() {
+  if (window.innerHeight > window.innerWidth) {
+    // Portrait → show
+    showRotatePopup();
+  } else {
+    // Landscape → hide
+    hideRotatePopup();
+  }
+}
+
+window.addEventListener('load', checkOrientation);
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', function () {
+  setTimeout(checkOrientation, 200);
+});
 
 
 

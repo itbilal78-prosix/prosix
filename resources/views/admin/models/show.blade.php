@@ -274,6 +274,51 @@
                         <button onclick="addNewApplication()">Add</button>
                     </div>
                 </div>
+
+
+
+                <!-- ROTATE POPUP -->
+                <div id="rotateOverlay"
+                    style="
+  position:fixed; inset:0; background:rgba(0,0,0,0.75);
+  display:flex; align-items:center; justify-content:center;
+  z-index:99999; opacity:0; pointer-events:none;
+  transition: opacity 0.3s ease;">
+
+                    <div id="rotateCard"
+                        style="
+    background:#1a1a1a; border-radius:20px;
+    padding:40px 48px; display:flex; flex-direction:column;
+    align-items:center; gap:20px;
+    transform: scale(0.7); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+
+                        <div id="phoneIcon" style="font-size:52px;">📱</div>
+                        <div style="color:#fff; font-size:18px; font-weight:600;">Rotate your phone</div>
+                        <div style="color:#999; font-size:13px; text-align:center;">
+                            Best experience in<br>landscape mode
+                        </div>
+
+                    </div>
+                </div>
+                <style>
+                    @keyframes phoneRotate {
+                        0% {
+                            transform: rotate(0deg);
+                        }
+
+                        40% {
+                            transform: rotate(-15deg);
+                        }
+
+                        100% {
+                            transform: rotate(90deg);
+                        }
+                    }
+
+                   #phoneIcon.rotating {
+  animation: phoneRotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+                </style>
                 <script>
                     window.backendColors = @json(
                         $colors->map(fn($c) => [
@@ -282,7 +327,31 @@
                             ]));
                 </script>
 
+<script>
+function checkOrientation() {
+  const isPortrait = window.innerHeight > window.innerWidth;
+  const isMobile   = window.innerWidth <= 1024 || window.innerHeight <= 600;
+  const overlay    = document.getElementById('rotateOverlay');
+  const icon       = document.getElementById('phoneIcon');
 
+  if (!overlay) return;
+
+  if (isMobile && isPortrait) {
+    overlay.style.opacity        = '1';
+    overlay.style.pointerEvents  = 'all';
+    document.getElementById('rotateCard').style.transform = 'scale(1)';
+    if (icon) icon.classList.add('rotating');
+  } else {
+    overlay.style.opacity        = '0';
+    overlay.style.pointerEvents  = 'none';
+    if (icon) icon.classList.remove('rotating');
+  }
+}
+
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', checkOrientation);
+document.addEventListener('DOMContentLoaded', checkOrientation);
+</script>
 
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 

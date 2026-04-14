@@ -1151,4 +1151,30 @@ gap:6px;
         var b = document.getElementById(bubId);
         if (b) b.style.display = 'none';
     }
+    function setSidebarPosition() {
+  const sidebar = document.getElementById('applicationsSidebar')
+                  || document.querySelector('.applications-sidebar');
+  if (!sidebar) return;
+
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const isMobile = window.innerHeight < 600;
+
+  if (isLandscape && isMobile) {
+    sidebar.style.right = '260px';   /* tools bar width */
+    sidebar.style.width = '220px';
+    sidebar.style.top   = '60px';
+  } else {
+    /* Desktop/Portrait — default values */
+    sidebar.style.right = '510px';
+    sidebar.style.width = '320px';
+    sidebar.style.top   = '70px';
+  }
+}
+
+window.addEventListener('resize', setSidebarPosition);
+window.addEventListener('orientationchange', setSidebarPosition);
+document.addEventListener('DOMContentLoaded', setSidebarPosition);
+
 </script>
+
+

@@ -495,6 +495,24 @@
         background: #3a3a3a;
         transform: translateY(-2px);
     }
+    @media screen and (orientation: landscape) and (max-height: 500px) {
+
+  .color-wheel-outer {
+    position: relative !important;
+    overflow: hidden !important;    /* ← YEH ZAROORI HAI */
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  .color-wheel-ring {
+    position: relative !important;
+    overflow: hidden !important;    /* ← YEH BHI */
+    width: 160px !important;
+    height: 160px !important;
+    margin-top: 0 !important;
+  }
+
+}
 </style>
 
 
