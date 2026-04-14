@@ -323,7 +323,7 @@
             <p class="confirm-msg">Are you sure you want to delete these models?</p>
             <div class="confirm-btns">
                 <button id="confirmCancel" class="btn btn-outline-dark">Cancel</button>
-                <button id="confirmOk" class="btn btn-dark">Delete</button>
+                <button id="confirmOk" class="btn btn-dark">Done</button>
             </div>
         </div>
     </div>
