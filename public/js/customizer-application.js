@@ -484,205 +484,205 @@
     };
 
     // ============================================================
-// ✅ FIX 2: addApplicationToSvg — POORA REPLACE KARO
-// ============================================================
+    // ✅ FIX 2: addApplicationToSvg — POORA REPLACE KARO
+    // ============================================================
 
-window.addApplicationToSvg = function (layer) {
-    if (layer.type === 'direct-mascot') {
-        if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
-        return;
-    }
-    const mainSvg = window.getMainSvg();
-    if (!mainSvg) { setTimeout(() => addApplicationToSvg(layer), 300); return; }
-    if (mainSvg.querySelector(`#${layer.id}`)) return;
+    window.addApplicationToSvg = function (layer) {
+        if (layer.type === 'direct-mascot') {
+            if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+            return;
+        }
+        const mainSvg = window.getMainSvg();
+        if (!mainSvg) { setTimeout(() => addApplicationToSvg(layer), 300); return; }
+        if (mainSvg.querySelector(`#${layer.id}`)) return;
 
-    let defs = mainSvg.querySelector('defs');
-    if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        mainSvg.insertBefore(defs, mainSvg.firstChild);
-    }
+        let defs = mainSvg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            mainSvg.insertBefore(defs, mainSvg.firstChild);
+        }
 
-    const partElement = mainSvg.querySelector(`#${layer.partId}`);
-    if (!partElement) { console.warn('Part not found', layer.partId); return; }
+        const partElement = mainSvg.querySelector(`#${layer.partId}`);
+        if (!partElement) { console.warn('Part not found', layer.partId); return; }
 
-    const clipId = `clip-${layer.id}`;
-    if (!defs.querySelector(`#${clipId}`)) {
-        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        clip.setAttribute('id', clipId);
-        const clone = partElement.cloneNode(true);
-        clone.removeAttribute('id');
-        clip.appendChild(clone);
-        defs.appendChild(clip);
-    }
+        const clipId = `clip-${layer.id}`;
+        if (!defs.querySelector(`#${clipId}`)) {
+            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+            clip.setAttribute('id', clipId);
+            const clone = partElement.cloneNode(true);
+            clone.removeAttribute('id');
+            clip.appendChild(clone);
+            defs.appendChild(clip);
+        }
 
-    const layerGroupId = `app-group-${layer.id}`;
-    let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
-    if (!layerGroup) {
-        layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        layerGroup.setAttribute('id', layerGroupId);
-        layerGroup.setAttribute('clip-path', `url(#${clipId})`);
-    }
+        const layerGroupId = `app-group-${layer.id}`;
+        let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+        if (!layerGroup) {
+            layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            layerGroup.setAttribute('id', layerGroupId);
+            layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+        }
 
-    // ✅ KEY FIX: hamesha LAST mein append karo — yahi SVG mein top pe dikhega
-    mainSvg.appendChild(layerGroup);
+        // ✅ KEY FIX: hamesha LAST mein append karo — yahi SVG mein top pe dikhega
+        mainSvg.appendChild(layerGroup);
 
-    const bbox = partElement.getBBox();
-    const cx = bbox.x + bbox.width / 2;
-    const cy = bbox.y + bbox.height / 2;
+        const bbox = partElement.getBBox();
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
 
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('id', layer.id);
-    text.setAttribute('x', cx + (layer.x || 0));
-    text.setAttribute('y', cy + (layer.y || 0));
-    text.setAttribute('font-size', layer.fontSize || 500);
-    text.style.fontFamily = layer.fontFamily;
-    text.setAttribute('fill', layer.fill);
-    text.setAttribute('stroke', layer.stroke);
-    text.setAttribute('stroke-width', layer.strokeWidth || 5);
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('paint-order', 'stroke fill');
-    text.setAttribute('stroke-linejoin', 'miter');
-    text.style.cursor = 'move';
- text.textContent = layer.text;
-if (layer.letterSpacing) text.style.letterSpacing = layer.letterSpacing + 'px';
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('id', layer.id);
+        text.setAttribute('x', cx + (layer.x || 0));
+        text.setAttribute('y', cy + (layer.y || 0));
+        text.setAttribute('font-size', layer.fontSize || 500);
+        text.style.fontFamily = layer.fontFamily;
+        text.setAttribute('fill', layer.fill);
+        text.setAttribute('stroke', layer.stroke);
+        text.setAttribute('stroke-width', layer.strokeWidth || 5);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('paint-order', 'stroke fill');
+        text.setAttribute('stroke-linejoin', 'miter');
+        text.style.cursor = 'move';
+        text.textContent = layer.text;
+        if (layer.letterSpacing) text.style.letterSpacing = layer.letterSpacing + 'px';
 
-    layerGroup.appendChild(text);
+        layerGroup.appendChild(text);
 
 
-    makeDraggable(text, layer);
-    text.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layer.id); });
+        makeDraggable(text, layer);
+        text.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layer.id); });
 
-    _applyFlipTransform(layer, mainSvg);
+        _applyFlipTransform(layer, mainSvg);
 
-    if (layer.outlineStyle) {
-        window.currentOutlineStyle = layer.outlineStyle;
-        if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
-        applyOutlineStyleToText(layer.id);
-    }
-};
+        if (layer.outlineStyle) {
+            window.currentOutlineStyle = layer.outlineStyle;
+            if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
+            applyOutlineStyleToText(layer.id);
+        }
+    };
 
 
 
     // ============================================================
-// ✅ FIX 3: applyDirectMascotToLayer — POORA REPLACE KARO
-// ============================================================
+    // ✅ FIX 3: applyDirectMascotToLayer — POORA REPLACE KARO
+    // ============================================================
 
-window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal) {
+    window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal) {
 
-    if (window.selectingMascotForText && window.currentApplicationLayer) {
-        applyMascotToText(svgContent);
-        window.selectingMascotForText = false;
-        return;
-    }
+        if (window.selectingMascotForText && window.currentApplicationLayer) {
+            applyMascotToText(svgContent);
+            window.selectingMascotForText = false;
+            return;
+        }
 
-    const layerId = forcedLayerId || window.currentApplicationLayer;
-    if (!layerId) return;
-    const layer = findLayerById(layerId);
-    if (!layer || layer.type !== 'direct-mascot') return;
-    const mainSvg = window.getMainSvg();
-    if (!mainSvg) return;
+        const layerId = forcedLayerId || window.currentApplicationLayer;
+        if (!layerId) return;
+        const layer = findLayerById(layerId);
+        if (!layer || layer.type !== 'direct-mascot') return;
+        const mainSvg = window.getMainSvg();
+        if (!mainSvg) return;
 
-    const savedFlipX = layer.flipX || 1;
-    const savedFlipY = layer.flipY || 1;
-    const savedFlipState = layer._flipState || 0;
+        const savedFlipX = layer.flipX || 1;
+        const savedFlipY = layer.flipY || 1;
+        const savedFlipState = layer._flipState || 0;
 
-    let defs = mainSvg.querySelector('defs');
-    if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        mainSvg.insertBefore(defs, mainSvg.firstChild);
-    }
+        let defs = mainSvg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            mainSvg.insertBefore(defs, mainSvg.firstChild);
+        }
 
-    const partElement = mainSvg.querySelector(`#${layer.partId}`);
-    if (!partElement) { console.warn('Part not found', layer.partId); return; }
+        const partElement = mainSvg.querySelector(`#${layer.partId}`);
+        if (!partElement) { console.warn('Part not found', layer.partId); return; }
 
-    const clipId = `clip-${layerId}`;
-    if (!defs.querySelector(`#${clipId}`)) {
-        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        clip.setAttribute('id', clipId);
-        const clone = partElement.cloneNode(true);
-        clone.removeAttribute('id');
-        clip.appendChild(clone);
-        defs.appendChild(clip);
-    }
+        const clipId = `clip-${layerId}`;
+        if (!defs.querySelector(`#${clipId}`)) {
+            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+            clip.setAttribute('id', clipId);
+            const clone = partElement.cloneNode(true);
+            clone.removeAttribute('id');
+            clip.appendChild(clone);
+            defs.appendChild(clip);
+        }
 
-    const layerGroupId = `app-group-${layerId}`;
-    let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
-    if (layerGroup) layerGroup.remove();
+        const layerGroupId = `app-group-${layerId}`;
+        let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+        if (layerGroup) layerGroup.remove();
 
-    layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    layerGroup.setAttribute('id', layerGroupId);
-    layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+        layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        layerGroup.setAttribute('id', layerGroupId);
+        layerGroup.setAttribute('clip-path', `url(#${clipId})`);
 
-    // ✅ KEY FIX: hamesha LAST mein append karo
-    mainSvg.appendChild(layerGroup);
+        // ✅ KEY FIX: hamesha LAST mein append karo
+        mainSvg.appendChild(layerGroup);
 
-    const bbox = partElement.getBBox();
-    const cx = bbox.x + bbox.width / 2;
-    const cy = bbox.y + bbox.height / 2;
+        const bbox = partElement.getBBox();
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svgContent, 'image/svg+xml');
-    let mascotSvg = doc.documentElement;
-    if (!mascotSvg || mascotSvg.nodeName !== 'svg') { alert('Mascot SVG load failed'); return; }
-    mascotSvg = mascotSvg.cloneNode(true);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+        let mascotSvg = doc.documentElement;
+        if (!mascotSvg || mascotSvg.nodeName !== 'svg') { alert('Mascot SVG load failed'); return; }
+        mascotSvg = mascotSvg.cloneNode(true);
 
-    const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100').split(' ').map(Number);
-    mascotSvg.querySelectorAll('rect,polygon,circle,ellipse').forEach(el => {
-        const x = parseFloat(el.getAttribute('x') || 0);
-        const y = parseFloat(el.getAttribute('y') || 0);
-        const w = parseFloat(el.getAttribute('width') || 0);
-        const h = parseFloat(el.getAttribute('height') || 0);
-        if (x <= 1 && y <= 1 && w >= vb[2] * 0.7 && h >= vb[3] * 0.7) el.remove();
-    });
-    mascotSvg.querySelectorAll('*').forEach(el => {
-        const style = el.getAttribute('style') || '';
-        const fill = el.getAttribute('fill') || '';
-        const isWhite = fill === '#fff' || fill === '#ffffff' || fill === 'white' ||
-            style.includes('fill:#fff') || style.includes('fill:white') || style.includes('fill:#ffffff');
-        const tag = el.tagName.toLowerCase();
-        if (isWhite && (tag === 'rect' || tag === 'polygon')) el.remove();
-    });
+        const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100').split(' ').map(Number);
+        mascotSvg.querySelectorAll('rect,polygon,circle,ellipse').forEach(el => {
+            const x = parseFloat(el.getAttribute('x') || 0);
+            const y = parseFloat(el.getAttribute('y') || 0);
+            const w = parseFloat(el.getAttribute('width') || 0);
+            const h = parseFloat(el.getAttribute('height') || 0);
+            if (x <= 1 && y <= 1 && w >= vb[2] * 0.7 && h >= vb[3] * 0.7) el.remove();
+        });
+        mascotSvg.querySelectorAll('*').forEach(el => {
+            const style = el.getAttribute('style') || '';
+            const fill = el.getAttribute('fill') || '';
+            const isWhite = fill === '#fff' || fill === '#ffffff' || fill === 'white' ||
+                style.includes('fill:#fff') || style.includes('fill:white') || style.includes('fill:#ffffff');
+            const tag = el.tagName.toLowerCase();
+            if (isWhite && (tag === 'rect' || tag === 'polygon')) el.remove();
+        });
 
-    if (!mascotSvg.getAttribute('viewBox')) mascotSvg.setAttribute('viewBox', '0 0 100 100');
-    mascotSvg.style.background = 'transparent';
+        if (!mascotSvg.getAttribute('viewBox')) mascotSvg.setAttribute('viewBox', '0 0 100 100');
+        mascotSvg.style.background = 'transparent';
 
-    const mascotSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
-    mascotSvg.setAttribute('width', mascotSize);
-    mascotSvg.setAttribute('height', mascotSize);
-    mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        const mascotSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
+        mascotSvg.setAttribute('width', mascotSize);
+        mascotSvg.setAttribute('height', mascotSize);
+        mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-    const mascotX = cx - mascotSize / 2 + (layer.x || 0);
-    const mascotY = cy - mascotSize / 2 + (layer.y || 0);
-    mascotSvg.setAttribute('x', mascotX);
-    mascotSvg.setAttribute('y', mascotY);
-    mascotSvg.setAttribute('id', layerId);
-    mascotSvg.style.cursor = 'default';
-    if (layer.mascotOpacity !== undefined) mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
+        const mascotX = cx - mascotSize / 2 + (layer.x || 0);
+        const mascotY = cy - mascotSize / 2 + (layer.y || 0);
+        mascotSvg.setAttribute('x', mascotX);
+        mascotSvg.setAttribute('y', mascotY);
+        mascotSvg.setAttribute('id', layerId);
+        mascotSvg.style.cursor = 'default';
+        if (layer.mascotOpacity !== undefined) mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
 
-    layerGroup.appendChild(mascotSvg);
+        layerGroup.appendChild(mascotSvg);
 
-    layer.mascotSvg = svgContent;
-    layer.mascotId = layerId;
-    layer._cx = cx;
-    layer._cy = cy;
-    layer._mascotSize = mascotSize;
-    layer._selectedColorCount = window.selectedMascotColorCount || (window.selectedColors ? window.selectedColors.length : 6);
-    layer.flipX = savedFlipX;
-    layer.flipY = savedFlipY;
-    layer._flipState = savedFlipState;
+        layer.mascotSvg = svgContent;
+        layer.mascotId = layerId;
+        layer._cx = cx;
+        layer._cy = cy;
+        layer._mascotSize = mascotSize;
+        layer._selectedColorCount = window.selectedMascotColorCount || (window.selectedColors ? window.selectedColors.length : 6);
+        layer.flipX = savedFlipX;
+        layer.flipY = savedFlipY;
+        layer._flipState = savedFlipState;
 
-    setTimeout(() => {
-        _applyFlipTransform(layer, mainSvg);
-    }, 50);
+        setTimeout(() => {
+            _applyFlipTransform(layer, mainSvg);
+        }, 50);
 
-    mascotSvg.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layerId); });
+        mascotSvg.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layerId); });
 
-    window.currentApplicationLayer = layerId;
-    updateApplicationLayersList();
-    selectApplicationLayer(layerId);
-    if (window.saveCustomizations) window.saveCustomizations();
-};
+        window.currentApplicationLayer = layerId;
+        updateApplicationLayersList();
+        selectApplicationLayer(layerId);
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
 
 
     // ============================================================
@@ -704,7 +704,7 @@ window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal
 
         const flipX = layer.flipX || 1;
         const flipY = layer.flipY || 1;
-        const rot   = layer.rotation || 0;
+        const rot = layer.rotation || 0;
 
         if (layer.type === 'direct-mascot') {
             // Mascot center = _cx + x offset, _cy + y offset
@@ -779,9 +779,9 @@ window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal
         layer._flipState = next;
 
         switch (next) {
-            case 0: layer.flipX = 1;  layer.flipY = 1;  break; // normal
-            case 1: layer.flipX = -1; layer.flipY = 1;  break; // left-right
-            case 2: layer.flipX = 1;  layer.flipY = -1; break; // top-bottom
+            case 0: layer.flipX = 1; layer.flipY = 1; break; // normal
+            case 1: layer.flipX = -1; layer.flipY = 1; break; // left-right
+            case 2: layer.flipX = 1; layer.flipY = -1; break; // top-bottom
             case 3: layer.flipX = -1; layer.flipY = -1; break; // both
         }
 
@@ -898,117 +898,133 @@ window.applyDirectMascotToLayer = function (svgContent, forcedLayerId, fromModal
     // =================== LAYER LIST ===================
     // ============================================================
 
-    window.updateApplicationLayersList = function () {
-        const container = document.getElementById('applicationLayersList');
-        if (!container) return;
-        container.innerHTML = '';
+ // =================== LAYER LIST ===================
+window.updateApplicationLayersList = function () {
+    const container = document.getElementById('applicationLayersList');
+    if (!container) return;
+    container.innerHTML = '';
 
-        if (!window.applicationsApplied || !Object.keys(window.applicationsApplied).length) {
-            container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;font-size:13px;">No applications added yet</p>';
-            return;
-        }
+    if (!window.applicationsApplied || !Object.keys(window.applicationsApplied).length) {
+        container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;font-size:13px;">No applications added yet</p>';
+        return;
+    }
 
-        let allLayerEntries = [];
-        Object.entries(window.applicationsApplied).forEach(([view, parts]) => {
-            Object.entries(parts).forEach(([partId, layers]) => {
-                layers.forEach((layer, index) => {
-                    allLayerEntries.push({ view, partId, layer, index });
-                });
+    let allLayerEntries = [];
+    Object.entries(window.applicationsApplied).forEach(([view, parts]) => {
+        Object.entries(parts).forEach(([partId, layers]) => {
+            layers.forEach((layer, index) => {
+                allLayerEntries.push({ view, partId, layer, index });
             });
         });
+    });
 
-        allLayerEntries.reverse();
+    allLayerEntries.reverse();   // latest on top
 
-        let layerNum = 1;
-        allLayerEntries.forEach(({ view, partId, layer, index }) => {
+    let layerNum = 1;
+    allLayerEntries.forEach(({ view, partId, layer, index }) => {
+        const viewShort = view.charAt(0).toUpperCase();
+        const isActive = window.currentApplicationLayer === layer.id;
+        const labelText = layer.type === 'direct-mascot'
+            ? (layer.mascotTitle || 'Mascot')
+            : (layer.text || 'Empty');
 
-            const viewShort = view.charAt(0).toUpperCase();
-            const isActive = window.currentApplicationLayer === layer.id;
-            const labelText = layer.type === 'direct-mascot'
-                ? (layer.mascotTitle || (layer.mascotSvg ? 'Mascot' : 'Mascot (pending)'))
-                : (layer.text || 'Empty');
+        const item = document.createElement('div');
+        item.className = 'application-layer-item';
+        item.setAttribute('draggable', 'true');
+        item.dataset.layerId = layer.id;
+        item.dataset.view = view;
+        item.dataset.partId = partId;
+        item.dataset.index = index;
 
-            const item = document.createElement('div');
-            item.className = 'application-layer-item';
-            item.setAttribute('draggable', 'true');
-            item.dataset.layerId = layer.id;
-            item.dataset.view = view;
-            item.dataset.partId = partId;
-            item.dataset.index = index;
+        item.style.cssText = `
+            display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; margin-bottom:6px;
+            background:${isActive ? '#383838' : '#585858'}; color:#fff; border:none; border-radius:6px;
+            cursor:grab; transition:all 0.2s; user-select:none;
+        `;
 
-            item.style.cssText = `
-display:flex;
-align-items:center;
-gap:10px;
-width:100%;
-padding:8px 10px;
-margin-bottom:6px;
-background:${isActive ? '#383838' : '#858585'};
-color:#fff;
-border:none;
-border-radius:0;
-cursor:pointer;
-transition:all 0.2s;
-user-select:none;
-`;
+        const flipState = layer._flipState || 0;
+        const flipIcons = { 0: '↔', 1: '↔', 2: '↕', 3: '↕↔' };
 
-            const flipState = layer._flipState || 0;
-            const flipIcons = { 0: '↔', 1: '↔', 2: '↕', 3: '↕↔' };
+        item.innerHTML = `
+            <div style="background:#2f2f2f;color:#fff;font-weight:700;font-size:13px;padding:4px 8px;border-radius:4px;flex-shrink:0;">
+                #${layerNum}
+            </div>
+            <div style="flex:1; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                ${labelText.toUpperCase()}
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+                <span style="background:#2f2f2f;color:#fff;padding:2px 6px;font-size:11px;border-radius:3px;">${viewShort}</span>
+                <div onclick="window.flipApplicationLayer('${layer.id}',event)" style="cursor:pointer; font-size:16px;">${flipIcons[flipState]}</div>
+                <div onclick="duplicateApplicationLayer('${layer.id}',event)" style="cursor:pointer; font-size:16px;">⧉</div>
+                <div onclick="removeApplicationLayer('${layer.id}',event)" style="cursor:pointer; font-size:18px; color:#fffff;">×</div>
+            </div>
+        `;
 
-            item.innerHTML = `
-<div style="background:#2f2f2f;color:#fff;font-weight:700;font-size:13px;padding:4px 8px;flex-shrink:0;">
-#${layerNum}
-</div>
-<div style="flex:1;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${labelText.toUpperCase()}</span>
-</div>
-<div style="display:flex;gap:12px;align-items:center;flex-shrink:0;">
-<span style="background:#2f2f2f;color:#fff;padding:2px 6px;font-size:11px;font-weight:700;">${viewShort}</span>
-<div onclick="window.flipApplicationLayer('${layer.id}',event)" style="cursor:pointer;">${flipIcons[flipState]}</div>
-<div onclick="duplicateApplicationLayer('${layer.id}',event)" style="cursor:pointer;">⧉</div>
-<div onclick="removeApplicationLayer('${layer.id}',event)" style="cursor:pointer;">×</div>
-</div>
-`;
+        // Click to select
+        item.onclick = function (e) {
+            if (e.target.closest('div[onclick]')) return; // buttons pe click na ho
+            selectApplicationLayer(layer.id);
+        };
 
-            item.onclick = function (e) {
-                if (e.target.closest('.drag-handle')) return;
-                selectApplicationLayer(layer.id);
-            };
-
-            // Drag & Drop
-            item.addEventListener('dragstart', e => {
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', layer.id);
-                item.style.opacity = '0.4';
-                window._draggingLayerId = layer.id;
-                window._draggingView = view;
-                window._draggingPartId = partId;
-            });
-            item.addEventListener('dragend', () => { item.style.opacity = '1'; window._draggingLayerId = null; });
-            item.addEventListener('dragover', e => { e.preventDefault(); if (window._draggingLayerId !== layer.id) item.style.outline = '2px solid #000000'; });
-            item.addEventListener('dragleave', () => { item.style.outline = 'none'; });
-            item.addEventListener('drop', e => {
-                e.preventDefault();
-                item.style.outline = 'none';
-                const fromId = window._draggingLayerId;
-                if (!fromId || fromId === layer.id) return;
-                if (window._draggingView !== view || window._draggingPartId !== partId) return;
-                const arr = window.applicationsApplied[view][partId];
-                const fromIdx = arr.findIndex(l => l.id === fromId);
-                const toIdx = arr.findIndex(l => l.id === layer.id);
-                if (fromIdx === -1 || toIdx === -1) return;
-                const [removed] = arr.splice(fromIdx, 1);
-                const adjustedToIdx = toIdx <= fromIdx ? toIdx + 1 : toIdx;
-                arr.splice(adjustedToIdx, 0, removed);
-                reorderSvgLayers(view, partId, arr);
-                updateApplicationLayersList();
-                if (window.saveCustomizations) window.saveCustomizations();
-            });
-
-            container.appendChild(item);
-            layerNum++;
+        // =================== DRAG & DROP (Real-time Feel) ===================
+        item.addEventListener('dragstart', e => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', layer.id);
+            item.style.opacity = '0.4';
+            window._draggingLayerId = layer.id;
+            window._draggingView = view;
+            window._draggingPartId = partId;
         });
-    };
+
+        item.addEventListener('dragend', () => {
+            item.style.opacity = '1';
+            window._draggingLayerId = null;
+        });
+
+        item.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (window._draggingLayerId !== layer.id) {
+                item.style.borderTop = '3px solid #000';
+            }
+        });
+
+        item.addEventListener('dragleave', () => {
+            item.style.borderTop = 'none';
+        });
+
+        item.addEventListener('drop', e => {
+            e.preventDefault();
+            item.style.borderTop = 'none';
+
+            const fromId = window._draggingLayerId;
+            if (!fromId || fromId === layer.id) return;
+            if (window._draggingView !== view || window._draggingPartId !== partId) return;
+
+            const arr = window.applicationsApplied[view][partId];
+            if (!arr) return;
+
+            const fromIdx = arr.findIndex(l => l.id === fromId);
+            const toIdx = arr.findIndex(l => l.id === layer.id);
+
+            if (fromIdx === -1 || toIdx === -1) return;
+
+            // Reorder array
+            const [movedLayer] = arr.splice(fromIdx, 1);
+            arr.splice(toIdx, 0, movedLayer);
+
+            // 🔥 Real-time SVG reorder
+            reorderSvgLayers(view, partId, arr);
+
+            // List refresh
+            updateApplicationLayersList();
+
+            if (window.saveCustomizations) window.saveCustomizations();
+        });
+
+        container.appendChild(item);
+        layerNum++;
+    });
+};
 
     window.duplicateApplicationLayer = function (layerId, event) {
         if (event) event.stopPropagation();
@@ -1711,13 +1727,13 @@ user-select:none;
             if (opacitySlider && layer.patternOpacity) { opacitySlider.value = layer.patternOpacity; document.getElementById('patternOpacityValueTab').textContent = layer.patternOpacity; }
             renderTextPatternPalette(layer.patternSvg);
         }
-// ✅ FIX: Outline count restore per layer
-const outline1Input = document.querySelector('#outline1Section input[type="number"]');
-const outline2Input = document.querySelector('#outline2Section input[type="number"]');
-const shadowInput = document.querySelector('#shadowSection input[type="number"]');
-if (outline1Input) outline1Input.value = layer.strokeWidth || 3;
-if (outline2Input) outline2Input.value = layer.strokeWidth2 || 3;
-if (shadowInput) shadowInput.value = layer.shadowOffset || 3;
+        // ✅ FIX: Outline count restore per layer
+        const outline1Input = document.querySelector('#outline1Section input[type="number"]');
+        const outline2Input = document.querySelector('#outline2Section input[type="number"]');
+        const shadowInput = document.querySelector('#shadowSection input[type="number"]');
+        if (outline1Input) outline1Input.value = layer.strokeWidth || 3;
+        if (outline2Input) outline2Input.value = layer.strokeWidth2 || 3;
+        if (shadowInput) shadowInput.value = layer.shadowOffset || 3;
         switchTextCustomizationTab('colors');
     }
 
@@ -1726,10 +1742,19 @@ if (shadowInput) shadowInput.value = layer.shadowOffset || 3;
     // ============================================================
 
     window.updateDirectMascotScale = function (value) {
+        // Value ko number mein convert karo
+        value = parseInt(value) || 100;
+
+        // ==================== SAFETY LIMITS ====================
+        if (value < 30) value = 30;      // Minimum size (bahut chhota na ho)
+        if (value > 400) value = 400;    // Maximum size (ab 4x tak ja sakta hai)
+
         if (!window.currentApplicationLayer) return;
+
         const layer = findLayerById(window.currentApplicationLayer);
         if (!layer || layer.type !== 'direct-mascot') return;
 
+        // Scale save karo layer mein
         layer.mascotScaleX = value / 100;
         layer.mascotScaleY = value / 100;
 
@@ -1746,18 +1771,28 @@ if (shadowInput) shadowInput.value = layer.shadowOffset || 3;
         if (mascotEl) {
             const cx = layer._cx || 0;
             const cy = layer._cy || 0;
+
             mascotEl.setAttribute('width', newSize);
             mascotEl.setAttribute('height', newSize);
             mascotEl.setAttribute('x', cx - newSize / 2 + (layer.x || 0));
             mascotEl.setAttribute('y', cy - newSize / 2 + (layer.y || 0));
+
             layer._mascotSize = newSize;
+
+            // Flip + Rotation properly apply karo
             _applyFlipTransform(layer, mainSvg);
         }
 
-        document.getElementById('directMascotScaleValue').textContent = value;
+        // UI Update
+        const scaleValueEl = document.getElementById('directMascotScaleValue');
+        if (scaleValueEl) scaleValueEl.textContent = value;
+
+        // Agar color mapping hai to re-apply karo
         if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
             setTimeout(() => _applyDirectMascotColorMap(layer), 100);
         }
+
+        // Save customization
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
@@ -1843,21 +1878,21 @@ if (shadowInput) shadowInput.value = layer.shadowOffset || 3;
             if (layer.fontFamily) btn.style.fontFamily = layer.fontFamily;
         }
 
-      if (posX) appFillSlider(posX);
-if (posY) appFillSlider(posY);
+        if (posX) appFillSlider(posX);
+        if (posY) appFillSlider(posY);
 
-// ✅ FIX: Letter Spacing restore
-const allLetterSpacingInputs = document.querySelectorAll('input[oninput*="updateLetterSpacing"]');
-allLetterSpacingInputs.forEach(inp => { inp.value = layer.letterSpacing || 0; });
+        // ✅ FIX: Letter Spacing restore
+        const allLetterSpacingInputs = document.querySelectorAll('input[oninput*="updateLetterSpacing"]');
+        allLetterSpacingInputs.forEach(inp => { inp.value = layer.letterSpacing || 0; });
 
-// ✅ FIX: Width/Height restore
-const allWidthInputs = document.querySelectorAll('input[oninput*="updateTextScale(\'x\'"]');
-allWidthInputs.forEach(inp => { inp.value = Math.round((layer.scaleX || 1) * 100); });
-const allHeightInputs = document.querySelectorAll('input[oninput*="updateTextScale(\'y\'"]');
-allHeightInputs.forEach(inp => { inp.value = Math.round((layer.scaleY || 1) * 100); });
+        // ✅ FIX: Width/Height restore
+        const allWidthInputs = document.querySelectorAll('input[oninput*="updateTextScale(\'x\'"]');
+        allWidthInputs.forEach(inp => { inp.value = Math.round((layer.scaleX || 1) * 100); });
+        const allHeightInputs = document.querySelectorAll('input[oninput*="updateTextScale(\'y\'"]');
+        allHeightInputs.forEach(inp => { inp.value = Math.round((layer.scaleY || 1) * 100); });
 
-// Restore rotation wheel
-if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
+        // Restore rotation wheel
+        if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
     };
 
     window.updateFontSize = function (value) {
@@ -1930,27 +1965,27 @@ if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
         setTimeout(() => _showPlusIcon(layer.id), 30);
     };
 
-   window.updateOutlineStroke = function (type, value) {
-    if (!window.currentApplicationLayer) return;
-    const layer = findLayerById(window.currentApplicationLayer);
-    if (!layer) return;
-    const textEl = document.getElementById(layer.id);
-    if (!textEl) return;
-    if (type === 'outline1') {
-        textEl.setAttribute('stroke-width', value);
-        layer.strokeWidth = parseInt(value);
-    }
-    if (type === 'outline2') {
-        layer.strokeWidth2 = parseInt(value);
-        const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        if (outlines.length) outlines[0].setAttribute('stroke-width', value);
-    }
-    if (type === 'shadow') {
-        layer.shadowOffset = parseInt(value);
-        applyOutlineStyleToText(layer.id);
-    }
-    if (window.saveCustomizations) window.saveCustomizations();
-};
+    window.updateOutlineStroke = function (type, value) {
+        if (!window.currentApplicationLayer) return;
+        const layer = findLayerById(window.currentApplicationLayer);
+        if (!layer) return;
+        const textEl = document.getElementById(layer.id);
+        if (!textEl) return;
+        if (type === 'outline1') {
+            textEl.setAttribute('stroke-width', value);
+            layer.strokeWidth = parseInt(value);
+        }
+        if (type === 'outline2') {
+            layer.strokeWidth2 = parseInt(value);
+            const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
+            if (outlines.length) outlines[0].setAttribute('stroke-width', value);
+        }
+        if (type === 'shadow') {
+            layer.shadowOffset = parseInt(value);
+            applyOutlineStyleToText(layer.id);
+        }
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
 
     window.selectStrokeLinecap = function (value, btn) {
         document.querySelectorAll('[id^="cap-"]').forEach(b => b.classList.remove('selected'));
@@ -2065,40 +2100,40 @@ if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
 
 
 
-    window.embedFontsInSvg = function(svgElement) {
-    if (!window.backendFonts || !svgElement) return;
+    window.embedFontsInSvg = function (svgElement) {
+        if (!window.backendFonts || !svgElement) return;
 
-    let defs = svgElement.querySelector('defs');
-    if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        svgElement.insertBefore(defs, svgElement.firstChild);
-    }
-
-    // Purane font styles hata do
-    defs.querySelectorAll('style[data-fonts]').forEach(s => s.remove());
-
-    // SVG ke andar use ho rahe fonts nikalo
-    const usedFonts = new Set();
-    svgElement.querySelectorAll('text').forEach(t => {
-        const ff = t.style.fontFamily || t.getAttribute('font-family');
-        if (ff) usedFonts.add(ff.replace(/['"]/g, '').trim());
-    });
-
-    // Sirf use ho rahe fonts embed karo
-    let fontCSS = '';
-    window.backendFonts.forEach(font => {
-        if (usedFonts.has(`font_${font.id}`)) {
-            fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }\n`;
+        let defs = svgElement.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            svgElement.insertBefore(defs, svgElement.firstChild);
         }
-    });
 
-    if (fontCSS) {
-        const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-        styleEl.setAttribute('data-fonts', '1');
-        styleEl.textContent = fontCSS;
-        defs.appendChild(styleEl);
-    }
-};
+        // Purane font styles hata do
+        defs.querySelectorAll('style[data-fonts]').forEach(s => s.remove());
+
+        // SVG ke andar use ho rahe fonts nikalo
+        const usedFonts = new Set();
+        svgElement.querySelectorAll('text').forEach(t => {
+            const ff = t.style.fontFamily || t.getAttribute('font-family');
+            if (ff) usedFonts.add(ff.replace(/['"]/g, '').trim());
+        });
+
+        // Sirf use ho rahe fonts embed karo
+        let fontCSS = '';
+        window.backendFonts.forEach(font => {
+            if (usedFonts.has(`font_${font.id}`)) {
+                fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }\n`;
+            }
+        });
+
+        if (fontCSS) {
+            const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+            styleEl.setAttribute('data-fonts', '1');
+            styleEl.textContent = fontCSS;
+            defs.appendChild(styleEl);
+        }
+    };
     // ============================================================
     // =================== FONT LOADING ===================
     // ============================================================
@@ -2163,7 +2198,7 @@ if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
                 callback(bb, textEl, mainSvg);
                 return;
             }
-        } catch (e) {}
+        } catch (e) { }
         if (retries < 10) {
             setTimeout(() => _getTextBBoxWithRetry(layerId, callback, retries + 1), 150);
         }
@@ -2173,7 +2208,7 @@ if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
         try {
             const bb = textEl.getBBox();
             if (bb.width > 0 && bb.height > 0) return bb;
-        } catch (e) {}
+        } catch (e) { }
         return null;
     }
 
@@ -2323,7 +2358,7 @@ if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
         }
 
         // Try to get bbox — retry if font not loaded yet
-        _getTextBBoxWithRetry(layerId, function(bb) {
+        _getTextBBoxWithRetry(layerId, function (bb) {
             _buildPattern(bb);
         });
     };
@@ -2571,7 +2606,7 @@ if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
         }
 
         // Use getBBox retry to ensure font is loaded
-        _getTextBBoxWithRetry(layerId, function(bb) {
+        _getTextBBoxWithRetry(layerId, function (bb) {
             _buildMascotPattern(bb);
         });
 
@@ -2724,78 +2759,81 @@ if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
 
     function findLayerById(id) { return window.findLayerById(id); }
 
-   // ============================================================
-// ✅ FIX 4: initializeApplicationsOnLoad — POORA REPLACE KARO
-// ============================================================
+    // ============================================================
+    // ✅ FIX 4: initializeApplicationsOnLoad — POORA REPLACE KARO
+    // ============================================================
 
-window.initializeApplicationsOnLoad = function () {
-    if (!window.applicationsApplied) return;
-    const view = window.currentView;
-    if (!window.applicationsApplied[view] || !Object.keys(window.applicationsApplied[view]).length) return;
-    const svg = window.getMainSvg();
-    if (!svg) { setTimeout(window.initializeApplicationsOnLoad, 300); return; }
+    window.initializeApplicationsOnLoad = function () {
+        if (!window.applicationsApplied) return;
+        const view = window.currentView;
+        if (!window.applicationsApplied[view] || !Object.keys(window.applicationsApplied[view]).length) return;
+        const svg = window.getMainSvg();
+        if (!svg) { setTimeout(window.initializeApplicationsOnLoad, 300); return; }
 
-    svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
-    svg.querySelectorAll('#application-group').forEach(g => g.remove());
-    svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+        svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
+        svg.querySelectorAll('#application-group').forEach(g => g.remove());
+        svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
 
-    Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-        layers.forEach(layer => {
-            if (layer.flipX === undefined) layer.flipX = 1;
-            if (layer.flipY === undefined) layer.flipY = 1;
-            if (layer._flipState === undefined) layer._flipState = 0;
+        Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+            layers.forEach(layer => {
+                if (layer.flipX === undefined) layer.flipX = 1;
+                if (layer.flipY === undefined) layer.flipY = 1;
+                if (layer._flipState === undefined) layer._flipState = 0;
 
-            addApplicationToSvg(layer);
+                addApplicationToSvg(layer);
 
-            if (layer.type === 'direct-mascot' && layer.mascotSvg && layer._colorMap && Object.keys(layer._colorMap).length) {
-                (l => setTimeout(() => _applyDirectMascotColorMap(l), 400))(layer);
-            }
-            if (layer.hasPattern && layer.patternSvg) {
-                const prev = window.currentApplicationLayer;
-                window.currentApplicationLayer = layer.id;
-                window.applyPatternToText(layer.patternSvg, layer.id);
-                if (layer.patternOpacity) window.updateTextPatternOpacity(layer.patternOpacity);
-                window.currentApplicationLayer = prev;
-            }
-            if (layer.hasMascot && layer.mascotSvg) {
-                const prev = window.currentApplicationLayer;
-                window.currentApplicationLayer = layer.id;
-                window.applyMascotToText(layer.mascotSvg, layer.id);
-                if (layer.mascotOpacity) window.updateTextMascotOpacity(layer.mascotOpacity);
-                window.currentApplicationLayer = prev;
-            }
+                if (layer.type === 'direct-mascot' && layer.mascotSvg && layer._colorMap && Object.keys(layer._colorMap).length) {
+                    (l => setTimeout(() => _applyDirectMascotColorMap(l), 400))(layer);
+                }
+                if (layer.hasPattern && layer.patternSvg) {
+                    const prev = window.currentApplicationLayer;
+                    window.currentApplicationLayer = layer.id;
+                    window.applyPatternToText(layer.patternSvg, layer.id);
+                    if (layer.patternOpacity) window.updateTextPatternOpacity(layer.patternOpacity);
+                    window.currentApplicationLayer = prev;
+                }
+                if (layer.hasMascot && layer.mascotSvg) {
+                    const prev = window.currentApplicationLayer;
+                    window.currentApplicationLayer = layer.id;
+                    window.applyMascotToText(layer.mascotSvg, layer.id);
+                    if (layer.mascotOpacity) window.updateTextMascotOpacity(layer.mascotOpacity);
+                    window.currentApplicationLayer = prev;
+                }
+            });
         });
-    });
 
-    updateApplicationLayersList();
+        updateApplicationLayersList();
 
-    // ✅ KEY FIX: load hone ke baad application layers ko top pe lao
-    setTimeout(() => {
-        if (window.bringApplicationLayersToTop) {
-            window.bringApplicationLayersToTop();
-        }
-    }, 500);
-};
+        // ✅ KEY FIX: load hone ke baad application layers ko top pe lao
+        setTimeout(() => {
+            if (window.bringApplicationLayersToTop) {
+                window.bringApplicationLayersToTop();
+            }
+        }, 500);
+    };
 
 
     // ============================================================
-// ✅ FIX 5: reorderSvgLayers — POORA REPLACE KARO
-// ============================================================
+    // ✅ FIX 5: reorderSvgLayers — POORA REPLACE KARO
+    // ============================================================
 
-window.reorderSvgLayers = function (view, partId, orderedLayers) {
+ window.reorderSvgLayers = function (view, partId, orderedLayers) {
     const mainSvg = window.getMainSvg();
     if (!mainSvg) return;
+
     orderedLayers.forEach(layer => {
         const group = mainSvg.querySelector(`#app-group-${layer.id}`);
-        if (group) mainSvg.appendChild(group); // last = top
-        setTimeout(() => _applyFlipTransform(layer, mainSvg), 50);
+        if (group) {
+            mainSvg.appendChild(group);   // Last mein append = top pe
+        }
     });
-    // ✅ Sab layers reorder hone ke baad bhi top pe rakho
+
+    // Extra safety - sab ko top pe le aao
     setTimeout(() => {
         if (window.bringApplicationLayersToTop) {
             window.bringApplicationLayersToTop();
         }
-    }, 100);
+    }, 10);
 };
 
     // ============================================================
@@ -2810,8 +2848,8 @@ window.reorderSvgLayers = function (view, partId, orderedLayers) {
 
         const cx = 80, cy = 80, r = 68;
         const circumference = 2 * Math.PI * r;
-       const snapPoints = [0, 90, 180, 270, 360];
-const snapThreshold = 5;
+        const snapPoints = [0, 90, 180, 270, 360];
+        const snapThreshold = 5;
 
         let angle = 0, dragging = false, startAngle = 0, startRot = 0;
 
@@ -2963,20 +3001,20 @@ const snapThreshold = 5;
     console.log('✅ applications.js — v2 FIXED: rotation+flip, drag direction, pattern/mascot inside text');
 
 
-window.bringApplicationLayersToTop = function () {
-    const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-    if (!mainSvg) return;
+    window.bringApplicationLayersToTop = function () {
+        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) return;
 
-    // Saare application groups collect karo
-    const appGroups = Array.from(mainSvg.querySelectorAll('[id^="app-group-"]'));
+        // Saare application groups collect karo
+        const appGroups = Array.from(mainSvg.querySelectorAll('[id^="app-group-"]'));
 
-    // Ek ek karke last mein append karo (yahi top pe aata hai SVG mein)
-    appGroups.forEach(group => {
-        mainSvg.appendChild(group);
-    });
+        // Ek ek karke last mein append karo (yahi top pe aata hai SVG mein)
+        appGroups.forEach(group => {
+            mainSvg.appendChild(group);
+        });
 
-    console.log('✅ Application layers brought to top:', appGroups.length);
-};
+        console.log('✅ Application layers brought to top:', appGroups.length);
+    };
 
 
 

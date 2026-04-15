@@ -328,7 +328,7 @@
         </div>
     </div>
 
-    {{-- ════ STYLES ════ --}}
+    {{-- ══ ══ STYLES ══ ══ --}}
     <style>
         /* ── Toast ── */
         #toast-container {
