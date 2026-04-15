@@ -487,44 +487,44 @@
     // ✅ FIX 2: addApplicationToSvg — POORA REPLACE KARO
     // ============================================================
 
-    window.addApplicationToSvg = function (layer) {
-        if (layer.type === 'direct-mascot') {
-            if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
-            return;
-        }
-        const mainSvg = window.getMainSvg();
-        if (!mainSvg) { setTimeout(() => addApplicationToSvg(layer), 300); return; }
-        if (mainSvg.querySelector(`#${layer.id}`)) return;
+   window.addApplicationToSvg = function (layer) {
+    if (layer.type === 'direct-mascot') {
+        if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+        return;
+    }
+    const mainSvg = window.getMainSvg();
+    if (!mainSvg) { setTimeout(() => addApplicationToSvg(layer), 300); return; }
+    if (mainSvg.querySelector(`#${layer.id}`)) return;
 
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
 
-        const partElement = mainSvg.querySelector(`#${layer.partId}`);
-        if (!partElement) { console.warn('Part not found', layer.partId); return; }
+    const partElement = mainSvg.querySelector(`#${layer.partId}`);
+    if (!partElement) { console.warn('Part not found', layer.partId); return; }
 
-        const clipId = `clip-${layer.id}`;
-        if (!defs.querySelector(`#${clipId}`)) {
-            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-            clip.setAttribute('id', clipId);
-            const clone = partElement.cloneNode(true);
-            clone.removeAttribute('id');
-            clip.appendChild(clone);
-            defs.appendChild(clip);
-        }
+    // ✅ FIX: view + layer ID based clip — never shared across views
+    const clipId = `clip-${layer.view}-${layer.id}`;
+    if (!defs.querySelector(`#${clipId}`)) {
+        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clip.setAttribute('id', clipId);
+        const clone = partElement.cloneNode(true);
+        clone.removeAttribute('id');
+        clip.appendChild(clone);
+        defs.appendChild(clip);
+    }
 
-        const layerGroupId = `app-group-${layer.id}`;
-        let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
-        if (!layerGroup) {
-            layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            layerGroup.setAttribute('id', layerGroupId);
-            layerGroup.setAttribute('clip-path', `url(#${clipId})`);
-        }
+    const layerGroupId = `app-group-${layer.id}`;
+    let layerGroup = mainSvg.querySelector(`#${layerGroupId}`);
+    if (!layerGroup) {
+        layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        layerGroup.setAttribute('id', layerGroupId);
+        layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+    }
+    mainSvg.appendChild(layerGroup);
 
-        // ✅ KEY FIX: hamesha LAST mein append karo — yahi SVG mein top pe dikhega
-        mainSvg.appendChild(layerGroup);
 
         const bbox = partElement.getBBox();
         const cx = bbox.x + bbox.width / 2;
@@ -596,7 +596,7 @@
         const partElement = mainSvg.querySelector(`#${layer.partId}`);
         if (!partElement) { console.warn('Part not found', layer.partId); return; }
 
-        const clipId = `clip-${layerId}`;
+const clipId = `clip-${layer.view}-${layerId}`;
         if (!defs.querySelector(`#${clipId}`)) {
             const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
             clip.setAttribute('id', clipId);
@@ -2729,27 +2729,27 @@ window.updateApplicationLayersList = function () {
     // =================== REMOVE / FIND LAYER ===================
     // ============================================================
 
-    window.removeApplicationLayer = function (layerId, event) {
-        if (event) event.stopPropagation();
-        Object.keys(window.applicationsApplied).forEach(view => {
-            Object.keys(window.applicationsApplied[view]).forEach(partId => {
-                window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
-                if (!window.applicationsApplied[view][partId].length) delete window.applicationsApplied[view][partId];
-            });
-        });
-        const layerGroup = document.getElementById(`app-group-${layerId}`);
-        if (layerGroup) layerGroup.remove();
-        const mainSvg = window.getMainSvg();
-        if (mainSvg) { const clip = mainSvg.querySelector(`#clip-${layerId}`); if (clip) clip.remove(); }
-        document.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => o.remove());
-        if (window.currentApplicationLayer === layerId) {
-            window.currentApplicationLayer = null;
-            document.getElementById('applicationLayerControls').style.display = 'none';
-            _hidePlusIcon(); _hideMascotBox();
-        }
-        updateApplicationLayersList();
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+    // window.removeApplicationLayer = function (layerId, event) {
+    //     if (event) event.stopPropagation();
+    //     Object.keys(window.applicationsApplied).forEach(view => {
+    //         Object.keys(window.applicationsApplied[view]).forEach(partId => {
+    //             window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
+    //             if (!window.applicationsApplied[view][partId].length) delete window.applicationsApplied[view][partId];
+    //         });
+    //     });
+    //     const layerGroup = document.getElementById(`app-group-${layerId}`);
+    //     if (layerGroup) layerGroup.remove();
+    //     const mainSvg = window.getMainSvg();
+    //     if (mainSvg) { const clip = mainSvg.querySelector(`#clip-${layer.view}-${layerId}`); if (clip) clip.remove(); }
+    //     document.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => o.remove());
+    //     if (window.currentApplicationLayer === layerId) {
+    //         window.currentApplicationLayer = null;
+    //         document.getElementById('applicationLayerControls').style.display = 'none';
+    //         _hidePlusIcon(); _hideMascotBox();
+    //     }
+    //     updateApplicationLayersList();
+    //     if (window.saveCustomizations) window.saveCustomizations();
+    // };
 
     window.findLayerById = function (layerId) {
         let found = null;

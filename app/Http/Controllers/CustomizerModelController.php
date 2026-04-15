@@ -15,16 +15,20 @@ class CustomizerModelController extends Controller
     // ─── INDEX ────────────────────────────────────────────────────
     public function index()
     {
+        // $categories = Category::whereNull('parent_id')
+        //     ->where('status', 1)
+        //     ->with([
+        //         'subcategories',
+        //         'models' => function ($q) {
+        //             $q->orderBy('position');
+        //         },
+        //         'models.subcategory',
+        //     ])
+        //     ->get();
         $categories = Category::whereNull('parent_id')
-            ->where('status', 1)
-            ->with([
-                'subcategories',
-                'models' => function ($q) {
-                    $q->orderBy('position');
-                },
-                'models.subcategory',
-            ])
-            ->get();
+    ->where('status', 1)
+    ->with(['subcategories']) // 👈 models hata diya
+    ->get();
 
         return view('admin.models.index', compact('categories'));
     }

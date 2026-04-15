@@ -676,7 +676,7 @@
         }
 
         // ================= CREATE CLIP PATH =================
-        const clipId = `clip-${layer.partId}`;
+const clipId = `clip-${layer.view}-${layer.id}`;
 
         if (!defs.querySelector(`#${clipId}`)) {
             const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
@@ -2010,36 +2010,43 @@ font-display: swap;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    window.removeApplicationLayer = function (layerId, event) {
-        if (event) event.stopPropagation();
+ window.removeApplicationLayer = function (layerId, event) {
+    if (event) event.stopPropagation();
 
-        Object.keys(window.applicationsApplied).forEach(view => {
-            Object.keys(window.applicationsApplied[view]).forEach(partId => {
-                window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
+    // Get layer before removing it (need view info)
+    const layerToRemove = findLayerById(layerId);
 
-                if (window.applicationsApplied[view][partId].length === 0) {
-                    delete window.applicationsApplied[view][partId];
-                }
-            });
+    Object.keys(window.applicationsApplied).forEach(view => {
+        Object.keys(window.applicationsApplied[view]).forEach(partId => {
+            window.applicationsApplied[view][partId] =
+                window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
+            if (!window.applicationsApplied[view][partId].length)
+                delete window.applicationsApplied[view][partId];
         });
+    });
 
-        const textEl = document.getElementById(layerId);
-        if (textEl) textEl.remove();
+    const layerGroup = document.getElementById(`app-group-${layerId}`);
+    if (layerGroup) layerGroup.remove();
 
-        const outlines = document.querySelectorAll(`[data-outline-for="${layerId}"]`);
-        outlines.forEach(outline => outline.remove());
+    const mainSvg = window.getMainSvg();
+    if (mainSvg && layerToRemove) {
+        // ✅ FIX: Remove correct view-specific clip
+        const clip = mainSvg.querySelector(`#clip-${layerToRemove.view}-${layerId}`);
+        if (clip) clip.remove();
+        // Also clean up old-format clips just in case
+        const oldClip = mainSvg.querySelector(`#clip-${layerId}`);
+        if (oldClip) oldClip.remove();
+    }
 
-        if (window.currentApplicationLayer === layerId) {
-            window.currentApplicationLayer = null;
-            document.getElementById('applicationLayerControls').style.display = 'none';
-        }
-
-        updateApplicationLayersList();
-
-        if (window.saveCustomizations) window.saveCustomizations();
-
-        console.log('✅ Application removed:', layerId);
-    };
+    document.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => o.remove());
+    if (window.currentApplicationLayer === layerId) {
+        window.currentApplicationLayer = null;
+        document.getElementById('applicationLayerControls').style.display = 'none';
+        _hidePlusIcon(); _hideMascotBox();
+    }
+    updateApplicationLayersList();
+    if (window.saveCustomizations) window.saveCustomizations();
+};
 
     // =================== HELPER FUNCTIONS ===================
 
@@ -3784,8 +3791,9 @@ if (gradientChanges?.[currentView]?.[el.id]) {
                         const cy = bbox.y + bbox.height / 2;
 
                         // Clip path banao
-                        const clipId = `preview-clip-${layer.id}`;
-                        if (!defs.querySelector(`#${clipId}`)) {
+const clipId = `preview-clip-${view}-${layer.id}`;
+
+if (!defs.querySelector(`#${clipId}`)) {
                             const partEl = svgEl.querySelector(`#${partId}`);
                             if (partEl) {
                                 const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
