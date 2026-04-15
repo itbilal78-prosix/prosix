@@ -6,7 +6,7 @@
             <i class="fas fa-fill-drip"></i> Solid
         </button>
         <button id="gradientBtn" class="fill-btn" onclick="setFillType('gradient')">
-<i class="fas fa-circle-half-stroke"></i> Gradient
+            <i class="fas fa-circle-half-stroke"></i> Gradient
 
         </button>
     </div>
@@ -42,33 +42,95 @@
             </button>
         </div>
 
-        <!-- ANGLE (Linear only) -->
+     <div class="gradient-main-row">
+
+    <!-- LEFT: ANGLE -->
+    <div class="angle-section">
         <div id="angleControls">
-            <label style="font-weight:600;display:block;margin-bottom:8px;">
+            <label style="font-weight:600;display:block;margin-bottom:10px;">
                 Angle: <span id="angleDisplay">90°</span>
             </label>
-            <div class="angle-slider-container">
-                <input type="range" min="0" max="360" value="90" id="gradAngle"
-                    class="modern-angle-slider" oninput="updateGradientAngle(this.value)">
+
+            <div class="angle-wheel-wrap">
+                <div class="angle-wheel" id="angleWheel">
+                    <div class="angle-wheel-knob" id="angleWheelKnob"></div>
+
+                    <div class="angle-wheel-center">
+                        <input type="number" id="gradAngle" min="0" max="360" value="0"
+                            oninput="updateGradientAngle(this.value)">
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- COLOR STOPS LIST -->
-        <div style="margin-bottom:15px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <label style="font-weight:600;">Color Stops</label>
-                <button onclick="addGradientStop()" class="add-stop-btn">
-                    <i class="fas fa-plus"></i> Add
-                </button>
-            </div>
+    <!-- RIGHT: COLOR STOPS -->
+  <div class="stops-section">
+    <div class="stops-header-row">
+        <label style="font-weight:600;">Color Stops</label>
 
-            <div id="gradientStopsContainer"></div>
+        <div class="stops-header-actions">
+            <button onclick="addGradientStop()" class="add-stop-btn">
+                <i class="fas fa-plus"></i> Add
+            </button>
+
         </div>
+    </div>
+
+    <div id="gradientStopsContainer"></div>
+</div>
+
+</div>
 
     </div>
 </div>
 
+<!-- COLOR BOTTOM BAR -->
+<div id="colorBarBackdrop" onclick="closeColorPalette()"
+     style="display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.3);"></div>
 
+<div id="colorBottomBar" style="
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #1a1a1a;
+    border-radius: 20px 20px 0 0;
+    padding: 16px 16px 24px;
+    z-index: 300;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 60vh;
+    overflow-y: auto;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+">
+    <!-- Handle -->
+    <div style="width:40px;height:4px;background:#444;border-radius:2px;margin:0 auto 16px;"></div>
+
+    <div style="font-size:13px;color:#888;font-weight:600;margin-bottom:12px;">SELECT COLORS</div>
+
+    <!-- Color Grid -->
+    <div id="bottomBarColorGrid" style="
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    "></div>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px;">
+        <button onclick="applySelectedColors()" style="
+            flex:1; padding:13px; background:#fff; color:#000;
+            border:none; border-radius:10px; font-weight:700;
+            font-size:14px; cursor:pointer;">
+            ✓ Apply
+        </button>
+        <button onclick="closeColorPalette()" style="
+            flex:1; padding:13px; background:#333; color:#fff;
+            border:none; border-radius:10px; font-weight:600;
+            font-size:14px; cursor:pointer;">
+            Cancel
+        </button>
+    </div>
+</div>
 
 
 <div id="colorPaletteModal" class="color-modal" style="display:none;">
@@ -77,18 +139,17 @@
         <h3 class="modal-title"> Pick Your Colors</h3>
 
         <div class="color-grid modern-grid">
-           @foreach ($colors as $c)
-    <div class="color-item">
-        <div class="color-box modern-box"
-            style="background:{{ $c->code }};"
-            onclick="togglePaletteColor(this,'{{ $c->code }}')">
-        </div>
+            @foreach ($colors as $c)
+                <div class="color-item">
+                    <div class="color-box modern-box" style="background:{{ $c->code }};"
+                        onclick="togglePaletteColor(this,'{{ $c->code }}')">
+                    </div>
 
-        <div class="color-name">
-            {{ $c->name }}
-        </div>
-    </div>
-@endforeach
+                    <div class="color-name">
+                        {{ $c->name }}
+                    </div>
+                </div>
+            @endforeach
         </div>
 
         <div class="modal-footer">
@@ -138,7 +199,30 @@
 
     /* GRADIENT STOPS - HORIZONTAL LAYOUT */
 
+.gradient-main-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
 
+/* LEFT side */
+.angle-section {
+    width: 130px;
+    flex-shrink: 0;
+}
+
+/* RIGHT side */
+.stops-section {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Stops scrollable bana do */
+#gradientStopsContainer {
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
 
     .stop-color {
         width: 36px;
@@ -215,26 +299,27 @@
         gap: 10px;
         margin-bottom: 20px;
     }
-.color-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 
-.color-name {
-    font-size: 12px;
-    margin-top: 4px;
-    text-align: center;
-    font-weight: 500;
-}
+    .color-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 
-   .modern-box {
-       width: 42px;
-       height: 42px;
-       border-radius: 10px;
-       cursor: pointer;
-       transition: .2s;
-       border: 2px solid transparent;
+    .color-name {
+        font-size: 12px;
+        margin-top: 4px;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .modern-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: .2s;
+        border: 2px solid transparent;
     }
 
     .modern-box:hover {
@@ -423,24 +508,129 @@
 
     /* COLOR STOPS LIST */
 
-  .gradient-stop-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    transition: all 0.2s;
+    .gradient-stop-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        transition: all 0.2s;
 
-    /* border: 1px solid #000; */
+        /* border: 1px solid #000; */
+    }
+
+
+.stops-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
 }
 
+.stops-header-actions {
+    display: flex;
+    gap: 6px;
+}
 
+.manual-btn {
+    background: #444 !important;
+}
 
-    .gradient-stop-item.active {
-        background: #dee2e6;
-        border: 2px solid #000;
+.gradient-stop-item {
+    padding: 4px 0;
+    margin-bottom: 6px;
+    background: transparent;
+    border: none;
+}
+
+.gradient-stop-single-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    flex-wrap: nowrap;
+}
+
+.manual-stop-color-box.compact {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 3px;
+    border: 1px solid #000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.stop-wheel-swatch-row.compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.wheel-stop-swatch.compact {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    box-sizing: border-box;
+    line-height: 1;
+}
+
+.stop-position-input.compact {
+    width: 40px;
+    height: 22px;
+    padding: 2px 4px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.pct-label {
+    font-size: 11px;
+    color: #666;
+    min-width: 10px;
+}
+
+.remove-stop-btn.compact {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: none;
+    background: none;
+    color: #000;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+
+#gradientStopsContainer {
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+@media (max-width: 600px) {
+    .gradient-stop-single-row {
+        flex-wrap: wrap;
     }
+}
+
 
     .stop-color {
         width: 36px;
@@ -464,18 +654,19 @@
         min-width: 40px;
     }
 
-  .remove-stop-btn {
-    color: rgb(0, 0, 0);
-    border: none;
-    background: none; /* background remove */
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 1;
-    flex-shrink: 0;
-}
+    .remove-stop-btn {
+        color: rgb(0, 0, 0);
+        border: none;
+        background: none;
+        /* background remove */
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 1;
+        flex-shrink: 0;
+    }
 
 
 
@@ -495,28 +686,104 @@
         background: #3a3a3a;
         transform: translateY(-2px);
     }
+
+
+    .angle-wheel-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 14px 0 18px;
+    }
+
+    .angle-wheel {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: black;
+        padding: 12px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
+    .angle-wheel::before {
+        content: '';
+        position: absolute;
+        inset: 12px;
+        border-radius: 50%;
+        background: #bfbfbf;
+    }
+
+    .angle-wheel-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 60px;
+        height: 30px;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+    }
+
+    .angle-wheel-center input {
+        width: 100%;
+        border: none;
+        outline: none;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 700;
+        background: transparent;
+        padding: 0 6px;
+        box-sizing: border-box;
+    }
+
+    .angle-wheel-knob {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: #000;
+        border: 3px solid #fff;
+        border-radius: 2px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+        z-index: 4;
+        left: 50%;
+        top: 8px;
+        transform: translate(-50%, 0);
+    }
+
+@media (max-width: 600px) {
+    .gradient-main-row {
+        flex-direction: column;
+    }
+
+    .angle-section {
+        width: 100%;
+        text-align: center;
+    }
+}
     @media screen and (orientation: landscape) and (max-height: 500px) {
 
-  .color-wheel-outer {
-    position: relative !important;
-    overflow: hidden !important;    /* ← YEH ZAROORI HAI */
-    width: 160px !important;
-    height: 160px !important;
-  }
+        .color-wheel-outer {
+            position: relative !important;
+            overflow: hidden !important;
+            /* ← YEH ZAROORI HAI */
+            width: 160px !important;
+            height: 160px !important;
+        }
 
-  .color-wheel-ring {
-    position: relative !important;
-    overflow: hidden !important;    /* ← YEH BHI */
-    width: 160px !important;
-    height: 160px !important;
-    margin-top: 0 !important;
-  }
+        .color-wheel-ring {
+            position: relative !important;
+            overflow: hidden !important;
+            /* ← YEH BHI */
+            width: 160px !important;
+            height: 160px !important;
+            margin-top: 0 !important;
+        }
 
-}
+    }
 </style>
-
-
-
-
-
-
