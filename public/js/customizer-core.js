@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-
+console.log('FILE A LOADED');
     // =================== APPLICATION STATE ===================
     window.currentModelId = window.MODEL_ID;
     // ✅ LOAD USER SAVED DESIGN (VERY IMPORTANT)
@@ -19,10 +19,16 @@
         }
 
         // restore patterns
-        if (window.USER_DESIGN.pattern_changes) {
-            window.patternChanges = window.USER_DESIGN.pattern_changes;
+        if (window.USER_DESIGN.pattern_changes &&
+            typeof window.USER_DESIGN.pattern_changes === 'object' &&
+            !Array.isArray(window.USER_DESIGN.pattern_changes)) {
+            window.patternsApplied = window.USER_DESIGN.pattern_changes;
         }
-
+        if (window.USER_DESIGN.mascot_changes &&
+            typeof window.USER_DESIGN.mascot_changes === 'object' &&
+            !Array.isArray(window.USER_DESIGN.mascot_changes)) {
+            window.mascotsApplied = window.USER_DESIGN.mascot_changes;
+        }
     }
 
     console.log('MODEL ID FOUND:', window.MODEL_ID);
@@ -544,6 +550,10 @@
         clonedSvg.style.width = 'auto';
         clonedSvg.style.height = 'auto';
 
+        const layer = window.currentApplicationLayer
+            ? findLayerById(window.currentApplicationLayer)
+            : null;
+
         let defaultText = '88';
         if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
         if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
@@ -559,11 +569,6 @@
         const centerX = bbox.x + (bbox.width / 2);
         const centerY = bbox.y + (bbox.height / 2);
 
-        // ✅ Save bbox for preview
-        if (!layer._savedBbox) {
-            layer._savedBbox = { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
-        }
-
         clonedSvg.querySelectorAll('.modal-preview-text').forEach(t => t.remove());
 
         const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
@@ -574,11 +579,11 @@
         text.classList.add('modal-preview-text');
         text.setAttribute('x', centerX);
         text.setAttribute('y', centerY);
-        text.setAttribute('font-size', '2000');  //  LARGER PREVIEW SIZE
+        text.setAttribute('font-size', '2000');
         text.style.fontFamily = layer?.fontFamily || 'Arial Black';
         text.setAttribute('fill', textColor);
         text.setAttribute('stroke', strokeColor);
-        text.setAttribute('stroke-width', '6');  //  THICKER STROKE
+        text.setAttribute('stroke-width', '6');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'middle');
         text.setAttribute('paint-order', 'stroke fill');
@@ -590,7 +595,7 @@
         previewContainer.innerHTML = '';
         previewContainer.appendChild(clonedSvg);
 
-        console.log(`✅ Modal preview updated`);
+        console.log('✅ Modal preview updated');
     };
 
     // =================== CONFIRM ADD APPLICATION ===================
@@ -657,103 +662,7 @@
 
     // =================== ADD TO SVG ===================
 
-    window.addApplicationToSvg = function (layer) {
 
-        const mainSvg = window.getMainSvg();
-        if (!mainSvg) return;
-
-        // ================= CREATE DEFS =================
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
-
-        const partElement = mainSvg.querySelector(`#${layer.partId}`);
-        if (!partElement) {
-            console.warn('Part not found', layer.partId);
-            return;
-        }
-
-        // ================= CREATE CLIP PATH =================
-        const clipId = `clip-${layer.partId}`;
-
-        if (!defs.querySelector(`#${clipId}`)) {
-            const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-            clip.setAttribute('id', clipId);
-
-            const clone = partElement.cloneNode(true);
-            clone.removeAttribute('id');
-
-            clip.appendChild(clone);
-            defs.appendChild(clip);
-        }
-
-        // ================= APPLICATION GROUP =================
-        let appGroup = mainSvg.querySelector('#application-group');
-        if (!appGroup) {
-            appGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            appGroup.setAttribute('id', 'application-group');
-            mainSvg.appendChild(appGroup);
-        }
-
-        // APPLY CLIP TO GROUP
-        appGroup.setAttribute('clip-path', `url(#${clipId})`);
-
-        // ================= CENTER OF PART =================
-        const bbox = partElement.getBBox();
-        const cx = bbox.x + bbox.width / 2;
-        const cy = bbox.y + bbox.height / 2;
-
-        // ================= CREATE TEXT =================
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-
-        text.setAttribute('id', layer.id);
-        text.setAttribute('x', cx + layer.x);
-        text.setAttribute('y', cy + layer.y);
-        text.setAttribute('font-size', layer.fontSize);
-        text.style.fontFamily = layer.fontFamily;
-
-        text.setAttribute('fill', layer.fill);
-        text.setAttribute('stroke', layer.stroke);
-        text.setAttribute('stroke-width', layer.strokeWidth);
-
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('dominant-baseline', 'middle');
-        text.setAttribute('paint-order', 'stroke fill');
-        text.setAttribute('stroke-linejoin', 'round');
-
-        text.style.cursor = 'move';
-        text.textContent = layer.text;
-
-        if (layer.rotation) {
-            text.setAttribute(
-                'transform',
-                `rotate(${layer.rotation} ${cx + layer.x} ${cy + layer.y})`
-            );
-        }
-
-        appGroup.appendChild(text);
-
-        // ================= DRAG =================
-        makeDraggable(text, layer);
-
-        text.addEventListener('click', e => {
-            e.stopPropagation();
-            selectApplicationLayer(layer.id);
-        });
-
-        // ================= OUTLINE / PATTERN =================
-        if (layer.outlineStyle) {
-            window.currentOutlineStyle = layer.outlineStyle;
-            if (layer.outlineColors) {
-                window.outlineColors = { ...layer.outlineColors };
-            }
-            applyOutlineStyleToText(layer.id);
-        }
-
-        console.log('✅ Application added WITH CLIP:', layer.id);
-    };
 
 
     // =================== MAKE DRAGGABLE ===================
@@ -2010,36 +1919,7 @@ font-display: swap;
         if (window.saveCustomizations) window.saveCustomizations();
     };
 
-    window.removeApplicationLayer = function (layerId, event) {
-        if (event) event.stopPropagation();
 
-        Object.keys(window.applicationsApplied).forEach(view => {
-            Object.keys(window.applicationsApplied[view]).forEach(partId => {
-                window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => l.id !== layerId);
-
-                if (window.applicationsApplied[view][partId].length === 0) {
-                    delete window.applicationsApplied[view][partId];
-                }
-            });
-        });
-
-        const textEl = document.getElementById(layerId);
-        if (textEl) textEl.remove();
-
-        const outlines = document.querySelectorAll(`[data-outline-for="${layerId}"]`);
-        outlines.forEach(outline => outline.remove());
-
-        if (window.currentApplicationLayer === layerId) {
-            window.currentApplicationLayer = null;
-            document.getElementById('applicationLayerControls').style.display = 'none';
-        }
-
-        updateApplicationLayersList();
-
-        if (window.saveCustomizations) window.saveCustomizations();
-
-        console.log('✅ Application removed:', layerId);
-    };
 
     // =================== HELPER FUNCTIONS ===================
 
@@ -2060,13 +1940,18 @@ font-display: swap;
     // =================== APPLY APPLICATIONS TO SVG (FOR SAVE/PREVIEW) ===================
 
     window.applyApplicationsToSvg = function (svg, view) {
-        if (!window.applicationsApplied[view]) return;
+        if (!window.applicationsApplied || !window.applicationsApplied[view]) return;
 
-        let appGroup = svg.querySelector('#application-group');
-        if (!appGroup) {
-            appGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            appGroup.setAttribute('id', 'application-group');
-            svg.appendChild(appGroup);
+        // old rendered apps clear
+        svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
+        svg.querySelectorAll('#application-group').forEach(g => g.remove());
+        svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+        svg.querySelectorAll('defs clipPath[id^="clip-app-"]').forEach(c => c.remove());
+
+        let defs = svg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            svg.insertBefore(defs, svg.firstChild);
         }
 
         Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
@@ -2078,152 +1963,106 @@ font-display: swap;
             const centerY = bbox.y + (bbox.height / 2);
 
             layers.forEach(layer => {
+                const clipId = `clip-${layer.id}`;
+                const oldClip = defs.querySelector(`#${clipId}`);
+                if (oldClip) oldClip.remove();
+
+                const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+                clip.setAttribute('id', clipId);
+
+                const clone = partElement.cloneNode(true);
+                clone.removeAttribute('id');
+                clone.removeAttribute('clip-path');
+                clone.removeAttribute('mask');
+
+                clip.appendChild(clone);
+                defs.appendChild(clip);
+
+                const groupId = `app-group-${layer.id}`;
+                let layerGroup = svg.querySelector(`#${groupId}`);
+                if (layerGroup) layerGroup.remove();
+
+                layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                layerGroup.setAttribute('id', groupId);
+                layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+                svg.appendChild(layerGroup);
+
                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 text.setAttribute('id', layer.id);
-                text.setAttribute('x', centerX + layer.x);
-                text.setAttribute('y', centerY + layer.y);
-                text.setAttribute('font-size', layer.fontSize);
-                text.style.fontFamily = layer.fontFamily;
-                text.setAttribute('fill', layer.fill);
-                text.setAttribute('stroke', layer.stroke);
-                text.setAttribute('stroke-width', layer.strokeWidth);
+                text.setAttribute('x', centerX + (layer.x || 0));
+                text.setAttribute('y', centerY + (layer.y || 0));
+                text.setAttribute('font-size', layer.fontSize || 2000);
+                text.style.fontFamily = layer.fontFamily || 'Arial Black';
+                text.setAttribute('fill', layer.fill || '#FFFFFF');
+                text.setAttribute('stroke', layer.stroke || '#000000');
+                text.setAttribute('stroke-width', layer.strokeWidth || 5);
                 text.setAttribute('text-anchor', 'middle');
                 text.setAttribute('dominant-baseline', 'middle');
                 text.setAttribute('paint-order', 'stroke fill');
                 text.setAttribute('stroke-linejoin', 'round');
-                text.textContent = layer.text;
+                text.textContent = layer.text || '';
+
+                if (layer.letterSpacing) {
+                    text.style.letterSpacing = layer.letterSpacing + 'px';
+                }
 
                 if (layer.rotation) {
-                    text.setAttribute('transform', `rotate(${layer.rotation} ${centerX + layer.x} ${centerY + layer.y})`);
+                    text.setAttribute(
+                        'transform',
+                        `rotate(${layer.rotation} ${centerX + (layer.x || 0)} ${centerY + (layer.y || 0)})`
+                    );
                 }
 
-                appGroup.appendChild(text);
-                // 🔥 RESTORE OUTLINE
+                layerGroup.appendChild(text);
+
+                // outline restore
                 if (layer.outlineStyle) {
-                    window.currentOutlineStyle = layer.outlineStyle;
-                    window.outlineColors = { ...layer.outlineColors };
-                    applyOutlineStyleToText(layer.id);
-                }
-
-                // 🔥 RESTORE TEXT PATTERN
-                if (layer.hasPattern && layer.patternSvg) {
-                    applyPatternToText(layer.patternSvg);
-
-                    if (layer.patternSize)
-                        updateTextPatternSize(layer.patternSize);
-
-                    if (layer.patternOpacity)
-                        updateTextPatternOpacity(layer.patternOpacity);
-                }
-
-                // 🔥 RESTORE TEXT MASCOT
-                if (layer.hasMascot && layer.mascotSvg) {
+                    const prevLayer = window.currentApplicationLayer;
+                    const prevStyle = window.currentOutlineStyle;
+                    const prevColors = { ...window.outlineColors };
 
                     window.currentApplicationLayer = layer.id;
+                    window.currentOutlineStyle = layer.outlineStyle;
+                    window.outlineColors = { ...(layer.outlineColors || prevColors) };
+                    applyOutlineStyleToText(layer.id);
 
-                    if (!layer.mascotId) {
-                        applyMascotToText(layer.mascotSvg);
-                    }
-
-                    updateTextMascotCount(layer.mascotCount || 4);
-                    updateTextMascotSize(layer.mascotSize || 100);
-                    updateTextMascotOpacity(layer.mascotOpacity || 100);
-
-                    const el = document.getElementById(layer.id);
-                    if (el) el.setAttribute('fill', el.getAttribute('fill'));
+                    window.currentApplicationLayer = prevLayer;
+                    window.currentOutlineStyle = prevStyle;
+                    window.outlineColors = prevColors;
                 }
 
-
-            });
-        });
-
-        console.log(`✅ Applications applied to ${view}`);
-    };
-
-    // =================== INITIALIZE ON LOAD ===================
-
-    // window.initializeApplicationsOnLoad = function () {
-
-    //     const svg = window.getMainSvg();
-    //     if (svg) {
-    //         const oldGroup = svg.querySelector('#application-group');
-    //         if (oldGroup) oldGroup.remove();
-    //     }
-
-
-    //     if (!window.applicationsApplied) return;
-
-    //     console.log('🎨 Initializing applications...');
-
-    //     const view = window.currentView;
-    //     if (!window.applicationsApplied[view]) return;
-
-    //     Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-    //         layers.forEach(layer => {
-    //             addApplicationToSvg(layer);
-    //         });
-    //     });
-
-    //     updateApplicationLayersList();
-
-    //     console.log('✅ Applications initialized');
-    // };
-    window.initializeApplicationsOnLoad = function () {
-
-        const svg = window.getMainSvg();
-        if (!svg) {
-            console.warn('SVG not ready yet, retrying...');
-            setTimeout(window.initializeApplicationsOnLoad, 300);
-            return;
-        }
-
-        // ✅ PEHLE SAARI PURANI APPLICATION ELEMENTS CLEAN KARO
-        const oldGroup = svg.querySelector('#application-group');
-        if (oldGroup) oldGroup.remove();
-
-        svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
-
-        if (!window.applicationsApplied) return;
-
-        const view = window.currentView;
-        if (!window.applicationsApplied[view]) return;
-        if (Object.keys(window.applicationsApplied[view]).length === 0) return;
-
-        console.log('🎨 Initializing applications for view:', view);
-
-        Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-            layers.forEach(layer => {
-
-                // addApplicationToSvg ke andar duplicate check hai - safe hai
-                addApplicationToSvg(layer);
-
-                // ✅ Pattern restore
+                // pattern restore
                 if (layer.hasPattern && layer.patternSvg) {
                     const prev = window.currentApplicationLayer;
                     window.currentApplicationLayer = layer.id;
-                    applyPatternToText(layer.patternSvg, layer.id);
+                    applyPatternToText(layer.patternSvg);
+
                     if (layer.patternSize) updateTextPatternSize(layer.patternSize);
                     if (layer.patternOpacity) updateTextPatternOpacity(layer.patternOpacity);
+
                     window.currentApplicationLayer = prev;
                 }
 
-                // ✅ Mascot restore
+                // mascot restore
                 if (layer.hasMascot && layer.mascotSvg) {
                     const prev = window.currentApplicationLayer;
                     window.currentApplicationLayer = layer.id;
-                    applyMascotToText(layer.mascotSvg, layer.id);
+                    applyMascotToText(layer.mascotSvg);
+
                     if (layer.mascotSize) updateTextMascotSize(layer.mascotSize);
                     if (layer.mascotOpacity) updateTextMascotOpacity(layer.mascotOpacity);
                     if (layer.mascotCount) updateTextMascotCount(layer.mascotCount);
+
                     window.currentApplicationLayer = prev;
                 }
-
             });
         });
 
-        updateApplicationLayersList();
-        console.log('✅ Applications initialized for view:', view);
+        console.log('✅ Applications applied to SVG for view:', view);
     };
+
+
+
     // Auto-initialize
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
@@ -2594,24 +2433,27 @@ window.isDraggingKnob = false;
     /* ================= VIEW ================= */
 
     window.switchView = function (view) {
-        // ✅ View change hone par text deselect karo
+        // active layer reset
         window.currentApplicationLayer = null;
+
         const ctrl = document.getElementById('applicationLayerControls');
         if (ctrl) ctrl.style.display = 'none';
 
+        // plus icon hide
+        const plusIcon = document.getElementById('appPlusDragIcon');
+        if (plusIcon) plusIcon.style.display = 'none';
+
+        // sirf view display karo
+        // initializeApplicationsOnLoad yahan se MAT call karo
         displayView(view);
 
-        // ✅ Naye view ke layers load karo
+        // sirf list refresh baad mein
         setTimeout(() => {
-            if (window.initializeApplicationsOnLoad) {
-                window.initializeApplicationsOnLoad();
-            }
             if (window.updateApplicationLayersList) {
                 window.updateApplicationLayersList();
             }
         }, 500);
-    }
-
+    };
     function displayView(view) {
         currentView = view;
 
@@ -2727,17 +2569,17 @@ window.isDraggingKnob = false;
                     }
 
                     // ✅ FIX: window.colorChanges aur local colorChanges dono check karo
-                   // Gradient check karo pehle
-if (gradientChanges?.[currentView]?.[el.id]) {
-    rebuildGradient(svgElement, el.id, gradientChanges[currentView][el.id], currentView);
-    el.setAttribute('fill', `url(#gradient-${currentView}-${el.id})`);
-} else {
-    const savedColor = (window.colorChanges?.[currentView]?.[el.id])
-        || (colorChanges?.[currentView]?.[el.id]);
-    if (savedColor && !savedColor.startsWith('url(')) {
-        el.setAttribute('fill', savedColor);
-    }
-}
+                    // Gradient check karo pehle
+                    if (gradientChanges?.[currentView]?.[el.id]) {
+                        rebuildGradient(svgElement, el.id, gradientChanges[currentView][el.id], currentView);
+                        el.setAttribute('fill', `url(#gradient-${currentView}-${el.id})`);
+                    } else {
+                        const savedColor = (window.colorChanges?.[currentView]?.[el.id])
+                            || (colorChanges?.[currentView]?.[el.id]);
+                        if (savedColor && !savedColor.startsWith('url(')) {
+                            el.setAttribute('fill', savedColor);
+                        }
+                    }
 
                 });
 
@@ -2811,209 +2653,209 @@ if (gradientChanges?.[currentView]?.[el.id]) {
         updateStopMarkers();
     }
 
-  function selectSvgElement(el) {
+    function selectSvgElement(el) {
 
-    // 🔥 CLEAR ACTIVE APPLICATION LAYER WHEN PART CHANGES
-    if (window.currentApplicationLayer) {
-        const oldText = document.getElementById(window.currentApplicationLayer);
-        if (oldText) oldText.style.filter = '';
-        window.currentApplicationLayer = null;
-        const ctrl = document.getElementById('applicationLayerControls');
-        if (ctrl) ctrl.style.display = 'none';
-        document.querySelectorAll('.application-layer-item').forEach(i => {
-            i.classList.remove('active');
+        // 🔥 CLEAR ACTIVE APPLICATION LAYER WHEN PART CHANGES
+        if (window.currentApplicationLayer) {
+            const oldText = document.getElementById(window.currentApplicationLayer);
+            if (oldText) oldText.style.filter = '';
+            window.currentApplicationLayer = null;
+            const ctrl = document.getElementById('applicationLayerControls');
+            if (ctrl) ctrl.style.display = 'none';
+            document.querySelectorAll('.application-layer-item').forEach(i => {
+                i.classList.remove('active');
+            });
+        }
+
+        // 🔥 SET CURRENT INDEX
+        window.currentPartIndex = allSvgParts.indexOf(el);
+
+        // 🔥 UPDATE PART NAME
+        const partName = document.getElementById('partName');
+        if (partName) {
+            partName.textContent = el.dataset.partName || 'Part';
+        }
+
+        // Clear previous selection
+        document.querySelectorAll('.selected').forEach(e => {
+            e.classList.remove('selected');
         });
-    }
 
-    // 🔥 SET CURRENT INDEX
-    window.currentPartIndex = allSvgParts.indexOf(el);
+        // Set new selection
+        window.selectedSvgElement = el;
+        el.classList.add('selected');
 
-    // 🔥 UPDATE PART NAME
-    const partName = document.getElementById('partName');
-    if (partName) {
-        partName.textContent = el.dataset.partName || 'Part';
-    }
+        const partId = el.id;
+        const view = window.currentView;
 
-    // Clear previous selection
-    document.querySelectorAll('.selected').forEach(e => {
-        e.classList.remove('selected');
-    });
+        // ✅ PEHLE SAARI UI RESET KARO
+        const patternControlsReset = document.getElementById('patternControls');
+        const mascotControlsReset = document.getElementById('mascotControls');
+        const topButtonsReset = document.querySelector('.pattern-top-buttons');
+        const patternPaletteReset = document.getElementById('patternColorPalette');
+        const mascotPaletteReset = document.getElementById('mascotColorPalette');
 
-    // Set new selection
-    window.selectedSvgElement = el;
-    el.classList.add('selected');
+        if (patternControlsReset) patternControlsReset.style.display = 'none';
+        if (mascotControlsReset) mascotControlsReset.style.display = 'none';
+        if (patternPaletteReset) patternPaletteReset.innerHTML = '';
+        if (mascotPaletteReset) mascotPaletteReset.innerHTML = '';
 
-    const partId = el.id;
-    const view = window.currentView;
-
-    // ✅ PEHLE SAARI UI RESET KARO
-    const patternControlsReset = document.getElementById('patternControls');
-    const mascotControlsReset = document.getElementById('mascotControls');
-    const topButtonsReset = document.querySelector('.pattern-top-buttons');
-    const patternPaletteReset = document.getElementById('patternColorPalette');
-    const mascotPaletteReset = document.getElementById('mascotColorPalette');
-
-    if (patternControlsReset) patternControlsReset.style.display = 'none';
-    if (mascotControlsReset) mascotControlsReset.style.display = 'none';
-    if (patternPaletteReset) patternPaletteReset.innerHTML = '';
-    if (mascotPaletteReset) mascotPaletteReset.innerHTML = '';
-
-    const previewReset = document.getElementById('patternPreviewBox');
-    if (previewReset) {
-        previewReset.innerHTML = '<span style="color:#999;">No pattern applied</span>';
-        previewReset.style.cursor = 'default';
-        previewReset.onclick = null;
-    }
-
-    const mascotPreviewReset = document.getElementById('mascotPreviewBox');
-    if (mascotPreviewReset) {
-        mascotPreviewReset.innerHTML = '<span style="color:#999;">No mascot applied</span>';
-        mascotPreviewReset.style.cursor = 'default';
-        mascotPreviewReset.onclick = null;
-    }
-
-    // ✅ SMART TAB SWITCH - PEHLE CHECK KARO
-    const hasPattern = window.patternsApplied?.[view]?.[partId];
-    const hasMascot = window.mascotsApplied?.[view]?.[partId];
-
-    if (hasPattern || hasMascot) {
-        // ─── PATTERN/MASCOT TAB ───
-        activateTab('patternBtn');
-
-        // Top buttons hide karo
-        if (topButtonsReset) topButtonsReset.style.display = 'none';
-
-        if (hasPattern) {
-            const saved = window.patternsApplied[view][partId];
-            if (saved && saved.svgContent) {
-                window.uploadedSvgContent = saved.svgContent;
-                window.selectedPatternReplacements = { ...(saved.replacements || {}) };
-                window.patternAngle = saved.angle || 0;
-                window.patternSize = saved.size || 50;
-                window.patternOpacity = saved.opacity || 100;
-
-                const sizeSlider = document.getElementById('patternSize');
-                if (sizeSlider) {
-                    sizeSlider.value = window.patternSize;
-                    document.getElementById('sizeValue').textContent = window.patternSize;
-                }
-                const opacitySlider = document.getElementById('patternOpacity');
-                if (opacitySlider) {
-                    opacitySlider.value = window.patternOpacity;
-                    document.getElementById('opacityValue').textContent = window.patternOpacity + '%';
-                }
-
-                recreatePatternAndOverlayWithNewColors();
-                if (patternControlsReset) patternControlsReset.style.display = 'block';
-
-                // Preview clickable banao
-                if (previewReset) {
-                    previewReset.style.cursor = 'pointer';
-                    previewReset.onclick = openPatternLibrary;
-                }
-
-                setTimeout(() => {
-                    if (window.updatePatternPreview) window.updatePatternPreview();
-                    if (window.updatePatternColorPalette) window.updatePatternColorPalette();
-                }, 80);
-            }
+        const previewReset = document.getElementById('patternPreviewBox');
+        if (previewReset) {
+            previewReset.innerHTML = '<span style="color:#999;">No pattern applied</span>';
+            previewReset.style.cursor = 'default';
+            previewReset.onclick = null;
         }
 
-        if (hasMascot) {
-            if (mascotControlsReset) mascotControlsReset.style.display = 'block';
-            window.restoreMascotStateForPart(partId, view);
-            if (window.updateMascotColorPalette) window.updateMascotColorPalette();
-
-            // Mascot preview clickable banao
-            if (mascotPreviewReset) {
-                mascotPreviewReset.style.cursor = 'pointer';
-                mascotPreviewReset.onclick = openMascotTemplateModal;
-            }
+        const mascotPreviewReset = document.getElementById('mascotPreviewBox');
+        if (mascotPreviewReset) {
+            mascotPreviewReset.innerHTML = '<span style="color:#999;">No mascot applied</span>';
+            mascotPreviewReset.style.cursor = 'default';
+            mascotPreviewReset.onclick = null;
         }
 
-        return; // Color/gradient logic skip karo
-    }
+        // ✅ SMART TAB SWITCH - PEHLE CHECK KARO
+        const hasPattern = window.patternsApplied?.[view]?.[partId];
+        const hasMascot = window.mascotsApplied?.[view]?.[partId];
 
-    // ✅ BLANK PART — Fresh buttons dikhao
-    if (topButtonsReset) topButtonsReset.style.display = 'flex';
+        if (hasPattern || hasMascot) {
+            // ─── PATTERN/MASCOT TAB ───
+            activateTab('patternBtn');
 
-    if (previewReset) {
-        previewReset.style.cursor = 'pointer';
-        previewReset.onclick = openPatternLibrary;
-    }
+            // Top buttons hide karo
+            if (topButtonsReset) topButtonsReset.style.display = 'none';
 
-    // ─── COLOR TAB ───
-    activateTab('colorBtn');
+            if (hasPattern) {
+                const saved = window.patternsApplied[view][partId];
+                if (saved && saved.svgContent) {
+                    window.uploadedSvgContent = saved.svgContent;
+                    window.selectedPatternReplacements = { ...(saved.replacements || {}) };
+                    window.patternAngle = saved.angle || 0;
+                    window.patternSize = saved.size || 50;
+                    window.patternOpacity = saved.opacity || 100;
 
-    let savedGradient = gradientChanges[view]?.[partId];
-    if (!savedGradient) {
-        const svgGradient = extractStopsFromSvg(el);
-        if (svgGradient) savedGradient = svgGradient;
-    }
+                    const sizeSlider = document.getElementById('patternSize');
+                    if (sizeSlider) {
+                        sizeSlider.value = window.patternSize;
+                        document.getElementById('sizeValue').textContent = window.patternSize;
+                    }
+                    const opacitySlider = document.getElementById('patternOpacity');
+                    if (opacitySlider) {
+                        opacitySlider.value = window.patternOpacity;
+                        document.getElementById('opacityValue').textContent = window.patternOpacity + '%';
+                    }
 
-    const currentFill = el.getAttribute('fill') || '#fff';
-    const isGradientFill = currentFill.startsWith('url(') || !!savedGradient;
+                    recreatePatternAndOverlayWithNewColors();
+                    if (patternControlsReset) patternControlsReset.style.display = 'block';
 
-    if (isGradientFill) {
-        setFillType('gradient', false);
+                    // Preview clickable banao
+                    if (previewReset) {
+                        previewReset.style.cursor = 'pointer';
+                        previewReset.onclick = openPatternLibrary;
+                    }
 
-        if (savedGradient) {
-            if (!gradientChanges[view][partId]) {
-                gradientChanges[view][partId] = {
-                    type: savedGradient.type || 'linear',
-                    angle: savedGradient.angle || 90,
-                    stops: JSON.parse(JSON.stringify(savedGradient.stops))
-                };
+                    setTimeout(() => {
+                        if (window.updatePatternPreview) window.updatePatternPreview();
+                        if (window.updatePatternColorPalette) window.updatePatternColorPalette();
+                    }, 80);
+                }
             }
 
-            window.currentGradientType = savedGradient.type || 'linear';
-            window.gradientStops = JSON.parse(JSON.stringify(savedGradient.stops));
+            if (hasMascot) {
+                if (mascotControlsReset) mascotControlsReset.style.display = 'block';
+                window.restoreMascotStateForPart(partId, view);
+                if (window.updateMascotColorPalette) window.updateMascotColorPalette();
 
-            const angleInput = document.getElementById('gradAngle');
-            if (angleInput) {
-                angleInput.value = savedGradient.angle || 90;
-                document.getElementById('angleDisplay').textContent = (savedGradient.angle || 90) + '°';
+                // Mascot preview clickable banao
+                if (mascotPreviewReset) {
+                    mascotPreviewReset.style.cursor = 'pointer';
+                    mascotPreviewReset.onclick = openMascotTemplateModal;
+                }
             }
 
-            const angleControls = document.getElementById('angleControls');
-            if (angleControls) {
-                angleControls.style.display = window.currentGradientType === 'linear' ? 'block' : 'none';
+            return; // Color/gradient logic skip karo
+        }
+
+        // ✅ BLANK PART — Fresh buttons dikhao
+        if (topButtonsReset) topButtonsReset.style.display = 'flex';
+
+        if (previewReset) {
+            previewReset.style.cursor = 'pointer';
+            previewReset.onclick = openPatternLibrary;
+        }
+
+        // ─── COLOR TAB ───
+        activateTab('colorBtn');
+
+        let savedGradient = gradientChanges[view]?.[partId];
+        if (!savedGradient) {
+            const svgGradient = extractStopsFromSvg(el);
+            if (svgGradient) savedGradient = svgGradient;
+        }
+
+        const currentFill = el.getAttribute('fill') || '#fff';
+        const isGradientFill = currentFill.startsWith('url(') || !!savedGradient;
+
+        if (isGradientFill) {
+            setFillType('gradient', false);
+
+            if (savedGradient) {
+                if (!gradientChanges[view][partId]) {
+                    gradientChanges[view][partId] = {
+                        type: savedGradient.type || 'linear',
+                        angle: savedGradient.angle || 90,
+                        stops: JSON.parse(JSON.stringify(savedGradient.stops))
+                    };
+                }
+
+                window.currentGradientType = savedGradient.type || 'linear';
+                window.gradientStops = JSON.parse(JSON.stringify(savedGradient.stops));
+
+                const angleInput = document.getElementById('gradAngle');
+                if (angleInput) {
+                    angleInput.value = savedGradient.angle || 90;
+                    document.getElementById('angleDisplay').textContent = (savedGradient.angle || 90) + '°';
+                }
+
+                const angleControls = document.getElementById('angleControls');
+                if (angleControls) {
+                    angleControls.style.display = window.currentGradientType === 'linear' ? 'block' : 'none';
+                }
+
+                document.getElementById('linearBtn')?.classList.toggle('active', window.currentGradientType === 'linear');
+                document.getElementById('radialBtn')?.classList.toggle('active', window.currentGradientType === 'radial');
+            } else {
+                window.currentGradientType = 'linear';
+                window.gradientStops = [
+                    { color: '#FFC000', position: 0 },
+                    { color: '#228B22', position: 100 }
+                ];
             }
 
-            document.getElementById('linearBtn')?.classList.toggle('active', window.currentGradientType === 'linear');
-            document.getElementById('radialBtn')?.classList.toggle('active', window.currentGradientType === 'radial');
+            const centerBtn = document.getElementById('selectedColorBtn');
+            if (centerBtn) {
+                centerBtn.style.background = 'linear-gradient(90deg, ' +
+                    window.gradientStops.map(s => s.color).join(', ') + ')';
+            }
+
         } else {
-            window.currentGradientType = 'linear';
+            setFillType('solid', false);
+            const solidColor = colorChanges[view]?.[partId] || currentFill;
+
+            const centerBtn = document.getElementById('selectedColorBtn');
+            if (centerBtn) centerBtn.style.background = solidColor;
+            if (window.highlightWheelColor) window.highlightWheelColor(solidColor);
+
             window.gradientStops = [
                 { color: '#FFC000', position: 0 },
                 { color: '#228B22', position: 100 }
             ];
         }
 
-        const centerBtn = document.getElementById('selectedColorBtn');
-        if (centerBtn) {
-            centerBtn.style.background = 'linear-gradient(90deg, ' +
-                window.gradientStops.map(s => s.color).join(', ') + ')';
-        }
-
-    } else {
-        setFillType('solid', false);
-        const solidColor = colorChanges[view]?.[partId] || currentFill;
-
-        const centerBtn = document.getElementById('selectedColorBtn');
-        if (centerBtn) centerBtn.style.background = solidColor;
-        if (window.highlightWheelColor) window.highlightWheelColor(solidColor);
-
-        window.gradientStops = [
-            { color: '#FFC000', position: 0 },
-            { color: '#228B22', position: 100 }
-        ];
+        if (window.renderGradientStops) window.renderGradientStops();
+        if (window.updateGradientPreview) window.updateGradientPreview();
+        if (window.updateStopMarkers) window.updateStopMarkers();
     }
-
-    if (window.renderGradientStops) window.renderGradientStops();
-    if (window.updateGradientPreview) window.updateGradientPreview();
-    if (window.updateStopMarkers) window.updateStopMarkers();
-}
 
 
 
@@ -3267,14 +3109,14 @@ if (gradientChanges?.[currentView]?.[el.id]) {
 
                 if (res.ok) {
                     await generateAndSaveThumbnail();
-                    alert('✅ Design "' + designName + '" saved successfully!');
+window.showSaveSuccessToast('Successfully Saved', `Design "${designName}" saved`);
                 } else {
                     alert('❌ Save failed: ' + (responseData.message || 'Please login first'));
                 }
 
             } catch (e) {
                 console.error('Save error:', e);
-                alert('❌ Save Failed');
+window.showSaveSuccessToast('Save Failed', 'Please try again');
             }
 
             window.isSaving = false;
@@ -3363,7 +3205,7 @@ if (gradientChanges?.[currentView]?.[el.id]) {
                 window.embedFontsInSvg(liveSvgForThumb);
             }
             await generateAndSaveThumbnail();
-            alert('✅ Design Saved Successfully');
+window.showSaveSuccessToast('Successfully Saved', 'Design saved successfully');
 
         } catch (e) {
             console.error(e);
@@ -3373,7 +3215,23 @@ if (gradientChanges?.[currentView]?.[el.id]) {
         window.isSaving = false;
     };
 
+window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle = 'Your design has been saved') {
+    const toast = document.getElementById('saveSuccessToast');
+    if (!toast) return;
 
+    const titleEl = toast.querySelector('.save-success-title');
+    const subtitleEl = toast.querySelector('.save-success-subtitle');
+
+    if (titleEl) titleEl.textContent = title;
+    if (subtitleEl) subtitleEl.textContent = subtitle;
+
+    toast.classList.add('show');
+
+    clearTimeout(window._saveToastTimer);
+    window._saveToastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2200);
+};
 
     /* ================= RESET ================= */
 
@@ -3483,6 +3341,7 @@ if (gradientChanges?.[currentView]?.[el.id]) {
     /* ================= SAVE CUSTOMIZATIONS (LOCAL STORAGE) ================= */
 
     window.saveCustomizations = function () {
+        console.log('BEFORE SAVE =', JSON.stringify(window.applicationsApplied, null, 2));
         return; // autosave band
     };
 
@@ -3527,6 +3386,7 @@ if (gradientChanges?.[currentView]?.[el.id]) {
                             if (bb.width > 0) {
                                 const bbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
                                 layers.forEach(layer => {
+                                    if (layer.view !== view) return;
                                     layer._savedBbox = bbox;
                                     if (!layer._bboxByView) layer._bboxByView = {};
                                     layer._bboxByView[currentV] = bbox;
@@ -4268,44 +4128,44 @@ if (gradientChanges?.[currentView]?.[el.id]) {
         }
     }
 
-// ===== ROTATE POPUP =====
-function showRotatePopup() {
-  var ov = document.getElementById('rotateOverlay');
-  var card = document.getElementById('rotateCard');
-  var icon = document.getElementById('phoneIcon');
+    // ===== ROTATE POPUP =====
+    function showRotatePopup() {
+        var ov = document.getElementById('rotateOverlay');
+        var card = document.getElementById('rotateCard');
+        var icon = document.getElementById('phoneIcon');
 
-  ov.style.opacity = '1';
-  ov.style.pointerEvents = 'all';
-  card.style.transform = 'scale(1)';
-  icon.classList.add('rotating');
-}
+        ov.style.opacity = '1';
+        ov.style.pointerEvents = 'all';
+        card.style.transform = 'scale(1)';
+        icon.classList.add('rotating');
+    }
 
-function hideRotatePopup() {
-  var ov = document.getElementById('rotateOverlay');
-  var card = document.getElementById('rotateCard');
-  var icon = document.getElementById('phoneIcon');
+    function hideRotatePopup() {
+        var ov = document.getElementById('rotateOverlay');
+        var card = document.getElementById('rotateCard');
+        var icon = document.getElementById('phoneIcon');
 
-  ov.style.opacity = '0';
-  ov.style.pointerEvents = 'none';
-  card.style.transform = 'scale(0.7)';
-  icon.classList.remove('rotating');
-}
+        ov.style.opacity = '0';
+        ov.style.pointerEvents = 'none';
+        card.style.transform = 'scale(0.7)';
+        icon.classList.remove('rotating');
+    }
 
-function checkOrientation() {
-  if (window.innerHeight > window.innerWidth) {
-    // Portrait → show
-    showRotatePopup();
-  } else {
-    // Landscape → hide
-    hideRotatePopup();
-  }
-}
+    function checkOrientation() {
+        if (window.innerHeight > window.innerWidth) {
+            // Portrait → show
+            showRotatePopup();
+        } else {
+            // Landscape → hide
+            hideRotatePopup();
+        }
+    }
 
-window.addEventListener('load', checkOrientation);
-window.addEventListener('resize', checkOrientation);
-window.addEventListener('orientationchange', function () {
-  setTimeout(checkOrientation, 200);
-});
+    window.addEventListener('load', checkOrientation);
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', function () {
+        setTimeout(checkOrientation, 200);
+    });
 
 
 

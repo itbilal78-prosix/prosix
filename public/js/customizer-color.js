@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-
+console.log('FILE B LOADED');
     /* ================= GLOBAL VARIABLES ================= */
     window.selectedColors = []; // Colors currently shown in wheel
     window.paletteSelectedColors = []; // Colors selected in modal
@@ -389,107 +389,154 @@
     }
 
     /* ================= COLOR PALETTE MODAL ================= */
-    window.openColorPalette = function () {
-        const modal = document.getElementById('colorPaletteModal');
-        if (modal) modal.style.display = 'flex';
+window.openColorPalette = function () {
+    const panel = document.getElementById('inlineColorSelector');
+    const wheelPanel = document.getElementById('colorWheelPanel');
+    const gradientPanel = document.getElementById('gradientPanel');
 
-        // IMPORTANT FIX:
-        // If custom palette exists => show user's previously selected colors
-        // If no custom palette yet => start EMPTY, so defaults auto-selected na hon
-        paletteSelectedColors = window.hasCustomPalette
-            ? [...window.selectedColors].map(c => c.toUpperCase())
-            : [];
+    paletteSelectedColors = window.hasCustomPalette
+        ? [...window.selectedColors].map(c => c.toUpperCase())
+        : [];
 
-        document.querySelectorAll('.color-box').forEach(box => {
-            box.classList.remove('selected');
-            box.innerHTML = '';
+    document.querySelectorAll('#inlineColorSelector .color-box').forEach(box => {
+        box.classList.remove('selected');
+        box.innerHTML = '';
 
-            const bg = rgbToHex(box.style.background).toUpperCase();
+        const rawBg =
+            box.style.background ||
+            box.style.backgroundColor ||
+            window.getComputedStyle(box).backgroundColor ||
+            '';
 
-            if (paletteSelectedColors.includes(bg)) {
-                box.classList.add('selected');
-                box.innerHTML = '✔';
-                box.style.color = getContrastColor(bg);
-                box.style.fontWeight = 'bold';
-                box.style.display = 'flex';
-                box.style.alignItems = 'center';
-                box.style.justifyContent = 'center';
-            } else {
-                box.style.display = '';
-                box.style.alignItems = '';
-                box.style.justifyContent = '';
-            }
-        });
-    };
+        const bg = rgbToHex(rawBg);
+        if (!bg) return;
 
-    window.closeColorPalette = function () {
-        const modal = document.getElementById('colorPaletteModal');
-        if (modal) {
-            modal.style.display = 'none';
-            modal.dataset.gradientMode = 'false';
-        }
-    };
-
-    window.togglePaletteColor = function (el, color) {
-        const upperColor = color.toUpperCase();
-
-        if (paletteSelectedColors.includes(upperColor)) {
-            paletteSelectedColors = paletteSelectedColors.filter(c => c !== upperColor);
-            el.classList.remove('selected');
-            el.innerHTML = '';
+        if (paletteSelectedColors.includes(bg)) {
+            box.classList.add('selected');
+            box.innerHTML = '✔';
+            box.style.color = getContrastColorLocal(bg);
+            box.style.fontWeight = 'bold';
+            box.style.display = 'flex';
+            box.style.alignItems = 'center';
+            box.style.justifyContent = 'center';
         } else {
-            paletteSelectedColors.push(upperColor);
-            el.classList.add('selected');
-            el.innerHTML = '✔';
-            el.style.color = getContrastColor(color);
-            el.style.fontWeight = 'bold';
-            el.style.display = 'flex';
-            el.style.alignItems = 'center';
-            el.style.justifyContent = 'center';
+            box.style.color = '';
+            box.style.fontWeight = '';
+            box.style.display = '';
+            box.style.alignItems = '';
+            box.style.justifyContent = '';
         }
-    };
+    });
 
-    window.applySelectedColors = function () {
-        if (paletteSelectedColors.length < 1) {
-            alert('Please select at least 1 color');
-            return;
+    if (wheelPanel) wheelPanel.style.display = 'none';
+    if (gradientPanel) gradientPanel.style.display = 'none';
+    if (panel) panel.classList.add('open');
+};
+
+window.closeColorPalette = function () {
+    const panel = document.getElementById('inlineColorSelector');
+    const wheelPanel = document.getElementById('colorWheelPanel');
+
+    if (panel) panel.classList.remove('open');
+    if (wheelPanel) wheelPanel.style.display = 'block';
+};
+
+function rgbToHex(color) {
+    if (!color) return '';
+
+    color = color.trim();
+
+    if (color.startsWith('#')) {
+        let hex = color.toUpperCase();
+
+        if (hex.length === 4) {
+            hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
         }
 
-        selectedColors = paletteSelectedColors.map(c => c.toUpperCase());
+        return hex;
+    }
+
+    const match = color.match(/rgba?\s*\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+    if (!match) return '';
+
+    const r = parseInt(match[1], 10).toString(16).padStart(2, '0');
+    const g = parseInt(match[2], 10).toString(16).padStart(2, '0');
+    const b = parseInt(match[3], 10).toString(16).padStart(2, '0');
+
+    return (`#${r}${g}${b}`).toUpperCase();
+}
+window.togglePaletteColor = function (el, color) {
+    const upperColor = color.toUpperCase();
+
+    if (paletteSelectedColors.includes(upperColor)) {
+        paletteSelectedColors = paletteSelectedColors.filter(c => c !== upperColor);
+        el.classList.remove('selected');
+        el.innerHTML = '';
+        el.style.color = '';
+        el.style.fontWeight = '';
+        el.style.display = '';
+        el.style.alignItems = '';
+        el.style.justifyContent = '';
+    } else {
+        paletteSelectedColors.push(upperColor);
+        el.classList.add('selected');
+        el.innerHTML = '✔';
+        el.style.color = getContrastColorLocal(color);
+        el.style.fontWeight = 'bold';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+    }
+};
+
+window.applySelectedColors = function () {
+    if (paletteSelectedColors.length < 1) {
+        alert('Please select at least 1 color');
+        return;
+    }
+
+    selectedColors = paletteSelectedColors.map(c => c.toUpperCase());
+    window.selectedColors = [...selectedColors];
+    window.hasCustomPalette = true;
+
+    if (selectedColors.length > 24) {
+        selectedColors = selectedColors.slice(0, 24);
         window.selectedColors = [...selectedColors];
-        window.hasCustomPalette = true;
+    }
 
-        if (selectedColors.length > 24) {
-            selectedColors = selectedColors.slice(0, 24);
-            window.selectedColors = [...selectedColors];
-        }
-
-        updateColorWheel();
-        initGradientFromWheel();
-        closeColorPalette();
-    };
+    updateColorWheel();
+    initGradientFromWheel();
+    closeColorPalette();
+};
 
     /* ================= FILL TYPE SWITCHER ================= */
-    window.setFillType = function (type) {
-        document.getElementById('solidBtn').classList.toggle('active', type === 'solid');
-        document.getElementById('gradientBtn').classList.toggle('active', type === 'gradient');
+   window.setFillType = function (type) {
+    document.getElementById('solidBtn').classList.toggle('active', type === 'solid');
+    document.getElementById('gradientBtn').classList.toggle('active', type === 'gradient');
 
-        document.getElementById('gradientPanel').style.display =
-            type === 'gradient' ? 'block' : 'none';
+    const gradientPanel = document.getElementById('gradientPanel');
+    const solidPanel = document.getElementById('solidPanel');
+    const inlineSelector = document.getElementById('inlineColorSelector');
+    const wheelPanel = document.getElementById('colorWheelPanel');
 
-        document.querySelector('.color-wheel-container').style.display =
-            type === 'solid' ? 'block' : 'none';
+    if (type === 'gradient') {
+        if (solidPanel) solidPanel.style.display = 'none';
+        if (gradientPanel) gradientPanel.style.display = 'block';
 
-        if (type === 'gradient') {
-            initGradientFromWheel();
+        initGradientFromWheel();
 
-            requestAnimationFrame(() => {
-                const angle = parseInt(document.getElementById('gradAngle')?.value || 90, 10);
-                updateAngleWheelKnob(angle);
-                updateGradientPreview();
-            });
-        }
-    };
+        requestAnimationFrame(() => {
+            const angle = parseInt(document.getElementById('gradAngle')?.value || 90, 10);
+            updateAngleWheelKnob(angle);
+            updateGradientPreview();
+        });
+    } else {
+        if (gradientPanel) gradientPanel.style.display = 'none';
+        if (solidPanel) solidPanel.style.display = 'block';
+        if (inlineSelector) inlineSelector.classList.remove('open');
+        if (wheelPanel) wheelPanel.style.display = 'block';
+    }
+};
 
     /* ================= GRADIENT FUNCTIONS ================= */
     window.setGradientType = function (type) {

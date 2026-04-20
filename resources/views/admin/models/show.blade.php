@@ -360,6 +360,69 @@ document.addEventListener('DOMContentLoaded', checkOrientation);
                 <script src="/js/customizer-color.js"></script>
                 <script src="/js/customizer-pattern.js"></script>
                 <script src="/js/customizer-application.js"></script>
+                <div id="saveSuccessToast" class="save-success-toast">
+    <div class="save-success-toast-inner">
+        <div class="save-success-icon">✓</div>
+        <div>
+            <div class="save-success-title">Successfully Saved</div>
+            <div class="save-success-subtitle">Your design has been saved</div>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>
+<style>
+.save-success-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 999999;
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    pointer-events: none;
+    transition: all .35s ease;
+}
+
+.save-success-toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.save-success-toast-inner {
+    min-width: 280px;
+    background: #111;
+    color: #fff;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 14px 35px rgba(0,0,0,.28);
+}
+
+.save-success-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #22c55e;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-success-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.save-success-subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,.72);
+    margin-top: 2px;
+}
+</style>

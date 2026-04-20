@@ -100,13 +100,24 @@
                 </transition>
               </template>
 
-              <button class="img-action-btn wishlist-btn" @click="toggleLike"
-                :class="{ active: cartStore.isLiked(product.id) }">
-                <i :class="cartStore.isLiked(product.id) ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
-              </button>
-              <button class="img-action-btn share-btn" @click="handleShare">
-                <i class="bi bi-share"></i>
-              </button>
+            <button
+  class="img-action-btn wishlist-btn"
+  @mouseenter.stop="pauseZoom"
+  @mouseleave.stop="resumeZoom"
+  @click.stop="toggleLike"
+  :class="{ active: cartStore.isLiked(product.id) }"
+>
+  <i :class="cartStore.isLiked(product.id) ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+</button>
+
+<button
+  class="img-action-btn share-btn"
+  @mouseenter.stop="pauseZoom"
+  @mouseleave.stop="resumeZoom"
+  @click.stop="handleShare"
+>
+  <i class="bi bi-share"></i>
+</button>
             </div>
           </div>
         </div>
@@ -386,24 +397,22 @@
                 </div>
               </div>
             </template>
-            <template v-else>
-              <div
-                v-for="rel in paginatedRelated" :key="rel.id"
-                class="product-card-link"
-                @click="router.push(`/product/${rel.id}`)"
-              >
-                <div class="product-card" :class="{ 'card-active': previewProductId === rel.id }">
-                  <div class="card-image">
-                    <img :src="rel.image" alt="Product" />
-                    <div class="card-overlay"><span class="quick-view-btn">View</span></div>
-                  </div>
-                  <div class="card-content">
-                    <h3 class="card-title">{{ rel.name }}</h3>
-                    <p class="card-price">${{ formatPrice(rel.price) }}</p>
-                  </div>
-                </div>
-              </div>
-            </template>
+          <template v-else>
+  <div
+    v-for="rel in paginatedRelated" :key="rel.id"
+    class="model-rel-card"
+    :class="{ 'card-active': previewProductId === rel.id }"
+    @click="router.push(`/product/${rel.id}`)"
+  >
+    <div class="model-rel-img">
+      <img v-if="rel.image" :src="rel.image" class="model-rel-thumb" />
+    </div>
+    <div class="model-rel-body">
+      <h3 class="model-rel-title">{{ rel.name }}</h3>
+      <p class="model-rel-price">${{ formatPrice(rel.price) }}</p>
+    </div>
+  </div>
+</template>
           </div>
           <button class="carousel-btn carousel-next" @click="nextSlide" :disabled="relatedPage >= totalPages - 1">
             <i class="bi bi-chevron-right"></i>
@@ -419,7 +428,6 @@
     <footer-component />
   </div>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -699,6 +707,7 @@ const loadProduct = async () => {
 const fetchRelated = async () => {
   relatedLoading.value = true
   relatedItems.value = []
+
   try {
     if (isModel.value) {
       const currentId = product.value.id
@@ -707,7 +716,7 @@ const fetchRelated = async () => {
       const subId = product.value.subcategory_id
       const catId = product.value.category_id
 
-      // Step 1: subcategory try karo
+      // Step 1: subcategory models
       if (subId) {
         try {
           const r = await axios.get(`/api/subcategories/${subId}/models`)
@@ -715,7 +724,7 @@ const fetchRelated = async () => {
         } catch {}
       }
 
-      // Step 2: category try karo
+      // Step 2: category models
       if (!models.length && catId) {
         try {
           const r = await axios.get(`/api/categories/${catId}/models`)
@@ -723,17 +732,15 @@ const fetchRelated = async () => {
         } catch {}
       }
 
-      // Step 3: ✅ FALLBACK — current product ke route se category nikalo
-      // URL: /product/44?type=model — pehle product load hone ka wait
+      // Step 3: all models fallback
       if (!models.length) {
         try {
-          // Sab models fetch karo
           const r = await axios.get('/api/models')
           models = r.data?.models || r.data || []
         } catch {}
       }
 
-      // Step 4: ✅ LAST RESORT — sab products/models fetch karo
+      // Step 4: last fallback
       if (!models.length) {
         try {
           const r = await axios.get('/api/products?type=model')
@@ -742,13 +749,48 @@ const fetchRelated = async () => {
       }
 
       relatedItems.value = models.filter(m => String(m.id) !== String(currentId))
-
     } else {
-      // Normal product logic same rahega...
+      const currentId = product.value.id
+      let products = []
+
+      const subId = product.value.subcategory_id
+      const catId = product.value.category_id
+
+      // Step 1: pehle same subcategory ke products lao
+      if (subId) {
+        try {
+          const r = await axios.get(`/api/subcategories/${subId}/products`)
+          products = r.data?.products || r.data || []
+        } catch {}
+      }
+
+      // Step 2: agar subcategory se kuch na mile to same category ke products lao
+      if (!products.length && catId) {
+        try {
+          const r = await axios.get(`/api/categories/${catId}/products`)
+          products = r.data?.products || r.data || []
+        } catch {}
+      }
+
+      // Step 3: fallback all products
+      if (!products.length) {
+        try {
+          const r = await axios.get('/api/products')
+          products = r.data?.products || r.data || []
+        } catch {}
+      }
+
+      // Step 4: sirf normal products rakho, current product hata do
+      relatedItems.value = products.filter(p =>
+        String(p.id) !== String(currentId) &&
+        !p.views &&                          // model na ho
+        p.type !== 'model'
+      )
     }
   } catch (err) {
     console.error('Related fetch error:', err)
   }
+
   relatedLoading.value = false
 }
 
@@ -830,16 +872,15 @@ watch(() => route.params.id, async (newId) => {
 .layer-black{z-index:3;mix-blend-mode:screen}
 
 /* ✅ ZOOM OVERLAY — active thumb ka exact content zoom karo */
-.zoom-overlay{position:absolute;inset:0;overflow:hidden;z-index:20;border-radius:10px;background:#fff;cursor:crosshair}
+.zoom-overlay{position:absolute;inset:0;overflow:hidden;z-index:5;border-radius:10px;background:#fff;cursor:crosshair; pointer-events: none;}
 .zoom-layer{position:absolute;top:50%;left:50%;width:100%;height:100%;object-fit:contain;padding:16px;transition:transform-origin .05s}
 .zoom-svg{z-index:1;transform-origin:50% 50%}
 .zoom-white{z-index:2;mix-blend-mode:multiply;transform-origin:50% 50%}
 .zoom-black{z-index:3;mix-blend-mode:screen;transform-origin:50% 50%}
-
 .oos-overlay{position:absolute;inset:0;background:rgba(255,255,255,.78);display:flex;align-items:center;justify-content:center;z-index:5}
 .oos-overlay span{background:#e53e3e;color:#fff;font-size:16px;font-weight:800;padding:10px 24px;border-radius:6px}
 .badge-new{position:absolute;top:14px;left:14px;background:#000;color:#fff;font-size:13px;font-weight:700;padding:5px 12px;border-radius:4px;z-index:10}
-.img-action-btn{position:absolute;top:14px;width:44px;height:44px;background:#fff;border:1px solid #e0e0e0;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:.2s;color:#666;z-index:10}
+.img-action-btn{position:absolute;top:14px;width:44px;height:44px;background:#fff;border:1px solid #e0e0e0;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:.2s;color:#666;z-index:30}
 .img-action-btn:hover,.img-action-btn.active{background:#000;color:#fff;border-color:#000}
 .wishlist-btn{right:14px}.share-btn{right:66px}
 .img-fade-enter-active,.img-fade-leave-active{transition:opacity .2s ease,transform .2s ease}
