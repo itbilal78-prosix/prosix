@@ -226,19 +226,19 @@ const logout = async () => {
 }
 
 onMounted(async () => {
-
-  // ✅ ADMIN IMPERSONATION TOKEN SET
   const urlParams = new URLSearchParams(window.location.search)
   const token = urlParams.get('token')
+  const tab = urlParams.get('tab')
 
   if (token) {
     localStorage.setItem('auth_token', token)
-
-    // URL clean (best practice)
-    window.history.replaceState({}, document.title, '/user-dashboard')
+    window.history.replaceState({}, document.title, '/dashboard')
   }
 
-  // 🔥 normal flow
+  if (tab) {
+    activeTab.value = tab
+  }
+
   if (checkAuth()) {
     isLoading.value = true
     try {

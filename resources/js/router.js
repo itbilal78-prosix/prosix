@@ -113,7 +113,28 @@ const router = createRouter({
   }
 })
 
+// router.beforeEach((to, from, next) => {
+//   const token = localStorage.getItem('auth_token')
+
+//   if (to.meta.guest && token) return next('/dashboard')
+
+//   if (to.meta.requiresAuth && !token) {
+//     return next({
+//       path: '/user-login',
+//       query: { redirect: to.fullPath }
+//     })
+//   }
+
+//   next()
+// })
 router.beforeEach((to, from, next) => {
+  // ✅ pehle URL se token lo
+  const urlToken = to.query.token
+
+  if (urlToken) {
+    localStorage.setItem('auth_token', urlToken)
+  }
+
   const token = localStorage.getItem('auth_token')
 
   if (to.meta.guest && token) return next('/dashboard')
@@ -127,5 +148,4 @@ router.beforeEach((to, from, next) => {
 
   next()
 })
-
 export default router

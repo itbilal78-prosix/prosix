@@ -79,7 +79,7 @@ class AuthController extends Controller
 
 
 
- public function loginAsUser($id)
+public function loginAsUser($id)
 {
     $user = User::findOrFail($id);
 
@@ -90,8 +90,6 @@ class AuthController extends Controller
     $user->tokens()->delete();
     $token = $user->createToken('admin_impersonation')->plainTextToken;
 
-    $url = url('/?token=' . $token . '&impersonate=1');
-
-    return redirect($url);
+    return redirect('/dashboard?token=' . $token . '&impersonate=1&tab=my-design');
 }
 }
