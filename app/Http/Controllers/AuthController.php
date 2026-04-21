@@ -74,4 +74,24 @@ class AuthController extends Controller
 
         return back()->with('success', 'User status updated.');
     }
+
+
+
+
+
+ public function loginAsUser($id)
+{
+    $user = User::findOrFail($id);
+
+    if ($user->status !== 'approved') {
+        return back()->with('error', 'User not approved');
+    }
+
+    $user->tokens()->delete();
+    $token = $user->createToken('admin_impersonation')->plainTextToken;
+
+    $url = url('/?token=' . $token . '&impersonate=1');
+
+    return redirect($url);
+}
 }

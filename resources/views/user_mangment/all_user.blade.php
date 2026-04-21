@@ -53,25 +53,36 @@
                                 <td>
                                     {{ $user->created_at->format('d M Y, h:i A') }}
                                 </td>
-                                <td class="text-center">
-                                    <form action="{{ route('admin.users.toggle', $user->id) }}" method="POST"
-                                        style="display:inline;">
-                                        @csrf
-                                        @method('PATCH')
+                               <td class="text-center">
 
-                                        @if ($user->status == 'blocked')
-                                            <button class="btn btn-success btn-sm">
-                                                <i class="bi bi-unlock"></i>
-                                            </button>
-                                        @else
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="bi bi-lock"></i>
-                                            </button>
-                                        @endif
-                                    </form>
-                                </td>
+    <!-- 👁 VIEW BUTTON (LOGIN AS USER) -->
+    <a href="{{ route('admin.users.loginAsUser', $user->id) }}"
+       class="btn btn-primary btn-sm"
+       title="Login as User">
+        <i class="bi bi-eye"></i>
+    </a>
+
+    <!-- 🔒 BLOCK/UNBLOCK BUTTON -->
+    <form action="{{ route('admin.users.toggle', $user->id) }}"
+        method="POST"
+        style="display:inline;">
+        @csrf
+        @method('PATCH')
+
+        @if ($user->status == 'blocked')
+            <button class="btn btn-success btn-sm">
+                <i class="bi bi-unlock"></i>
+            </button>
+        @else
+            <button class="btn btn-danger btn-sm">
+                <i class="bi bi-lock"></i>
+            </button>
+        @endif
+    </form>
+
+</td>
                             </tr>
-                            
+
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-4">

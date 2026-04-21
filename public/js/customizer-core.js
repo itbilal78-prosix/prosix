@@ -3116,8 +3116,7 @@ window.showSaveSuccessToast('Successfully Saved', `Design "${designName}" saved`
 
             } catch (e) {
                 console.error('Save error:', e);
-window.showSaveSuccessToast('Save Failed', 'Please try again');
-            }
+window.showSaveSuccessToast('Save Failed', 'Please try again');            }
 
             window.isSaving = false;
             return;
@@ -3425,92 +3424,7 @@ window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle =
     }
 
     // ================= CREATE MERGED CANVAS (SVG + OVERLAYS) =================
-    // async function createMergedCanvas(view) {
 
-    //     // 1️⃣ Load SVG
-    //     const res = await fetch(modelViews[view].svg_url + '?t=' + Date.now());
-    //     const svgText = await res.text();
-
-    //     const parser = new DOMParser();
-    //     const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
-    //     const svg = svgDoc.querySelector('svg');
-    //     // 🔥 APPLY APPLICATION TEXT INTO PREVIEW SVG
-    //     if (window.applyApplicationsToSvg) {
-    //         applyApplicationsToSvg(svg, view);
-    //     }
-
-
-    //     if (!svg) throw new Error("No SVG");
-
-    //     // Apply colors to SVG
-    //     svg.querySelectorAll('path, polygon, circle, rect, ellipse').forEach((el, i) => {
-    //         // ✅ APPLY PATTERNS FOR PREVIEW
-    //         if (window.applyPatternsToSvg) {
-    //             applyPatternsToSvg(svg, view, true);
-    //             applyMascotsToSvg(svg, view);   // 🔥 ADD
-    //         }
-
-    //         if (!el.id) el.id = `svg-part-${i}`;
-
-    //         if (gradientChanges[view]?.[el.id]) {
-
-    //             rebuildGradient(svg, el.id, gradientChanges[view][el.id], view);
-    //             el.setAttribute('fill', `url(#gradient-${view}-${el.id})`);
-
-    //         } else if (colorChanges[view]?.[el.id]) {
-
-    //             el.setAttribute('fill', colorChanges[view][el.id]);
-
-    //         }
-    //     });
-
-
-    //     // 2️⃣ Get SVG natural     size
-    //     const viewBox = svg.getAttribute('viewBox');
-    //     let width = 800;  // default
-    //     let height = 800;
-
-    //     if (viewBox) {
-    //         const [, , w, h] = viewBox.split(' ').map(Number);
-    //         width = w;
-    //         height = h;
-    //     }
-
-    //     // 3️⃣ Create canvas
-    //     const canvas = document.createElement('canvas');
-    //     canvas.width = width;
-    //     canvas.height = height;
-    //     const ctx = canvas.getContext('2d');
-
-    //     // ❌ NO BACKGROUND (transparent)
-    //     ctx.clearRect(0, 0, width, height);
-
-    //     // 4️⃣ Draw SVG
-    //     const svgData = new XMLSerializer().serializeToString(svg);
-    //     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    //     const svgUrl = URL.createObjectURL(svgBlob);
-    //     const svgImg = await loadImage(svgUrl);
-    //     ctx.drawImage(svgImg, 0, 0, width, height);
-    //     URL.revokeObjectURL(svgUrl);
-
-    //     // 5️⃣ Draw WHITE overlay (MULTIPLY)
-    //     if (modelViews[view]?.white_image_url) {
-    //         const whiteImg = await loadImage(modelViews[view].white_image_url);
-    //         ctx.globalCompositeOperation = 'multiply';
-    //         ctx.drawImage(whiteImg, 0, 0, width, height);
-    //         ctx.globalCompositeOperation = 'source-over';
-    //     }
-
-    //     // 6️⃣ Draw BLACK overlay (SCREEN)
-    //     if (modelViews[view]?.black_image_url) {
-    //         const blackImg = await loadImage(modelViews[view].black_image_url);
-    //         ctx.globalCompositeOperation = 'screen';
-    //         ctx.drawImage(blackImg, 0, 0, width, height);
-    //         ctx.globalCompositeOperation = 'source-over';
-    //     }
-
-    //     return canvas;
-    // }
 
     async function createMergedCanvas(view) {
 

@@ -226,10 +226,29 @@ const logout = async () => {
 }
 
 onMounted(async () => {
+
+  // ✅ ADMIN IMPERSONATION TOKEN SET
+  const urlParams = new URLSearchParams(window.location.search)
+  const token = urlParams.get('token')
+
+  if (token) {
+    localStorage.setItem('auth_token', token)
+
+    // URL clean (best practice)
+    window.history.replaceState({}, document.title, '/user-dashboard')
+  }
+
+  // 🔥 normal flow
   if (checkAuth()) {
     isLoading.value = true
-    try { await Promise.all([fetchUserData(), fetchDashboardStats()]) }
-    finally { isLoading.value = false }
+    try {
+      await Promise.all([
+        fetchUserData(),
+        fetchDashboardStats()
+      ])
+    } finally {
+      isLoading.value = false
+    }
   }
 })
 </script>

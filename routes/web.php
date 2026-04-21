@@ -86,6 +86,11 @@ Route::post('/orders/{id}/notes',
 
 
     });
+
+
+Route::get('/users/{id}/login', [AuthController::class, 'loginAsUser'])
+    ->name('admin.users.loginAsUser');
+
 // Admin protected routes
 Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::post('products/featured', [ProductController::class, 'featured'])->name('products.featured');
