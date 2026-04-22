@@ -144,7 +144,7 @@ font-weight:600;
 </div>
 
 <!-- Pattern Library Modal -->
-<div id="patternLibraryModal" class="color-modal" style="display:none;">
+<div id="patternLibraryModal" class="color-modal"  style="display:none;">
     <div class="color-modal-content" style="width:1000px; max-height:80vh; overflow-y:auto;">
         <div class="color-modal-header">
             <h3>Select Pattern</h3>

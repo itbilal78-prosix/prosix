@@ -447,9 +447,10 @@
             if (appModal) appModal.style.display = 'none';
             setTimeout(function () {
                 if (typeof window.openMascotSelectModal === 'function') {
+
                     window.openMascotSelectModal(layerId);
                 } else {
-                    alert('Mascot modal load nahi hua. Page reload karein.');
+                    alert('Mascot modal did not load. Please reload the page');
                 }
             }, 250);
             return;
@@ -474,7 +475,7 @@
         if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
         if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
         window.applicationsApplied[view][partId].push(layer);
-console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied, null, 2));
+        console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied, null, 2));
         addApplicationToSvg(layer);
         updateApplicationLayersList();
         closeApplicationModal();
@@ -487,117 +488,117 @@ console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied
     // ✅ FIX 2: addApplicationToSvg — POORA REPLACE KARO
     // ============================================================
 
-  window.addApplicationToSvg = function (layer) {
+    window.addApplicationToSvg = function (layer) {
 
-  if (layer.view !== window.currentView) return;
-
-
+        if (layer.view !== window.currentView) return;
 
 
-    if (layer.type === 'direct-mascot') {
-        if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
-        return;
-    }
 
-    const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-    if (!mainSvg) {
-        setTimeout(() => window.addApplicationToSvg(layer), 300);
-        return;
-    }
 
-    let defs = mainSvg.querySelector('defs');
-    if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        mainSvg.insertBefore(defs, mainSvg.firstChild);
-    }
+        if (layer.type === 'direct-mascot') {
+            if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+            return;
+        }
 
-    const partElement = mainSvg.querySelector(`#${layer.partId}`);
-    if (!partElement) {
-        console.warn('Part not found', layer.partId);
-        return;
-    }
+        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (!mainSvg) {
+            setTimeout(() => window.addApplicationToSvg(layer), 300);
+            return;
+        }
 
-    // ===== HARD CLEAN SAME LAYER =====
-    const oldGroup = mainSvg.querySelector(`#app-group-${layer.id}`);
-    if (oldGroup) oldGroup.remove();
+        let defs = mainSvg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            mainSvg.insertBefore(defs, mainSvg.firstChild);
+        }
 
-    const oldText = mainSvg.querySelector(`#${layer.id}`);
-    if (oldText) oldText.remove();
+        const partElement = mainSvg.querySelector(`#${layer.partId}`);
+        if (!partElement) {
+            console.warn('Part not found', layer.partId);
+            return;
+        }
 
-    mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(e => e.remove());
+        // ===== HARD CLEAN SAME LAYER =====
+        const oldGroup = mainSvg.querySelector(`#app-group-${layer.id}`);
+        if (oldGroup) oldGroup.remove();
 
-    const oldClip = defs.querySelector(`#clip-${layer.id}`);
-    if (oldClip) oldClip.remove();
+        const oldText = mainSvg.querySelector(`#${layer.id}`);
+        if (oldText) oldText.remove();
 
-    const oldPattern = defs.querySelector(`#text-pattern-${layer.id}`);
-    if (oldPattern) oldPattern.remove();
+        mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(e => e.remove());
 
-    const oldMascot = defs.querySelector(`#text-mascot-${layer.id}`);
-    if (oldMascot) oldMascot.remove();
+        const oldClip = defs.querySelector(`#clip-${layer.id}`);
+        if (oldClip) oldClip.remove();
 
-    // ===== CLIP =====
-    const clipId = `clip-${layer.id}`;
-    const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-    clip.setAttribute('id', clipId);
+        const oldPattern = defs.querySelector(`#text-pattern-${layer.id}`);
+        if (oldPattern) oldPattern.remove();
 
-    const clone = partElement.cloneNode(true);
-    clone.removeAttribute('id');
-    clone.removeAttribute('clip-path');
-    clone.removeAttribute('mask');
+        const oldMascot = defs.querySelector(`#text-mascot-${layer.id}`);
+        if (oldMascot) oldMascot.remove();
 
-    clip.appendChild(clone);
-    defs.appendChild(clip);
+        // ===== CLIP =====
+        const clipId = `clip-${layer.id}`;
+        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clip.setAttribute('id', clipId);
 
-    // ===== GROUP =====
-    const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    layerGroup.setAttribute('id', `app-group-${layer.id}`);
-    layerGroup.setAttribute('clip-path', `url(#${clipId})`);
-    mainSvg.appendChild(layerGroup);
+        const clone = partElement.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.removeAttribute('clip-path');
+        clone.removeAttribute('mask');
 
-    // ===== TEXT =====
-    const bbox = partElement.getBBox();
-    const cx = bbox.x + bbox.width / 2;
-    const cy = bbox.y + bbox.height / 2;
+        clip.appendChild(clone);
+        defs.appendChild(clip);
 
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('id', layer.id);
-    text.setAttribute('x', cx + (layer.x || 0));
-    text.setAttribute('y', cy + (layer.y || 0));
-    text.setAttribute('font-size', layer.fontSize || 500);
-    text.style.fontFamily = layer.fontFamily || 'Arial Black';
-    text.setAttribute('fill', layer.fill || '#FFFFFF');
-    text.setAttribute('stroke', layer.stroke || '#000000');
-    text.setAttribute('stroke-width', layer.strokeWidth || 5);
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('paint-order', 'stroke fill');
-    text.setAttribute('stroke-linejoin', 'miter');
-    text.style.cursor = 'move';
-    text.textContent = layer.text || '';
+        // ===== GROUP =====
+        const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        layerGroup.setAttribute('id', `app-group-${layer.id}`);
+        layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+        mainSvg.appendChild(layerGroup);
 
-    if (layer.letterSpacing) {
-        text.style.letterSpacing = layer.letterSpacing + 'px';
-    }
+        // ===== TEXT =====
+        const bbox = partElement.getBBox();
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
 
-    layerGroup.appendChild(text);
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('id', layer.id);
+        text.setAttribute('x', cx + (layer.x || 0));
+        text.setAttribute('y', cy + (layer.y || 0));
+        text.setAttribute('font-size', layer.fontSize || 500);
+        text.style.fontFamily = layer.fontFamily || 'Arial Black';
+        text.setAttribute('fill', layer.fill || '#FFFFFF');
+        text.setAttribute('stroke', layer.stroke || '#000000');
+        text.setAttribute('stroke-width', layer.strokeWidth || 5);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('paint-order', 'stroke fill');
+        text.setAttribute('stroke-linejoin', 'miter');
+        text.style.cursor = 'move';
+        text.textContent = layer.text || '';
 
-    makeDraggable(text, layer);
+        if (layer.letterSpacing) {
+            text.style.letterSpacing = layer.letterSpacing + 'px';
+        }
 
-    text.addEventListener('click', e => {
-        e.stopPropagation();
-        selectApplicationLayer(layer.id);
-    });
+        layerGroup.appendChild(text);
 
-    if (typeof _applyFlipTransform === 'function') {
-        _applyFlipTransform(layer, mainSvg);
-    }
+        makeDraggable(text, layer);
 
-    if (layer.outlineStyle) {
-        window.currentOutlineStyle = layer.outlineStyle;
-        if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
-        applyOutlineStyleToText(layer.id);
-    }
-};
+        text.addEventListener('click', e => {
+            e.stopPropagation();
+            selectApplicationLayer(layer.id);
+        });
+
+        if (typeof _applyFlipTransform === 'function') {
+            _applyFlipTransform(layer, mainSvg);
+        }
+
+        if (layer.outlineStyle) {
+            window.currentOutlineStyle = layer.outlineStyle;
+            if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
+            applyOutlineStyleToText(layer.id);
+        }
+    };
 
 
     // ============================================================
@@ -856,46 +857,58 @@ console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied
     // =================== DRAGGABLE (TEXT) ===================
     // FIX: Use SVG coordinate space directly — no rotation math needed
     // ============================================================
-    window.makeDraggable = function (element, layer) {
-        let isDragging = false, startSvgX, startSvgY, initialLayerX, initialLayerY;
+ window.makeDraggable = function (element, layer) {
+    let isDragging = false, startSvgX, startSvgY, initialLayerX, initialLayerY;
+    let _dragAxisLocked = null;
 
-        element.addEventListener('mousedown', function (e) {
-            if (e.button !== 0) return;
-            isDragging = true;
-            const svgPt = _clientToSvgCoord(e.clientX, e.clientY);
-            startSvgX = svgPt.x;
-            startSvgY = svgPt.y;
-            initialLayerX = layer.x || 0;
-            initialLayerY = layer.y || 0;
-            e.preventDefault();
-        });
+    element.addEventListener('mousedown', function (e) {
+        if (e.button !== 0) return;
+        isDragging = true;
+        const svgPt = _clientToSvgCoord(e.clientX, e.clientY);
+        startSvgX = svgPt.x;
+        startSvgY = svgPt.y;
+        initialLayerX = layer.x || 0;
+        initialLayerY = layer.y || 0;
+        _dragAxisLocked = null;
+        e.preventDefault();
+    });
 
-        document.addEventListener('mousemove', function (e) {
-            if (!isDragging) return;
-            const svgPt = _clientToSvgCoord(e.clientX, e.clientY);
-            const newX = Math.round(initialLayerX + (svgPt.x - startSvgX));
-            const newY = Math.round(initialLayerY + (svgPt.y - startSvgY));
-            _moveTextLayer(layer, newX, newY);
-        });
+    document.addEventListener('mousemove', function (e) {
+        if (!isDragging) return;
+        const svgPt = _clientToSvgCoord(e.clientX, e.clientY);
+        const rawDX = svgPt.x - startSvgX;
+        const rawDY = svgPt.y - startSvgY;
 
-        document.addEventListener('mouseup', function () {
-            if (!isDragging) return;
-            isDragging = false;
-            window._hidePositionIndicator();
+        if (e.shiftKey && !_dragAxisLocked) {
+            if (Math.abs(rawDX) > 5 || Math.abs(rawDY) > 5) {
+                _dragAxisLocked = Math.abs(rawDX) > Math.abs(rawDY) ? 'x' : 'y';
+            }
+        }
+        if (!e.shiftKey) _dragAxisLocked = null;
 
-            // Sync sliders
-            const pxSlider = document.getElementById('posX');
-            const pySlider = document.getElementById('posY');
-            if (pxSlider) { pxSlider.value = layer.x; appFillSlider(pxSlider); }
-            if (pySlider) { pySlider.value = layer.y; appFillSlider(pySlider); }
-            if (pxSlider) document.getElementById('posXValue').textContent = layer.x;
-            if (pySlider) document.getElementById('posYValue').textContent = layer.y;
+        const newX = Math.round(initialLayerX + (_dragAxisLocked === 'y' ? 0 : rawDX));
+        const newY = Math.round(initialLayerY + (_dragAxisLocked === 'x' ? 0 : rawDY));
+        _moveTextLayer(layer, newX, newY);
+    });
 
-            if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
-            if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
-            if (window.saveCustomizations) window.saveCustomizations();
-        });
-    };
+    document.addEventListener('mouseup', function () {
+        if (!isDragging) return;
+        isDragging = false;
+        _dragAxisLocked = null;
+        window._hidePositionIndicator();
+
+        const pxSlider = document.getElementById('posX');
+        const pySlider = document.getElementById('posY');
+        if (pxSlider) { pxSlider.value = layer.x; appFillSlider(pxSlider); }
+        if (pySlider) { pySlider.value = layer.y; appFillSlider(pySlider); }
+        if (pxSlider) document.getElementById('posXValue').textContent = layer.x;
+        if (pySlider) document.getElementById('posYValue').textContent = layer.y;
+
+        if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
+        if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
+        if (window.saveCustomizations) window.saveCustomizations();
+    });
+};
 
     /**
      * Core move: update layer.x/y, reposition text element, reapply transform.
@@ -934,10 +947,14 @@ console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied
     // =================== LAYER LIST ===================
     // ============================================================
 
- // =================== LAYER LIST ===================
+    // =================== LAYER LIST ===================
+  // ============================================================
+// ✅ FIX: LAYER LIST UI + ACTIVE STATE + HOVER TOOLTIP
+// ============================================================
 window.updateApplicationLayersList = function () {
     const container = document.getElementById('applicationLayersList');
     if (!container) return;
+
     container.innerHTML = '';
 
     if (!window.applicationsApplied || !Object.keys(window.applicationsApplied).length) {
@@ -954,15 +971,31 @@ window.updateApplicationLayersList = function () {
         });
     });
 
-    allLayerEntries.reverse();   // latest on top
+    allLayerEntries.reverse(); // latest on top
 
     let layerNum = 1;
     allLayerEntries.forEach(({ view, partId, layer, index }) => {
         const viewShort = view.charAt(0).toUpperCase();
         const isActive = window.currentApplicationLayer === layer.id;
+
         const labelText = layer.type === 'direct-mascot'
             ? (layer.mascotTitle || 'Mascot')
             : (layer.text || 'Empty');
+
+        const flipState = layer._flipState || 0;
+        const flipIcons = {
+            0: '↔',
+            1: '↔',
+            2: '↕',
+            3: '↕↔'
+        };
+
+        const flipTitles = {
+            0: 'Flip ',
+            1: 'Flip ',
+            2: 'Flip ',
+            3: 'Flip '
+        };
 
         const item = document.createElement('div');
         item.className = 'application-layer-item';
@@ -972,37 +1005,78 @@ window.updateApplicationLayersList = function () {
         item.dataset.partId = partId;
         item.dataset.index = index;
 
+        // ✅ active dark, baki light
         item.style.cssText = `
-            display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; margin-bottom:6px;
-            background:${isActive ? '#383838' : '#585858'}; color:#fff; border:none; border-radius:6px;
-            cursor:grab; transition:all 0.2s; user-select:none;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            padding:10px 12px;
+            margin-bottom:6px;
+            background:${isActive ? '#1f1f1f' : '#8a8a8a'};
+            color:#fff;
+            border:${isActive ? '2px solid #000' : '2px solid transparent'};
+            border-radius:8px;
+            cursor:grab;
+            transition:all 0.2s ease;
+            user-select:none;
+            box-shadow:${isActive ? '0 4px 14px rgba(0,0,0,0.20)' : 'none'};
+            opacity:${isActive ? '1' : '0.92'};
         `;
-
-        const flipState = layer._flipState || 0;
-        const flipIcons = { 0: '↔', 1: '↔', 2: '↕', 3: '↕↔' };
 
         item.innerHTML = `
-            <div style="background:#2f2f2f;color:#fff;font-weight:700;font-size:13px;padding:4px 8px;border-radius:4px;flex-shrink:0;">
+            <div style="background:${isActive ? '#000' : '#5a5a5a'};color:#fff;font-weight:700;font-size:13px;padding:4px 8px;border-radius:4px;flex-shrink:0;">
                 #${layerNum}
             </div>
-            <div style="flex:1; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                ${labelText.toUpperCase()}
+
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    ${String(labelText).toUpperCase()}
+                </div>
+
             </div>
-            <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+
+            <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
                 <span style="background:#2f2f2f;color:#fff;padding:2px 6px;font-size:11px;border-radius:3px;">${viewShort}</span>
-                <div onclick="window.flipApplicationLayer('${layer.id}',event)" style="cursor:pointer; font-size:16px;">${flipIcons[flipState]}</div>
-                <div onclick="duplicateApplicationLayer('${layer.id}',event)" style="cursor:pointer; font-size:16px;">⧉</div>
-                <div onclick="removeApplicationLayer('${layer.id}',event)" style="cursor:pointer; font-size:18px; color:#fffff;">×</div>
+
+                <div
+                    class="flip-btn-h"
+                    title="${flipTitles[flipState]}"
+                    onclick="window.flipApplicationLayer('${layer.id}',event)"
+                    style="cursor:pointer; font-size:15px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px;  color:#fff;"
+                >${flipIcons[flipState]}</div>
+
+                <div
+                    title="Duplicate"
+                    onclick="duplicateApplicationLayer('${layer.id}',event)"
+                    style="cursor:pointer; font-size:15px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px;  color:#fff;"
+                >⧉</div>
+
+                <div
+                    title="Delete"
+                    onclick="removeApplicationLayer('${layer.id}',event)"
+                    style="cursor:pointer; font-size:18px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px;  color:#fff;"
+                >×</div>
             </div>
         `;
 
-        // Click to select
+        item.onmouseenter = function () {
+            if (!isActive) {
+                item.style.background = '#6f6f6f';
+            }
+        };
+
+        item.onmouseleave = function () {
+            item.style.background = isActive ? '#1f1f1f' : '#8a8a8a';
+        };
+
+        // click to select
         item.onclick = function (e) {
-            if (e.target.closest('div[onclick]')) return; // buttons pe click na ho
+            if (e.target.closest('div[onclick]')) return;
             selectApplicationLayer(layer.id);
         };
 
-        // =================== DRAG & DROP (Real-time Feel) ===================
+        // =================== DRAG & DROP ===================
         item.addEventListener('dragstart', e => {
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', layer.id);
@@ -1025,12 +1099,12 @@ window.updateApplicationLayersList = function () {
         });
 
         item.addEventListener('dragleave', () => {
-            item.style.borderTop = 'none';
+            item.style.borderTop = isActive ? '2px solid #000' : '2px solid transparent';
         });
 
         item.addEventListener('drop', e => {
             e.preventDefault();
-            item.style.borderTop = 'none';
+            item.style.borderTop = isActive ? '2px solid #000' : '2px solid transparent';
 
             const fromId = window._draggingLayerId;
             if (!fromId || fromId === layer.id) return;
@@ -1044,16 +1118,14 @@ window.updateApplicationLayersList = function () {
 
             if (fromIdx === -1 || toIdx === -1) return;
 
-            // Reorder array
             const [movedLayer] = arr.splice(fromIdx, 1);
             arr.splice(toIdx, 0, movedLayer);
 
-            // 🔥 Real-time SVG reorder
-            reorderSvgLayers(view, partId, arr);
+            if (typeof reorderSvgLayers === 'function') {
+                reorderSvgLayers(view, partId, arr);
+            }
 
-            // List refresh
             updateApplicationLayersList();
-
             if (window.saveCustomizations) window.saveCustomizations();
         });
 
@@ -1062,21 +1134,52 @@ window.updateApplicationLayersList = function () {
     });
 };
 
-    window.duplicateApplicationLayer = function (layerId, event) {
-        if (event) event.stopPropagation();
-        const original = findLayerById(layerId);
-        if (!original) return;
-        const copy = JSON.parse(JSON.stringify(original));
-        copy.id = `app-${Date.now()}`;
-        copy.x += 20; copy.y += 20;
-        if (!window.applicationsApplied[original.view]) window.applicationsApplied[original.view] = {};
-        if (!window.applicationsApplied[original.view][original.partId]) window.applicationsApplied[original.view][original.partId] = [];
-        window.applicationsApplied[original.view][original.partId].push(copy);
-        addApplicationToSvg(copy);
-        updateApplicationLayersList();
-        selectApplicationLayer(copy.id);
-        if (window.saveCustomizations) window.saveCustomizations();
-    };
+   window.duplicateApplicationLayer = function (layerId, event) {
+    if (event) event.stopPropagation();
+    const original = findLayerById(layerId);
+    if (!original) return;
+    const copy = JSON.parse(JSON.stringify(original));
+    copy.id = `app-${Date.now()}`;
+
+    // ✅ FIX: 0.5px offset — barely visible but layer bani hai pata chale
+    copy.x = (original.x || 0) + 0.5;
+    copy.y = (original.y || 0) + 0.5;
+
+    if (!window.applicationsApplied[original.view]) window.applicationsApplied[original.view] = {};
+    if (!window.applicationsApplied[original.view][original.partId]) window.applicationsApplied[original.view][original.partId] = [];
+    window.applicationsApplied[original.view][original.partId].push(copy);
+    addApplicationToSvg(copy);
+    updateApplicationLayersList();
+    selectApplicationLayer(copy.id);
+
+    // ✅ FIX: Flash animation — naya layer highlight ho
+    setTimeout(() => {
+        const items = document.querySelectorAll('.application-layer-item');
+        items.forEach(item => {
+            if (item.dataset.layerId === copy.id) {
+                // Flash white → normal
+                item.style.transition = 'background 0.1s';
+                item.style.background = '#ffffff';
+                item.style.color = '#000';
+                setTimeout(() => {
+                    item.style.background = '#1f1f1f';
+                    item.style.color = '#fff';
+                }, 150);
+                setTimeout(() => {
+                    item.style.background = '#ffffff';
+                    item.style.color = '#000';
+                }, 300);
+                setTimeout(() => {
+                    item.style.background = '#1f1f1f';
+                    item.style.color = '#fff';
+                    item.style.transition = '';
+                }, 450);
+            }
+        });
+    }, 50);
+
+    if (window.saveCustomizations) window.saveCustomizations();
+};
 
     // ============================================================
     // =================== SELECT LAYER ===================
@@ -1153,104 +1256,111 @@ window.updateApplicationLayersList = function () {
         return icon;
     }
 
-    function _plusDragStart(e) {
-        if (e.button !== 0) return;
-        e.preventDefault();
-        e.stopPropagation();
+function _plusDragStart(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
 
-        const layerId = _plusState.layerId;
-        if (!layerId) return;
-        const layer = findLayerById(layerId);
-        if (!layer) return;
+    const layerId = _plusState.layerId;
+    if (!layerId) return;
+    const layer = findLayerById(layerId);
+    if (!layer) return;
 
-        _plusState.isDragging = true;
-        _plusState.startClient = { x: e.clientX, y: e.clientY };
-        _plusState.startSvgPos = _clientToSvgCoord(e.clientX, e.clientY);
-        _plusState.startLayerX = layer.x || 0;
-        _plusState.startLayerY = layer.y || 0;
+    _plusState.isDragging = true;
+    _plusState.startClient = { x: e.clientX, y: e.clientY };
+    _plusState.startSvgPos = _clientToSvgCoord(e.clientX, e.clientY);
+    _plusState.startLayerX = layer.x || 0;
+    _plusState.startLayerY = layer.y || 0;
+    _plusState.axisLocked = null;
 
+    const icon = document.getElementById('appPlusDragIcon');
+    if (icon) { icon.style.cursor = 'grabbing'; }
+
+    document.addEventListener('mousemove', _plusDragMove);
+    document.addEventListener('mouseup', _plusDragEnd);
+}
+
+function _plusDragMove(e) {
+    if (!_plusState.isDragging) return;
+    const layerId = _plusState.layerId;
+    const layer = findLayerById(layerId);
+    if (!layer) return;
+
+    const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+    if (!mainSvg) return;
+
+    const curSvg = _clientToSvgCoord(e.clientX, e.clientY);
+    const rawDX = curSvg.x - _plusState.startSvgPos.x;
+    const rawDY = curSvg.y - _plusState.startSvgPos.y;
+
+    // Shift axis lock — Photoshop style
+    if (e.shiftKey && !_plusState.axisLocked) {
+        if (Math.abs(rawDX) > 5 || Math.abs(rawDY) > 5) {
+            _plusState.axisLocked = Math.abs(rawDX) > Math.abs(rawDY) ? 'x' : 'y';
+        }
+    }
+    if (!e.shiftKey) _plusState.axisLocked = null;
+
+    const newX = Math.round(_plusState.startLayerX + (_plusState.axisLocked === 'y' ? 0 : rawDX));
+    const newY = Math.round(_plusState.startLayerY + (_plusState.axisLocked === 'x' ? 0 : rawDY));
+
+    if (layer.type === 'direct-mascot') {
+        layer.x = newX;
+        layer.y = newY;
+        const el = mainSvg.querySelector('#' + layerId);
+        if (el) {
+            const sz = layer._mascotSize || 100;
+            el.setAttribute('x', (layer._cx || 0) - sz / 2 + newX);
+            el.setAttribute('y', (layer._cy || 0) - sz / 2 + newY);
+            _applyFlipTransform(layer, mainSvg);
+        }
+        const mxEl = document.getElementById('mascotDirectPosX');
+        const myEl = document.getElementById('mascotDirectPosY');
+        if (mxEl) { mxEl.value = newX; document.getElementById('mascotDirectPosXValue').textContent = newX; }
+        if (myEl) { myEl.value = newY; document.getElementById('mascotDirectPosYValue').textContent = newY; }
+    } else {
+        _moveTextLayer(layer, newX, newY);
+        const pxEl = document.getElementById('posX');
+        const pyEl = document.getElementById('posY');
+        if (pxEl) { pxEl.value = newX; document.getElementById('posXValue').textContent = newX; appFillSlider(pxEl); }
+        if (pyEl) { pyEl.value = newY; document.getElementById('posYValue').textContent = newY; appFillSlider(pyEl); }
+
+        if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
+        if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
+    }
+
+    // Update plus icon screen position
+    const center = layer.type === 'direct-mascot' ? _getMascotVisualCenter(layerId) : getTextVisualCenter(layerId);
+    if (center) {
         const icon = document.getElementById('appPlusDragIcon');
-        if (icon) { icon.style.cursor = 'grabbing'; }
-
-        document.addEventListener('mousemove', _plusDragMove);
-        document.addEventListener('mouseup', _plusDragEnd);
+        if (icon && icon.style.display !== 'none') {
+            icon.style.left = center.x + 'px';
+            icon.style.top = center.y + 'px';
+        }
     }
 
-    function _plusDragMove(e) {
-        if (!_plusState.isDragging) return;
-        const layerId = _plusState.layerId;
-        const layer = findLayerById(layerId);
-        if (!layer) return;
+    window._showPositionIndicator(newX, newY);
+}
 
-        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-        if (!mainSvg) return;
+function _plusDragEnd() {
+    _plusState.isDragging = false;
+    _plusState.axisLocked = null;
+    window._hidePositionIndicator();
 
-        // Use SVG coordinate space — no rotation math needed
-        const curSvg = _clientToSvgCoord(e.clientX, e.clientY);
-        const dx = curSvg.x - _plusState.startSvgPos.x;
-        const dy = curSvg.y - _plusState.startSvgPos.y;
+    const icon = document.getElementById('appPlusDragIcon');
+    if (icon) { icon.style.cursor = 'grab'; }
 
-        const newX = Math.round(_plusState.startLayerX + dx);
-        const newY = Math.round(_plusState.startLayerY + dy);
+    document.removeEventListener('mousemove', _plusDragMove);
+    document.removeEventListener('mouseup', _plusDragEnd);
 
-        if (layer.type === 'direct-mascot') {
-            layer.x = newX;
-            layer.y = newY;
-            const el = mainSvg.querySelector('#' + layerId);
-            if (el) {
-                const sz = layer._mascotSize || 100;
-                el.setAttribute('x', (layer._cx || 0) - sz / 2 + newX);
-                el.setAttribute('y', (layer._cy || 0) - sz / 2 + newY);
-                _applyFlipTransform(layer, mainSvg);
-            }
-            // Sync mascot sliders
-            const mxEl = document.getElementById('mascotDirectPosX');
-            const myEl = document.getElementById('mascotDirectPosY');
-            if (mxEl) { mxEl.value = newX; document.getElementById('mascotDirectPosXValue').textContent = newX; }
-            if (myEl) { myEl.value = newY; document.getElementById('mascotDirectPosYValue').textContent = newY; }
-        } else {
-            _moveTextLayer(layer, newX, newY);
-            // Sync text sliders
-            const pxEl = document.getElementById('posX');
-            const pyEl = document.getElementById('posY');
-            if (pxEl) { pxEl.value = newX; document.getElementById('posXValue').textContent = newX; appFillSlider(pxEl); }
-            if (pyEl) { pyEl.value = newY; document.getElementById('posYValue').textContent = newY; appFillSlider(pyEl); }
-
-            if (layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
-            if (layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
-        }
-
-        // Update plus icon screen position
-        const center = layer.type === 'direct-mascot' ? _getMascotVisualCenter(layerId) : getTextVisualCenter(layerId);
-        if (center) {
-            const icon = document.getElementById('appPlusDragIcon');
-            if (icon && icon.style.display !== 'none') {
-                icon.style.left = center.x + 'px';
-                icon.style.top = center.y + 'px';
-            }
-        }
-
-        window._showPositionIndicator(newX, newY);
+    if (_plusState.layerId) {
+        const layer = findLayerById(_plusState.layerId);
+        if (layer && layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
+        if (layer && layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
     }
 
-    function _plusDragEnd() {
-        _plusState.isDragging = false;
-        window._hidePositionIndicator();
-
-        const icon = document.getElementById('appPlusDragIcon');
-        if (icon) { icon.style.cursor = 'grab'; }
-
-        document.removeEventListener('mousemove', _plusDragMove);
-        document.removeEventListener('mouseup', _plusDragEnd);
-
-        if (_plusState.layerId) {
-            const layer = findLayerById(_plusState.layerId);
-            if (layer && layer.hasPattern && layer.patternId) _updatePatternPosition(layer);
-            if (layer && layer.hasMascot && layer.mascotId) _updateMascotPatternPosition(layer);
-        }
-
-        if (window.saveCustomizations) window.saveCustomizations();
-    }
+    if (window.saveCustomizations) window.saveCustomizations();
+}
 
     function _clientToSvgCoord(clientX, clientY) {
         const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
@@ -2186,36 +2296,61 @@ window.updateApplicationLayersList = function () {
         });
     }
 
-    window.openFontModal = function () { document.getElementById('fontModal').style.display = 'flex'; renderFontGrid(); };
+window.openFontModal = function () {
+    const modal = document.getElementById('fontModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    // Grid clear karo PEHLE
+    const grid = document.getElementById('fontGrid');
+    if (grid) grid.innerHTML = '';
+
+    renderFontGrid();
+
+    // Search reset
+    const search = document.getElementById('fontSearchInput');
+    if (search) { search.value = ''; search.focus(); }
+};
     window.closeFontModal = function () { document.getElementById('fontModal').style.display = 'none'; };
 
-    function renderFontGrid() {
-        const grid = document.getElementById('fontGrid');
-        if (!grid) return;
-        grid.innerHTML = '';
-        let previewText = 'Aa';
-        const currentLayer = findLayerById(window.currentApplicationLayer);
-        if (currentLayer && currentLayer.text && currentLayer.text.trim() !== '') {
-            previewText = currentLayer.text.trim();
-        } else {
-            const textInput = document.getElementById('applicationText');
-            if (textInput && textInput.value.trim() !== '') previewText = textInput.value.trim();
-        }
-        window.backendFonts.forEach(f => {
-            const div = document.createElement('div');
-            div.style.cssText = 'border:2px solid #ddd;padding:20px;text-align:center;border-radius:8px;cursor:pointer;background:#fff';
-            div.innerHTML = `
-<div style="font-size:42px;font-family:font_${f.id};line-height:1.1;min-height:55px;display:flex;align-items:center;justify-content:center;">${previewText}</div>
-<p style="margin-top:12px;font-weight:600;margin-bottom:0;">${f.name}</p>`;
-            if (currentLayer && currentLayer.fontFamily === `font_${f.id}`) {
-                div.style.border = '2px solid #000';
-                div.style.background = '#8d8d8d';
-                div.style.color = '#fff';
-            }
-            div.onclick = () => { window.updateFontFamily(`font_${f.id}`); closeFontModal(); };
-            grid.appendChild(div);
-        });
+   function renderFontGrid() {
+    const grid = document.getElementById('fontGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    let previewText = 'Aa';
+    const currentLayer = findLayerById(window.currentApplicationLayer);
+    if (currentLayer?.text?.trim()) previewText = currentLayer.text.trim();
+    else {
+        const ti = document.getElementById('applicationText');
+        if (ti?.value?.trim()) previewText = ti.value.trim();
     }
+
+    window.backendFonts.forEach(f => {
+        const div = document.createElement('div');
+
+        const isSelected = currentLayer && currentLayer.fontFamily === `font_${f.id}`;
+        if (isSelected) div.classList.add('font-selected');
+
+        div.innerHTML = `
+            <div class="font-card-name">${f.name}</div>
+            <div class="font-card-preview" style="font-family:font_${f.id};">${previewText}</div>
+        `;
+
+        div.onclick = () => {
+            grid.querySelectorAll('div[class]').forEach(d => {
+                d.classList.remove('font-selected');
+                const prev = d.querySelector('.font-card-preview');
+                if (prev) { prev.style.background = '#f2f2f2'; prev.style.color = '#222'; }
+            });
+            div.classList.add('font-selected');
+            window.updateFontFamily(`font_${f.id}`);
+            closeFontModal();
+        };
+
+        grid.appendChild(div);
+    });
+}
 
     // ============================================================
     // =================== PATTERN — TEXT FILL (FIXED) ===================
@@ -2406,41 +2541,41 @@ window.updateApplicationLayersList = function () {
         return [...colors];
     }
 
-  function renderTextPatternPalette(svg) {
-    const layer = findLayerById(window.currentApplicationLayer);
-    if (!layer) return;
+    function renderTextPatternPalette(svg) {
+        const layer = findLayerById(window.currentApplicationLayer);
+        if (!layer) return;
 
-    if (!layer.replacements) layer.replacements = {};
+        if (!layer.replacements) layer.replacements = {};
 
-    const colors = extractPatternColors(svg);
-    const container = document.getElementById('patternColorPaletteInTab');
-    if (!container) return;
+        const colors = extractPatternColors(svg);
+        const container = document.getElementById('patternColorPaletteInTab');
+        if (!container) return;
 
-    container.innerHTML = '';
+        container.innerHTML = '';
 
-    // ✅ Sirf color wheel / selected colors
-    const palette = (window.selectedColors?.length ? [...window.selectedColors] : []).filter(Boolean);
+        // ✅ Sirf color wheel / selected colors
+        const palette = (window.selectedColors?.length ? [...window.selectedColors] : []).filter(Boolean);
 
-    if (!palette.length) {
-        container.innerHTML = '<div style="color:#999;font-size:12px;">Please select colors from wheel first</div>';
-        return;
-    }
+        if (!palette.length) {
+            container.innerHTML = '<div style="color:#999;font-size:12px;">Please select colors from wheel first</div>';
+            return;
+        }
 
-    colors.forEach(patternColor => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:12px;margin-bottom:12px';
+        colors.forEach(patternColor => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:12px;margin-bottom:12px';
 
-        row.innerHTML = `
+            row.innerHTML = `
             <div style="width:30px;height:30px;border-radius:6px;background:${patternColor};border:2px solid #ccc"></div>
             <span style="font-weight:700;">→</span>
             <div class="text-color-row" style="display:flex;gap:6px;flex-wrap:wrap"></div>
         `;
 
-        const choices = row.querySelector('.text-color-row');
+            const choices = row.querySelector('.text-color-row');
 
-        palette.forEach(userColor => {
-            const box = document.createElement('div');
-            box.style.cssText = `
+            palette.forEach(userColor => {
+                const box = document.createElement('div');
+                box.style.cssText = `
                 width:26px;
                 height:26px;
                 border-radius:6px;
@@ -2449,24 +2584,24 @@ window.updateApplicationLayersList = function () {
                 border:2px solid #ddd;
             `;
 
-            if (layer.replacements[patternColor?.toLowerCase()] === userColor) {
-                box.style.outline = '2px solid #000';
-            }
+                if (layer.replacements[patternColor?.toLowerCase()] === userColor) {
+                    box.style.outline = '2px solid #000';
+                }
 
-            box.onclick = function () {
-                choices.querySelectorAll('div').forEach(b => b.style.outline = 'none');
-                box.style.outline = '2px solid #000';
+                box.onclick = function () {
+                    choices.querySelectorAll('div').forEach(b => b.style.outline = 'none');
+                    box.style.outline = '2px solid #000';
 
-                layer.replacements[patternColor.toLowerCase()] = userColor;
-                rebuildTextPattern(layer);
-            };
+                    layer.replacements[patternColor.toLowerCase()] = userColor;
+                    rebuildTextPattern(layer);
+                };
 
-            choices.appendChild(box);
+                choices.appendChild(box);
+            });
+
+            container.appendChild(row);
         });
-
-        container.appendChild(row);
-    });
-}
+    }
 
     function rebuildTextPattern(layer) {
         const mainSvg = window.getMainSvg();
@@ -2796,58 +2931,58 @@ window.updateApplicationLayersList = function () {
     // =================== REMOVE / FIND LAYER ===================
     // ============================================================
 
-  window.removeApplicationLayer = function (layerId, event) {
-    if (event) event.stopPropagation();
+    window.removeApplicationLayer = function (layerId, event) {
+        if (event) event.stopPropagation();
 
-    let foundLayer = null;
+        let foundLayer = null;
 
-    Object.keys(window.applicationsApplied).forEach(view => {
-        Object.keys(window.applicationsApplied[view]).forEach(partId => {
-            window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => {
-                if (l.id === layerId) foundLayer = l;
-                return l.id !== layerId;
+        Object.keys(window.applicationsApplied).forEach(view => {
+            Object.keys(window.applicationsApplied[view]).forEach(partId => {
+                window.applicationsApplied[view][partId] = window.applicationsApplied[view][partId].filter(l => {
+                    if (l.id === layerId) foundLayer = l;
+                    return l.id !== layerId;
+                });
+
+                if (!window.applicationsApplied[view][partId].length) {
+                    delete window.applicationsApplied[view][partId];
+                }
             });
-
-            if (!window.applicationsApplied[view][partId].length) {
-                delete window.applicationsApplied[view][partId];
-            }
         });
-    });
 
-    const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-    if (mainSvg) {
-        const group = mainSvg.querySelector(`#app-group-${layerId}`);
-        if (group) group.remove();
+        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+        if (mainSvg) {
+            const group = mainSvg.querySelector(`#app-group-${layerId}`);
+            if (group) group.remove();
 
-        const text = mainSvg.querySelector(`#${layerId}`);
-        if (text) text.remove();
+            const text = mainSvg.querySelector(`#${layerId}`);
+            if (text) text.remove();
 
-        const defs = mainSvg.querySelector('defs');
-        if (defs) {
-            const clip = defs.querySelector(`#clip-${layerId}`);
-            if (clip) clip.remove();
+            const defs = mainSvg.querySelector('defs');
+            if (defs) {
+                const clip = defs.querySelector(`#clip-${layerId}`);
+                if (clip) clip.remove();
 
-            const pattern = defs.querySelector(`#text-pattern-${layerId}`);
-            if (pattern) pattern.remove();
+                const pattern = defs.querySelector(`#text-pattern-${layerId}`);
+                if (pattern) pattern.remove();
 
-            const mascot = defs.querySelector(`#text-mascot-${layerId}`);
-            if (mascot) mascot.remove();
+                const mascot = defs.querySelector(`#text-mascot-${layerId}`);
+                if (mascot) mascot.remove();
+            }
         }
-    }
 
-    document.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => o.remove());
+        document.querySelectorAll(`[data-outline-for="${layerId}"]`).forEach(o => o.remove());
 
-    if (window.currentApplicationLayer === layerId) {
-        window.currentApplicationLayer = null;
-        const ctrl = document.getElementById('applicationLayerControls');
-        if (ctrl) ctrl.style.display = 'none';
-        if (typeof _hidePlusIcon === 'function') _hidePlusIcon();
-        if (typeof _hideMascotBox === 'function') _hideMascotBox();
-    }
+        if (window.currentApplicationLayer === layerId) {
+            window.currentApplicationLayer = null;
+            const ctrl = document.getElementById('applicationLayerControls');
+            if (ctrl) ctrl.style.display = 'none';
+            if (typeof _hidePlusIcon === 'function') _hidePlusIcon();
+            if (typeof _hideMascotBox === 'function') _hideMascotBox();
+        }
 
-    updateApplicationLayersList();
-    if (window.saveCustomizations) window.saveCustomizations();
-};
+        updateApplicationLayersList();
+        if (window.saveCustomizations) window.saveCustomizations();
+    };
 
     window.findLayerById = function (layerId) {
         let found = null;
@@ -2861,65 +2996,65 @@ window.updateApplicationLayersList = function () {
     // ✅ FIX 4: initializeApplicationsOnLoad — POORA REPLACE KARO
     // ============================================================
 
-window.initializeApplicationsOnLoad = function () {
-    if (!window.applicationsApplied) return;
+    window.initializeApplicationsOnLoad = function () {
+        if (!window.applicationsApplied) return;
 
-    const view = window.currentView || 'front';
-    const svg = window.getMainSvg ? window.getMainSvg() : null;
+        const view = window.currentView || 'front';
+        const svg = window.getMainSvg ? window.getMainSvg() : null;
 
-    if (!svg) {
-        setTimeout(() => window.initializeApplicationsOnLoad(), 300);
-        return;
-    }
+        if (!svg) {
+            setTimeout(() => window.initializeApplicationsOnLoad(), 300);
+            return;
+        }
 
-    // HARD CLEAN FIRST
-    svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
-    svg.querySelectorAll('#application-group').forEach(g => g.remove());
-    svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
-    const defs = svg.querySelector('defs');
-    if (defs) {
-        defs.querySelectorAll('clipPath[id^="clip-"]').forEach(c => c.remove());
-        defs.querySelectorAll('pattern[id^="text-pattern-"]').forEach(p => p.remove());
-        defs.querySelectorAll('pattern[id^="text-mascot-"]').forEach(p => p.remove());
-    }
+        // HARD CLEAN FIRST
+        svg.querySelectorAll('[id^="app-group-"]').forEach(g => g.remove());
+        svg.querySelectorAll('#application-group').forEach(g => g.remove());
+        svg.querySelectorAll('[data-outline-for]').forEach(e => e.remove());
+        const defs = svg.querySelector('defs');
+        if (defs) {
+            defs.querySelectorAll('clipPath[id^="clip-"]').forEach(c => c.remove());
+            defs.querySelectorAll('pattern[id^="text-pattern-"]').forEach(p => p.remove());
+            defs.querySelectorAll('pattern[id^="text-mascot-"]').forEach(p => p.remove());
+        }
 
-    if (!window.applicationsApplied[view] || !Object.keys(window.applicationsApplied[view]).length) {
-        updateApplicationLayersList();
-        return;
-    }
+        if (!window.applicationsApplied[view] || !Object.keys(window.applicationsApplied[view]).length) {
+            updateApplicationLayersList();
+            return;
+        }
 
-    Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
-        layers.forEach(layer => {
-            window.addApplicationToSvg(layer);
+        Object.entries(window.applicationsApplied[view]).forEach(([partId, layers]) => {
+            layers.forEach(layer => {
+                window.addApplicationToSvg(layer);
+            });
         });
-    });
 
-    updateApplicationLayersList();
-};
+        updateApplicationLayersList();
+    };
 
 
     // ============================================================
     // ✅ FIX 5: reorderSvgLayers — POORA REPLACE KARO
     // ============================================================
 
- window.reorderSvgLayers = function (view, partId, orderedLayers) {
-    const mainSvg = window.getMainSvg();
-    if (!mainSvg) return;
+    window.reorderSvgLayers = function (view, partId, orderedLayers) {
+        const mainSvg = window.getMainSvg();
+        if (!mainSvg) return;
 
-    orderedLayers.forEach(layer => {
-        const group = mainSvg.querySelector(`#app-group-${layer.id}`);
-        if (group) {
-            mainSvg.appendChild(group);   // Last mein append = top pe
-        }
-    });
+        orderedLayers.forEach(layer => {
+            const group = mainSvg.querySelector(`#app-group-${layer.id}`);
+            if (group) {
+                mainSvg.appendChild(group);   // Last mein append = top pe
+            }
+        });
 
-    // Extra safety - sab ko top pe le aao
-    setTimeout(() => {
-        if (window.bringApplicationLayersToTop) {
-            window.bringApplicationLayersToTop();
-        }
-    }, 10);
-};
+        // Extra safety - sab ko top pe le aao
+        setTimeout(() => {
+            if (window.bringApplicationLayersToTop) {
+                window.bringApplicationLayersToTop();
+            }
+        }, 10);
+    };
 
     // ============================================================
     // =================== ROTATION WHEEL ===================

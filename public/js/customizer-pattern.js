@@ -116,26 +116,20 @@
 
 
                 // ===== BLANK TILE (ALWAYS FIRST) =====
-                const blank = document.createElement('div');
-                blank.style.border = '2px dashed #999';
-                blank.style.borderRadius = '8px';
-                blank.style.padding = '10px';
-                blank.style.cursor = 'pointer';
-                blank.style.textAlign = 'center';
-                blank.style.background = '#fafafa';
+               const blank = document.createElement('div');
+blank.className = "pattern-item";
 
-                blank.innerHTML = `
-    <div style="height:120px;display:flex;align-items:center;justify-content:center;font-weight:700;">
-        BLANK
-    </div>
+blank.innerHTML = `
+    <div class="blank-preview"></div>
+    <div class="pattern-name">Blank</div>
 `;
 
-                blank.onclick = () => {
-                    clearPatternForSelectedPart();
-                    closePatternLibrary();
-                };
+blank.onclick = () => {
+    clearPatternForSelectedPart();
+    closePatternLibrary();
+};
 
-                container.appendChild(blank);
+container.appendChild(blank);
                 // ===================================
 
 
@@ -143,20 +137,19 @@
                     const div = document.createElement('div');
                     div.style.border = '2px solid #ddd';
                     div.style.borderRadius = '8px';
-                    div.style.padding = '10px';
                     div.style.cursor = 'pointer';
                     div.style.textAlign = 'center';
                     div.style.background = '#fff';
                     div.style.transition = 'all 0.3s';
 
-                    div.innerHTML = `
-                    <div style="height:120px; display:flex; align-items:center; justify-content:center;">
-                        <img src="${pattern.svg_url}" style="max-width:100%; max-height:100%;">
-                    </div>
-                    <p style="margin-top:8px; font-weight:600;">${pattern.name}</p>
-                `;
+                   div.innerHTML = `
+    <div class="pattern-item">
+        <img src="${pattern.svg_url}">
+        <div class="pattern-name">${pattern.name}</div>
+    </div>
+`;
 
-                    div.onmouseover = () => div.style.borderColor = '#007bff';
+                    div.onmouseover = () => div.style.borderColor = '#000000';
                     div.onmouseout = () => div.style.borderColor = '#ddd';
                     div.onclick = () => applyDBPattern(pattern.svg_url);
 

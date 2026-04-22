@@ -530,7 +530,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
+.container-fluid{
+    padding-bottom: 60px;
+}
 /* ===== PAGE TITLE ===== */
 .page-title {
   font-size: clamp(18px, 4vw, 28px);

@@ -842,16 +842,23 @@ gap:6px;
 </div>
 
 {{-- FONT MODAL — 1000px wide, 6 per row --}}
+{{-- FONT MODAL — 3-column, screenshot style --}}
 <div id="fontModal" class="color-modal" style="display:none;">
-    <div class="color-modal-content" style="width:1000px; max-width:96%;">
-        <div
-            style="padding:20px; background:#2a2a2a; color:white; display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0; font-size:18px; font-weight:600;">SELECT FONT</h3>
-            <span onclick="closeFontModal()" style="cursor:pointer; font-size:26px; line-height:1;">×</span>
+    <div class="color-modal-content" style="width:1060px; max-width:96%; border-radius:0; overflow:hidden;">
+
+        {{-- Header --}}
+        <div style="padding:16px 28px; background:#fff; border-bottom:1px solid #e0e0e0; display:flex; align-items:center; justify-content:center; position:relative;">
+            <h3 id="fontModalTitle" style="margin:0; font-size:14px; font-weight:700; color:#222; letter-spacing:1.5px; text-transform:uppercase;">SELECT FONT</h3>
+            <span onclick="closeFontModal()" style="position:absolute; right:20px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:24px; color:#555; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">×</span>
         </div>
+
+
+
+        {{-- Grid --}}
         <div id="fontGrid"
-            style="padding:20px; display:grid; grid-template-columns:repeat(6, 1fr); gap:12px; max-height:70vh; overflow-y:auto;">
-        </div>
+    style="padding:20px; display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; max-height:68vh; overflow-y:auto; background:#e9e9e9;">
+</div>
+
     </div>
 </div>
 
@@ -1048,20 +1055,67 @@ gap:6px;
     }
 
     /* Font grid items */
-    #fontGrid>div {
-        border: 2px solid #ddd;
-        padding: 10px 6px;
-        text-align: center;
-        border-radius: 8px;
-        cursor: pointer;
-        background: #fff;
-        transition: all 0.2s;
-    }
+   /* Font grid cards - screenshot style */
+#fontGrid > div {
+    border: 1.5px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    overflow: hidden;
+    padding: 0;  /* padding remove karo */
+}
 
-    #fontGrid>div:hover {
-        background: #f2f2f2;
-        border-color: #999;
-    }
+
+
+/* Font name top bar */
+#fontGrid > div .font-card-name {
+    padding: 8px 12px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    background: #fff;
+}
+
+/* Preview area */
+/* #fontGrid > div .font-card-preview {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e9e9e9;
+    font-size: 38px;
+    font-weight: 700;
+    border: 14px solid white;
+    color: #222;
+    transition: background 0.18s, color 0.18s;
+} */
+ /* Preview area */
+#fontGrid > div .font-card-preview {
+    min-height: 120px;
+    height: auto;          /* ← fixed height hatao */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e9e9e9;
+    font-size: 35px;
+    font-weight: 700;
+    border: 14px solid white;
+    color: #222;
+    transition: background 0.18s, color 0.18s;
+    padding: 10px;         /* ← padding add karo */
+    word-break: break-word; /* ← long words break hone dena */
+    text-align: center;    /* ← center align */
+    line-height: 1.2;      /* ← line height */
+    overflow-wrap: break-word;
+}
+
+#fontGrid > div.font-selected .font-card-preview {
+    background: #353535;
+    color: #fff;
+}
 
     .accent-card:hover {
         border-color: #000000 !important;

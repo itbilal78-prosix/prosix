@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', checkOrientation);
                 <script src="/js/customizer-color.js"></script>
                 <script src="/js/customizer-pattern.js"></script>
                 <script src="/js/customizer-application.js"></script>
-                <div id="saveSuccessToast" class="save-success-toast">
+            <div id="saveSuccessToast" class="save-success-toast">
     <div class="save-success-toast-inner">
         <div class="save-success-icon">✓</div>
         <div>
@@ -375,54 +375,66 @@ document.addEventListener('DOMContentLoaded', checkOrientation);
 <style>
 .save-success-toast {
     position: fixed;
-    top: 24px;
-    right: 24px;
+    inset: 0;
     z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.45);
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    visibility: hidden;
     pointer-events: none;
-    transition: all .35s ease;
+    transition: all .3s ease;
 }
 
 .save-success-toast.show {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .save-success-toast-inner {
-    min-width: 280px;
+    min-width: 320px;
+    max-width: 420px;
     background: #111;
     color: #fff;
-    border-radius: 14px;
-    padding: 14px 18px;
+    border-radius: 18px;
+    padding: 22px 24px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    box-shadow: 0 14px 35px rgba(0,0,0,.28);
+    gap: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    transform: scale(.88) translateY(20px);
+    transition: all .3s ease;
+}
+
+.save-success-toast.show .save-success-toast-inner {
+    transform: scale(1) translateY(0);
 }
 
 .save-success-icon {
-    width: 38px;
-    height: 38px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     background: #22c55e;
     color: #fff;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .save-success-title {
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 1.2;
 }
 
 .save-success-subtitle {
-    font-size: 12px;
+    font-size: 13px;
     color: rgba(255,255,255,.72);
-    margin-top: 2px;
+    margin-top: 4px;
 }
 </style>

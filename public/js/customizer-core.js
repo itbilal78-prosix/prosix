@@ -754,94 +754,9 @@ console.log('FILE A LOADED');
         });
     };
 
-    // =================== UPDATE LAYERS LIST ===================
-
-    window.updateApplicationLayersList = function () {
-        const container = document.getElementById('applicationLayersList');
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        const view = window.currentView;
-        const viewLayers = window.applicationsApplied[view];
-
-        if (!viewLayers || Object.keys(viewLayers).length === 0) {
-            container.innerHTML = '<p style="color:#999; text-align:center; padding:20px; font-size:13px;">No applications added yet</p>';
-            return;
-        }
-
-        let layerNum = 1;
-
-        Object.entries(viewLayers).forEach(([partId, layers]) => {
-            layers.forEach(layer => {
-                const item = document.createElement('div');
-                item.className = 'application-layer-item';
-                if (window.currentApplicationLayer === layer.id) {
-                    item.classList.add('active');
-                }
-
-                item.innerHTML = `
-                <div class="layer-number">#${layerNum}</div>
-                <div class="layer-info">
-                    <div class="layer-title">${layer.text || 'Empty'}</div>
-                    <div class="layer-details">${layer.type} • ${layer.partId}</div>
-                </div>
-<div style="display:flex;gap:6px;">
-    <div onclick="duplicateApplicationLayer('${layer.id}', event)"
-        style="cursor:pointer;font-size:14px;padding:4px 6px;border-radius:4px;background:#eee">
-        ⧉
-    </div>
-
-    <div class="layer-remove" onclick="removeApplicationLayer('${layer.id}', event)">×</div>
-</div>
-            `;
-
-                item.onclick = function (e) {
-                    if (e.target.classList.contains('layer-remove')) return;
-                    selectApplicationLayer(layer.id);
-                };
-
-                container.appendChild(item);
-                layerNum++;
-            });
-        });
-    };
+//     // =================== UPDATE LAYERS LIST ===================
 
 
-
-    //=======Duplicate layer ============= //
-    window.duplicateApplicationLayer = function (layerId, event) {
-
-        if (event) event.stopPropagation();
-
-        const original = findLayerById(layerId);
-        if (!original) return;
-
-        const view = original.view;
-        const partId = original.partId;
-
-        const copy = JSON.parse(JSON.stringify(original));
-
-        copy.id = `app-${Date.now()}`;     // new ID
-        copy.x += 20;                     // little offset
-        copy.y += 20;
-
-        if (!window.applicationsApplied[view])
-            window.applicationsApplied[view] = {};
-
-        if (!window.applicationsApplied[view][partId])
-            window.applicationsApplied[view][partId] = [];
-
-        window.applicationsApplied[view][partId].push(copy);
-
-        addApplicationToSvg(copy);
-        updateApplicationLayersList();
-        selectApplicationLayer(copy.id);
-
-        if (window.saveCustomizations) window.saveCustomizations();
-
-        console.log('✅ Layer duplicated', copy.id);
-    };
 
     // =================== SELECT LAYER ===================
 
@@ -1148,61 +1063,7 @@ font-display: swap;
 
 
 
-    window.openFontModal = function () {
-        document.getElementById('fontModal').style.display = 'flex';
-        renderFontGrid();
-    }
 
-    window.closeFontModal = function () {
-        document.getElementById('fontModal').style.display = 'none';
-    }
-
-    function renderFontGrid() {
-
-        const grid = document.getElementById('fontGrid');
-        grid.innerHTML = '';
-
-        const previewText =
-            document.getElementById('applicationText')?.value || '85';
-
-        const currentLayer = findLayerById(window.currentApplicationLayer);
-
-        window.backendFonts.forEach(f => {
-
-            const div = document.createElement('div');
-            div.style.cssText = 'border:2px solid #ddd;padding:20px;text-align:center;border-radius:8px;cursor:pointer;background:#fff';
-
-            div.innerHTML = `
-<div style="font-size:42px;font-family:font_${f.id}">${previewText}</div>
-<p style="margin-top:10px;font-weight:600">${f.name}</p>
-`;
-
-            // ✅ SELECTED FONT STYLE
-            if (currentLayer?.fontFamily === `font_${f.id}`) {
-                div.style.border = '2px solid #000';
-                div.style.background = '#8d8d8d';
-            }
-
-            // ✅ HOVER EFFECT
-            div.onmouseenter = () => {
-                if (currentLayer?.fontFamily !== `font_${f.id}`)
-                    div.style.background = '#f2f2f2';
-            };
-
-            div.onmouseleave = () => {
-                if (currentLayer?.fontFamily !== `font_${f.id}`)
-                    div.style.background = '#fff';
-            };
-
-            div.onclick = () => {
-                updateFontFamily(`font_${f.id}`);
-                closeFontModal();
-            };
-
-            grid.appendChild(div);
-
-        });
-    }
 
 
     // =================== PATTERN/MASCOT INTEGRATION ===================
@@ -4041,7 +3902,17 @@ window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle =
             activateTab('colorBtn');
         }
     }
+function showSaveSuccessToast() {
+    const toast = document.getElementById('saveSuccessToast');
+    if (!toast) return;
 
+    toast.classList.add('show');
+
+    clearTimeout(window.saveToastTimer);
+    window.saveToastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 1800);
+}
     // ===== ROTATE POPUP =====
     function showRotatePopup() {
         var ov = document.getElementById('rotateOverlay');

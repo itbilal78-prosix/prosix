@@ -350,16 +350,12 @@
                 style="padding:11px 24px; background:#fff; border:2px solid #ccc; border-radius:7px; font-weight:700; font-size:13px; cursor:pointer; color:#555;">
                 BACK
             </button>
-            <div style="display:flex;gap:10px;">
-                <button onclick="mcSaveAndApply(false)"
-                    style="padding:11px 24px; background:#fff; border:2px solid #1a1a1a; border-radius:7px; font-weight:700; font-size:13px; cursor:pointer; color:#1a1a1a;">
-                    Apply Without Saving
-                </button>
-                <button onclick="mcSaveAndApply(true)"
-                    style="padding:11px 24px; background:#1a1a1a; color:#fff; border:none; border-radius:7px; font-weight:700; font-size:13px; cursor:pointer;">
-                    💾 Save & Apply
-                </button>
-            </div>
+           <div style="display:flex;gap:10px;">
+    <button onclick="mcApplyOnly()"
+        style="padding:11px 24px; background:#1a1a1a; color:#fff; border:none; border-radius:7px; font-weight:700; font-size:13px; cursor:pointer;">
+        APPLY
+    </button>
+</div>
         </div>
     </div>
 </div>
@@ -676,7 +672,33 @@
             grid.appendChild(card);
         });
     }
+window.mcApplyOnly = function () {
+    var canvas = document.getElementById('mcCanvas');
+    if (!canvas) return;
 
+    var dataUrl = canvas.toDataURL('image/png', 1.0);
+
+    var finalSvg =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' +
+        canvas.width + ' ' + canvas.height + '">' +
+        '<image href="' + dataUrl + '" x="0" y="0" width="' + canvas.width +
+        '" height="' + canvas.height +
+        '" preserveAspectRatio="xMidYMid meet"/>' +
+        '</svg>';
+
+    var layerId = window._mc.layerId || window.currentApplicationLayer;
+
+    // CLOSE CUSTOMIZE MODAL
+    document.getElementById('mascotCustomizeModal').style.display = 'none';
+
+    // APPLY ONLY (NO SAVE)
+    if (window.applyDirectMascotToLayer) {
+        window.applyDirectMascotToLayer(finalSvg, layerId, true);
+    }
+
+    // ❌ IMPORTANT: backend save nahi hoga
+    // ❌ _mcSaveToBackend call remove
+};
     function _selectMascotCard(mascot, cardEl) {
         document.querySelectorAll('.ms-mascot-card').forEach(function(c) {
             c.classList.remove('ms-selected');
