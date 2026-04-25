@@ -1054,58 +1054,434 @@ const buildOriginalToSelectedColorMap = (originalColors = [], pickedColors = [])
   originalColors.forEach((originalColor, index) => { map[originalColor] = limitedPicked[index % limitedPicked.length] })
   return map
 }
+// ============================================================
+// HELPER: Hex to RGB object
+// ============================================================
+const hexToRgbObj = (hex) => {
+  if (!hex) return null
+  hex = String(hex).replace('#', '').trim()
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('')
+  if (hex.length !== 6) return null
+  const num = parseInt(hex, 16)
+  if (isNaN(num)) return null
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255
+  }
+}
 
-const recolorSvgParts = (svgText, colors = [], customAppliedName = '') => {
+// ============================================================
+// HELPER: Color distance between two RGB objects
+// ============================================================
+const rgbDistance = (c1, c2) => {
+  if (!c1 || !c2) return 999
+  return Math.sqrt(
+    Math.pow(c1.r - c2.r, 2) +
+    Math.pow(c1.g - c2.g, 2) +
+    Math.pow(c1.b - c2.b, 2)
+  )
+}
+
+// ============================================================
+// HELPER: Recolor PNG image via Canvas - pixel by pixel
+// ============================================================
+const recolorPngViaCanvas = (dataUrl, colorMap) => {
+  return new Promise((resolve) => {
+    if (!dataUrl || typeof dataUrl !== 'string') {
+      resolve(dataUrl)
+      return
+    }
+    if (!dataUrl.startsWith('data:image')) {
+      resolve(dataUrl)
+      return
+    }
+    if (!colorMap || !Object.keys(colorMap).length) {
+      resolve(dataUrl)
+      return
+    }
+
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const data = imageData.data
+
+        // colorMap ki keys ko RGB mein convert karo
+        const mappingList = []
+        Object.entries(colorMap).forEach(([oldHex, newHex]) => {
+          const oldRgb = hexToRgbObj(oldHex)
+          const newRgb = hexToRgbObj(newHex)
+          if (oldRgb && newRgb) {
+            mappingList.push({ oldRgb, newRgb })
+          }
+        })
+
+        if (!mappingList.length) {
+          resolve(dataUrl)
+          return
+        }
+
+        // Pixel cache - same color dobara process na ho
+        const pixelCache = new Map()
+
+        for (let i = 0; i < data.length; i += 4) {
+          // Transparent pixels skip karo
+          if (data[i + 3] < 30) continue
+
+          const r = data[i]
+          const g = data[i + 1]
+          const b = data[i + 2]
+          const cacheKey = `${r},${g},${b}`
+
+          if (!pixelCache.has(cacheKey)) {
+            // Nearest original color dhundo
+            let nearestDist = Infinity
+            let nearestNewRgb = null
+
+            mappingList.forEach(mapping => {
+              const dist = rgbDistance({ r, g, b }, mapping.oldRgb)
+              if (dist < nearestDist) {
+                nearestDist = dist
+                nearestNewRgb = mapping.newRgb
+              }
+            })
+
+            // Sirf replace karo agar distance 90 se kam ho
+            if (nearestDist < 90 && nearestNewRgb) {
+              pixelCache.set(cacheKey, nearestNewRgb)
+            } else {
+              pixelCache.set(cacheKey, null)
+            }
+          }
+
+          const replacement = pixelCache.get(cacheKey)
+          if (replacement) {
+            data[i] = replacement.r
+            data[i + 1] = replacement.g
+            data[i + 2] = replacement.b
+          }
+        }
+
+        ctx.putImageData(imageData, 0, 0)
+        resolve(canvas.toDataURL('image/png', 1.0))
+      } catch (e) {
+        console.error('Canvas recolor error:', e)
+        resolve(dataUrl)
+      }
+    }
+
+    img.onerror = () => {
+      resolve(dataUrl)
+    }
+
+    img.src = dataUrl
+  })
+}
+
+// ============================================================
+// HELPER: SVG ke andar style attribute update karo
+// ============================================================
+const recolorStyleAttribute = (styleStr, colorMap) => {
+  if (!styleStr || !Object.keys(colorMap).length) return styleStr
+
+  let updated = styleStr
+
+  // fill in style
+  const fillMatch = updated.match(/fill\s*:\s*([^;]+)/i)
+  if (fillMatch) {
+    const hex = colorToHex(fillMatch[1].trim())
+    if (hex && colorMap[hex]) {
+      updated = updated.replace(fillMatch[0], `fill:${colorMap[hex]}`)
+    }
+  }
+
+  // stroke in style
+  const strokeMatch = updated.match(/stroke\s*:\s*([^;]+)/i)
+  if (strokeMatch) {
+    const hex = colorToHex(strokeMatch[1].trim())
+    if (hex && colorMap[hex]) {
+      updated = updated.replace(strokeMatch[0], `stroke:${colorMap[hex]}`)
+    }
+  }
+
+  // stop-color in style
+  const stopMatch = updated.match(/stop-color\s*:\s*([^;]+)/i)
+  if (stopMatch) {
+    const hex = colorToHex(stopMatch[1].trim())
+    if (hex && colorMap[hex]) {
+      updated = updated.replace(stopMatch[0], `stop-color:${colorMap[hex]}`)
+    }
+  }
+
+  return updated
+}
+
+// ============================================================
+// HELPER: SVG DOM element ke saare colors recolor karo
+// ============================================================
+const recolorAllSvgElements = (svgRoot, colorMap) => {
+  if (!svgRoot || !Object.keys(colorMap).length) return
+
+  const allEls = svgRoot.querySelectorAll('*')
+
+  allEls.forEach(el => {
+    // fill attribute
+    const fill = el.getAttribute('fill')
+    if (fill && fill !== 'none' && !fill.startsWith('url(')) {
+      const hex = colorToHex(fill)
+      if (hex && colorMap[hex]) {
+        el.setAttribute('fill', colorMap[hex])
+      }
+    }
+
+    // stroke attribute
+    const stroke = el.getAttribute('stroke')
+    if (stroke && stroke !== 'none' && !stroke.startsWith('url(')) {
+      const hex = colorToHex(stroke)
+      if (hex && colorMap[hex]) {
+        el.setAttribute('stroke', colorMap[hex])
+      }
+    }
+
+    // stop-color attribute
+    const stopColor = el.getAttribute('stop-color')
+    if (stopColor) {
+      const hex = colorToHex(stopColor)
+      if (hex && colorMap[hex]) {
+        el.setAttribute('stop-color', colorMap[hex])
+      }
+    }
+
+    // style attribute
+    const style = el.getAttribute('style')
+    if (style) {
+      const newStyle = recolorStyleAttribute(style, colorMap)
+      if (newStyle !== style) {
+        el.setAttribute('style', newStyle)
+      }
+    }
+  })
+}
+
+// ============================================================
+// MAIN: recolorSvgParts — ASYNC version with full mascot/pattern support
+// ============================================================
+const recolorSvgParts = async (svgText, colors = [], customAppliedName = '') => {
   if (!svgText) return svgText
+
   const parser = new DOMParser()
   const doc = parser.parseFromString(svgText, 'image/svg+xml')
   const svg = doc.querySelector('svg')
   if (!svg) return svgText
+
+  // ── Step 1: Original colors collect karo aur colorMap banao ──
   const originalColors = collectOriginalModelColors(svg)
   const colorMap = buildOriginalToSelectedColorMap(originalColors, colors)
+
+  if (!Object.keys(colorMap).length && !customAppliedName) {
+    return svgText
+  }
+
+  // ── Step 2: Basic SVG shapes recolor karo (existing logic) ──
   if (Object.keys(colorMap).length) {
     getRecolorableSvgNodes(svg).forEach((node) => {
       const tag = node.tagName.toLowerCase()
+
       if (tag === 'stop') {
-        const oldStop = colorToHex(node.getAttribute('stop-color')) || colorToHex(getStylePropValue(node.getAttribute('style') || '', 'stop-color'))
+        const oldStop =
+          colorToHex(node.getAttribute('stop-color')) ||
+          colorToHex(getStylePropValue(node.getAttribute('style') || '', 'stop-color'))
         if (oldStop && colorMap[oldStop]) {
           node.setAttribute('stop-color', colorMap[oldStop])
-          node.setAttribute('style', setOrReplaceStyleProp(node.getAttribute('style') || '', 'stop-color', colorMap[oldStop]))
+          node.setAttribute(
+            'style',
+            setOrReplaceStyleProp(node.getAttribute('style') || '', 'stop-color', colorMap[oldStop])
+          )
         }
         return
       }
+
       const originalFill = getNodePaintValue(node, 'fill')
       const originalStroke = getNodePaintValue(node, 'stroke')
+
       if (originalFill && colorMap[originalFill]) {
-        if (tag === 'text' || tag === 'tspan') updateNodeFillKeepFont(node, colorMap[originalFill])
-        else setNodePaintValue(node, 'fill', colorMap[originalFill])
+        if (tag === 'text' || tag === 'tspan')
+          updateNodeFillKeepFont(node, colorMap[originalFill])
+        else
+          setNodePaintValue(node, 'fill', colorMap[originalFill])
       }
-      if (originalStroke && colorMap[originalStroke]) setNodePaintValue(node, 'stroke', colorMap[originalStroke])
+
+      if (originalStroke && colorMap[originalStroke]) {
+        setNodePaintValue(node, 'stroke', colorMap[originalStroke])
+      }
     })
   }
+
+  // ── Step 3: Pattern defs ke andar SVG elements recolor karo ──
+  if (Object.keys(colorMap).length) {
+    const patternEls = svg.querySelectorAll('defs pattern')
+    patternEls.forEach(pattern => {
+      // Pattern ke directly andar SVG tag
+      const innerSvg = pattern.querySelector('svg')
+      if (innerSvg) {
+        recolorAllSvgElements(innerSvg, colorMap)
+      }
+      // Pattern ke andar directly shapes bhi ho sakti hain
+      recolorAllSvgElements(pattern, colorMap)
+    })
+
+    // Mascot overlay groups bhi recolor karo
+    const appGroups = svg.querySelectorAll('[id^="app-group-"]')
+    appGroups.forEach(group => {
+      recolorAllSvgElements(group, colorMap)
+    })
+
+    // Pattern overlay group
+    const patternOverlayGroup = svg.querySelector('#pattern-overlay-group')
+    if (patternOverlayGroup) {
+      recolorAllSvgElements(patternOverlayGroup, colorMap)
+    }
+
+    // Mascot overlay group
+    const mascotOverlayGroup = svg.querySelector('#mascot-overlay-group')
+    if (mascotOverlayGroup) {
+      recolorAllSvgElements(mascotOverlayGroup, colorMap)
+    }
+  }
+
+  // ── Step 4: PNG images (mascots) recolor karo via Canvas ──
+  if (Object.keys(colorMap).length) {
+    const imageEls = svg.querySelectorAll('image')
+    const imagePromises = []
+
+    imageEls.forEach(imgEl => {
+      const href =
+        imgEl.getAttribute('href') ||
+        imgEl.getAttribute('xlink:href') ||
+        ''
+
+      if (
+        !href.startsWith('data:image/png') &&
+        !href.startsWith('data:image/jpeg') &&
+        !href.startsWith('data:image/jpg')
+      ) return
+
+      const promise = recolorPngViaCanvas(href, colorMap).then(newDataUrl => {
+        if (newDataUrl && newDataUrl !== href) {
+          imgEl.setAttribute('href', newDataUrl)
+          if (imgEl.getAttribute('xlink:href')) {
+            imgEl.setAttribute('xlink:href', newDataUrl)
+          }
+        }
+      })
+
+      imagePromises.push(promise)
+    })
+
+    if (imagePromises.length > 0) {
+      await Promise.all(imagePromises)
+    }
+  }
+
+  // ── Step 5: Name apply karo ──
   const finalName = (customAppliedName || '').trim()
-  if (finalName) updateSvgNameIfPresent(svg, finalName, getPrimaryAppliedColor())
+  if (finalName) {
+    updateSvgNameIfPresent(svg, finalName, getPrimaryAppliedColor())
+  }
+
   return new XMLSerializer().serializeToString(svg)
 }
 
+// ============================================================
+// buildColoredSvgForModel — await added kyunki recolorSvgParts async hai
+// ============================================================
 const buildColoredSvgForModel = async (model) => {
   if (!model?.id || !model?.front_svg) return
+
   if (!isModelInAppliedScope(model)) {
     const nextCache = { ...coloredSvgCache.value }
     delete nextCache[model.id]
     coloredSvgCache.value = nextCache
     return
   }
+
   try {
     const response = await fetch(model.front_svg)
     const svgText = await response.text()
-    const recolored = recolorSvgParts(svgText, appliedSelectedColors.value, appliedName.value)
+
+    // ✅ await lagaya - ab async hai
+    const recolored = await recolorSvgParts(
+      svgText,
+      appliedSelectedColors.value,
+      appliedName.value
+    )
+
     const dataUri = svgToDataUri(recolored)
     coloredSvgCache.value = { ...coloredSvgCache.value, [model.id]: dataUri }
   } catch (error) {
     console.error('SVG recolor failed for model:', model.id, error)
   }
 }
+// const recolorSvgParts = (svgText, colors = [], customAppliedName = '') => {
+//   if (!svgText) return svgText
+//   const parser = new DOMParser()
+//   const doc = parser.parseFromString(svgText, 'image/svg+xml')
+//   const svg = doc.querySelector('svg')
+//   if (!svg) return svgText
+//   const originalColors = collectOriginalModelColors(svg)
+//   const colorMap = buildOriginalToSelectedColorMap(originalColors, colors)
+//   if (Object.keys(colorMap).length) {
+//     getRecolorableSvgNodes(svg).forEach((node) => {
+//       const tag = node.tagName.toLowerCase()
+//       if (tag === 'stop') {
+//         const oldStop = colorToHex(node.getAttribute('stop-color')) || colorToHex(getStylePropValue(node.getAttribute('style') || '', 'stop-color'))
+//         if (oldStop && colorMap[oldStop]) {
+//           node.setAttribute('stop-color', colorMap[oldStop])
+//           node.setAttribute('style', setOrReplaceStyleProp(node.getAttribute('style') || '', 'stop-color', colorMap[oldStop]))
+//         }
+//         return
+//       }
+//       const originalFill = getNodePaintValue(node, 'fill')
+//       const originalStroke = getNodePaintValue(node, 'stroke')
+//       if (originalFill && colorMap[originalFill]) {
+//         if (tag === 'text' || tag === 'tspan') updateNodeFillKeepFont(node, colorMap[originalFill])
+//         else setNodePaintValue(node, 'fill', colorMap[originalFill])
+//       }
+//       if (originalStroke && colorMap[originalStroke]) setNodePaintValue(node, 'stroke', colorMap[originalStroke])
+//     })
+//   }
+//   const finalName = (customAppliedName || '').trim()
+//   if (finalName) updateSvgNameIfPresent(svg, finalName, getPrimaryAppliedColor())
+//   return new XMLSerializer().serializeToString(svg)
+// }
+
+// const buildColoredSvgForModel = async (model) => {
+//   if (!model?.id || !model?.front_svg) return
+//   if (!isModelInAppliedScope(model)) {
+//     const nextCache = { ...coloredSvgCache.value }
+//     delete nextCache[model.id]
+//     coloredSvgCache.value = nextCache
+//     return
+//   }
+//   try {
+//     const response = await fetch(model.front_svg)
+//     const svgText = await response.text()
+//     const recolored = recolorSvgParts(svgText, appliedSelectedColors.value, appliedName.value)
+//     const dataUri = svgToDataUri(recolored)
+//     coloredSvgCache.value = { ...coloredSvgCache.value, [model.id]: dataUri }
+//   } catch (error) {
+//     console.error('SVG recolor failed for model:', model.id, error)
+//   }
+// }
 
 const refreshAllModelPreviews = async () => {
   const targetModels = models.value.filter(m => shouldUseCompositePreview(m))

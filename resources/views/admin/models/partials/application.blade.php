@@ -167,14 +167,40 @@ gap:6px;
             </div>
 
             {{-- Rotation --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-                    Rotation: <span id="directMascotRotationValue">0</span>°
-                </label>
-                <input type="range" id="directMascotRotation" min="0" max="360" value="0"
-                    oninput="updateDirectMascotRotation(this.value); document.getElementById('directMascotRotationValue').textContent=this.value;"
-                    class="app-slider" style="width:100%; cursor:pointer;">
+           {{-- Rotation --}}
+<div class="control-group" style="margin-bottom:15px;">
+    <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
+        Rotation: <span id="directMascotRotationValue">0</span>°
+    </label>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+        <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+            <svg id="mascotRotationSvg" width="160" height="160"
+                style="position:absolute; top:0; left:0; cursor:grab;">
+                <circle cx="80" cy="80" r="68" fill="#e0e0e0" stroke="#bbb" stroke-width="3" />
+                <circle id="mascotRotationArc" cx="80" cy="80" r="68" fill="none"
+                    stroke="#333" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 427.26"
+                    transform="rotate(-90 80 80)" style="transition:none;" />
+                <circle cx="80" cy="80" r="52" fill="#888" />
+                <circle id="mascotRotationDot" cx="80" cy="12" r="9" fill="#222"
+                    stroke="#fff" stroke-width="2.5" />
+            </svg>
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+                <input type="number" id="mascotRotationManual" min="0" max="360" value="0"
+                    style="width:56px; height:40px; text-align:center;
+                           border-radius:8px; border:2px solid #ccc;
+                           font-weight:700; font-size:14px;
+                           background:#fff; color:#222;
+                           -moz-appearance:textfield;
+                           pointer-events:all;"
+                    oninput="
+                        var v = Math.min(360, Math.max(0, parseInt(this.value) || 0));
+                        setMascotWheelAngle(v);
+                        updateDirectMascotRotation(v);
+                    ">
             </div>
+        </div>
+    </div>
+</div>
 
             {{-- Position --}}
             <div class="control-group" style="margin-bottom:15px;">

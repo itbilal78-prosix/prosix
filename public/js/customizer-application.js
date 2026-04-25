@@ -1665,7 +1665,9 @@ function _plusDragEnd() {
 
         sync('directMascotScale', 'directMascotScaleValue', Math.round((layer.mascotScaleX || 1) * 100));
         sync('directMascotOpacity', 'directMascotOpacityValue', layer.mascotOpacity ?? 100);
-        sync('directMascotRotation', 'directMascotRotationValue', layer.rotation || 0);
+if (window.setMascotWheelAngle) window.setMascotWheelAngle(layer.rotation || 0);
+const display = document.getElementById('directMascotRotationValue');
+if (display) display.textContent = layer.rotation || 0;
         sync('mascotDirectPosX', 'mascotDirectPosXValue', layer.x || 0);
         sync('mascotDirectPosY', 'mascotDirectPosYValue', layer.y || 0);
 
@@ -2371,12 +2373,6 @@ function _plusDragEnd() {
         if (!confirm('Delete this application?')) return;
         removeApplicationLayer(window.currentApplicationLayer);
     };
-
-
-
-
-
-
 
     window.embedFontsInSvg = function (svgElement) {
         if (!window.backendFonts || !svgElement) return;
@@ -3369,6 +3365,116 @@ window.openFontModal = function () {
     };
 
 
+// ============================================================
+// =================== MASCOT ROTATION WHEEL ===================
+// ============================================================
 
+function initMascotRotationWheel() {
+    const svg = document.getElementById('mascotRotationSvg');
+    const arc = document.getElementById('mascotRotationArc');
+    const dot = document.getElementById('mascotRotationDot');
+    if (!svg || !arc || !dot) { setTimeout(initMascotRotationWheel, 400); return; }
+
+    const cx = 80, cy = 80, r = 68;
+    const circumference = 2 * Math.PI * r;
+    const snapPoints = [0, 90, 180, 270, 360];
+    const snapThreshold = 5;
+
+    let angle = 0, dragging = false, startAngle = 0, startRot = 0;
+
+    function getCenter() {
+        const rect = svg.getBoundingClientRect();
+        return [rect.left + rect.width / 2, rect.top + rect.height / 2];
+    }
+
+    function getAngle(cx2, cy2, ex, ey) {
+        let a = Math.atan2(ey - cy2, ex - cx2) * (180 / Math.PI) + 90;
+        return ((a % 360) + 360) % 360;
+    }
+
+    function snapAngle(a) {
+        for (let s of snapPoints) {
+            if (Math.abs(a - s) <= snapThreshold) return s;
+        }
+        return a;
+    }
+
+    function updateArc(a) {
+        const progress = (a / 360) * circumference;
+        arc.setAttribute('stroke-dasharray', progress + ' ' + circumference);
+        const rad = (a - 90) * Math.PI / 180;
+        const dx = cx + r * Math.cos(rad);
+        const dy = cy + r * Math.sin(rad);
+        dot.setAttribute('cx', dx);
+        dot.setAttribute('cy', dy);
+    }
+
+    window.setMascotWheelAngle = function (a) {
+        angle = ((a % 360) + 360) % 360;
+        updateArc(angle);
+        const manual = document.getElementById('mascotRotationManual');
+        const display = document.getElementById('directMascotRotationValue');
+        if (manual) manual.value = Math.round(angle);
+        if (display) display.textContent = Math.round(angle);
+    };
+
+    svg.addEventListener('mousedown', function (e) {
+        if (e.target.tagName === 'INPUT') return;
+        dragging = true;
+        const c = getCenter();
+        startAngle = getAngle(c[0], c[1], e.clientX, e.clientY);
+        startRot = angle;
+        svg.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        const c = getCenter();
+        let a = getAngle(c[0], c[1], e.clientX, e.clientY);
+        let newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360;
+        newAngle = snapAngle(newAngle);
+        window.setMascotWheelAngle(newAngle);
+        window.updateDirectMascotRotation(Math.round(newAngle));
+    });
+
+    window.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        svg.style.cursor = 'grab';
+    });
+
+    svg.addEventListener('touchstart', function (e) {
+        if (e.target.tagName === 'INPUT') return;
+        dragging = true;
+        const t = e.touches[0];
+        const c = getCenter();
+        startAngle = getAngle(c[0], c[1], t.clientX, t.clientY);
+        startRot = angle;
+        e.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener('touchmove', function (e) {
+        if (!dragging) return;
+        const t = e.touches[0];
+        const c = getCenter();
+        let a = getAngle(c[0], c[1], t.clientX, t.clientY);
+        let newAngle = ((startRot + (a - startAngle)) % 360 + 360) % 360;
+        newAngle = snapAngle(newAngle);
+        window.setMascotWheelAngle(newAngle);
+        window.updateDirectMascotRotation(Math.round(newAngle));
+    });
+
+    window.addEventListener('touchend', function () { dragging = false; });
+
+    updateArc(0);
+}
+
+// Init on load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initMascotRotationWheel, 600));
+} else {
+    setTimeout(initMascotRotationWheel, 600);
+}
 
 })();
