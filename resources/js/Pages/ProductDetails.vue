@@ -10,7 +10,7 @@
         <div class="product-visual">
           <div class="gallery-wrap">
 
-            <!-- Left thumbnails -->
+            <!-- Left thumbnails — colored SVG for every view -->
             <div class="thumbnails" v-if="thumbList.length > 0">
               <div
                 v-for="(thumb, ti) in thumbList"
@@ -20,10 +20,18 @@
                 @click="selectThumb(ti)"
               >
                 <div v-if="thumb.isLayered" class="thumb-layer-wrap">
-  <object v-if="thumb.svgSrc" :data="thumb.svgSrc" type="image/svg+xml" class="thumb-layer thumb-svg" style="pointer-events:none"></object>
-  <img v-if="thumb.whiteSrc" :src="thumb.whiteSrc" class="thumb-layer thumb-white" />
-  <img v-if="thumb.blackSrc" :src="thumb.blackSrc" class="thumb-layer thumb-black" />
-</div>
+                  <template v-if="appliedPreview.hasDesign && coloredSvgCache[thumb.viewKey]">
+                    <!-- Colored: recolored SVG base + white multiply + black screen — full composite -->
+                    <img :src="coloredSvgCache[thumb.viewKey]" class="thumb-layer thumb-svg" />
+                    <img v-if="thumb.whiteSrc" :src="thumb.whiteSrc" class="thumb-layer thumb-white" />
+                    <img v-if="thumb.blackSrc" :src="thumb.blackSrc" class="thumb-layer thumb-black" />
+                  </template>
+                  <template v-else>
+                    <object v-if="thumb.svgSrc" :data="thumb.svgSrc" type="image/svg+xml" class="thumb-layer thumb-svg" style="pointer-events:none"></object>
+                    <img v-if="thumb.whiteSrc" :src="thumb.whiteSrc" class="thumb-layer thumb-white" />
+                    <img v-if="thumb.blackSrc" :src="thumb.blackSrc" class="thumb-layer thumb-black" />
+                  </template>
+                </div>
                 <img v-else :src="thumb.src" :alt="thumb.label" />
                 <span v-if="thumb.colorHex" class="thumb-dot" :style="{ background: thumb.colorHex }"></span>
               </div>
@@ -43,81 +51,67 @@
                 <span>Out of Stock</span>
               </div>
 
-              <!-- ✅ ZOOM LENS — active thumb ka actual layered content zoom karo -->
-              <div
-                v-if="zoomActive && activeThumb"
-                class="zoom-overlay"
-              >
-                <!-- Layered zoom -->
+              <!-- ZOOM OVERLAY -->
+              <div v-if="zoomActive && activeThumb" class="zoom-overlay">
                 <template v-if="activeThumb.isLayered">
-                 <object v-if="activeThumb.svgSrc" :data="activeThumb.svgSrc" type="image/svg+xml" class="zoom-layer zoom-svg" :style="zoomTransformStyle" style="pointer-events:none"></object>
-
-                  <img v-if="activeThumb.whiteSrc"
-                    :src="activeThumb.whiteSrc"
-                    class="zoom-layer zoom-white"
-                    :style="zoomTransformStyle"
-                  />
-                  <img v-if="activeThumb.blackSrc"
-                    :src="activeThumb.blackSrc"
-                    class="zoom-layer zoom-black"
-                    :style="zoomTransformStyle"
-                  />
+                  <template v-if="appliedPreview.hasDesign && coloredSvgCache[activeThumb.viewKey]">
+                    <img :src="coloredSvgCache[activeThumb.viewKey]" class="zoom-layer zoom-svg" :style="zoomTransformStyle" />
+                    <img v-if="activeThumb.whiteSrc" :src="activeThumb.whiteSrc" class="zoom-layer zoom-white" :style="zoomTransformStyle" />
+                    <img v-if="activeThumb.blackSrc" :src="activeThumb.blackSrc" class="zoom-layer zoom-black" :style="zoomTransformStyle" />
+                  </template>
+                  <template v-else>
+                    <object v-if="activeThumb.svgSrc" :data="activeThumb.svgSrc" type="image/svg+xml" class="zoom-layer zoom-svg" :style="zoomTransformStyle" style="pointer-events:none"></object>
+                    <img v-if="activeThumb.whiteSrc" :src="activeThumb.whiteSrc" class="zoom-layer zoom-white" :style="zoomTransformStyle" />
+                    <img v-if="activeThumb.blackSrc" :src="activeThumb.blackSrc" class="zoom-layer zoom-black" :style="zoomTransformStyle" />
+                  </template>
                 </template>
-                <!-- Normal image zoom -->
                 <template v-else>
-                  <img
-                    :src="activeThumb.src || displayImage"
-                    class="zoom-layer zoom-svg"
-                    :style="zoomTransformStyle"
-                  />
+                  <img :src="activeThumb.src || displayImage" class="zoom-layer zoom-svg" :style="zoomTransformStyle" />
                 </template>
               </div>
 
-              <!-- ✅ MAIN DISPLAY — layered ya normal -->
+              <!-- MAIN DISPLAY -->
               <template v-if="isModel">
                 <div v-if="activeThumb && activeThumb.isLayered" class="model-layer-container" :class="{ 'zoomed-hidden': zoomActive }">
-<object v-if="activeThumb.svgSrc" :data="activeThumb.svgSrc" type="image/svg+xml" class="layer-img layer-svg" style="pointer-events:none"></object>
-                  <img v-if="activeThumb.whiteSrc" :src="activeThumb.whiteSrc" class="layer-img layer-white" />
-                  <img v-if="activeThumb.blackSrc" :src="activeThumb.blackSrc" class="layer-img layer-black" />
+                  <template v-if="appliedPreview.hasDesign && coloredSvgCache[activeThumb.viewKey]">
+                    <!-- Colored: full composite with recolored SVG base -->
+                    <img :src="coloredSvgCache[activeThumb.viewKey]" class="layer-img layer-svg" draggable="false" />
+                    <img v-if="activeThumb.whiteSrc" :src="activeThumb.whiteSrc" class="layer-img layer-white" draggable="false" />
+                    <img v-if="activeThumb.blackSrc" :src="activeThumb.blackSrc" class="layer-img layer-black" draggable="false" />
+                  </template>
+                  <template v-else>
+                    <object v-if="activeThumb.svgSrc" :data="activeThumb.svgSrc" type="image/svg+xml" class="layer-img layer-svg" style="pointer-events:none"></object>
+                    <img v-if="activeThumb.whiteSrc" :src="activeThumb.whiteSrc" class="layer-img layer-white" draggable="false" />
+                    <img v-if="activeThumb.blackSrc" :src="activeThumb.blackSrc" class="layer-img layer-black" draggable="false" />
+                  </template>
                 </div>
-                <img v-else
-                  :src="modelDisplayImage"
-                  class="main-product-image"
-                  :class="{ 'zoomed-hidden': zoomActive }"
-                  alt="Product"
-                />
+                <img v-else :src="modelDisplayImage" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
               </template>
 
               <template v-else>
                 <transition name="img-fade" mode="out-in">
-                  <img
-                    :key="displayImage"
-                    :src="displayImage"
-                    class="main-product-image"
-                    :class="{ 'zoomed-hidden': zoomActive }"
-                    alt="Product"
-                  />
+                  <img :key="displayImage" :src="displayImage" class="main-product-image" :class="{ 'zoomed-hidden': zoomActive }" alt="Product" />
                 </transition>
               </template>
 
-            <button
-  class="img-action-btn wishlist-btn"
-  @mouseenter.stop="pauseZoom"
-  @mouseleave.stop="resumeZoom"
-  @click.stop="toggleLike"
-  :class="{ active: cartStore.isLiked(product.id) }"
->
-  <i :class="cartStore.isLiked(product.id) ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
-</button>
+              <button
+                class="img-action-btn wishlist-btn"
+                @mouseenter.stop="pauseZoom"
+                @mouseleave.stop="resumeZoom"
+                @click.stop="toggleLike"
+                :class="{ active: cartStore.isLiked(product.id) }"
+              >
+                <i :class="cartStore.isLiked(product.id) ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+              </button>
 
-<button
-  class="img-action-btn share-btn"
-  @mouseenter.stop="pauseZoom"
-  @mouseleave.stop="resumeZoom"
-  @click.stop="handleShare"
->
-  <i class="bi bi-share"></i>
-</button>
+              <button
+                class="img-action-btn share-btn"
+                @mouseenter.stop="pauseZoom"
+                @mouseleave.stop="resumeZoom"
+                @click.stop="handleShare"
+              >
+                <i class="bi bi-share"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -245,14 +239,11 @@
       <!-- ══ TABS ══ -->
       <div class="tabs-section" ref="tabsRef">
         <div class="tabs-nav">
-          <button v-for="tab in tabs" :key="tab.id"
-            class="tab-btn" :class="{ active: activeTab === tab.id }"
-            @click="openTab(tab.id)">
+          <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" @click="openTab(tab.id)">
             {{ tab.id === 'reviews' ? `Reviews (${allReviews.length})` : tab.label }}
           </button>
         </div>
 
-        <!-- Description -->
         <div class="tab-panel" :class="{ active: activeTab === 'description' }">
           <div class="desc-grid">
             <div class="desc-text">
@@ -275,7 +266,6 @@
           </div>
         </div>
 
-        <!-- Size Chart -->
         <div class="tab-panel" :class="{ active: activeTab === 'sizechart' }">
           <h3 class="tab-heading">Size Chart</h3>
           <template v-if="product.size_chart_image">
@@ -290,7 +280,6 @@
           </template>
         </div>
 
-        <!-- Shipping -->
         <div class="tab-panel" :class="{ active: activeTab === 'shipping' }">
           <div class="shipping-grid">
             <div class="ship-card"><i class="bi bi-lightning-charge"></i><h4>Express Delivery</h4><p>1–2 business days.</p></div>
@@ -305,7 +294,6 @@
           </div>
         </div>
 
-        <!-- Reviews -->
         <div class="tab-panel" :class="{ active: activeTab === 'reviews' }">
           <div class="reviews-summary" v-if="allReviews.length">
             <div class="rating-big">
@@ -327,8 +315,7 @@
               <div class="form-group">
                 <label>Your Rating *</label>
                 <div class="star-picker">
-                  <span v-for="s in 5" :key="s" class="star-pick" :class="{ lit: s <= (hoverStar || newReview.stars) }"
-                    @mouseenter="hoverStar=s" @mouseleave="hoverStar=0" @click="newReview.stars=s">★</span>
+                  <span v-for="s in 5" :key="s" class="star-pick" :class="{ lit: s <= (hoverStar || newReview.stars) }" @mouseenter="hoverStar=s" @mouseleave="hoverStar=0" @click="newReview.stars=s">★</span>
                   <span class="star-label-txt" v-if="hoverStar || newReview.stars">{{ starLabels[hoverStar||newReview.stars] }}</span>
                 </div>
               </div>
@@ -373,15 +360,13 @@
         </div>
       </div>
 
-      <!-- ✅ RELATED PRODUCTS — same category ke sab products -->
+      <!-- ══ RELATED PRODUCTS — colored design applied ══ -->
       <div class="related-section">
         <div class="section-header"><h2>You May Also Like</h2></div>
         <div v-if="relatedLoading" class="loading-state"><div class="spinner"></div></div>
         <div v-else-if="!relatedItems.length" class="empty-state">Nothing found.</div>
         <div v-else class="carousel-wrapper">
-          <button class="carousel-btn carousel-prev" @click="prevSlide" :disabled="relatedPage === 0">
-            <i class="bi bi-chevron-left"></i>
-          </button>
+          <button class="carousel-btn carousel-prev" @click="prevSlide" :disabled="relatedPage === 0"><i class="bi bi-chevron-left"></i></button>
           <div class="related-grid">
             <template v-if="isModel">
               <div
@@ -390,33 +375,45 @@
                 :class="{ 'card-active': previewProductId === m.id }"
                 @click="router.push(`/product/${m.id}?type=model`)"
               >
-                <div class="model-rel-img"><img v-if="m.thumbnail" :src="m.thumbnail" class="model-rel-thumb" /></div>
+                <div class="model-rel-img">
+                  <!-- If design applied and we have colored SVG for this related model -->
+                  <template v-if="appliedPreview.hasDesign && relatedColoredCache[m.id]">
+                    <img :src="relatedColoredCache[m.id]" class="model-rel-layer rel-svg" />
+                    <img
+                      v-if="m.front_white || m.views?.front?.white_image_url || m.views?.front?.white"
+                      :src="m.front_white || m.views?.front?.white_image_url || m.views?.front?.white"
+                      class="model-rel-layer rel-white"
+                    />
+                    <img
+                      v-if="m.front_black || m.views?.front?.black_image_url || m.views?.front?.black"
+                      :src="m.front_black || m.views?.front?.black_image_url || m.views?.front?.black"
+                      class="model-rel-layer rel-black"
+                    />
+                  </template>
+                  <!-- No design applied: show thumbnail or original layers -->
+                  <template v-else-if="m.thumbnail">
+                    <img :src="m.thumbnail" class="model-rel-thumb" />
+                  </template>
+                  <template v-else>
+                    <img v-if="m.front_svg" :src="m.front_svg" class="model-rel-layer rel-svg" />
+                    <img v-if="m.front_white" :src="m.front_white" class="model-rel-layer rel-white" />
+                    <img v-if="m.front_black" :src="m.front_black" class="model-rel-layer rel-black" />
+                  </template>
+                </div>
                 <div class="model-rel-body">
                   <h3 class="model-rel-title">{{ m.title }}</h3>
                   <p class="model-rel-price">${{ m.price || '0.00' }}</p>
                 </div>
               </div>
             </template>
-          <template v-else>
-  <div
-    v-for="rel in paginatedRelated" :key="rel.id"
-    class="model-rel-card"
-    :class="{ 'card-active': previewProductId === rel.id }"
-    @click="router.push(`/product/${rel.id}`)"
-  >
-    <div class="model-rel-img">
-      <img v-if="rel.image" :src="rel.image" class="model-rel-thumb" />
-    </div>
-    <div class="model-rel-body">
-      <h3 class="model-rel-title">{{ rel.name }}</h3>
-      <p class="model-rel-price">${{ formatPrice(rel.price) }}</p>
-    </div>
-  </div>
-</template>
+            <template v-else>
+              <div v-for="rel in paginatedRelated" :key="rel.id" class="model-rel-card" :class="{ 'card-active': previewProductId === rel.id }" @click="router.push(`/product/${rel.id}`)">
+                <div class="model-rel-img"><img v-if="rel.image" :src="rel.image" class="model-rel-thumb" /></div>
+                <div class="model-rel-body"><h3 class="model-rel-title">{{ rel.name }}</h3><p class="model-rel-price">${{ formatPrice(rel.price) }}</p></div>
+              </div>
+            </template>
           </div>
-          <button class="carousel-btn carousel-next" @click="nextSlide" :disabled="relatedPage >= totalPages - 1">
-            <i class="bi bi-chevron-right"></i>
-          </button>
+          <button class="carousel-btn carousel-next" @click="nextSlide" :disabled="relatedPage >= totalPages - 1"><i class="bi bi-chevron-right"></i></button>
         </div>
         <div class="slider-dots" v-if="totalPages > 1">
           <button v-for="p in totalPages" :key="p" class="dot" :class="{ active: relatedPage === p-1 }" @click="relatedPage = p-1"></button>
@@ -428,6 +425,7 @@
     <footer-component />
   </div>
 </template>
+
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -438,403 +436,448 @@ const router    = useRouter()
 const route     = useRoute()
 const cartStore = useCartStore()
 
-const product = ref({
-  id: null, name: '', type: '', price: '', description: '', image: null,
-  is_new: false, in_stock: true, stock_quantity: null,
-  shipping_enabled: false, shipping_cost: 0, free_shipping_above: null,
-  sizes: [], colors: [], gallery_images: [], size_chart_image: null,
-})
-const isModel        = ref(false)
-const imageContainer = ref(null)
-const tabsRef        = ref(null)
+// ================================================================
+// CATEGORY PREVIEW STATE — reads filter from category page
+// ================================================================
+const appliedPreview = ref({ hasDesign: false, name: '', colors: [], targetModelName: 'all' })
 
-const stockAvailable = computed(() => product.value.in_stock === true || product.value.in_stock === 1)
-const qtyMax = computed(() => {
-  const q = product.value.stock_quantity
-  return (q !== null && q !== undefined && q > 0) ? q : null
-})
+// Per-view colored SVG for current product: { front, back, left, right }
+const coloredSvgCache = ref({})
 
-const productColors    = computed(() => product.value.colors || [])
-const selectedColorIdx = ref(-1)
+// Per-related-model colored SVG (front view): { [modelId]: dataUri }
+const relatedColoredCache = ref({})
 
-const isLightColor = (hex) => {
-  if (!hex) return false
-  const h = hex.replace('#', '')
-  const r = parseInt(h.substring(0,2), 16)
-  const g = parseInt(h.substring(2,4), 16)
-  const b = parseInt(h.substring(4,6), 16)
-  return (r * 299 + g * 587 + b * 114) / 1000 > 160
+// ---- SVG utilities (same logic as category page) ----
+const normalizeHex = (hex) => {
+  if (!hex) return '#000000'
+  let v = String(hex).trim().toUpperCase()
+  if (!v.startsWith('#')) v = `#${v}`
+  if (/^#[0-9A-F]{3}$/.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join('')
+  if (/^#[0-9A-F]{4}$/.test(v)) v = '#' + v.slice(1,4).split('').map(c => c + c).join('')
+  if (/^#[0-9A-F]{8}$/.test(v)) v = v.slice(0,7)
+  return /^#[0-9A-F]{6}$/.test(v) ? v : '#000000'
 }
-const selectDefault = () => { selectedColorIdx.value = -1; activeThumbIdx.value = 0 }
-const selectColor   = (ci) => { selectedColorIdx.value = selectedColorIdx.value === ci ? -1 : ci; activeThumbIdx.value = 0 }
+const svgToDataUri = (s) => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(s)}`
+const isSkip = (v) => {
+  if (!v) return true
+  const lv = String(v).trim().toLowerCase()
+  return !lv || lv==='none'||lv==='transparent'||lv==='currentcolor'||lv==='inherit'||lv==='initial'||lv==='unset'||lv.startsWith('url(')
+}
+const getStyleProp = (style, prop) => {
+  if (!style) return ''
+  const m = style.match(new RegExp(`${prop}\\s*:\\s*([^;]+)`,'i'))
+  return m ? m[1].trim() : ''
+}
+const setStyleProp = (style, prop, val) => {
+  const s = style||''
+  const re = new RegExp(`${prop}\\s*:\\s*[^;]+;?`,'i')
+  if (re.test(s)) return s.replace(re,`${prop}:${val};`)
+  return `${s}${s&&!s.trim().endsWith(';')?';':''}${prop}:${val};`
+}
+const colorToHex = (input) => {
+  if (!input) return ''
+  const raw = String(input).trim()
+  if (!raw||isSkip(raw)) return ''
+  if (raw.startsWith('#')) return normalizeHex(raw)
+  const m = raw.match(/^rgba?\(([^)]+)\)$/i)
+  if (m) {
+    const [r,g,b] = m[1].split(',').map(x=>parseFloat(x.trim()))
+    return '#'+[r,g,b].map(n=>Math.max(0,Math.min(255,n||0))).map(n=>Math.round(n).toString(16).padStart(2,'0')).join('').toUpperCase()
+  }
+  try { const c=document.createElement('canvas').getContext('2d'); c.fillStyle=raw; return colorToHex(c.fillStyle) } catch { return '' }
+}
+const getNodePaint = (node, prop) => {
+  const a = node.getAttribute(prop)
+  if (!isSkip(a)) return colorToHex(a)
+  const s = getStyleProp(node.getAttribute('style')||'', prop)
+  if (!isSkip(s)) return colorToHex(s)
+  return ''
+}
+const setNodePaint = (node, prop, color) => {
+  if (!node||!color) return
+  node.setAttribute(prop,color)
+  node.setAttribute('style',setStyleProp(node.getAttribute('style')||'',prop,color))
+}
+const SVG_SEL = 'path,polygon,rect,circle,ellipse,line,polyline,text,tspan,stop'
+const getRecolorableNodes = (svg) => [...svg.querySelectorAll(SVG_SEL)].filter(node=>{
+  if (node.closest('clipPath')||node.closest('mask')) return false
+  const tag = node.tagName.toLowerCase()
+  if (tag==='stop') {
+    const sc = node.getAttribute('stop-color')||getStyleProp(node.getAttribute('style')||'','stop-color')
+    return !!colorToHex(sc)
+  }
+  return !!(getNodePaint(node,'fill')||getNodePaint(node,'stroke'))
+})
+const collectColors = (svg) => {
+  const ordered=[],seen=new Set()
+  getRecolorableNodes(svg).forEach(node=>{
+    [getNodePaint(node,'fill'),getNodePaint(node,'stroke')].forEach(p=>{if(p&&!seen.has(p)){seen.add(p);ordered.push(p)}})
+  })
+  return ordered
+}
+const buildColorMap = (orig, picked) => {
+  const clean=(picked||[]).map(c=>normalizeHex(c.code||c)).filter(Boolean)
+  if (!orig.length||!clean.length) return {}
+  const lim=clean.slice(0,Math.max(1,Math.min(clean.length,orig.length)))
+  const map={}
+  orig.forEach((o,i)=>{map[o]=lim[i%lim.length]})
+  return map
+}
+const getNumericFS = (node) => {
+  const a=parseFloat(node.getAttribute('font-size'))
+  if (!isNaN(a)&&a>0) return a
+  const m=(node.getAttribute('style')||'').match(/font-size\s*:\s*([0-9.]+)/i)
+  return m?parseFloat(m[1]):48
+}
+const setFS = (node,size) => {
+  node.setAttribute('font-size',String(size))
+  node.setAttribute('style',setStyleProp(node.getAttribute('style')||'','font-size',`${size}px`))
+}
+const fitText = (svg, node, text) => {
+  if (!svg||!node||!text) return
+  const vb=(svg.getAttribute('viewBox')||'').split(/\s+/).map(Number)
+  const W=vb.length===4?vb[2]:(parseFloat(svg.getAttribute('width'))||300)
+  const len=text.length; let fs=getNumericFS(node)
+  if(len>=8)fs*=0.90; if(len>=12)fs*=0.82; if(len>=16)fs*=0.72; if(len>=22)fs*=0.60
+  if(len*fs*0.62>W*0.52) fs=Math.max(12,Math.floor(W*0.52/Math.max(len*0.62,1)))
+  setFS(node,fs)
+  if(!node.getAttribute('text-anchor')) node.setAttribute('text-anchor','middle')
+}
+const snapText = (node) => ({
+  fontFamily:node.getAttribute('font-family')||'', fontSize:node.getAttribute('font-size')||'',
+  fontWeight:node.getAttribute('font-weight')||'', fontStyle:node.getAttribute('font-style')||'',
+  letterSpacing:node.getAttribute('letter-spacing')||'', textAnchor:node.getAttribute('text-anchor')||'',
+  dominantBaseline:node.getAttribute('dominant-baseline')||'', style:node.getAttribute('style')||'',
+  x:node.getAttribute('x')||'', y:node.getAttribute('y')||'', transform:node.getAttribute('transform')||''
+})
+const restoreSnap = (node,snap) => {
+  if(!node||!snap) return
+  const map={'font-family':snap.fontFamily,'font-size':snap.fontSize,'font-weight':snap.fontWeight,
+    'font-style':snap.fontStyle,'letter-spacing':snap.letterSpacing,'text-anchor':snap.textAnchor,
+    'dominant-baseline':snap.dominantBaseline,x:snap.x,y:snap.y,transform:snap.transform}
+  Object.entries(map).forEach(([k,v])=>{if(v) node.setAttribute(k,v)})
+  if(snap.style) node.setAttribute('style',snap.style)
+}
+const fillKeepFont = (node,color) => {
+  if(!node) return
+  const snap=snapText(node)
+  node.setAttribute('fill',color)
+  node.setAttribute('style',setStyleProp(node.getAttribute('style')||'','fill',color))
+  if(snap.fontFamily) node.setAttribute('font-family',snap.fontFamily)
+  if(snap.fontWeight) node.setAttribute('font-weight',snap.fontWeight)
+  if(snap.fontStyle) node.setAttribute('font-style',snap.fontStyle)
+  if(snap.letterSpacing) node.setAttribute('letter-spacing',snap.letterSpacing)
+  if(snap.textAnchor) node.setAttribute('text-anchor',snap.textAnchor)
+  if(snap.dominantBaseline) node.setAttribute('dominant-baseline',snap.dominantBaseline)
+}
+const setTextKeepStyle = (node,text) => {
+  const attrs=[...node.attributes].map(a=>[a.name,a.value])
+  const tspans=[...node.querySelectorAll('tspan')]
+  if(tspans.length){
+    const fa=[...tspans[0].attributes].map(a=>[a.name,a.value])
+    tspans[0].textContent=text; fa.forEach(([n,v])=>tspans[0].setAttribute(n,v))
+    tspans.slice(1).forEach(t=>{t.textContent=''})
+  } else { node.textContent=text }
+  attrs.forEach(([n,v])=>node.setAttribute(n,v))
+}
+const updateSvgName = (svg, name, color) => {
+  if(!name.trim()) return false
+  const textNodes=[...svg.querySelectorAll('text')].filter(n=>!n.closest('defs'))
+  if(!textNodes.length) return false
+  const target=textNodes.find(n=>(n.textContent||'').trim())||textNodes[0]
+  if(!target) return false
+  const oldText=(target.textContent||'').trim(), tx=target.getAttribute('x'), ty=target.getAttribute('y'), tid=target.getAttribute('id')
+  const related=textNodes.filter(n=>n===target||(tid&&n.getAttribute('data-outline-for')===tid)||((n.textContent||'').trim()===oldText&&n.getAttribute('x')===tx&&n.getAttribute('y')===ty))
+  related.forEach(n=>{const snap=snapText(n); setTextKeepStyle(n,name); restoreSnap(n,snap); if(color) fillKeepFont(n,color); fitText(svg,n,name)})
+  return true
+}
+const recolorSvg = (svgText, colors, customName) => {
+  if(!svgText) return null
+  const doc=new DOMParser().parseFromString(svgText,'image/svg+xml')
+  const svg=doc.querySelector('svg')
+  if(!svg) return null
+  const origColors=collectColors(svg)
+  const colorMap=buildColorMap(origColors,colors)
+  if(Object.keys(colorMap).length){
+    getRecolorableNodes(svg).forEach(node=>{
+      const tag=node.tagName.toLowerCase()
+      if(tag==='stop'){
+        const sc=colorToHex(node.getAttribute('stop-color'))||colorToHex(getStyleProp(node.getAttribute('style')||'','stop-color'))
+        if(sc&&colorMap[sc]){node.setAttribute('stop-color',colorMap[sc]);node.setAttribute('style',setStyleProp(node.getAttribute('style')||'','stop-color',colorMap[sc]))}
+        return
+      }
+      const of=getNodePaint(node,'fill'),os=getNodePaint(node,'stroke')
+      if(of&&colorMap[of]){if(tag==='text'||tag==='tspan') fillKeepFont(node,colorMap[of]); else setNodePaint(node,'fill',colorMap[of])}
+      if(os&&colorMap[os]) setNodePaint(node,'stroke',colorMap[os])
+    })
+  }
+  const name=(customName||'').trim()
+  if(name) updateSvgName(svg,name,colors.length?normalizeHex(colors[0].code):null)
+  return svgToDataUri(new XMLSerializer().serializeToString(svg))
+}
 
-// ✅ THUMBNAILS — model ke liye all 4 views (front/back/left/right)
-const thumbList = computed(() => {
-  if (isModel.value) {
-    const views = product.value.views || {}
-    const list  = []
-    const viewKeys = ['front', 'back', 'left', 'right']
+// Build colored SVG for ALL views of current product
+const buildAllViewColoredSvgs = async () => {
+  if(!isModel.value||!appliedPreview.value.hasDesign){coloredSvgCache.value={};return}
+  const views=product.value.views||{}
+  const newCache={}
+  await Promise.all(['front','back','left','right'].map(async(vk)=>{
+    const viewObj=views[vk]
+    if(!viewObj) return
+    const svgUrl=viewObj.svg_url||viewObj.svg||null
+    if(!svgUrl) return
+    try{
+      const res=await fetch(svgUrl)
+      const svgText=await res.text()
+      const dataUri=recolorSvg(svgText,appliedPreview.value.colors,appliedPreview.value.name)
+      if(dataUri) newCache[vk]=dataUri
+    }catch(err){console.error(`SVG recolor failed for view ${vk}:`,err)}
+  }))
+  coloredSvgCache.value=newCache
+}
 
-    viewKeys.forEach(v => {
-      const viewObj = views[v]
-      if (!viewObj) return
+// Build colored SVG for related models (front view only)
+const buildRelatedColoredSvgs = async (models) => {
+  if(!appliedPreview.value.hasDesign||!models.length){relatedColoredCache.value={};return}
+  const newCache={}
+  await Promise.all(models.map(async(m)=>{
+    const svgUrl = m.front_svg ||
+      m.views?.front?.svg_url ||
+      m.views?.front?.svg ||
+      null
+    if(!svgUrl) return
+    try{
+      const res=await fetch(svgUrl)
+      const svgText=await res.text()
+      const dataUri=recolorSvg(svgText,appliedPreview.value.colors,appliedPreview.value.name)
+      if(dataUri) newCache[m.id]=dataUri
+    }catch(err){console.error(`Related SVG recolor failed model ${m.id}:`,err)}
+  }))
+  relatedColoredCache.value=newCache
+}
 
-      const svgSrc   = viewObj.svg_url   || viewObj.svg   || null
-      const whiteSrc = viewObj.white_image_url || viewObj.white || null
-      const blackSrc = viewObj.black_image_url || viewObj.black || null
-      const thumbSrc = viewObj.thumbnail || null
+// Restore category filter state from localStorage
+const restoreCategoryPreviewState = (catId) => {
+  try{
+    const raw=localStorage.getItem(`category_preview_state_${catId}`)
+    if(!raw) return false
+    const parsed=JSON.parse(raw)
+    const colors=Array.isArray(parsed?.appliedSelectedColors)?parsed.appliedSelectedColors:[]
+    const name=parsed?.appliedName||''
+    if(!colors.length&&!name) return false
+    appliedPreview.value={hasDesign:true,name,colors,targetModelName:parsed?.appliedTargetModelName||'all'}
+    return true
+  }catch{return false}
+}
 
-      if (thumbSrc) {
-        // Merged thumbnail available — sahi layers ke saath bhi dikhao
-        list.push({
-          src: thumbSrc,
-          label: v.charAt(0).toUpperCase() + v.slice(1),
-          colorHex: null,
-          isLayered: !!(svgSrc || whiteSrc || blackSrc),
-          svgSrc, whiteSrc, blackSrc,
-        })
-      } else if (svgSrc || whiteSrc || blackSrc) {
-        list.push({
-          src: svgSrc || whiteSrc || blackSrc,
-          label: v.charAt(0).toUpperCase() + v.slice(1),
-          colorHex: null,
-          isLayered: true,
-          svgSrc, whiteSrc, blackSrc,
-        })
+// ================================================================
+
+const product = ref({
+  id:null,name:'',type:'',price:'',description:'',image:null,
+  is_new:false,in_stock:true,stock_quantity:null,
+  shipping_enabled:false,shipping_cost:0,free_shipping_above:null,
+  sizes:[],colors:[],gallery_images:[],size_chart_image:null,
+})
+const isModel=ref(false), imageContainer=ref(null), tabsRef=ref(null)
+const stockAvailable=computed(()=>product.value.in_stock===true||product.value.in_stock===1)
+const qtyMax=computed(()=>{const q=product.value.stock_quantity;return(q!==null&&q!==undefined&&q>0)?q:null})
+const productColors=computed(()=>product.value.colors||[])
+const selectedColorIdx=ref(-1)
+const isLightColor=(hex)=>{if(!hex)return false;const h=hex.replace('#','');const r=parseInt(h.substring(0,2),16),g=parseInt(h.substring(2,4),16),b=parseInt(h.substring(4,6),16);return(r*299+g*587+b*114)/1000>160}
+const selectDefault=()=>{selectedColorIdx.value=-1;activeThumbIdx.value=0}
+const selectColor=(ci)=>{selectedColorIdx.value=selectedColorIdx.value===ci?-1:ci;activeThumbIdx.value=0}
+
+const thumbList=computed(()=>{
+  if(isModel.value){
+    const views=product.value.views||{},list=[]
+    ;['front','back','left','right'].forEach(vk=>{
+      const viewObj=views[vk];if(!viewObj) return
+      const svgSrc=viewObj.svg_url||viewObj.svg||null
+      const whiteSrc=viewObj.white_image_url||viewObj.white||null
+      const blackSrc=viewObj.black_image_url||viewObj.black||null
+      const thumbSrc=viewObj.thumbnail||null
+      if(thumbSrc||svgSrc||whiteSrc||blackSrc){
+        list.push({src:thumbSrc||svgSrc||whiteSrc||blackSrc,label:vk.charAt(0).toUpperCase()+vk.slice(1),colorHex:null,isLayered:!!(svgSrc||whiteSrc||blackSrc),svgSrc,whiteSrc,blackSrc,viewKey:vk})
       }
     })
-
-    if (!list.length && product.value.thumbnail) {
-      list.push({ src: product.value.thumbnail, label: 'Front', colorHex: null, isLayered: false })
-    }
+    if(!list.length&&product.value.thumbnail) list.push({src:product.value.thumbnail,label:'Front',colorHex:null,isLayered:false,viewKey:'front'})
     return list
   }
-
-  // Normal product
-  const list  = []
-  const color = selectedColorIdx.value >= 0 ? productColors.value[selectedColorIdx.value] : null
-  const colorHasImages = color && (color.image || (color.gallery && color.gallery.length > 0))
-  if (colorHasImages) {
-    if (color.image) list.push({ src: color.image, label: color.name, colorHex: color.hex, isLayered: false })
-    ;(color.gallery || []).forEach((src, i) => list.push({ src, label: `${color.name} #${i+1}`, colorHex: null, isLayered: false }))
-  } else {
-    if (product.value.image) list.push({ src: product.value.image, label: 'Original', colorHex: null, isLayered: false })
-    ;(product.value.gallery_images || []).forEach((src, i) => list.push({ src, label: `Gallery #${i+1}`, colorHex: null, isLayered: false }))
+  const list=[],color=selectedColorIdx.value>=0?productColors.value[selectedColorIdx.value]:null
+  const colorHasImages=color&&(color.image||(color.gallery&&color.gallery.length>0))
+  if(colorHasImages){
+    if(color.image) list.push({src:color.image,label:color.name,colorHex:color.hex,isLayered:false})
+    ;(color.gallery||[]).forEach((src,i)=>list.push({src,label:`${color.name} #${i+1}`,colorHex:null,isLayered:false}))
+  }else{
+    if(product.value.image) list.push({src:product.value.image,label:'Original',colorHex:null,isLayered:false})
+    ;(product.value.gallery_images||[]).forEach((src,i)=>list.push({src,label:`Gallery #${i+1}`,colorHex:null,isLayered:false}))
   }
   return list
 })
 
-const activeThumbIdx = ref(0)
-const selectThumb    = (idx) => { activeThumbIdx.value = idx }
-const activeThumb    = computed(() => thumbList.value[activeThumbIdx.value] || null)
+const activeThumbIdx=ref(0)
+const selectThumb=(idx)=>{activeThumbIdx.value=idx}
+const activeThumb=computed(()=>thumbList.value[activeThumbIdx.value]||null)
+const displayImage=computed(()=>activeThumb.value?.src||product.value.image||'')
+const modelDisplayImage=computed(()=>activeThumb.value?.src||product.value.thumbnail||product.value.image||'')
 
-const displayImage = computed(() => {
-  if (!activeThumb.value) return product.value.image || ''
-  return activeThumb.value.src || ''
-})
-
-const modelDisplayImage = computed(() => {
-  if (!activeThumb.value) return product.value.thumbnail || product.value.image || ''
-  return activeThumb.value.src || product.value.thumbnail || ''
-})
-
-// ✅ ZOOM — active thumbnail ka content zoom karo (transform approach)
-const zoomActive       = ref(false)
-const zoomOriginX      = ref(50)
-const zoomOriginY      = ref(50)
-const ZOOM_SCALE = 3.5
-
-const zoomTransformStyle = computed(() => ({
-  transformOrigin: `${zoomOriginX.value}% ${zoomOriginY.value}%`,
-  transform: `scale(${ZOOM_SCALE})`,
-}))
-
-const onZoomEnter = () => { zoomActive.value = true }
-const onZoomLeave = () => { zoomActive.value = false }
-
-const handleZoomMove = (e) => {
-  const el = imageContainer.value
-  if (!el) return
-  const rect = el.getBoundingClientRect()
-  const x = ((e.clientX - rect.left) / rect.width)  * 100
-  const y = ((e.clientY - rect.top)  / rect.height) * 100
-  zoomOriginX.value = Math.min(100, Math.max(0, x))
-  zoomOriginY.value = Math.min(100, Math.max(0, y))
+const zoomActive=ref(false),zoomOriginX=ref(50),zoomOriginY=ref(50),ZOOM_SCALE=3.5
+const zoomTransformStyle=computed(()=>({transformOrigin:`${zoomOriginX.value}% ${zoomOriginY.value}%`,transform:`scale(${ZOOM_SCALE})`}))
+const onZoomEnter=()=>{zoomActive.value=true}
+const onZoomLeave=()=>{zoomActive.value=false}
+const pauseZoom=()=>{zoomActive.value=false}
+const resumeZoom=()=>{}
+const handleZoomMove=(e)=>{
+  const el=imageContainer.value;if(!el) return
+  const rect=el.getBoundingClientRect()
+  zoomOriginX.value=Math.min(100,Math.max(0,((e.clientX-rect.left)/rect.width)*100))
+  zoomOriginY.value=Math.min(100,Math.max(0,((e.clientY-rect.top)/rect.height)*100))
 }
 
-// Sizes
-const allSizes      = ['YXS','YS','YM','YL','YXL','S','M','L','XL','2XL']
-const productSizes  = computed(() => product.value.sizes || [])
-const selectedSize  = ref('')
-const customSizeVal = ref('')
-const customSizeOk  = ref(false)
-const effectiveSize = computed(() => {
-  if (selectedSize.value === '__other__') return customSizeOk.value ? customSizeVal.value.trim() : ''
-  return selectedSize.value
-})
-const pickSize = (sz) => { selectedSize.value = sz; customSizeOk.value = false; if (sz !== '__other__') customSizeVal.value = '' }
-const confirmCustomSize = () => {
-  if (!customSizeVal.value.trim()) { showToast('Please enter a size!'); return }
-  customSizeOk.value = true
-  showToast(`✅ Size "${customSizeVal.value.trim()}" confirmed!`)
+const allSizes=['YXS','YS','YM','YL','YXL','S','M','L','XL','2XL']
+const productSizes=computed(()=>product.value.sizes||[])
+const selectedSize=ref(''),customSizeVal=ref(''),customSizeOk=ref(false)
+const effectiveSize=computed(()=>{if(selectedSize.value==='__other__') return customSizeOk.value?customSizeVal.value.trim():'';return selectedSize.value})
+const pickSize=(sz)=>{selectedSize.value=sz;customSizeOk.value=false;if(sz!=='__other__') customSizeVal.value=''}
+const confirmCustomSize=()=>{if(!customSizeVal.value.trim()){showToast('Please enter a size!');return};customSizeOk.value=true;showToast(`✅ Size "${customSizeVal.value.trim()}" confirmed!`)}
+
+const quantity=ref(1)
+const incrementQty=()=>{if(qtyMax.value!==null&&quantity.value>=qtyMax.value){showToast(`⚠️ Only ${qtyMax.value} in stock!`);return};quantity.value++}
+const decrementQty=()=>{if(quantity.value>1) quantity.value--}
+
+const activeTab=ref('description')
+const tabs=[{id:'description',label:'Description'},{id:'sizechart',label:'Size Chart'},{id:'shipping',label:'Shipping & Returns'},{id:'reviews',label:'Reviews'}]
+const openTab=(id)=>{activeTab.value=id;nextTick(()=>tabsRef.value?.scrollIntoView({behavior:'smooth',block:'start'}))}
+
+const allReviews=ref([]),hoverStar=ref(0),submitting=ref(false),editingReviewId=ref(null)
+const starLabels={1:'Poor',2:'Fair',3:'Good',4:'Very Good',5:'Excellent'}
+const newReview=ref({stars:0,name:'',title:'',text:''})
+const reviewKey=computed(()=>`prosix_reviews_${product.value.id}`)
+const loadReviews=()=>{try{allReviews.value=JSON.parse(localStorage.getItem(reviewKey.value)||'[]')}catch{allReviews.value=[]}}
+const saveReviews=()=>{try{localStorage.setItem(reviewKey.value,JSON.stringify(allReviews.value))}catch{}}
+const avgRatingRaw=computed(()=>!allReviews.value.length?0:allReviews.value.reduce((s,r)=>s+r.stars,0)/allReviews.value.length)
+const avgRating=computed(()=>avgRatingRaw.value?avgRatingRaw.value.toFixed(1):'0.0')
+const computedBars=computed(()=>[5,4,3,2,1].map(star=>{const count=allReviews.value.filter(r=>r.stars===star).length;return{star,count,pct:allReviews.value.length?Math.round(count/allReviews.value.length*100):0}}))
+const submitReview=()=>{
+  if(!newReview.value.stars){showToast('⭐ Please select a rating!');return}
+  if(!newReview.value.name.trim()){showToast('📝 Please enter your name!');return}
+  if(!newReview.value.text.trim()){showToast('💬 Please write your review!');return}
+  submitting.value=true
+  setTimeout(()=>{
+    if(editingReviewId.value){const idx=allReviews.value.findIndex(r=>r.id===editingReviewId.value);if(idx!==-1)allReviews.value[idx]={...allReviews.value[idx],...newReview.value};editingReviewId.value=null;showToast('✅ Review updated!')}
+    else{allReviews.value.unshift({id:Date.now(),name:newReview.value.name.trim(),title:newReview.value.title.trim(),date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),stars:newReview.value.stars,text:newReview.value.text.trim()});showToast('✅ Review submitted!')}
+    saveReviews();newReview.value={stars:0,name:'',title:'',text:''};hoverStar.value=0;submitting.value=false
+  },400)
 }
+const startEdit=(r)=>{editingReviewId.value=r.id;newReview.value={stars:r.stars,name:r.name,title:r.title||'',text:r.text};nextTick(()=>tabsRef.value?.scrollIntoView({behavior:'smooth',block:'start'}))}
+const cancelEdit=()=>{editingReviewId.value=null;newReview.value={stars:0,name:'',title:'',text:''};hoverStar.value=0}
+const deleteReview=(id)=>{if(!confirm('Delete?')) return;allReviews.value=allReviews.value.filter(r=>r.id!==id);saveReviews();showToast('🗑️ Review deleted.')}
 
-const quantity     = ref(1)
-const incrementQty = () => {
-  if (qtyMax.value !== null && quantity.value >= qtyMax.value) { showToast(`⚠️ Only ${qtyMax.value} in stock!`); return }
-  quantity.value++
-}
-const decrementQty = () => { if (quantity.value > 1) quantity.value-- }
+const relatedItems=ref([]),relatedLoading=ref(false),relatedPage=ref(0),perPage=5,previewProductId=ref(null)
+const paginatedRelated=computed(()=>relatedItems.value.slice(relatedPage.value*perPage,relatedPage.value*perPage+perPage))
+const totalPages=computed(()=>Math.ceil(relatedItems.value.length/perPage))
+const prevSlide=()=>{if(relatedPage.value>0) relatedPage.value--}
+const nextSlide=()=>{if(relatedPage.value<totalPages.value-1) relatedPage.value++}
 
-// Tabs
-const activeTab = ref('description')
-const tabs = [
-  { id: 'description', label: 'Description' },
-  { id: 'sizechart',   label: 'Size Chart'  },
-  { id: 'shipping',    label: 'Shipping & Returns' },
-  { id: 'reviews',     label: 'Reviews' },
-]
-const openTab = (id) => {
-  activeTab.value = id
-  nextTick(() => tabsRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-}
-
-// Reviews
-const allReviews      = ref([])
-const hoverStar       = ref(0)
-const submitting      = ref(false)
-const editingReviewId = ref(null)
-const starLabels      = { 1:'Poor', 2:'Fair', 3:'Good', 4:'Very Good', 5:'Excellent' }
-const newReview       = ref({ stars: 0, name: '', title: '', text: '' })
-const reviewKey       = computed(() => `prosix_reviews_${product.value.id}`)
-const loadReviews     = () => { try { allReviews.value = JSON.parse(localStorage.getItem(reviewKey.value) || '[]') } catch { allReviews.value = [] } }
-const saveReviews     = () => { try { localStorage.setItem(reviewKey.value, JSON.stringify(allReviews.value)) } catch {} }
-const avgRatingRaw    = computed(() => !allReviews.value.length ? 0 : allReviews.value.reduce((s,r)=>s+r.stars,0)/allReviews.value.length)
-const avgRating       = computed(() => avgRatingRaw.value ? avgRatingRaw.value.toFixed(1) : '0.0')
-const computedBars    = computed(() => [5,4,3,2,1].map(star => { const count=allReviews.value.filter(r=>r.stars===star).length; return { star, count, pct: allReviews.value.length ? Math.round(count/allReviews.value.length*100) : 0 } }))
-
-const submitReview = () => {
-  if (!newReview.value.stars)       { showToast('⭐ Please select a rating!'); return }
-  if (!newReview.value.name.trim()) { showToast('📝 Please enter your name!'); return }
-  if (!newReview.value.text.trim()) { showToast('💬 Please write your review!'); return }
-  submitting.value = true
-  setTimeout(() => {
-    if (editingReviewId.value) {
-      const idx = allReviews.value.findIndex(r=>r.id===editingReviewId.value)
-      if (idx!==-1) allReviews.value[idx] = { ...allReviews.value[idx], ...newReview.value }
-      editingReviewId.value = null; showToast('✅ Review updated!')
-    } else {
-      allReviews.value.unshift({ id: Date.now(), name: newReview.value.name.trim(), title: newReview.value.title.trim(), date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), stars: newReview.value.stars, text: newReview.value.text.trim() })
-      showToast('✅ Review submitted!')
-    }
-    saveReviews(); newReview.value={stars:0,name:'',title:'',text:''}; hoverStar.value=0; submitting.value=false
-  }, 400)
-}
-const startEdit    = (r) => { editingReviewId.value=r.id; newReview.value={stars:r.stars,name:r.name,title:r.title||'',text:r.text}; nextTick(()=>tabsRef.value?.scrollIntoView({behavior:'smooth',block:'start'})) }
-const cancelEdit   = () => { editingReviewId.value=null; newReview.value={stars:0,name:'',title:'',text:''}; hoverStar.value=0 }
-const deleteReview = (id) => { if(!confirm('Delete?')) return; allReviews.value=allReviews.value.filter(r=>r.id!==id); saveReviews(); showToast('🗑️ Review deleted.') }
-
-// ✅ RELATED — same category/subcategory ke sab products
-const relatedItems   = ref([])
-const relatedLoading = ref(false)
-const relatedPage    = ref(0)
-const perPage        = 5
-const previewProductId = ref(null)
-
-const paginatedRelated = computed(() =>
-  relatedItems.value.slice(relatedPage.value * perPage, relatedPage.value * perPage + perPage)
-)
-const totalPages = computed(() => Math.ceil(relatedItems.value.length / perPage))
-const prevSlide  = () => { if (relatedPage.value > 0) relatedPage.value-- }
-const nextSlide  = () => { if (relatedPage.value < totalPages.value - 1) relatedPage.value++ }
-
-const toastVisible = ref(false)
-const toastText    = ref('')
+const toastVisible=ref(false),toastText=ref('')
 let toastTimer
-const showToast = (msg) => {
-  toastText.value = msg; toastVisible.value = true
-  clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => { toastVisible.value = false }, 2800)
-}
+const showToast=(msg)=>{toastText.value=msg;toastVisible.value=true;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toastVisible.value=false},2800)}
+const formatPrice=(p)=>{if(typeof p==='string') return parseFloat(p.replace(/[^0-9.]/g,''))||0;return Number(p)||0}
 
-const formatPrice = (p) => {
-  if (typeof p === 'string') return parseFloat(p.replace(/[^0-9.]/g,'')) || 0
-  return Number(p) || 0
-}
-
-// Load product
-const loadProduct = async () => {
-  const type = route.query.type
-  if (type === 'model') {
-    try {
-      const res = await axios.get(`/api/models/${route.params.id}/product`)
-      const m = res.data
-      isModel.value = true
-      product.value = {
-        id: m.id, name: m.name || m.title, type: 'Custom Model', price: m.price || 0,
-        description: m.description || '',
-        image: m.thumbnail || m.views?.front?.svg_url || '',
-        is_new: false,
-        in_stock: m.in_stock ?? true,
-        stock_quantity: m.stock_quantity ?? null,
-        shipping_enabled: m.shipping_enabled ?? false,
-        shipping_cost: m.shipping_cost ?? 0,
-        free_shipping_above: m.free_shipping_above ?? null,
-        sizes: m.sizes || [],
-        views: m.views || {},
-        colors: m.colors_data || [],
-        gallery_images: [],
-        size_chart_image: m.size_chart_image || null,
-        category_id: m.category_id || null,
-        subcategory_id: m.subcategory_id || null,
-        thumbnail: m.thumbnail || null,
-      }
-      nextTick(() => loadReviews())
-    } catch (err) { console.error('Model load error:', err) }
-  } else {
-    try {
-      const res = await axios.get(`/api/products/${route.params.id}`)
-      isModel.value = false
-      product.value = res.data
-      selectedColorIdx.value = -1
-      activeThumbIdx.value   = 0
-      nextTick(() => loadReviews())
-    } catch (err) { console.error('Product load error:', err) }
+const loadProduct=async()=>{
+  const type=route.query.type
+  if(type==='model'){
+    try{
+      const res=await axios.get(`/api/models/${route.params.id}/product`),m=res.data
+      isModel.value=true
+      product.value={id:m.id,name:m.name||m.title,type:'Custom Model',price:m.price||0,description:m.description||'',image:m.thumbnail||m.views?.front?.svg_url||'',is_new:false,in_stock:m.in_stock??true,stock_quantity:m.stock_quantity??null,shipping_enabled:m.shipping_enabled??false,shipping_cost:m.shipping_cost??0,free_shipping_above:m.free_shipping_above??null,sizes:m.sizes||[],views:m.views||{},colors:m.colors_data||[],gallery_images:[],size_chart_image:m.size_chart_image||null,category_id:m.category_id||null,subcategory_id:m.subcategory_id||null,thumbnail:m.thumbnail||null,model_name:m.model_name||null}
+      nextTick(()=>loadReviews())
+    }catch(err){console.error('Model load error:',err)}
+  }else{
+    try{
+      const res=await axios.get(`/api/products/${route.params.id}`)
+      isModel.value=false;product.value=res.data;selectedColorIdx.value=-1;activeThumbIdx.value=0
+      nextTick(()=>loadReviews())
+    }catch(err){console.error('Product load error:',err)}
   }
 }
 
-// ✅ FETCH RELATED — same category/subcategory ke sab products
-const fetchRelated = async () => {
-  relatedLoading.value = true
-  relatedItems.value = []
-
-  try {
-    if (isModel.value) {
-      const currentId = product.value.id
-      let models = []
-
-      const subId = product.value.subcategory_id
-      const catId = product.value.category_id
-
-      // Step 1: subcategory models
-      if (subId) {
-        try {
-          const r = await axios.get(`/api/subcategories/${subId}/models`)
-          models = r.data?.models || r.data || []
-        } catch {}
+const fetchRelated=async()=>{
+  relatedLoading.value=true;relatedItems.value=[]
+  try{
+    if(isModel.value){
+      const currentId=product.value.id;let models=[]
+      const subId=product.value.subcategory_id,catId=product.value.category_id
+      if(subId){try{const r=await axios.get(`/api/subcategories/${subId}/models`);models=r.data?.models||r.data||[]}catch{}}
+      if(!models.length&&catId){try{const r=await axios.get(`/api/categories/${catId}/models`);models=r.data?.models||r.data||[]}catch{}}
+      if(!models.length){try{const r=await axios.get('/api/models');models=r.data?.models||r.data||[]}catch{}}
+      relatedItems.value=models.filter(m=>String(m.id)!==String(currentId))
+      // Build colored SVGs for related models if design applied
+      if(appliedPreview.value.hasDesign){
+        await buildRelatedColoredSvgs(relatedItems.value)
       }
-
-      // Step 2: category models
-      if (!models.length && catId) {
-        try {
-          const r = await axios.get(`/api/categories/${catId}/models`)
-          models = r.data?.models || r.data || []
-        } catch {}
-      }
-
-      // Step 3: all models fallback
-      if (!models.length) {
-        try {
-          const r = await axios.get('/api/models')
-          models = r.data?.models || r.data || []
-        } catch {}
-      }
-
-      // Step 4: last fallback
-      if (!models.length) {
-        try {
-          const r = await axios.get('/api/products?type=model')
-          models = r.data?.models || r.data || []
-        } catch {}
-      }
-
-      relatedItems.value = models.filter(m => String(m.id) !== String(currentId))
-    } else {
-      const currentId = product.value.id
-      let products = []
-
-      const subId = product.value.subcategory_id
-      const catId = product.value.category_id
-
-      // Step 1: pehle same subcategory ke products lao
-      if (subId) {
-        try {
-          const r = await axios.get(`/api/subcategories/${subId}/products`)
-          products = r.data?.products || r.data || []
-        } catch {}
-      }
-
-      // Step 2: agar subcategory se kuch na mile to same category ke products lao
-      if (!products.length && catId) {
-        try {
-          const r = await axios.get(`/api/categories/${catId}/products`)
-          products = r.data?.products || r.data || []
-        } catch {}
-      }
-
-      // Step 3: fallback all products
-      if (!products.length) {
-        try {
-          const r = await axios.get('/api/products')
-          products = r.data?.products || r.data || []
-        } catch {}
-      }
-
-      // Step 4: sirf normal products rakho, current product hata do
-      relatedItems.value = products.filter(p =>
-        String(p.id) !== String(currentId) &&
-        !p.views &&                          // model na ho
-        p.type !== 'model'
-      )
+    }else{
+      const currentId=product.value.id;let products=[]
+      const subId=product.value.subcategory_id,catId=product.value.category_id
+      if(subId){try{const r=await axios.get(`/api/subcategories/${subId}/products`);products=r.data?.products||r.data||[]}catch{}}
+      if(!products.length&&catId){try{const r=await axios.get(`/api/categories/${catId}/products`);products=r.data?.products||r.data||[]}catch{}}
+      if(!products.length){try{const r=await axios.get('/api/products');products=r.data?.products||r.data||[]}catch{}}
+      relatedItems.value=products.filter(p=>String(p.id)!==String(currentId)&&!p.views&&p.type!=='model')
     }
-  } catch (err) {
-    console.error('Related fetch error:', err)
-  }
-
-  relatedLoading.value = false
+  }catch(err){console.error('Related fetch error:',err)}
+  relatedLoading.value=false
 }
 
-const toggleLike  = () => { cartStore.toggleLike(product.value.id); showToast(cartStore.isLiked(product.value.id) ? '❤️ Added to wishlist!' : '🤍 Removed from wishlist') }
-const handleShare = () => {
-  if (navigator.share) navigator.share({ title: product.value.name, url: window.location.href })
-  else { navigator.clipboard.writeText(window.location.href); showToast('🔗 Link copied!') }
-}
+const toggleLike=()=>{cartStore.toggleLike(product.value.id);showToast(cartStore.isLiked(product.value.id)?'❤️ Added to wishlist!':'🤍 Removed from wishlist')}
+const handleShare=()=>{if(navigator.share) navigator.share({title:product.value.name,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);showToast('🔗 Link copied!')}}
 
-const addToCart = () => {
-  if (!effectiveSize.value)  { showToast('⚠️ Please select a size!'); return }
-  if (!stockAvailable.value) { showToast('❌ Out of stock!'); return }
-  const cartItem = {
-    ...product.value,
-    image: displayImage.value || product.value.image,
-    shipping_enabled:    product.value.shipping_enabled    ?? false,
-    shipping_cost:       product.value.shipping_cost       ?? 0,
-    free_shipping_above: product.value.free_shipping_above ?? null,
-    stock_quantity:      product.value.stock_quantity      ?? null,
+const addToCart=()=>{
+  if(!effectiveSize.value){showToast('⚠️ Please select a size!');return}
+  if(!stockAvailable.value){showToast('❌ Out of stock!');return}
+  let cartImage=displayImage.value||product.value.image
+  if(isModel.value&&appliedPreview.value.hasDesign&&coloredSvgCache.value['front']){
+    cartImage=coloredSvgCache.value['front']
   }
-  cartStore.addToCart(cartItem, effectiveSize.value, quantity.value)
+  const cartItem={...product.value,image:cartImage,shipping_enabled:product.value.shipping_enabled??false,shipping_cost:product.value.shipping_cost??0,free_shipping_above:product.value.free_shipping_above??null,stock_quantity:product.value.stock_quantity??null,appliedDesign:appliedPreview.value.hasDesign?{name:appliedPreview.value.name,colors:appliedPreview.value.colors,coloredImage:coloredSvgCache.value['front']||null}:null}
+  cartStore.addToCart(cartItem,effectiveSize.value,quantity.value)
   showToast(`🛒 ${quantity.value}× (${effectiveSize.value}) added!`)
-  quantity.value = 1
+  quantity.value=1
 }
 
-const resetState = () => {
-  selectedSize.value=''; customSizeVal.value=''; customSizeOk.value=false
-  quantity.value=1; relatedPage.value=0; activeTab.value='description'
-  selectedColorIdx.value=-1; activeThumbIdx.value=0
-  editingReviewId.value=null; newReview.value={stars:0,name:'',title:'',text:''}
-  previewProductId.value=null; zoomActive.value=false
+const resetState=()=>{
+  selectedSize.value='';customSizeVal.value='';customSizeOk.value=false
+  quantity.value=1;relatedPage.value=0;activeTab.value='description'
+  selectedColorIdx.value=-1;activeThumbIdx.value=0
+  editingReviewId.value=null;newReview.value={stars:0,name:'',title:'',text:''}
+  previewProductId.value=null;zoomActive.value=false
+  coloredSvgCache.value={};relatedColoredCache.value={}
+  appliedPreview.value={hasDesign:false,name:'',colors:[],targetModelName:'all'}
 }
 
-onMounted(async () => {
+onMounted(async()=>{
   await loadProduct()
+  // Restore design state BEFORE fetchRelated so related also gets colored
+  if(isModel.value&&product.value.category_id){
+    restoreCategoryPreviewState(product.value.category_id)
+  }
   await fetchRelated()
+  if(isModel.value&&appliedPreview.value.hasDesign){
+    await buildAllViewColoredSvgs()
+  }
 })
 
-watch(() => route.params.id, async (newId) => {
-  if (!newId) return
+watch(()=>route.params.id,async(newId)=>{
+  if(!newId) return
   resetState()
   await loadProduct()
+  if(isModel.value&&product.value.category_id){
+    restoreCategoryPreviewState(product.value.category_id)
+  }
   await fetchRelated()
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  if(isModel.value&&appliedPreview.value.hasDesign){
+    await buildAllViewColoredSvgs()
+  }
+  window.scrollTo({top:0,behavior:'smooth'})
 })
 </script>
 
@@ -845,8 +888,6 @@ watch(() => route.params.id, async (newId) => {
 .product-container{max-width:1400px;margin:0 auto;padding:0 32px 80px}
 .product-layout{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-bottom:80px;padding-top:24px}
 @media(max-width:968px){.product-layout{grid-template-columns:1fr;gap:36px}}
-
-/* Gallery */
 .product-visual{position:sticky;top:90px;height:fit-content}
 .gallery-wrap{display:flex;gap:10px}
 .thumbnails{display:flex;flex-direction:column;gap:8px;width:80px}
@@ -859,8 +900,6 @@ watch(() => route.params.id, async (newId) => {
 .thumb-svg{z-index:1}
 .thumb-white{z-index:2;mix-blend-mode:multiply}
 .thumb-black{z-index:3;mix-blend-mode:screen}
-
-/* Main image */
 .main-image-wrapper{flex:1;position:relative;background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center}
 .main-product-image{width:100%;height:100%;object-fit:contain;padding:16px;transition:opacity .15s}
 .main-product-image.zoomed-hidden{opacity:0}
@@ -870,9 +909,7 @@ watch(() => route.params.id, async (newId) => {
 .layer-svg{z-index:1}
 .layer-white{z-index:2;mix-blend-mode:multiply}
 .layer-black{z-index:3;mix-blend-mode:screen}
-
-/* ✅ ZOOM OVERLAY — active thumb ka exact content zoom karo */
-.zoom-overlay{position:absolute;inset:0;overflow:hidden;z-index:5;border-radius:10px;background:#fff;cursor:crosshair; pointer-events: none;}
+.zoom-overlay{position:absolute;inset:0;overflow:hidden;z-index:5;border-radius:10px;background:#fff;cursor:crosshair;pointer-events:none}
 .zoom-layer{position:absolute;top:50%;left:50%;width:100%;height:100%;object-fit:contain;padding:16px;transition:transform-origin .05s}
 .zoom-svg{z-index:1;transform-origin:50% 50%}
 .zoom-white{z-index:2;mix-blend-mode:multiply;transform-origin:50% 50%}
@@ -886,8 +923,6 @@ watch(() => route.params.id, async (newId) => {
 .img-fade-enter-active,.img-fade-leave-active{transition:opacity .2s ease,transform .2s ease}
 .img-fade-enter-from{opacity:0;transform:scale(.97)}
 .img-fade-leave-to{opacity:0;transform:scale(1.02)}
-
-/* Product info */
 .product-info{padding-top:8px}
 .product-title{font-size:clamp(24px,3vw,34px);font-weight:800;line-height:1.2;margin-bottom:8px}
 .product-subtitle{font-size:clamp(13px,1.5vw,16px);color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}
@@ -944,8 +979,6 @@ watch(() => route.params.id, async (newId) => {
 .feature-item i{font-size:22px;color:#000;margin-top:2px;flex-shrink:0}
 .feature-item strong{display:block;font-size:clamp(13px,1.3vw,15px);font-weight:700;margin-bottom:3px}
 .feature-item p{font-size:clamp(12px,1.2vw,14px);color:#777;margin:0}
-
-/* Tabs */
 .tabs-section{border-top:2px solid #e8e8e8;margin-bottom:70px}
 .tabs-nav{display:flex;border-bottom:1px solid #e8e8e8;overflow-x:auto}
 .tab-btn{padding:18px 28px;background:none;border:none;font-size:clamp(14px,1.4vw,16px);font-weight:600;cursor:pointer;color:#888;border-bottom:3px solid transparent;margin-bottom:-1px;transition:.2s;font-family:inherit;white-space:nowrap}
@@ -1024,8 +1057,6 @@ watch(() => route.params.id, async (newId) => {
 .review-action-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.2s}
 .edit-btn:hover{background:#000;color:#fff;border-color:#000}
 .delete-btn:hover{background:#e53e3e;color:#fff;border-color:#e53e3e}
-
-/* Related */
 .related-section{padding-top:58px;border-top:1px solid #e8e8e8}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
 .section-header h2{font-size:clamp(20px,2.2vw,26px);font-weight:800}
@@ -1041,21 +1072,14 @@ watch(() => route.params.id, async (newId) => {
 .model-rel-card:hover,.model-rel-card.card-active{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.15);border-color:#000}
 .model-rel-img{height:190px;background:#f8f9fa;position:relative;overflow:hidden}
 .model-rel-thumb{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-height:90%;max-width:90%;object-fit:contain}
+/* Related model layered composite */
+.model-rel-layer{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:contain;padding:6px}
+.rel-svg{z-index:1}
+.rel-white{z-index:2;mix-blend-mode:multiply}
+.rel-black{z-index:3;mix-blend-mode:screen}
 .model-rel-body{padding:12px 14px}
 .model-rel-title{font-size:clamp(13px,1.4vw,15px);font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .model-rel-price{font-size:clamp(14px,1.5vw,16px);font-weight:800}
-.product-card-link{text-decoration:none;color:inherit;display:block;cursor:pointer}
-.product-card{border:1px solid #ebebeb;border-radius:8px;overflow:hidden;transition:.3s;background:#fff}
-.product-card:hover,.product-card.card-active{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.15);border-color:#000}
-.card-image{position:relative;aspect-ratio:3/4;background:#fafafa;overflow:hidden}
-.card-image img{width:100%;height:100%;object-fit:contain;padding:8px;transition:.4s}
-.product-card:hover .card-image img{transform:scale(1.06)}
-.card-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:.3s}
-.product-card:hover .card-overlay{opacity:1}
-.quick-view-btn{background:#fff;color:#000;padding:8px 18px;border-radius:3px;font-size:clamp(12px,1.3vw,14px);font-weight:700}
-.card-content{padding:12px 14px}
-.card-title{font-size:clamp(13px,1.4vw,15px);font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-price{font-size:clamp(14px,1.5vw,16px);font-weight:800}
 .slider-dots{display:flex;justify-content:center;gap:7px;margin-top:18px}
 .dot{width:9px;height:9px;border-radius:50%;background:#ddd;border:none;cursor:pointer;transition:.2s;padding:0}
 .dot.active{background:#000;transform:scale(1.2)}

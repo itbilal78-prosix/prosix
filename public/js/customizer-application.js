@@ -421,69 +421,197 @@
     // =================== CONFIRM ADD APPLICATION ===================
     // ============================================================
 
-    window.confirmAddApplication = function () {
-        if (!window.selectedApplicationPart) { alert('Please select a part!'); return; }
+//     window.confirmAddApplication = function () {
+//         if (!window.selectedApplicationPart) { alert('Please select a part!'); return; }
 
-        const view = window.selectedApplicationView;
-        const partId = window.selectedApplicationPart;
+//         const view = window.selectedApplicationView;
+//         const partId = window.selectedApplicationPart;
 
-        if (window.selectedApplicationType === 'mascot') {
-            const layerId = 'app-' + Date.now();
-            const layer = {
-                id: layerId, type: 'direct-mascot', view, partId,
-                mascotSvg: null, mascotId: null,
-                x: 0, y: 0, rotation: 0,
-                flipX: 1, flipY: 1, _flipState: 0,
-                mascotScaleX: 1, mascotScaleY: 1, mascotOpacity: 100
-            };
-            if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
-            if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
-            window.applicationsApplied[view][partId].push(layer);
-            window.currentApplicationLayer = layerId;
-            updateApplicationLayersList();
-            openApplicationsSidebar();
-            if (window.saveCustomizations) window.saveCustomizations();
-            const appModal = document.getElementById('applicationModal');
-            if (appModal) appModal.style.display = 'none';
-            setTimeout(function () {
-                if (typeof window.openMascotSelectModal === 'function') {
+//         if (window.selectedApplicationType === 'mascot') {
+//             const layerId = 'app-' + Date.now();
+//           const layer = {
+//     id: layerId,
+//     type: 'direct-mascot',
+//     view,
+//     partId,
+//     mascotSvg: null,
+//     mascotId: null,
 
-                    window.openMascotSelectModal(layerId);
-                } else {
-                    alert('Mascot modal did not load. Please reload the page');
-                }
-            }, 250);
-            return;
-        }
+//     _colorMap: {},
+//     _detectedColors: [],
 
+//     x: 0,
+//     y: 0,
+//     rotation: 0,
+//     flipX: 1,
+//     flipY: 1,
+//     _flipState: 0,
+//     mascotScaleX: 1,
+//     mascotScaleY: 1,
+//     mascotOpacity: 100
+// };
+//             if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+//             if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+//             window.applicationsApplied[view][partId].push(layer);
+//             window.currentApplicationLayer = layerId;
+//             updateApplicationLayersList();
+//             openApplicationsSidebar();
+//             if (window.saveCustomizations) window.saveCustomizations();
+//             const appModal = document.getElementById('applicationModal');
+//             if (appModal) appModal.style.display = 'none';
+//             setTimeout(function () {
+//                 if (typeof window.openMascotSelectModal === 'function') {
+
+//                     window.openMascotSelectModal(layerId);
+//                 } else {
+//                     alert('Mascot modal did not load. Please reload the page');
+//                 }
+//             }, 250);
+//             return;
+//         }
+
+//         const layerId = 'app-' + Date.now();
+//         let defaultText = '00';
+//         if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
+//         if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
+//         const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
+//         const layer = {
+//             id: layerId, type: window.selectedApplicationType, view, partId,
+//             text: defaultText, fontSize: 500,
+//             fontFamily: window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
+//             fill: globalColors[0] || '#FFFFFF', stroke: globalColors[1] || '#000000',
+//             x: 0, y: 0, rotation: 0,
+//             flipX: 1, flipY: 1, _flipState: 0,
+//             scaleX: 1, scaleY: 1,
+//             outlineStyle: window.currentOutlineStyle,
+//             outlineColors: { ...window.outlineColors }
+//         };
+//         if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+//         if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+//         window.applicationsApplied[view][partId].push(layer);
+//         console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied, null, 2));
+//         addApplicationToSvg(layer);
+//         updateApplicationLayersList();
+//         closeApplicationModal();
+//         openApplicationsSidebar();
+//         selectApplicationLayer(layerId);
+//         if (window.saveCustomizations) window.saveCustomizations();
+//     };
+window.confirmAddApplication = function () {
+    if (!window.selectedApplicationPart) {
+        alert('Please select a part!');
+        return;
+    }
+
+    const view = window.selectedApplicationView;
+    const partId = window.selectedApplicationPart;
+
+    // ✅ Array fix - agar galti se array ban gaya ho toh object banao
+    if (!window.applicationsApplied[view] || Array.isArray(window.applicationsApplied[view])) {
+        window.applicationsApplied[view] = {};
+    }
+    if (!window.applicationsApplied[view][partId] || !Array.isArray(window.applicationsApplied[view][partId])) {
+        window.applicationsApplied[view][partId] = [];
+    }
+
+    // ✅ MASCOT TYPE
+    if (window.selectedApplicationType === 'mascot') {
         const layerId = 'app-' + Date.now();
-        let defaultText = '00';
-        if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
-        if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
-        const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
         const layer = {
-            id: layerId, type: window.selectedApplicationType, view, partId,
-            text: defaultText, fontSize: 500,
-            fontFamily: window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
-            fill: globalColors[0] || '#FFFFFF', stroke: globalColors[1] || '#000000',
-            x: 0, y: 0, rotation: 0,
-            flipX: 1, flipY: 1, _flipState: 0,
-            scaleX: 1, scaleY: 1,
-            outlineStyle: window.currentOutlineStyle,
-            outlineColors: { ...window.outlineColors }
+            id: layerId,
+            type: 'direct-mascot',
+            view,
+            partId,
+            mascotSvg: null,
+            mascotId: null,
+            _colorMap: {},
+            _detectedColors: [],
+            x: 0,
+            y: 0,
+            rotation: 0,
+            flipX: 1,
+            flipY: 1,
+            _flipState: 0,
+            mascotScaleX: 1,
+            mascotScaleY: 1,
+            mascotOpacity: 100
         };
-        if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
-        if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+
         window.applicationsApplied[view][partId].push(layer);
-        console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied, null, 2));
-        addApplicationToSvg(layer);
+        window.currentApplicationLayer = layerId;
         updateApplicationLayersList();
-        closeApplicationModal();
         openApplicationsSidebar();
-        selectApplicationLayer(layerId);
+
         if (window.saveCustomizations) window.saveCustomizations();
+
+        const appModal = document.getElementById('applicationModal');
+        if (appModal) appModal.style.display = 'none';
+
+        setTimeout(function () {
+            if (typeof window.openMascotSelectModal === 'function') {
+                window.openMascotSelectModal(layerId);
+            } else {
+                alert('Mascot modal did not load. Please reload the page');
+            }
+        }, 250);
+        return;
+    }
+
+    // ✅ TEXT TYPE (number / teamname / playername)
+    const layerId = 'app-' + Date.now();
+
+    let defaultText = '00';
+    if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
+    if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
+
+    const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
+
+    // ✅ Bbox save karo
+    const partElForBbox = window.getMainSvg()?.querySelector(`#${partId}`);
+    let savedBbox = null;
+    if (partElForBbox) {
+        try {
+            const bb = partElForBbox.getBBox();
+            savedBbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
+        } catch(e) {}
+    }
+
+    const layer = {
+        id: layerId,
+        type: window.selectedApplicationType,
+        view,
+        partId,
+        text: defaultText,
+        fontSize: 500,
+        fontFamily: window.backendFonts?.[0] ? 'font_' + window.backendFonts[0].id : 'Arial Black',
+        fill: globalColors[0] || '#FFFFFF',
+        stroke: globalColors[1] || '#000000',
+        strokeWidth: 5,
+        x: 0,
+        y: 0,
+        rotation: 0,
+        flipX: 1,
+        flipY: 1,
+        _flipState: 0,
+        scaleX: 1,
+        scaleY: 1,
+        outlineStyle: window.currentOutlineStyle,
+        outlineColors: { ...window.outlineColors },
+        _savedBbox: savedBbox
     };
 
+    window.applicationsApplied[view][partId].push(layer);
+
+    console.log('AFTER ADD APPLICATION =', JSON.stringify(window.applicationsApplied, null, 2));
+
+    addApplicationToSvg(layer);
+    updateApplicationLayersList();
+    closeApplicationModal();
+    openApplicationsSidebar();
+    selectApplicationLayer(layerId);
+
+    if (window.saveCustomizations) window.saveCustomizations();
+};
     // ============================================================
     // ✅ FIX 2: addApplicationToSvg — POORA REPLACE KARO
     // ============================================================
@@ -698,7 +826,11 @@
         if (layer.mascotOpacity !== undefined) mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
 
         layerGroup.appendChild(mascotSvg);
-
+if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
+    setTimeout(function () {
+        _applyDirectMascotColorMap(layer);
+    }, 100);
+}
         layer.mascotSvg = svgContent;
         layer.mascotId = layerId;
         layer._cx = cx;

@@ -600,72 +600,73 @@ console.log('FILE A LOADED');
 
     // =================== CONFIRM ADD APPLICATION ===================
 
-    window.confirmAddApplication = function () {
-        if (!window.selectedApplicationPart) {
-            alert('Please select a part!');
-            return;
-        }
+    // window.confirmAddApplication = function () {
+    //     if (!window.selectedApplicationPart) {
+    //         alert('Please select a part!');
+    //         return;
+    //     }
 
-        let defaultText = '00';
-        if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
-        if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
-        if (window.selectedApplicationType === 'mascot') defaultText = '🦅';
+    //     let defaultText = '00';
+    //     if (window.selectedApplicationType === 'teamname') defaultText = 'TEAM';
+    //     if (window.selectedApplicationType === 'playername') defaultText = 'PLAYER';
+    //     if (window.selectedApplicationType === 'mascot') defaultText = '🦅';
 
-        const layerId = `app-${Date.now()}`;
-        const view = window.selectedApplicationView;
-        const partId = window.selectedApplicationPart;
+    //     const layerId = `app-${Date.now()}`;
+    //     const view = window.selectedApplicationView;
+    //     const partId = window.selectedApplicationPart;
 
-        const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
+    //     const globalColors = window.selectedColors || ['#FFFFFF', '#000000'];
 
-        // ✅ Pehle bbox save karo
-        const partElForBbox = window.getMainSvg()?.querySelector(`#${partId}`);
-        let savedBbox = null;
-        if (partElForBbox) {
-            const bb = partElForBbox.getBBox();
-            savedBbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
-        }
+    //     // ✅ Pehle bbox save karo
+    //     const partElForBbox = window.getMainSvg()?.querySelector(`#${partId}`);
+    //     let savedBbox = null;
+    //     if (partElForBbox) {
+    //         const bb = partElForBbox.getBBox();
+    //         savedBbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
+    //     }
 
-        const layer = {
-            id: layerId,
-            type: window.selectedApplicationType,
-            view: view,
-            partId: partId,
-            text: defaultText,
-            fontSize: 2000,
-            fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
-            fill: globalColors[0] || '#FFFFFF',
-            stroke: globalColors[1] || '#000000',
-            strokeWidth: 5,
-            x: 0,
-            y: 0,
-            rotation: 0,
-            outlineStyle: window.currentOutlineStyle,
-            outlineColors: { ...window.outlineColors },
-            _savedBbox: savedBbox  // ✅ Bbox save ho gaya
-        };
+    //     const layer = {
+    //         id: layerId,
+    //         type: window.selectedApplicationType,
+    //         view: view,
+    //         partId: partId,
+    //         text: defaultText,
+    //         fontSize: 2000,
+    //         fontFamily: window.backendFonts?.[0] ? `font_${window.backendFonts[0].id}` : 'Arial Black',
+    //         fill: globalColors[0] || '#FFFFFF',
+    //         stroke: globalColors[1] || '#000000',
+    //         strokeWidth: 5,
+    //         x: 0,
+    //         y: 0,
+    //         rotation: 0,
+    //         outlineStyle: window.currentOutlineStyle,
+    //         outlineColors: { ...window.outlineColors },
+    //         _savedBbox: savedBbox  // ✅ Bbox save ho gaya
+    //     };
 
-        if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
-        if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
+    //     if (!window.applicationsApplied[view]) window.applicationsApplied[view] = {};
+    //     if (!window.applicationsApplied[view][partId]) window.applicationsApplied[view][partId] = [];
 
-        window.applicationsApplied[view][partId].push(layer);
+    //     window.applicationsApplied[view][partId].push(layer);
 
-        addApplicationToSvg(layer);
-        updateApplicationLayersList();
-        closeApplicationModal();
-        openApplicationsSidebar();
-        selectApplicationLayer(layerId);
+    //     addApplicationToSvg(layer);
+    //     updateApplicationLayersList();
+    //     closeApplicationModal();
+    //     openApplicationsSidebar();
+    //     selectApplicationLayer(layerId);
 
-        if (window.saveCustomizations) window.saveCustomizations();
+    //     if (window.saveCustomizations) window.saveCustomizations();
 
-        console.log('✅ Application added:', layer);
-    };
-
-    // =================== ADD TO SVG ===================
+    //     console.log('✅ Application added:', layer);
+    // };
 
 
 
 
-    // =================== MAKE DRAGGABLE ===================
+
+
+
+    // ==== ====== ===== ==== MAKE DRAGGABLE ==== ===== ===== =====
 
     window.makeDraggable = function (element, layer) {
         let isDragging = false;
