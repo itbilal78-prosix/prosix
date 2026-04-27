@@ -3574,58 +3574,232 @@ window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle =
 
     });
 
-    // ================= DOWNLOAD WITH SMART SIZING =================
-    document.addEventListener('click', async function (e) {
-        if (e.target.id !== 'downloadAllViews') return;
+  // ============================================================
+// DOWNLOAD FIX v6 — No view labels below images
+// ============================================================
 
-        const btn = e.target;
-        btn.disabled = true;
-        btn.textContent = 'Downloading...';
+document.addEventListener('click', async function (e) {
+    if (e.target.id !== 'downloadAllViews') return;
 
-        try {
-            const views = ['front', 'back', 'left', 'right'];
-            let downloaded = 0;
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
 
-            for (const view of views) {
+    try {
+        const views = ['front', 'back', 'left', 'right'];
+        const canvases = {};
 
-                // Get canvas from preview (already rendered)
-                const container = document.getElementById(`preview${view.charAt(0).toUpperCase() + view.slice(1)}`);
-                const previewImg = container?.querySelector('img');
-
-                if (!previewImg) {
-                    console.warn(`No preview for ${view}`);
-                    continue;
-                }
-
-                // Use the same canvas creation function
-                const canvas = await createMergedCanvas(view);
-
-                // Download as PNG (transparent background)
-                const dataUrl = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.download = `${view}-view.png`;
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                downloaded++;
-            }
-
-            if (downloaded > 0) {
-                alert(`✅ Downloaded ${downloaded} PNG files`);
+        for (const view of views) {
+            if (!modelViews[view]?.svg_url) {
+                const blank = document.createElement('canvas');
+                blank.width = 800; blank.height = 800;
+                const bCtx = blank.getContext('2d');
+                bCtx.fillStyle = '#eeeeee';
+                bCtx.fillRect(0, 0, 800, 800);
+                bCtx.fillStyle = '#aaaaaa';
+                bCtx.font = 'bold 36px Arial';
+                bCtx.textAlign = 'center';
+                bCtx.textBaseline = 'middle';
+                bCtx.fillText('No View', 400, 400);
+                canvases[view] = blank;
             } else {
-                alert("No valid previews to download");
+                canvases[view] = await createMergedCanvas(view);
+            }
+        }
+
+        const COLS     = 2;
+        const CELL_W   = 700;
+        const CELL_H   = 700;
+        const GAP      = 24;
+        const HEADER_H = 130;
+        const FOOTER_H = 54;
+        const PAD      = 40;
+
+        const totalW = PAD * 2 + CELL_W * COLS + GAP;
+        const totalH = HEADER_H + PAD + CELL_H * 2 + GAP + PAD + FOOTER_H;
+
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width  = totalW;
+        finalCanvas.height = totalH;
+        const ctx = finalCanvas.getContext('2d');
+
+        // White BG
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, totalW, totalH);
+
+        // Diagonal lines BG
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+        ctx.lineWidth = 1.2;
+        for (let i = -totalH; i < totalW + totalH; i += 28) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i + totalH, totalH);
+            ctx.stroke();
+        }
+        ctx.restore();
+
+        // Header
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, totalW, HEADER_H);
+        ctx.fillStyle = '#C9A84C';
+        ctx.fillRect(0, 0, totalW, 6);
+        ctx.fillStyle = '#C9A84C';
+        ctx.fillRect(0, HEADER_H - 4, totalW, 4);
+
+        function loadImg(src) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload  = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
+
+        const logoImg = await loadImg('/assets/images/PROSIX SPORTS LOGO PNG WHITE.png');
+
+        if (logoImg) {
+            const logoH = 70;
+            const logoW = (logoImg.width / logoImg.height) * logoH;
+            ctx.drawImage(logoImg, PAD, (HEADER_H - logoH) / 2 + 2, logoW, logoH);
+            const divX = PAD + logoW + 28;
+            ctx.strokeStyle = '#C9A84C';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(divX, 20);
+            ctx.lineTo(divX, HEADER_H - 20);
+            ctx.stroke();
+            const textX = divX + 24;
+            ctx.font = 'bold 26px Arial Black, Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('DESIGN PREVIEW', textX, HEADER_H / 2 - 12);
+            ctx.font = '13px Arial';
+            ctx.fillStyle = '#C9A84C';
+            ctx.fillText('DRAFT  —  NOT FOR PRODUCTION', textX, HEADER_H / 2 + 14);
+        } else {
+            ctx.fillStyle = '#C9A84C';
+            ctx.beginPath();
+            ctx.arc(PAD + 30, HEADER_H / 2, 28, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.font = 'bold italic 32px Georgia, serif';
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('P', PAD + 30, HEADER_H / 2 + 1);
+            ctx.font = 'bold 28px Arial Black, Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            ctx.fillText('PROSIX', PAD + 72, HEADER_H / 2 - 10);
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#C9A84C';
+            ctx.fillText('S  P  O  R  T  S', PAD + 74, HEADER_H / 2 + 14);
+            ctx.strokeStyle = '#C9A84C';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(PAD + 185, 22);
+            ctx.lineTo(PAD + 185, HEADER_H - 22);
+            ctx.stroke();
+            ctx.font = 'bold 26px Arial Black, Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            ctx.fillText('DESIGN PREVIEW', PAD + 205, HEADER_H / 2 - 12);
+            ctx.font = '13px Arial';
+            ctx.fillStyle = '#C9A84C';
+            ctx.fillText('DRAFT  —  NOT FOR PRODUCTION', PAD + 207, HEADER_H / 2 + 14);
+        }
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#888888';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(dateStr, totalW - PAD, HEADER_H / 2 - 10);
+        ctx.fillStyle = '#C9A84C';
+        ctx.fillText('www.prosix.com', totalW - PAD, HEADER_H / 2 + 10);
+
+        // View cells — NO labels at all
+        const viewOrder = ['front', 'back', 'left', 'right'];
+        viewOrder.forEach((view, idx) => {
+            const col   = idx % COLS;
+            const row   = Math.floor(idx / COLS);
+            const cellX = PAD + col * (CELL_W + GAP);
+            const cellY = HEADER_H + PAD + row * (CELL_H + GAP);
+
+            if (canvases[view]) {
+                const src   = canvases[view];
+                const scale = Math.min(CELL_W / src.width, CELL_H / src.height);
+                const dw    = src.width  * scale;
+                const dh    = src.height * scale;
+                const dx    = cellX + (CELL_W - dw) / 2;
+                const dy    = cellY + (CELL_H - dh) / 2;
+                ctx.drawImage(src, dx, dy, dw, dh);
             }
 
-        } catch (err) {
-            console.error('Download error:', err);
-            alert("Download failed: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Download All (PNG)';
+            // Thin col separator
+            if (col === 0) {
+                ctx.strokeStyle = 'rgba(0,0,0,0.07)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(cellX + CELL_W + GAP / 2, HEADER_H + PAD);
+                ctx.lineTo(cellX + CELL_W + GAP / 2, HEADER_H + PAD + CELL_H * 2 + GAP);
+                ctx.stroke();
+            }
+        });
+
+        // Footer
+        const footerY = totalH - FOOTER_H;
+        ctx.fillStyle = '#C9A84C';
+        ctx.fillRect(0, footerY, totalW, 3);
+        ctx.fillStyle = '#f7f7f7';
+        ctx.fillRect(0, footerY + 3, totalW, FOOTER_H - 3);
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#888888';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(
+            'Prosix Sports LLC  •  www.prosix.com  •  sales@prosix.com  •  929-210-4402  •  ALL RIGHTS RESERVED',
+            totalW / 2, footerY + 3 + (FOOTER_H - 3) / 2
+        );
+
+        // Watermark
+        ctx.save();
+        ctx.translate(totalW / 2, totalH / 2);
+        ctx.rotate(-Math.PI / 5.5);
+        ctx.globalAlpha = 0.13;
+        ctx.fillStyle = '#cc0000';
+        ctx.font = 'bold 260px Arial Black, Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('DRAFT', 0, -80);
+        ctx.font = 'bold 95px Arial Black, Arial';
+        ctx.fillText('NOT PURCHASED', 0, 130);
+        ctx.restore();
+
+        // Download
+        const dataUrl = finalCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `prosix-design-draft-${Date.now()}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        if (window.showSaveSuccessToast) {
+            window.showSaveSuccessToast('Downloaded!', 'Design sheet saved as PNG');
         }
-    });
+
+    } catch (err) {
+        console.error('Download error:', err);
+        alert('Download failed: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Download All (PNG)';
+    }
+});
     function rebuildGradient(svg, partId, data, view) {
 
         let defs = svg.querySelector('defs');
