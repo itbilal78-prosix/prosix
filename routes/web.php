@@ -292,6 +292,17 @@ Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']
 
 
 
+Route::get('/api/fonts', function() {
+    return \App\Models\Font::all()->map(function($font) {
+        return [
+            'id' => $font->id,
+            'name' => $font->name,
+            'file_url' => asset('storage/' . $font->file)
+        ];
+    });
+});
+
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

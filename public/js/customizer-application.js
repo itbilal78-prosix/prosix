@@ -252,34 +252,64 @@
     // =================== THREE COLOR OUTLINE ===================
     // ============================================================
 
-    window.createThreeColorOutline = function (textEl, layer, withShadow) {
-        const colors = layer.outlineColors;
-        const shadow = layer.shadowOffset ?? 3;
-        const stroke = layer.strokeWidth || 5;
-        const hasFill = layer.hasPattern || layer.hasMascot;
+ window.createThreeColorOutline = function (textEl, layer, withShadow) {
+    const colors = layer.outlineColors || {};
+    const shadow = layer.shadowOffset ?? 3;
+    const stroke1 = layer.strokeWidth || 5;
+    const stroke2 = layer.strokeWidth2 || (stroke1 * 2);
+    const hasFill = layer.hasPattern || layer.hasMascot;
 
-        const outer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        outer.setAttribute('data-outline-for', layer.id);
-        ['x', 'y', 'font-size', 'transform'].forEach(a => {
-            if (textEl.getAttribute(a)) outer.setAttribute(a, textEl.getAttribute(a));
-        });
-        outer.style.fontFamily = textEl.style.fontFamily;
-        outer.textContent = textEl.textContent;
-        outer.setAttribute('fill', colors.outline2);
-        outer.setAttribute('stroke', colors.outline2);
-        outer.setAttribute('stroke-width', stroke * 2);
-        outer.setAttribute('text-anchor', 'middle');
-        outer.setAttribute('dominant-baseline', 'middle');
-        outer.setAttribute('stroke-linejoin', 'miter');
-        outer.style.pointerEvents = 'none';
-        outer.style.filter = withShadow ? `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow})` : 'none';
+    // old duplicate outline remove
+    textEl.parentElement
+        .querySelectorAll(`[data-outline-for="${layer.id}"]`)
+        .forEach(e => e.remove());
 
-        textEl.parentElement.insertBefore(outer, textEl);
-        if (!hasFill) textEl.setAttribute('fill', colors.baseColor);
-        textEl.setAttribute('stroke', colors.outline1);
-        textEl.setAttribute('stroke-width', stroke);
-        textEl.style.filter = 'none';
-    };
+    const outer = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    outer.setAttribute('data-outline-for', layer.id);
+
+    [
+        'x',
+        'y',
+        'font-size',
+        'transform',
+        'text-anchor',
+        'dominant-baseline',
+        'paint-order',
+        'stroke-linejoin',
+        'letter-spacing',
+        'font-family',
+        'font-weight',
+        'font-style'
+    ].forEach(attr => {
+        const val = textEl.getAttribute(attr);
+        if (val !== null && val !== '') outer.setAttribute(attr, val);
+    });
+
+    outer.textContent = textEl.textContent;
+
+    // ✅ font + spacing same as main text
+    outer.style.fontFamily = textEl.style.fontFamily || layer.fontFamily || 'Arial Black';
+    outer.style.letterSpacing = textEl.style.letterSpacing || ((layer.letterSpacing || 0) + 'px');
+
+    outer.setAttribute('fill', colors.outline2 || '#666666');
+    outer.setAttribute('stroke', colors.outline2 || '#666666');
+    outer.setAttribute('stroke-width', stroke2);
+    outer.setAttribute('text-anchor', 'middle');
+    outer.setAttribute('dominant-baseline', 'middle');
+    outer.setAttribute('paint-order', 'stroke fill');
+    outer.setAttribute('stroke-linejoin', 'miter');
+    outer.style.pointerEvents = 'none';
+    outer.style.filter = withShadow ? `drop-shadow(${shadow}px ${shadow}px 0 ${colors.shadow || '#333333'})` : 'none';
+
+    textEl.parentElement.insertBefore(outer, textEl);
+
+    if (!hasFill) textEl.setAttribute('fill', colors.baseColor || '#FFFFFF');
+    textEl.setAttribute('stroke', colors.outline1 || '#000000');
+    textEl.setAttribute('stroke-width', stroke1);
+    textEl.setAttribute('paint-order', 'stroke fill');
+    textEl.setAttribute('stroke-linejoin', 'miter');
+    textEl.style.filter = 'none';
+};
 
     // ============================================================
     // =================== OPEN / CLOSE APPLICATION MODAL ===================
@@ -616,117 +646,115 @@ window.confirmAddApplication = function () {
     // ✅ FIX 2: addApplicationToSvg — POORA REPLACE KARO
     // ============================================================
 
-    window.addApplicationToSvg = function (layer) {
+  window.addApplicationToSvg = function (layer) {
 
-        if (layer.view !== window.currentView) return;
+    if (layer.view !== window.currentView) return;
 
+    if (layer.type === 'direct-mascot') {
+        if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
+        return;
+    }
 
+    const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
+    if (!mainSvg) {
+        setTimeout(() => window.addApplicationToSvg(layer), 300);
+        return;
+    }
 
+    let defs = mainSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
 
-        if (layer.type === 'direct-mascot') {
-            if (layer.mascotSvg) applyDirectMascotToLayer(layer.mascotSvg, layer.id, false);
-            return;
-        }
+    const partElement = mainSvg.querySelector(`#${layer.partId}`);
+    if (!partElement) {
+        console.warn('Part not found', layer.partId);
+        return;
+    }
+    // ===== CLEAN OLD =====
+    mainSvg.querySelector(`#app-group-${layer.id}`)?.remove();
+    mainSvg.querySelector(`#${layer.id}`)?.remove();
+    mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(e => e.remove());
+    defs.querySelector(`#clip-${layer.id}`)?.remove();
+    defs.querySelector(`#text-pattern-${layer.id}`)?.remove();
+    defs.querySelector(`#text-mascot-${layer.id}`)?.remove();
 
-        const mainSvg = window.getMainSvg ? window.getMainSvg() : null;
-        if (!mainSvg) {
-            setTimeout(() => window.addApplicationToSvg(layer), 300);
-            return;
-        }
+    // ===== CLIP =====
+    const clipId = `clip-${layer.id}`;
+    const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+    clip.setAttribute('id', clipId);
 
-        let defs = mainSvg.querySelector('defs');
-        if (!defs) {
-            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            mainSvg.insertBefore(defs, mainSvg.firstChild);
-        }
+    const clone = partElement.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.removeAttribute('clip-path');
+    clone.removeAttribute('mask');
 
-        const partElement = mainSvg.querySelector(`#${layer.partId}`);
-        if (!partElement) {
-            console.warn('Part not found', layer.partId);
-            return;
-        }
+    clip.appendChild(clone);
+    defs.appendChild(clip);
 
-        // ===== HARD CLEAN SAME LAYER =====
-        const oldGroup = mainSvg.querySelector(`#app-group-${layer.id}`);
-        if (oldGroup) oldGroup.remove();
+    // ===== GROUP =====
+    const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    layerGroup.setAttribute('id', `app-group-${layer.id}`);
+    layerGroup.setAttribute('clip-path', `url(#${clipId})`);
+    mainSvg.appendChild(layerGroup);
 
-        const oldText = mainSvg.querySelector(`#${layer.id}`);
-        if (oldText) oldText.remove();
+    // ===== TEXT =====
+    const bbox = partElement.getBBox();
+    const cx = bbox.x + bbox.width / 2;
+    const cy = bbox.y + bbox.height / 2;
 
-        mainSvg.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(e => e.remove());
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 
-        const oldClip = defs.querySelector(`#clip-${layer.id}`);
-        if (oldClip) oldClip.remove();
+    // 🔥 IMPORTANT (tumhara issue yahin fix ho raha hai)
+    text.setAttribute('id', layer.id);
+    text.setAttribute('data-type', layer.type || '');   // teamname fix
+    text.setAttribute('font-family', layer.fontFamily || 'Arial Black'); // save font
 
-        const oldPattern = defs.querySelector(`#text-pattern-${layer.id}`);
-        if (oldPattern) oldPattern.remove();
+    text.setAttribute('x', cx + (layer.x || 0));
+    text.setAttribute('y', cy + (layer.y || 0));
+    text.setAttribute('font-size', layer.fontSize || 500);
 
-        const oldMascot = defs.querySelector(`#text-mascot-${layer.id}`);
-        if (oldMascot) oldMascot.remove();
+    text.style.fontFamily = layer.fontFamily || 'Arial Black'; // UI font fix
 
-        // ===== CLIP =====
-        const clipId = `clip-${layer.id}`;
-        const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        clip.setAttribute('id', clipId);
+    text.setAttribute('fill', layer.fill || '#FFFFFF');
+    text.setAttribute('stroke', layer.stroke || '#000000');
+    text.setAttribute('stroke-width', layer.strokeWidth || 5);
 
-        const clone = partElement.cloneNode(true);
-        clone.removeAttribute('id');
-        clone.removeAttribute('clip-path');
-        clone.removeAttribute('mask');
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('paint-order', 'stroke fill');
+    text.setAttribute('stroke-linejoin', 'miter');
 
-        clip.appendChild(clone);
-        defs.appendChild(clip);
+    text.style.cursor = 'move';
+    text.textContent = layer.text || '';
 
-        // ===== GROUP =====
-        const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        layerGroup.setAttribute('id', `app-group-${layer.id}`);
-        layerGroup.setAttribute('clip-path', `url(#${clipId})`);
-        mainSvg.appendChild(layerGroup);
+    // ===== LETTER SPACING FIX =====
+    if (layer.letterSpacing !== undefined && layer.letterSpacing !== null) {
+        text.setAttribute('letter-spacing', layer.letterSpacing + 'px');
+        text.style.letterSpacing = layer.letterSpacing + 'px';
+    }
 
-        // ===== TEXT =====
-        const bbox = partElement.getBBox();
-        const cx = bbox.x + bbox.width / 2;
-        const cy = bbox.y + bbox.height / 2;
+    layerGroup.appendChild(text);
 
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('id', layer.id);
-        text.setAttribute('x', cx + (layer.x || 0));
-        text.setAttribute('y', cy + (layer.y || 0));
-        text.setAttribute('font-size', layer.fontSize || 500);
-        text.style.fontFamily = layer.fontFamily || 'Arial Black';
-        text.setAttribute('fill', layer.fill || '#FFFFFF');
-        text.setAttribute('stroke', layer.stroke || '#000000');
-        text.setAttribute('stroke-width', layer.strokeWidth || 5);
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('dominant-baseline', 'middle');
-        text.setAttribute('paint-order', 'stroke fill');
-        text.setAttribute('stroke-linejoin', 'miter');
-        text.style.cursor = 'move';
-        text.textContent = layer.text || '';
+    makeDraggable(text, layer);
 
-        if (layer.letterSpacing) {
-            text.style.letterSpacing = layer.letterSpacing + 'px';
-        }
+    text.addEventListener('click', e => {
+        e.stopPropagation();
+        selectApplicationLayer(layer.id);
+    });
 
-        layerGroup.appendChild(text);
+    if (typeof _applyFlipTransform === 'function') {
+        _applyFlipTransform(layer, mainSvg);
+    }
 
-        makeDraggable(text, layer);
-
-        text.addEventListener('click', e => {
-            e.stopPropagation();
-            selectApplicationLayer(layer.id);
-        });
-
-        if (typeof _applyFlipTransform === 'function') {
-            _applyFlipTransform(layer, mainSvg);
-        }
-
-        if (layer.outlineStyle) {
-            window.currentOutlineStyle = layer.outlineStyle;
-            if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
-            applyOutlineStyleToText(layer.id);
-        }
-    };
+    // ===== OUTLINE =====
+    if (layer.outlineStyle) {
+        window.currentOutlineStyle = layer.outlineStyle;
+        if (layer.outlineColors) window.outlineColors = { ...layer.outlineColors };
+        applyOutlineStyleToText(layer.id);
+    }
+};
 
 
     // ============================================================
@@ -2190,15 +2218,48 @@ if (display) display.textContent = layer.rotation || 0;
         setTimeout(() => _showPlusIcon(layer.id), 80);
     };
 
-    window.updateApplicationText = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer) return;
-        layer.text = value;
-        const textEl = document.getElementById(layer.id);
-        if (textEl) textEl.textContent = value;
+window.updateApplicationText = function (value) {
+    if (!window.currentApplicationLayer) return;
+
+    const layer = findLayerById(window.currentApplicationLayer);
+    if (!layer) return;
+
+    // ✅ Team Name layer hai to type hamesha teamname rakho
+    if (layer.type === 'teamname') {
+        layer.type = 'teamname';
+    }
+
+    // ✅ jo text likha woh usi selected layer id me save hoga
+    layer.text = value;
+
+    const textEl = document.getElementById(layer.id);
+    if (!textEl) return;
+
+    textEl.setAttribute('data-type', layer.type || '');
+
+    if (!value || value.trim() === '') {
+        textEl.textContent = '';
+
+        document.querySelectorAll(`[data-outline-for="${layer.id}"]`)
+            .forEach(e => e.remove());
+
         if (window.saveCustomizations) window.saveCustomizations();
-    };
+        if (window.updateApplicationLayersList) window.updateApplicationLayersList();
+        return;
+    }
+
+    textEl.textContent = value;
+
+    document.querySelectorAll(`[data-outline-for="${layer.id}"]`)
+        .forEach(e => e.remove());
+
+    if (layer.outlineStyle && typeof applyOutlineStyleToText === 'function') {
+        applyOutlineStyleToText(layer.id);
+    }
+
+    if (window.saveCustomizations) window.saveCustomizations();
+    if (window.updateApplicationLayersList) window.updateApplicationLayersList();
+};
 
     window.updateFontFamily = function (value) {
         if (!window.currentApplicationLayer) return;

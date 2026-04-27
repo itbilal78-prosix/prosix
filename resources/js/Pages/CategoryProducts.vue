@@ -872,93 +872,51 @@ const setSvgTextKeepStyle = (node, newText) => {
   attrs.forEach(([n, v]) => node.setAttribute(n, v))
 }
 
-// const updateSvgNameIfPresent = (svg, newName, color) => {
-//   const textNodes = [...svg.querySelectorAll('text')].filter(node => !node.closest('defs'))
-//   if (!textNodes.length || !newName.trim()) return false
-//   const target = textNodes.find(node => (node.textContent || '').trim()) || textNodes[0]
-//   if (!target) return false
-//   const oldText = (target.textContent || '').trim()
-//   const tx = target.getAttribute('x')
-//   const ty = target.getAttribute('y')
-//   const targetId = target.getAttribute('id')
-//   const relatedTexts = textNodes.filter(node => {
-//     return (
-//       node === target ||
-//       (targetId && node.getAttribute('data-outline-for') === targetId) ||
-//       ((node.textContent || '').trim() === oldText && node.getAttribute('x') === tx && node.getAttribute('y') === ty)
-//     )
-//   })
-//   relatedTexts.forEach(node => {
-//     const snap = getTextStyleSnapshot(node)
-//     setSvgTextKeepStyle(node, newName)
-//     restoreTextStyleSnapshot(node, snap)
-//     if (snap.style) node.setAttribute('style', snap.style)
-//     if (snap.fontFamily) node.setAttribute('font-family', snap.fontFamily)
-//     if (color) updateNodeFillKeepFont(node, color)
-//     fitTextIntoSvg(svg, node, newName)
-//   })
-//   return true
-// }
 
 const updateSvgNameIfPresent = (svg, newName, color) => {
-  const textNodes = [...svg.querySelectorAll('text')].filter(node => !node.closest('defs'))
+  const textNodes = [...svg.querySelectorAll('text')]
+    .filter(node => !node.closest('defs'))
+
   if (!textNodes.length || !newName.trim()) return false
 
-  // ✅ SIRF woh node jiska content "TEAM" hai ya team name keywords
-  const TEAM_MATCH = ['team', 'teamname', 'team name']
-
-  let target = null
-
-  // 1st: Exact "TEAM" content wala node
-  target = textNodes.find(node => {
-    const content = (node.textContent || '').trim().toLowerCase()
-    return TEAM_MATCH.includes(content)
+  let targets = textNodes.filter(node => {
+    const type = (node.getAttribute('data-type') || '').toLowerCase()
+    const id = (node.getAttribute('id') || '').toLowerCase()
+    return type === 'teamname' || id.includes('team')
   })
 
-  // 2nd: id/data-type mein 'team' ho
-  if (!target) {
-    target = textNodes.find(node => {
-      const id = (node.getAttribute('id') || '').toLowerCase()
-      const dataType = (node.getAttribute('data-type') || '').toLowerCase()
-      return id.includes('team') || dataType.includes('team')
+  if (!targets.length) {
+    targets = textNodes.filter(node => {
+      const txt = (node.textContent || '').trim()
+      if (!txt) return false
+      if (/^[0-9#\s]+$/.test(txt)) return false
+      return /[a-zA-Z]/.test(txt)
     })
   }
 
-  // ❌ Koi team node nahi mila — kuch mat karo
-  if (!target) return false
+  if (!targets.length) return false
 
-  // ✅ Snapshot lo
-  const snap = getTextStyleSnapshot(target)
+  targets.forEach(target => {
+    const snap = getTextStyleSnapshot(target)
 
-  // ✅ Sirf text badlo
-  const tspans = [...target.querySelectorAll('tspan')]
-  if (tspans.length) {
-    tspans[0].textContent = newName
-    tspans.slice(1).forEach(t => { t.textContent = '' })
-  } else {
-    target.textContent = newName
-  }
+    const tspans = [...target.querySelectorAll('tspan')]
+    if (tspans.length) {
+      tspans[0].textContent = newName
+      tspans.slice(1).forEach(t => t.textContent = '')
+    } else {
+      target.textContent = newName
+    }
 
-  // ✅ Font preserve karo
-  if (snap.fontFamily) target.setAttribute('font-family', snap.fontFamily)
-  if (snap.fontSize)   target.setAttribute('font-size', snap.fontSize)
-  if (snap.fontWeight) target.setAttribute('font-weight', snap.fontWeight)
-  if (snap.fontStyle)  target.setAttribute('font-style', snap.fontStyle)
-  if (snap.letterSpacing) target.setAttribute('letter-spacing', snap.letterSpacing)
-  if (snap.textTransform) target.setAttribute('text-transform', snap.textTransform)
-  if (snap.textAnchor) target.setAttribute('text-anchor', snap.textAnchor)
-  if (snap.dominantBaseline) target.setAttribute('dominant-baseline', snap.dominantBaseline)
-  if (snap.x) target.setAttribute('x', snap.x)
-  if (snap.y) target.setAttribute('y', snap.y)
-  if (snap.transform) target.getAttribute('transform') && target.setAttribute('transform', snap.transform)
+    // ✅ font/style same rakho
+    restoreTextStyleSnapshot(target, snap)
 
-  // ✅ Sirf fill badlo
-  let finalStyle = snap.style || ''
-  if (color) {
-    finalStyle = setOrReplaceStyleProp(finalStyle, 'fill', color)
-    target.setAttribute('fill', color)
-  }
-  target.setAttribute('style', finalStyle)
+    // ✅ sirf color update, font ko touch nahi
+    if (color) {
+      target.setAttribute('fill', color)
+      const oldStyle = target.getAttribute('style') || snap.style || ''
+      target.setAttribute('style', setOrReplaceStyleProp(oldStyle, 'fill', color))
+    }
+  })
 
   return true
 }
@@ -1404,6 +1362,33 @@ const recolorSvgParts = async (svgText, colors = [], customAppliedName = '') => 
 // ============================================================
 // buildColoredSvgForModel — await added kyunki recolorSvgParts async hai
 // ============================================================
+// const buildColoredSvgForModel = async (model) => {
+//   if (!model?.id || !model?.front_svg) return
+
+//   if (!isModelInAppliedScope(model)) {
+//     const nextCache = { ...coloredSvgCache.value }
+//     delete nextCache[model.id]
+//     coloredSvgCache.value = nextCache
+//     return
+//   }
+
+//   try {
+//     const response = await fetch(model.front_svg)
+//     const svgText = await response.text()
+
+//     // ✅ await lagaya - ab async hai
+//     const recolored = await recolorSvgParts(
+//       svgText,
+//       appliedSelectedColors.value,
+//       appliedName.value
+//     )
+
+//     const dataUri = svgToDataUri(recolored)
+//     coloredSvgCache.value = { ...coloredSvgCache.value, [model.id]: dataUri }
+//   } catch (error) {
+//     console.error('SVG recolor failed for model:', model.id, error)
+//   }
+// }
 const buildColoredSvgForModel = async (model) => {
   if (!model?.id || !model?.front_svg) return
 
@@ -1418,70 +1403,80 @@ const buildColoredSvgForModel = async (model) => {
     const response = await fetch(model.front_svg)
     const svgText = await response.text()
 
-    // ✅ await lagaya - ab async hai
     const recolored = await recolorSvgParts(
       svgText,
       appliedSelectedColors.value,
       appliedName.value
     )
 
-    const dataUri = svgToDataUri(recolored)
+    // ✅ Font ko Base64 mein embed karo
+    const svgWithFonts = await embedFontsInSvgText(recolored)
+
+    const dataUri = svgToDataUri(svgWithFonts)
     coloredSvgCache.value = { ...coloredSvgCache.value, [model.id]: dataUri }
+
   } catch (error) {
     console.error('SVG recolor failed for model:', model.id, error)
   }
 }
-// const recolorSvgParts = (svgText, colors = [], customAppliedName = '') => {
-//   if (!svgText) return svgText
-//   const parser = new DOMParser()
-//   const doc = parser.parseFromString(svgText, 'image/svg+xml')
-//   const svg = doc.querySelector('svg')
-//   if (!svg) return svgText
-//   const originalColors = collectOriginalModelColors(svg)
-//   const colorMap = buildOriginalToSelectedColorMap(originalColors, colors)
-//   if (Object.keys(colorMap).length) {
-//     getRecolorableSvgNodes(svg).forEach((node) => {
-//       const tag = node.tagName.toLowerCase()
-//       if (tag === 'stop') {
-//         const oldStop = colorToHex(node.getAttribute('stop-color')) || colorToHex(getStylePropValue(node.getAttribute('style') || '', 'stop-color'))
-//         if (oldStop && colorMap[oldStop]) {
-//           node.setAttribute('stop-color', colorMap[oldStop])
-//           node.setAttribute('style', setOrReplaceStyleProp(node.getAttribute('style') || '', 'stop-color', colorMap[oldStop]))
-//         }
-//         return
-//       }
-//       const originalFill = getNodePaintValue(node, 'fill')
-//       const originalStroke = getNodePaintValue(node, 'stroke')
-//       if (originalFill && colorMap[originalFill]) {
-//         if (tag === 'text' || tag === 'tspan') updateNodeFillKeepFont(node, colorMap[originalFill])
-//         else setNodePaintValue(node, 'fill', colorMap[originalFill])
-//       }
-//       if (originalStroke && colorMap[originalStroke]) setNodePaintValue(node, 'stroke', colorMap[originalStroke])
-//     })
-//   }
-//   const finalName = (customAppliedName || '').trim()
-//   if (finalName) updateSvgNameIfPresent(svg, finalName, getPrimaryAppliedColor())
-//   return new XMLSerializer().serializeToString(svg)
-// }
 
-// const buildColoredSvgForModel = async (model) => {
-//   if (!model?.id || !model?.front_svg) return
-//   if (!isModelInAppliedScope(model)) {
-//     const nextCache = { ...coloredSvgCache.value }
-//     delete nextCache[model.id]
-//     coloredSvgCache.value = nextCache
-//     return
-//   }
-//   try {
-//     const response = await fetch(model.front_svg)
-//     const svgText = await response.text()
-//     const recolored = recolorSvgParts(svgText, appliedSelectedColors.value, appliedName.value)
-//     const dataUri = svgToDataUri(recolored)
-//     coloredSvgCache.value = { ...coloredSvgCache.value, [model.id]: dataUri }
-//   } catch (error) {
-//     console.error('SVG recolor failed for model:', model.id, error)
-//   }
-// }
+// ✅ Naya function — font files fetch karke base64 embed karo
+const embedFontsInSvgText = async (svgText) => {
+  if (!svgText) return svgText
+
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(svgText, 'image/svg+xml')
+  const svg = doc.querySelector('svg')
+  if (!svg) return svgText
+
+  // SVG mein existing font-face rules dhundo
+  let defs = svg.querySelector('defs')
+  if (!defs) {
+    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+    svg.insertBefore(defs, svg.firstChild)
+  }
+
+  // Text elements se used fonts collect karo
+  const usedFonts = new Set()
+  svg.querySelectorAll('text, tspan').forEach(el => {
+    const ff = el.getAttribute('font-family') || el.style?.fontFamily || ''
+    if (ff) usedFonts.add(ff.replace(/['"]/g, '').trim())
+  })
+
+  if (!usedFonts.size) return svgText
+
+  // Backend fonts mein se matching fonts dhundo aur embed karo
+  const backendFonts = window.__allFonts || []
+
+  let fontCSS = ''
+  for (const font of backendFonts) {
+    const fontFamily = `font_${font.id}`
+    if (!usedFonts.has(fontFamily)) continue
+
+    try {
+      const fontRes = await fetch(font.file_url)
+      const fontBuffer = await fontRes.arrayBuffer()
+      const fontBase64 = btoa(
+        new Uint8Array(fontBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      )
+      fontCSS += `@font-face { font-family: '${fontFamily}'; src: url('data:font/truetype;base64,${fontBase64}') format('truetype'); }\n`
+    } catch (e) {
+      console.warn('Font embed failed:', fontFamily, e)
+    }
+  }
+
+  if (fontCSS) {
+    // Purani font styles hata do
+    defs.querySelectorAll('style[data-embedded-fonts]').forEach(s => s.remove())
+
+    const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style')
+    styleEl.setAttribute('data-embedded-fonts', '1')
+    styleEl.textContent = fontCSS
+    defs.insertBefore(styleEl, defs.firstChild)
+  }
+
+  return new XMLSerializer().serializeToString(svg)
+}
 
 const refreshAllModelPreviews = async () => {
   const targetModels = models.value.filter(m => shouldUseCompositePreview(m))
@@ -1629,10 +1624,16 @@ watch(() => models.value.length, async (count) => {
 })
 
 onMounted(async () => {
-  // ✅ Restore global design state first
+  // ✅ Backend fonts pehle load karo
+  try {
+    const fontsRes = await axios.get('/api/fonts')
+    window.__allFonts = fontsRes.data
+  } catch (e) {
+    window.__allFonts = []
+  }
+
   restorePreviewState()
   await Promise.all([fetchCategory(), fetchProducts(), loadModels(), fetchColors()])
-  // ✅ Rebuild previews if design was restored
   if (appliedSelectedColors.value.length || appliedName.value) {
     await refreshAllModelPreviews()
   }

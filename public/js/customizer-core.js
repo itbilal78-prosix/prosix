@@ -854,28 +854,7 @@ console.log('FILE A LOADED');
 
     // =================== REAL-TIME UPDATES ===================
 
-    window.updateApplicationText = function (value) {
-        if (!window.currentApplicationLayer) return;
 
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer) return;
-
-        layer.text = value;
-
-        const textEl = document.getElementById(layer.id);
-        if (textEl) {
-            textEl.textContent = value;
-        }
-
-        // Update outline elements too
-        const outlines = document.querySelectorAll(`[data-outline-for="${layer.id}"]`);
-        outlines.forEach(outline => {
-            outline.textContent = value;
-        });
-
-        if (window.saveCustomizations) window.saveCustomizations();
-        updateApplicationLayersList();
-    };
 
     window.updateFontSize = function (value) {
         if (!window.currentApplicationLayer) return;
