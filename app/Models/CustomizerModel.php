@@ -36,6 +36,8 @@ class CustomizerModel extends Model
         'is_featured',
         'is_apparel',
         'position',
+            'is_hidden',
+
 
         // ── NEW: Product-like fields ──
         'in_stock',
@@ -62,6 +64,8 @@ class CustomizerModel extends Model
         'mascot_changes'      => 'array',
         'applications'        => 'array',
         'customized_at'       => 'datetime',
+            'is_hidden' => 'boolean',
+
     ];
 
     public function navigation()

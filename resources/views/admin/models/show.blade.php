@@ -215,58 +215,85 @@
                         <div id="patternList"></div>
                     </div>
                 </div>
-                <!-- PREVIEW PANEL -->
-                <div id="previewPanel"
-                    style="position:fixed;top:0;right:-100vw;width:100vw;height:100vh;background:#fff;transition:.4s;z-index:9999;">
+    <!-- PREVIEW PANEL -->
+<div id="previewPanel"
+    style="position:fixed;top:0;right:-100vw;width:100vw;height:100vh;transition:.4s;z-index:9999;overflow:hidden;">
 
-                    {{-- <div style="background:#111;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;">
-<h3>Preview</h3>
-<button onclick="closePreviewPanel()" style="background:none;border:none;color:white;font-size:26px;">×</button>
-</div> --}}
-                    <!-- PREVIEW PANEL HEADER (updated with Download button) -->
-                    <div
-                        style="background:#111;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;">
-                        <h3>Preview</h3>
+    <!-- P Logo Texture Background -->
+    <div style="position:absolute;inset:0;background-color:#eeeeee;z-index:0;">
+        <div style="
+            position:absolute;inset:0;
+            background-image:url('/assets/images/P LOGO BLACK.png');
+            background-size:70px 70px;
+            background-repeat:repeat;
+            opacity:0.06;
+            pointer-events:none;">
+        </div>
+    </div>
 
-                        <div style="display:flex; gap:15px; align-items:center;">
-                            <!-- Download Button -->
-                            <button id="downloadAllViews"
-                                style="padding:8px 16px; background:#000000; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:500; font-size:14px;">
-                                Download All (PNG)
-                            </button>
+    <!-- HEADER -->
+    <div style="position:relative;z-index:2;background:#111;color:white;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
 
-                            <!-- Close Button -->
-                            <button onclick="closePreviewPanel()"
-                                style="background:none;border:none;color:white;font-size:26px; cursor:pointer;">
-                                ×
-                            </button>
-                        </div>
-                    </div>
-                    <div
-                        style="display:flex;gap:20px;justify-content:center;align-items:center;height:100%;padding:30px;flex-wrap:wrap">
+        {{-- LEFT: Logo --}}
+        <div style="display:flex;align-items:center;gap:10px;flex:1;">
+            <img src="/assets/images/P LOGO WHITE.png" style="height:38px;object-fit:contain;">
+            <img src="/assets/images/PROSIX SPORTS LOGO PNG WHITE.png" style="height:32px;object-fit:contain;">
+        </div>
 
-                        <div class="preview-card-horizontal">
-                            <h4>Front</h4>
-                            <div id="previewFront" class="preview-container-horizontal"></div>
-                        </div>
+        {{-- CENTER: Preview Title --}}
+        <div style="flex:1;text-align:center;">
+            <span style="font-size:20px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#fff;">Preview</span>
+        </div>
 
-                        <div class="preview-card-horizontal">
-                            <h4>Back</h4>
-                            <div id="previewBack" class="preview-container-horizontal"></div>
-                        </div>
+        {{-- RIGHT: Buttons --}}
+        <div style="display:flex;gap:10px;align-items:center;flex:1;justify-content:flex-end;">
+            <button id="downloadAllViews"
+                style="padding:8px 16px;background:#1a1a1a;color:white;border:1.5px solid #444;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s;">
+                <i class="fas fa-download" style="margin-right:6px;"></i>Download Draft
+            </button>
 
-                        <div class="preview-card-horizontal">
-                            <h4>Left</h4>
-                            <div id="previewLeft" class="preview-container-horizontal"></div>
-                        </div>
+            @if(!isset($isUserMode) || !$isUserMode)
+            <button id="downloadClean"
+                style="padding:8px 16px;background:#1a1a1a;color:white;border:1.5px solid #444;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s;">
+                <i class="fas fa-download" style="margin-right:6px;"></i>Download Clean
+            </button>
+            @endif
 
-                        <div class="preview-card-horizontal">
-                            <h4>Right</h4>
-                            <div id="previewRight" class="preview-container-horizontal"></div>
-                        </div>
+            <button onclick="closePreviewPanel()"
+                style="width:36px;height:36px;background:#333;border:none;color:white;font-size:20px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">
+                ✕
+            </button>
+        </div>
+    </div>
 
-                    </div>
-                </div>
+    {{-- GOLD LINE --}}
+    <div style="position:relative;z-index:2;height:3px;background:#C9A84C;"></div>
+
+    {{-- 4 VIEWS --}}
+    <div style="position:relative;z-index:1;display:flex;gap:24px;justify-content:center;align-items:center;height:calc(100% - 70px);padding:30px;flex-wrap:wrap;">
+
+        <div class="preview-card-horizontal">
+            <h4>Front</h4>
+            <div id="previewFront" class="preview-container-horizontal"></div>
+        </div>
+
+        <div class="preview-card-horizontal">
+            <h4>Back</h4>
+            <div id="previewBack" class="preview-container-horizontal"></div>
+        </div>
+
+        <div class="preview-card-horizontal">
+            <h4>Left</h4>
+            <div id="previewLeft" class="preview-container-horizontal"></div>
+        </div>
+
+        <div class="preview-card-horizontal">
+            <h4>Right</h4>
+            <div id="previewRight" class="preview-container-horizontal"></div>
+        </div>
+
+    </div>
+</div>
 
                 <!-- APPLICATION MODAL -->
                 <div id="applicationModal" class="color-modal" style="display:none;">
@@ -315,9 +342,9 @@
                         }
                     }
 
-                   #phoneIcon.rotating {
-  animation: phoneRotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
+                    #phoneIcon.rotating {
+                        animation: phoneRotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                    }
                 </style>
                 <script>
                     window.backendColors = @json(
@@ -327,31 +354,31 @@
                             ]));
                 </script>
 
-<script>
-function checkOrientation() {
-  const isPortrait = window.innerHeight > window.innerWidth;
-  const isMobile   = window.innerWidth <= 1024 || window.innerHeight <= 600;
-  const overlay    = document.getElementById('rotateOverlay');
-  const icon       = document.getElementById('phoneIcon');
+                <script>
+                    function checkOrientation() {
+                        const isPortrait = window.innerHeight > window.innerWidth;
+                        const isMobile = window.innerWidth <= 1024 || window.innerHeight <= 600;
+                        const overlay = document.getElementById('rotateOverlay');
+                        const icon = document.getElementById('phoneIcon');
 
-  if (!overlay) return;
+                        if (!overlay) return;
 
-  if (isMobile && isPortrait) {
-    overlay.style.opacity        = '1';
-    overlay.style.pointerEvents  = 'all';
-    document.getElementById('rotateCard').style.transform = 'scale(1)';
-    if (icon) icon.classList.add('rotating');
-  } else {
-    overlay.style.opacity        = '0';
-    overlay.style.pointerEvents  = 'none';
-    if (icon) icon.classList.remove('rotating');
-  }
-}
+                        if (isMobile && isPortrait) {
+                            overlay.style.opacity = '1';
+                            overlay.style.pointerEvents = 'all';
+                            document.getElementById('rotateCard').style.transform = 'scale(1)';
+                            if (icon) icon.classList.add('rotating');
+                        } else {
+                            overlay.style.opacity = '0';
+                            overlay.style.pointerEvents = 'none';
+                            if (icon) icon.classList.remove('rotating');
+                        }
+                    }
 
-window.addEventListener('resize', checkOrientation);
-window.addEventListener('orientationchange', checkOrientation);
-document.addEventListener('DOMContentLoaded', checkOrientation);
-</script>
+                    window.addEventListener('resize', checkOrientation);
+                    window.addEventListener('orientationchange', checkOrientation);
+                    document.addEventListener('DOMContentLoaded', checkOrientation);
+                </script>
 
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
@@ -360,81 +387,81 @@ document.addEventListener('DOMContentLoaded', checkOrientation);
                 <script src="/js/customizer-color.js"></script>
                 <script src="/js/customizer-pattern.js"></script>
                 <script src="/js/customizer-application.js"></script>
-            <div id="saveSuccessToast" class="save-success-toast">
-    <div class="save-success-toast-inner">
-        <div class="save-success-icon">✓</div>
-        <div>
-            <div class="save-success-title">Successfully Saved</div>
-            <div class="save-success-subtitle">Your design has been saved</div>
-        </div>
-    </div>
-</div>
+                <div id="saveSuccessToast" class="save-success-toast">
+                    <div class="save-success-toast-inner">
+                        <div class="save-success-icon">✓</div>
+                        <div>
+                            <div class="save-success-title">Successfully Saved</div>
+                            <div class="save-success-subtitle">Your design has been saved</div>
+                        </div>
+                    </div>
+                </div>
 </body>
 
 </html>
 <style>
-.save-success-toast {
-    position: fixed;
-    inset: 0;
-    z-index: 999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,.45);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: all .3s ease;
-}
+    .save-success-toast {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, .45);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all .3s ease;
+    }
 
-.save-success-toast.show {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
+    .save-success-toast.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
 
-.save-success-toast-inner {
-    min-width: 320px;
-    max-width: 420px;
-    background: #111;
-    color: #fff;
-    border-radius: 18px;
-    padding: 22px 24px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 20px 50px rgba(0,0,0,.35);
-    transform: scale(.88) translateY(20px);
-    transition: all .3s ease;
-}
+    .save-success-toast-inner {
+        min-width: 320px;
+        max-width: 420px;
+        background: #111;
+        color: #fff;
+        border-radius: 18px;
+        padding: 22px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+        transform: scale(.88) translateY(20px);
+        transition: all .3s ease;
+    }
 
-.save-success-toast.show .save-success-toast-inner {
-    transform: scale(1) translateY(0);
-}
+    .save-success-toast.show .save-success-toast-inner {
+        transform: scale(1) translateY(0);
+    }
 
-.save-success-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: #22c55e;
-    color: #fff;
-    font-size: 24px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+    .save-success-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
 
-.save-success-title {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.2;
-}
+    .save-success-title {
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
 
-.save-success-subtitle {
-    font-size: 13px;
-    color: rgba(255,255,255,.72);
-    margin-top: 4px;
-}
+    .save-success-subtitle {
+        font-size: 13px;
+        color: rgba(255, 255, 255, .72);
+        margin-top: 4px;
+    }
 </style>

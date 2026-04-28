@@ -303,6 +303,21 @@ Route::get('/api/fonts', function() {
 });
 
 
+
+Route::middleware(['auth:admin'])
+    ->prefix('admin')
+    ->group(function () {
+
+    // 👇 YAHAN ADD KARO
+    Route::post('models/{id}/toggle-hidden', [CustomizerModelController::class, 'toggleHidden'])
+        ->name('models.toggleHidden');
+
+    Route::post('models/bulk-toggle-hidden', [CustomizerModelController::class, 'bulkToggleHidden'])
+        ->name('models.bulkToggleHidden');
+
+});
+
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

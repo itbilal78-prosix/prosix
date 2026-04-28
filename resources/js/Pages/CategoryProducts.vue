@@ -1526,7 +1526,7 @@ const clearFilters = async () => {
 const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
 
 const filteredModels = computed(() => {
-  let list = models.value
+  let list = models.value.filter(m => !m.is_hidden)  // ← yeh ek line add ki
   if (selectedModelName.value !== 'all') list = list.filter(m => m.model_name === selectedModelName.value)
   if (nameSearch.value.trim()) {
     const q = nameSearch.value.trim().toLowerCase()
