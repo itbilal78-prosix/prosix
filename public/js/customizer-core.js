@@ -3595,7 +3595,7 @@ function _renderBrandedPreviewBg() {
 
     });
 
-  // ============================================================
+// ============================================================
 // DOWNLOAD FIX v6 — No view labels below images
 // ============================================================
 document.addEventListener('click', async function(e) {
