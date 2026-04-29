@@ -758,7 +758,6 @@ window.mcApplyOnly = function () {
         if (window.openDesignIdeas) window.openDesignIdeas();
     };
 
-    // ======= APPLY BUTTON in main modal =======
  // ======= APPLY BUTTON in main modal =======
 window.applySelectedMascotToApplication = function() {
     var state = window._mascotState;

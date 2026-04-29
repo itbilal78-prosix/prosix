@@ -15,6 +15,64 @@
                 </style>
             @endif
         @endforeach
+
+        {{-- ===== ZOOM STYLES ===== --}}
+        <style>
+            /* Upload modal preview wrap zoom support */
+            .upload-modal-preview-wrap {
+                overflow: hidden;
+                position: relative;
+                cursor: grab;
+                user-select: none;
+            }
+            .upload-modal-preview-wrap.dragging {
+                cursor: grabbing;
+            }
+            .upload-modal-preview-img {
+                transform-origin: 0 0;
+                transition: none;
+                display: block;
+                max-width: none !important;
+            }
+            /* Zoom controls bar */
+            .upload-zoom-bar {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 6px;
+            }
+            .upload-zoom-btn {
+                width: 30px;
+                height: 30px;
+                border: 1px solid #ccc;
+                background: #fff;
+                border-radius: 5px;
+                font-size: 18px;
+                line-height: 1;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background 0.15s;
+            }
+            .upload-zoom-btn:hover { background: #f0f0f0; }
+            .upload-zoom-level {
+                font-size: 13px;
+                min-width: 42px;
+                text-align: center;
+                color: #444;
+            }
+            .upload-zoom-reset {
+                font-size: 12px;
+                padding: 3px 9px;
+                border: 1px solid #ccc;
+                background: #fff;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            .upload-zoom-reset:hover { background: #f0f0f0; }
+        </style>
+
         <div class="app-container">
             <!-- Header -->
             <header class="app-header">
@@ -59,8 +117,6 @@
                             </svg>
                             <span>Select Tool</span>
                         </button>
-
-
                     </div>
                 </aside>
 
@@ -113,7 +169,7 @@
 
                     <!-- Canvas -->
                     <div class="canvas-wrapper" id="canvasWrapper">
-                        <!-- Layer controls: 3 icons at corners/middle - move with object in real-time -->
+                        <!-- Layer controls -->
                         <button type="button" class="layer-ctrl-icon layer-ctrl-left" id="layerCtrlRemove"
                             style="display: none;" title="Remove layer" data-action="remove">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -157,7 +213,7 @@
                     </div>
                 </main>
 
-                <!-- Right Sidebar: Layers panel (when Layers clicked) OR Object settings (when object selected) -->
+                <!-- Right Sidebar -->
                 <aside class="right-sidebar" id="rightSidebar">
                     <div id="layersPanelSection">
                         <h2 class="sidebar-title">MANAGE LAYERS</h2>
@@ -167,7 +223,7 @@
                         </div>
                     </div>
                     <div id="objectSettingsSection" style="display: none;">
-                        <!-- Text settings - shown when a text layer is selected -->
+                        <!-- Text settings -->
                         <div class="text-settings-panel" id="textSettingsPanel" style="display: none;">
                             <h3 class="text-settings-title">Text Settings</h3>
                             <div class="text-settings-form">
@@ -205,38 +261,22 @@
                                         <option value="rainbow">Rainbow</option>
                                     </select>
                                     <div class="text-shape-options" id="textShapeOptions" role="listbox">
-                                        <div class="text-shape-option" data-value="normal" role="option"><span
-                                                class="shape-icon">—</span> Normal</div>
-                                        <div class="text-shape-option" data-value="arch" role="option"><span
-                                                class="shape-icon">⌒</span> Arch</div>
-                                        <div class="text-shape-option" data-value="arcDown" role="option"><span
-                                                class="shape-icon">⌣</span> Arc Down</div>
-                                        <div class="text-shape-option" data-value="circle" role="option"><span
-                                                class="shape-icon">○</span> Circle</div>
-                                        <div class="text-shape-option" data-value="wave" role="option"><span
-                                                class="shape-icon">∿</span> Wave</div>
-                                        <div class="text-shape-option" data-value="zigzag" role="option"><span
-                                                class="shape-icon">⚡</span> Zigzag</div>
-                                        <div class="text-shape-option" data-value="curveUp" role="option"><span
-                                                class="shape-icon">⌒</span> Curve Up</div>
-                                        <div class="text-shape-option" data-value="curveDown" role="option"><span
-                                                class="shape-icon">⌣</span> Curve Down</div>
-                                        <div class="text-shape-option" data-value="semicircleTop" role="option"><span
-                                                class="shape-icon">◠</span> Semicircle Top</div>
-                                        <div class="text-shape-option" data-value="semicircleBottom" role="option"><span
-                                                class="shape-icon">◡</span> Semicircle Bottom</div>
-                                        <div class="text-shape-option" data-value="ellipse" role="option"><span
-                                                class="shape-icon">⬭</span> Ellipse</div>
-                                        <div class="text-shape-option" data-value="fan" role="option"><span
-                                                class="shape-icon">🪭</span> Fan</div>
-                                        <div class="text-shape-option" data-value="bulge" role="option"><span
-                                                class="shape-icon">◉</span> Bulge</div>
-                                        <div class="text-shape-option" data-value="pinch" role="option"><span
-                                                class="shape-icon">◎</span> Pinch</div>
-                                        <div class="text-shape-option" data-value="spiral" role="option"><span
-                                                class="shape-icon"> spiral</span> Spiral</div>
-                                        <div class="text-shape-option" data-value="rainbow" role="option"><span
-                                                class="shape-icon">🌈</span> Rainbow</div>
+                                        <div class="text-shape-option" data-value="normal" role="option"><span class="shape-icon">—</span> Normal</div>
+                                        <div class="text-shape-option" data-value="arch" role="option"><span class="shape-icon">⌒</span> Arch</div>
+                                        <div class="text-shape-option" data-value="arcDown" role="option"><span class="shape-icon">⌣</span> Arc Down</div>
+                                        <div class="text-shape-option" data-value="circle" role="option"><span class="shape-icon">○</span> Circle</div>
+                                        <div class="text-shape-option" data-value="wave" role="option"><span class="shape-icon">∿</span> Wave</div>
+                                        <div class="text-shape-option" data-value="zigzag" role="option"><span class="shape-icon">⚡</span> Zigzag</div>
+                                        <div class="text-shape-option" data-value="curveUp" role="option"><span class="shape-icon">⌒</span> Curve Up</div>
+                                        <div class="text-shape-option" data-value="curveDown" role="option"><span class="shape-icon">⌣</span> Curve Down</div>
+                                        <div class="text-shape-option" data-value="semicircleTop" role="option"><span class="shape-icon">◠</span> Semicircle Top</div>
+                                        <div class="text-shape-option" data-value="semicircleBottom" role="option"><span class="shape-icon">◡</span> Semicircle Bottom</div>
+                                        <div class="text-shape-option" data-value="ellipse" role="option"><span class="shape-icon">⬭</span> Ellipse</div>
+                                        <div class="text-shape-option" data-value="fan" role="option"><span class="shape-icon">🪭</span> Fan</div>
+                                        <div class="text-shape-option" data-value="bulge" role="option"><span class="shape-icon">◉</span> Bulge</div>
+                                        <div class="text-shape-option" data-value="pinch" role="option"><span class="shape-icon">◎</span> Pinch</div>
+                                        <div class="text-shape-option" data-value="spiral" role="option"><span class="shape-icon"> spiral</span> Spiral</div>
+                                        <div class="text-shape-option" data-value="rainbow" role="option"><span class="shape-icon">🌈</span> Rainbow</div>
                                     </div>
                                 </div>
                                 <div class="text-settings-row">
@@ -246,16 +286,13 @@
                                     </div>
                                     <div class="text-settings-field">
                                         <label>Spacing</label>
-                                        <input type="number" id="textCharSpacing" value="0" step="10"
-                                            min="-500" max="500">
+                                        <input type="number" id="textCharSpacing" value="0" step="10" min="-500" max="500">
                                     </div>
                                 </div>
                                 <label>Font</label>
-
                                 <button type="button" class="btn btn-dark" onclick="openBackendFontModal()">
                                     Select Font
                                 </button>
-
                                 <label>Size</label>
                                 <input type="number" id="textFontSize" min="8" max="200" value="40">
                                 <label class="checkbox-label">
@@ -264,13 +301,11 @@
                                 <div class="text-settings-row">
                                     <div class="text-settings-field">
                                         <label>Outline</label>
-                                        <input type="number" id="textStrokeWidth" min="0" max="20"
-                                            value="0" placeholder="Width">
+                                        <input type="number" id="textStrokeWidth" min="0" max="20" value="0" placeholder="Width">
                                     </div>
                                     <div class="text-settings-field">
                                         <label>Outline color</label>
-                                        <input type="color" id="textStrokeColor" value="#000000"
-                                            title="Outline color">
+                                        <input type="color" id="textStrokeColor" value="#000000" title="Outline color">
                                     </div>
                                 </div>
                                 <label>Outline position</label>
@@ -279,8 +314,7 @@
                                     <option value="stroke">Inside</option>
                                 </select>
                                 <label>Line height</label>
-                                <input type="number" id="textLineHeight" value="1.2" step="0.1" min="0.5"
-                                    max="3">
+                                <input type="number" id="textLineHeight" value="1.2" step="0.1" min="0.5" max="3">
                                 <label>Text align</label>
                                 <select id="textAlign">
                                     <option value="left">Left</option>
@@ -290,80 +324,57 @@
                                 </select>
                             </div>
                         </div>
-                        <!-- Object/Image settings - shown when an image or vector layer is selected -->
+                        <!-- Object/Image settings -->
                         <div class="object-settings-panel" id="objectSettingsPanel" style="display: none;">
                             <h3 class="object-settings-title">Object / Image Settings</h3>
                             <div class="object-settings-form">
                                 <label>Move</label>
                                 <div class="move-buttons-row">
-                                    <button type="button" class="move-btn move-btn-icon" id="moveLeftBtn"
-                                        title="Left" aria-label="Move left">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <polyline points="15 18 9 12 15 6" />
-                                        </svg>
+                                    <button type="button" class="move-btn move-btn-icon" id="moveLeftBtn" title="Left" aria-label="Move left">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6" /></svg>
                                     </button>
-                                    <button type="button" class="move-btn move-btn-icon" id="moveRightBtn"
-                                        title="Right" aria-label="Move right">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <polyline points="9 18 15 12 9 6" />
-                                        </svg>
+                                    <button type="button" class="move-btn move-btn-icon" id="moveRightBtn" title="Right" aria-label="Move right">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6" /></svg>
                                     </button>
-                                    <button type="button" class="move-btn move-btn-icon" id="moveUpBtn" title="Up"
-                                        aria-label="Move up">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <polyline points="18 15 12 9 6 15" />
-                                        </svg>
+                                    <button type="button" class="move-btn move-btn-icon" id="moveUpBtn" title="Up" aria-label="Move up">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15" /></svg>
                                     </button>
-                                    <button type="button" class="move-btn move-btn-icon" id="moveDownBtn"
-                                        title="Down" aria-label="Move down">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <polyline points="6 9 12 15 18 9" />
-                                        </svg>
+                                    <button type="button" class="move-btn move-btn-icon" id="moveDownBtn" title="Down" aria-label="Move down">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9" /></svg>
                                     </button>
                                 </div>
                                 <label>Opacity</label>
-                                <input type="range" id="objectOpacity" min="0" max="100" value="100"
-                                    step="5">
+                                <input type="range" id="objectOpacity" min="0" max="100" value="100" step="5">
                                 <span class="object-opacity-value" id="objectOpacityValue">100%</span>
                                 <h4 class="object-colors-title">Colors</h4>
                                 <div class="colors-grid-mascot" id="objectColorsGrid"></div>
                             </div>
                         </div>
-                        <!-- Shown when sidebar is open but no object selected -->
-                        <p class="right-panel-hint" id="rightPanelHint" style="display: none;">Select a layer to edit its
-                            settings.</p>
+                        <p class="right-panel-hint" id="rightPanelHint" style="display: none;">Select a layer to edit its settings.</p>
                     </div>
                 </aside>
             </div>
         </div>
 
-        <!-- Upload Image Module: LEFT = Original image, RIGHT = Edited image -->
+        <!-- Upload Image Module -->
         <div class="modal-overlay" id="uploadImageModal" style="display: none;">
             <div class="modal-content upload-modal-wide upload-module">
-                <button type="button" class="upload-modal-close" id="uploadModalClose" onclick="closeUploadModule()"
-                    title="Module band karein — image remove">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
+                <button type="button" class="upload-modal-close" id="uploadModalClose" onclick="closeUploadModule()" title="Module close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                 </button>
                 <h3 class="upload-module-title">Preview image</h3>
                 <div class="upload-modal-two-col">
-                    <!-- LEFT: Original image (humari uploaded image) -->
+                    <!-- LEFT: Original -->
                     <div class="upload-modal-left">
                         <h4 class="upload-module-side-label">Original</h4>
                         <div class="upload-modal-original-wrap">
                             <img id="uploadModalOriginal" alt="Original" class="upload-modal-thumb">
                         </div>
-                        <p class="upload-modal-color-count" id="uploadModalColorCount">Detected: <strong>0</strong>
-                            colors.</p>
-                        <div class="color-count-buttons-mascot upload-modal-color-count-btns"
-                            id="uploadModalColorCountButtons">
+                        <p class="upload-modal-color-count" id="uploadModalColorCount">Detected: <strong>0</strong> colors.</p>
+                        <div class="color-count-buttons-mascot upload-modal-color-count-btns" id="uploadModalColorCountButtons">
                             <button class="color-count-btn-small" onclick="selectColorCount(1, this)">1</button>
                             <button class="color-count-btn-small" onclick="selectColorCount(2, this)">2</button>
                             <button class="color-count-btn-small" onclick="selectColorCount(3, this)">3</button>
@@ -374,31 +385,35 @@
                             <button class="color-count-btn-small" onclick="selectColorCount(8, this)">8+</button>
                         </div>
                     </div>
-                    <!-- RIGHT: Edited image (jo hum edit karenge) -->
+                    <!-- RIGHT: Edited + ZOOM -->
                     <div class="upload-modal-right">
                         <h4 class="upload-module-side-label">Edited</h4>
                         <div class="upload-modal-eraser-row">
-                            <button type="button" class="btn btn-dark upload-modal-eraser-btn" id="uploadModalEraserBtn"
-                                onclick="toggleUploadModalEraser()">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
+                            <button type="button" class="btn btn-dark upload-modal-eraser-btn" id="uploadModalEraserBtn" onclick="toggleUploadModalEraser()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M20 20H7L2 15l8-8 5 5-5 5 5 5z" />
                                 </svg>
                                 <span>Eraser Tool</span>
                             </button>
-                            <label class="upload-modal-eraser-size" id="uploadModalEraserSizeWrap"
-                                style="display: none;">
-                                Size: <input type="range" id="uploadModalEraserSize" min="5" max="80"
-                                    value="30" onchange="setUploadModalEraserRadius(this.value)">
+                            <label class="upload-modal-eraser-size" id="uploadModalEraserSizeWrap" style="display: none;">
+                                Size: <input type="range" id="uploadModalEraserSize" min="5" max="80" value="30" onchange="setUploadModalEraserRadius(this.value)">
                                 <span id="uploadModalEraserSizeVal">30</span>
                             </label>
                         </div>
+
+                        {{-- ===== ZOOM CONTROLS (+ / - / Reset) ===== --}}
+                        <div class="upload-zoom-bar">
+                            <button type="button" class="upload-zoom-btn" id="zoomInBtn" title="Zoom In">+</button>
+                            <span class="upload-zoom-level" id="zoomLevelLabel">100%</span>
+                            <button type="button" class="upload-zoom-btn" id="zoomOutBtn" title="Zoom Out">−</button>
+                            <button type="button" class="upload-zoom-reset" id="zoomResetBtn" title="Reset Zoom">Reset</button>
+                        </div>
+
                         <div class="upload-modal-preview-wrap upload-modal-preview-clickable" id="uploadModalPreviewWrap">
                             <img id="uploadModalPreview" alt="Edited Preview" class="upload-modal-preview-img">
                         </div>
                         <h4 class="upload-modal-colors-title">colors</h4>
-                        <div class="colors-grid-mascot upload-modal-colors-grid upload-modal-colors-straight"
-                            id="uploadModalColorsGrid"></div>
+                        <div class="colors-grid-mascot upload-modal-colors-grid upload-modal-colors-straight" id="uploadModalColorsGrid"></div>
                     </div>
                 </div>
                 <div class="modal-buttons">
@@ -406,131 +421,210 @@
                 </div>
             </div>
         </div>
+
         <div id="backendColorModal" class="backend-color-modal">
-
             <div class="backend-color-box">
-
                 <div class="backend-color-header">
                     <h3>Select Color</h3>
                     <span onclick="closeBackendColorModal()">✕</span>
                 </div>
-
-                <input type="text" id="backendColorSearch" placeholder="Search color..."
-                    oninput="filterBackendColors(this.value)">
-
+                <input type="text" id="backendColorSearch" placeholder="Search color..." oninput="filterBackendColors(this.value)">
                 <div id="backendColorGrid" class="backend-color-grid"></div>
-
             </div>
-
         </div>
-
 
         <!-- Save Design Modal -->
-      <!-- Save Design Modal -->
-<div class="modal-overlay" id="saveDesignModal" style="display: none;">
-    <div class="modal-content">
-        <h3>Save Design</h3>
-        <div class="modal-body">
-
-            <label for="designTitle">Design Title:</label>
-            <input type="text" id="designTitle" placeholder="Enter design title..." maxlength="50">
-
-            <!-- ↓ NAYA: Category dropdown -->
-            <label for="designCategory" style="margin-top:12px;display:block;">Category:</label>
-            <select id="designCategory" class="form-select mt-1 mb-2">
-                <option value="">-- No Category --</option>
-                <!-- JS se options aayenge -->
-            </select>
-            <!-- ↑ NAYA ends -->
-
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeSaveDesignDialog()">Cancel</button>
-                <button class="btn btn-dark" id="saveDesignBtn" onclick="saveDesignToSVG()">
-                    <span id="saveBtnText">Save</span>
-                    <span id="saveBtnSpinner" class="btn-spinner"></span>
-                </button>
+        <div class="modal-overlay" id="saveDesignModal" style="display: none;">
+            <div class="modal-content">
+                <h3>Save Design</h3>
+                <div class="modal-body">
+                    <label for="designTitle">Design Title:</label>
+                    <input type="text" id="designTitle" placeholder="Enter design title..." maxlength="50">
+                    <label for="designCategory" style="margin-top:12px;display:block;">Category:</label>
+                    <select id="designCategory" class="form-select mt-1 mb-2">
+                        <option value="">-- No Category --</option>
+                    </select>
+                    <div class="modal-buttons">
+                        <button class="btn btn-secondary" onclick="closeSaveDesignDialog()">Cancel</button>
+                        <button class="btn btn-dark" id="saveDesignBtn" onclick="saveDesignToSVG()">
+                            <span id="saveBtnText">Save</span>
+                            <span id="saveBtnSpinner" class="btn-spinner"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+
         <div id="backendFontModal" class="backend-color-modal">
-
             <div class="backend-color-box">
-
                 <div class="backend-color-header">
                     <h3>Select Font</h3>
                     <span onclick="closeBackendFontModal()">✕</span>
                 </div>
-
                 <input type="text" placeholder="Search font..." oninput="filterBackendFonts(this.value)">
-
                 <div id="backendFontGrid" class="backend-color-grid"></div>
-
             </div>
-
         </div>
 
-        <!-- Right-click context menu (with icons) -->
+        <!-- Right-click context menu -->
         <div id="contextMenu" class="context-menu" style="display: none;">
-            <button type="button" data-action="copy"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" />
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg></span> Copy</button>
-            <button type="button" data-action="paste"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                        <rect x="8" y="2" width="8" height="4" rx="1" />
-                    </svg></span> Paste</button>
-            <button type="button" data-action="cut"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                        <path d="M15 2H9a1 1 0 0 0-1 1v2" />
-                        <line x1="9" y1="12" x2="15" y2="12" />
-                    </svg></span> Cut</button>
+            <button type="button" data-action="copy"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg></span> Copy</button>
+            <button type="button" data-action="paste"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" /></svg></span> Paste</button>
+            <button type="button" data-action="cut"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M15 2H9a1 1 0 0 0-1 1v2" /><line x1="9" y1="12" x2="15" y2="12" /></svg></span> Cut</button>
             <div class="context-menu-sep"></div>
-            <button type="button" data-action="flipH"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3" />
-                        <path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" />
-                        <line x1="12" y1="8" x2="12" y2="16" />
-                    </svg></span> Flip left to right</button>
-            <button type="button" data-action="flipV"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 8V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3" />
-                        <path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3" />
-                        <line x1="8" y1="12" x2="16" y2="12" />
-                    </svg></span> Flip up to down</button>
+            <button type="button" data-action="flipH"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3" /><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" /><line x1="12" y1="8" x2="12" y2="16" /></svg></span> Flip left to right</button>
+            <button type="button" data-action="flipV"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3" /><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3" /><line x1="8" y1="12" x2="16" y2="12" /></svg></span> Flip up to down</button>
             <div class="context-menu-sep"></div>
-            <button type="button" data-action="bringToFront"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="8" y="8" width="12" height="12" rx="1" />
-                        <rect x="4" y="4" width="12" height="12" rx="1" />
-                    </svg></span> Bring to front</button>
-            <button type="button" data-action="sendToBack"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="4" y="4" width="12" height="12" rx="1" />
-                        <rect x="8" y="8" width="12" height="12" rx="1" />
-                    </svg></span> Send to back</button>
-            <button type="button" data-action="bringForward"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 2 2 12 12 22 22 12 12 2" />
-                    </svg></span> Bring forward</button>
-            <button type="button" data-action="sendBackward"><span class="ctx-icon"><svg width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="12 22 2 12 12 2 22 12 12 22" />
-                    </svg></span> Send backward</button>
+            <button type="button" data-action="bringToFront"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="1" /><rect x="4" y="4" width="12" height="12" rx="1" /></svg></span> Bring to front</button>
+            <button type="button" data-action="sendToBack"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="12" height="12" rx="1" /><rect x="8" y="8" width="12" height="12" rx="1" /></svg></span> Send to back</button>
+            <button type="button" data-action="bringForward"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 12 12 22 22 12 12 2" /></svg></span> Bring forward</button>
+            <button type="button" data-action="sendBackward"><span class="ctx-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 22 2 12 12 2 22 12 12 22" /></svg></span> Send backward</button>
         </div>
 
     </div>
 
-
     <script>
         window.backendColors = @json(\App\Models\Color::all());
-        window.backendFonts = @json(\App\Models\Font::all());
+        window.backendFonts  = @json(\App\Models\Font::all());
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
     <script src="{{ asset('js/mascot.js') }}"></script>
+
+    {{-- ===== ZOOM SCRIPT — runs after DOM is ready ===== --}}
+    <script>
+    (function () {
+        // ---- state ----
+        var scale      = 1;
+        var minScale   = 0.5;
+        var maxScale   = 5;
+        var step       = 0.25;
+        var panX       = 0;
+        var panY       = 0;
+        var isPanning  = false;
+        var startX     = 0;
+        var startY     = 0;
+        var startPanX  = 0;
+        var startPanY  = 0;
+
+        // ---- elements ----
+        var wrap, img, zoomInBtn, zoomOutBtn, zoomResetBtn, zoomLabel;
+
+        function init() {
+            wrap         = document.getElementById('uploadModalPreviewWrap');
+            img          = document.getElementById('uploadModalPreview');
+            zoomInBtn    = document.getElementById('zoomInBtn');
+            zoomOutBtn   = document.getElementById('zoomOutBtn');
+            zoomResetBtn = document.getElementById('zoomResetBtn');
+            zoomLabel    = document.getElementById('zoomLevelLabel');
+
+            if (!wrap || !img) return;
+
+            // Button clicks
+            zoomInBtn.addEventListener('click',    function(e){ e.stopPropagation(); changeZoom(step);  });
+            zoomOutBtn.addEventListener('click',   function(e){ e.stopPropagation(); changeZoom(-step); });
+            zoomResetBtn.addEventListener('click', function(e){ e.stopPropagation(); resetZoom();       });
+
+            // Mouse wheel zoom on the preview wrap
+            wrap.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var delta = e.deltaY < 0 ? step : -step;
+                changeZoom(delta);
+            }, { passive: false });
+
+            // Pan: mouse
+            wrap.addEventListener('mousedown', function(e) {
+                // Only pan when not eraser mode
+                if (scale <= 1) return;
+                isPanning = true;
+                startX    = e.clientX;
+                startY    = e.clientY;
+                startPanX = panX;
+                startPanY = panY;
+                wrap.classList.add('dragging');
+                e.preventDefault();
+            });
+            document.addEventListener('mousemove', function(e) {
+                if (!isPanning) return;
+                panX = startPanX + (e.clientX - startX);
+                panY = startPanY + (e.clientY - startY);
+                applyTransform();
+            });
+            document.addEventListener('mouseup', function() {
+                if (isPanning) {
+                    isPanning = false;
+                    wrap.classList.remove('dragging');
+                }
+            });
+
+            // Pan: touch
+            var touchStartX = 0, touchStartY = 0, touchPanX = 0, touchPanY = 0;
+            var lastDist = 0;
+            wrap.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchPanX   = panX;
+                    touchPanY   = panY;
+                } else if (e.touches.length === 2) {
+                    lastDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                }
+                e.preventDefault();
+            }, { passive: false });
+            wrap.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 1 && scale > 1) {
+                    panX = touchPanX + (e.touches[0].clientX - touchStartX);
+                    panY = touchPanY + (e.touches[0].clientY - touchStartY);
+                    applyTransform();
+                } else if (e.touches.length === 2) {
+                    var dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    if (lastDist > 0) {
+                        var ratio = dist / lastDist;
+                        scale = Math.min(maxScale, Math.max(minScale, scale * ratio));
+                        applyTransform();
+                    }
+                    lastDist = dist;
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            // Reset zoom when modal closes (so next open is fresh)
+            var closeBtn = document.getElementById('uploadModalClose');
+            if (closeBtn) closeBtn.addEventListener('click', resetZoom);
+        }
+
+        function changeZoom(delta) {
+            scale = Math.min(maxScale, Math.max(minScale, scale + delta));
+            if (scale <= 1) { panX = 0; panY = 0; }
+            applyTransform();
+        }
+
+        function resetZoom() {
+            scale = 1; panX = 0; panY = 0;
+            applyTransform();
+        }
+
+        function applyTransform() {
+            if (!img) return;
+            img.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + scale + ')';
+            if (zoomLabel) zoomLabel.textContent = Math.round(scale * 100) + '%';
+        }
+
+        // Wait for DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+
 @endsection

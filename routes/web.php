@@ -187,6 +187,8 @@ Route::get('/api/colors', function () {
 Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
 
 // Template routes
+// Route::post('templates/bulk-destroy', [TemplateController::class, 'bulkDestroy'])
+//      ->name('templates.bulkDestroy');
 Route::resource('templates', TemplateController::class);
 
 Route::post('/templates/save-from-customizer',

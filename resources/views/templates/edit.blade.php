@@ -348,7 +348,7 @@
         <div class="modal-overlay" id="uploadImageModal" style="display: none;">
             <div class="modal-content upload-modal-wide upload-module">
                 <button type="button" class="upload-modal-close" id="uploadModalClose" onclick="closeUploadModule()"
-                    title="Module band karein — image remove">
+                    title="Module close">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18" />

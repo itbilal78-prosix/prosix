@@ -702,7 +702,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .carousel-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; gap: 6px; align-items: center; }
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: rgba(0,0,0,0.4); border: none; padding: 0; cursor: pointer; transition: all 0.3s; }
 .dot.active { background: #000; width: 20px; border-radius: 10px; }
-
 .sports-icons-section { background: black; padding: 25px 0; overflow: hidden; position: relative; }
 .sports-icons-section::before, .sports-icons-section::after { content: ''; position: absolute; top: 0; bottom: 0; width: 70px; z-index: 2; }
 .sports-icons-section::before { left: 0; background: linear-gradient(to right, black, transparent); }
