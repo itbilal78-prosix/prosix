@@ -22,7 +22,7 @@
                 <h1>Welcome to Mascot Customizer</h1>
             </header>
 
-<input type="hidden" id="editingTemplateId" value="{{ $template->id ?? '' }}">
+            <input type="hidden" id="editingTemplateId" value="{{ $template->id ?? '' }}">
 
             <div class="main-content">
                 <!-- Left Sidebar - EDIT DESIGN -->
@@ -155,7 +155,7 @@
                         <canvas id="hiddenCanvasMascot" style="display: none;"></canvas>
                         <!-- Save Button -->
                         <div class="save-section">
-<button class="btn btn-dark" onclick="openSaveDesignDialog()">Save</button>
+                            <button class="btn btn-dark" onclick="openSaveDesignDialog()">Save</button>
                         </div>
                     </div>
                 </main>
@@ -429,20 +429,27 @@
 
 
         <!-- Save Design Modal -->
+        <!-- Save Design Modal -->
         <div class="modal-overlay" id="saveDesignModal" style="display: none;">
             <div class="modal-content">
                 <h3>Save Design</h3>
                 <div class="modal-body">
                     <label for="designTitle">Design Title:</label>
                     <input type="text" id="designTitle" placeholder="Enter design title..." maxlength="50">
-                  <div class="modal-buttons">
-    <button class="btn btn-secondary" onclick="closeSaveDesignDialog()">Cancel</button>
-<button class="btn btn-dark" id="saveDesignBtn" onclick="saveDesignToSVG()">
-    <span id="saveBtnText">Save</span>
-    <span id="saveBtnSpinner" class="btn-spinner"></span>
-</button>
-</div>
 
+                    <!-- Category dropdown -->
+                    <label for="designCategory" style="margin-top:12px;display:block;">Category:</label>
+                    <select id="designCategory" class="form-select mt-1 mb-2">
+                        <option value="">-- No Category --</option>
+                    </select>
+
+                    <div class="modal-buttons">
+                        <button class="btn btn-secondary" onclick="closeSaveDesignDialog()">Cancel</button>
+                        <button class="btn btn-dark" id="saveDesignBtn" onclick="saveDesignToSVG()">
+                            <span id="saveBtnText">Save</span>
+                            <span id="saveBtnSpinner" class="btn-spinner"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -516,25 +523,20 @@
         </div>
 
     </div>
- <form action="{{ route('templates.update', $template->id) }}" method="POST">
-    @csrf
-    @method('PUT')
+    <form action="{{ route('templates.update', $template->id) }}" method="POST">
+        @csrf
+        @method('PUT')
 
-    <label>Template Name</label>
+        <label>Template Name</label>
 
-    <input
-        type="text"
-        name="title"
-        value="{{ $template->title }}"
-        class="form-control"
-    >
+        <input type="text" name="title" value="{{ $template->title }}" class="form-control">
 
-    <br>
+        <br>
 
-    <button class="btn btn-primary">
-        Update Name
-    </button>
-</form>
+        <button class="btn btn-primary">
+            Update Name
+        </button>
+    </form>
 
     <script>
         window.backendColors = @json(\App\Models\Color::all());
@@ -546,138 +548,158 @@
     <script src="{{ asset('js/mascot.js') }}"></script>
 
 
-@if(isset($template))
-<script>
-window.addEventListener('load', function() {
+    @if (isset($template))
+        <script>
+            window.addEventListener('load', function() {
 
-    var svgRaw = {!! json_encode($template->svg_data) !!};
-    var imageData = {!! json_encode($template->image_data ?? '') !!};
-    var templateTitle = {!! json_encode($template->title ?? '') !!};
+                var svgRaw = {!! json_encode($template->svg_data) !!};
+                var imageData = {!! json_encode($template->image_data ?? '') !!};
+                var templateTitle = {!! json_encode($template->title ?? '') !!};
 
-    // Title set karo
-    var titleInput = document.getElementById('designTitle');
-    if (titleInput && templateTitle) titleInput.value = templateTitle;
+                // Title set karo
+                var titleInput = document.getElementById('designTitle');
+                if (titleInput && templateTitle) titleInput.value = templateTitle;
 
-    // ✅ CASE 1: SVG data hai
-    if (svgRaw && svgRaw.trim().startsWith('<')) {
+                // ✅ CASE 1: SVG data hai
+                if (svgRaw && svgRaw.trim().startsWith('<')) {
 
-        fabric.loadSVGFromString(svgRaw, function(objects, options) {
-            fabricCanvas.clear();
+                    fabric.loadSVGFromString(svgRaw, function(objects, options) {
+                        fabricCanvas.clear();
 
-            var allColors = new Set();
+                        var allColors = new Set();
 
-            objects.forEach(function(obj) {
-                obj.set({
-                    selectable: true,
-                    hasControls: true,
-                    hasBorders: true,
-                    objectCaching: false
-                });
+                        objects.forEach(function(obj) {
+                            obj.set({
+                                selectable: true,
+                                hasControls: true,
+                                hasBorders: true,
+                                objectCaching: false
+                            });
 
-                // SVG paths se colors nikalo
-                if (['path','rect','circle','polygon','ellipse'].indexOf(obj.type) !== -1) {
-                    if (obj.fill && obj.fill !== 'transparent' && obj.fill !== '' && obj.fill !== 'none') {
-                        allColors.add(obj.fill);
-                    }
-                    if (obj.stroke && obj.stroke !== 'transparent' && obj.stroke !== '' && obj.stroke !== 'none') {
-                        allColors.add(obj.stroke);
-                    }
-                }
-
-                // Group ke andar se colors nikalo
-                if (obj.type === 'group') {
-                    obj.subTargetCheck = false;
-                    obj.interactive = false;
-
-                    if (obj._objects && obj._objects.length) {
-                        obj.forEachObject(function(child) {
-                            child.selectable = false;
-                            child.evented = false;
-                            child.hasControls = false;
-                            child.hasBorders = false;
-
-                            if (child.fill && child.fill !== 'transparent' && child.fill !== '' && child.fill !== 'none') {
-                                allColors.add(child.fill);
+                            // SVG paths se colors nikalo
+                            if (['path', 'rect', 'circle', 'polygon', 'ellipse'].indexOf(obj.type) !== -
+                                1) {
+                                if (obj.fill && obj.fill !== 'transparent' && obj.fill !== '' && obj
+                                    .fill !== 'none') {
+                                    allColors.add(obj.fill);
+                                }
+                                if (obj.stroke && obj.stroke !== 'transparent' && obj.stroke !== '' &&
+                                    obj.stroke !== 'none') {
+                                    allColors.add(obj.stroke);
+                                }
                             }
-                            if (child.stroke && child.stroke !== 'transparent' && child.stroke !== '' && child.stroke !== 'none') {
-                                allColors.add(child.stroke);
+
+                            // Group ke andar se colors nikalo
+                            if (obj.type === 'group') {
+                                obj.subTargetCheck = false;
+                                obj.interactive = false;
+
+                                if (obj._objects && obj._objects.length) {
+                                    obj.forEachObject(function(child) {
+                                        child.selectable = false;
+                                        child.evented = false;
+                                        child.hasControls = false;
+                                        child.hasBorders = false;
+
+                                        if (child.fill && child.fill !== 'transparent' && child
+                                            .fill !== '' && child.fill !== 'none') {
+                                            allColors.add(child.fill);
+                                        }
+                                        if (child.stroke && child.stroke !== 'transparent' &&
+                                            child.stroke !== '' && child.stroke !== 'none') {
+                                            allColors.add(child.stroke);
+                                        }
+                                    });
+                                }
+
+                                if (obj.colorMappings) {
+                                    Object.keys(obj.colorMappings).forEach(function(k) {
+                                        allColors.add(k);
+                                    });
+                                }
                             }
+
+                            if (obj.type === 'image' && obj.colorMappings) {
+                                Object.keys(obj.colorMappings).forEach(function(k) {
+                                    allColors.add(k);
+                                });
+                            }
+
+                            fabricCanvas.add(obj);
                         });
-                    }
 
-                    if (obj.colorMappings) {
-                        Object.keys(obj.colorMappings).forEach(function(k) { allColors.add(k); });
-                    }
+                        fabricCanvas.renderAll();
+
+                        // Colors set karo
+                        if (allColors.size > 0) {
+                            detectedColors = Array.from(allColors).map(function(hex) {
+                                return {
+                                    hex: hex,
+                                    r: parseInt(hex.slice(1, 3), 16) || 0,
+                                    g: parseInt(hex.slice(3, 5), 16) || 0,
+                                    b: parseInt(hex.slice(5, 7), 16) || 0,
+                                    count: 1
+                                };
+                            });
+                            selectedColorsForVector = Array.from(allColors);
+                            allColors.forEach(function(hex) {
+                                colorMappings[hex] = hex;
+                            });
+                        }
+
+                        setTimeout(function() {
+                            fabricCanvas.getObjects().forEach(function(obj) {
+                                if (obj.type === 'group') {
+                                    obj.subTargetCheck = false;
+                                    obj.set({
+                                        selectable: true,
+                                        objectCaching: false
+                                    });
+                                }
+                            });
+                            fabricCanvas.renderAll();
+
+                            // Pehla object select karo — colors panel khulega
+                            var firstObj = fabricCanvas.getObjects()[0];
+                            if (firstObj) {
+                                fabricCanvas.setActiveObject(firstObj);
+                                fabricCanvas.fire('selection:created', {
+                                    selected: [firstObj]
+                                });
+                                fabricCanvas.renderAll();
+                            }
+                        }, 200);
+
+                        undoHistory = [];
+                        redoHistory = [];
+                        saveStateForUndo();
+                        updateLayers();
+                        updateLayerSelection();
+                    });
                 }
 
-                if (obj.type === 'image' && obj.colorMappings) {
-                    Object.keys(obj.colorMappings).forEach(function(k) { allColors.add(k); });
+                // ✅ CASE 2: Sirf image hai
+                else if (imageData && imageData.length > 10) {
+                    fabric.Image.fromURL(imageData, function(img) {
+                        fabricCanvas.clear();
+                        img.set({
+                            selectable: true,
+                            hasControls: true,
+                            hasBorders: true
+                        });
+                        fabricCanvas.add(img);
+                        fabricCanvas.setActiveObject(img);
+                        fabricCanvas.renderAll();
+                        undoHistory = [];
+                        redoHistory = [];
+                        saveStateForUndo();
+                        updateLayers();
+                    }, {
+                        crossOrigin: 'anonymous'
+                    });
                 }
 
-                fabricCanvas.add(obj);
             });
-
-            fabricCanvas.renderAll();
-
-            // Colors set karo
-            if (allColors.size > 0) {
-                detectedColors = Array.from(allColors).map(function(hex) {
-                    return {
-                        hex: hex,
-                        r: parseInt(hex.slice(1,3), 16) || 0,
-                        g: parseInt(hex.slice(3,5), 16) || 0,
-                        b: parseInt(hex.slice(5,7), 16) || 0,
-                        count: 1
-                    };
-                });
-                selectedColorsForVector = Array.from(allColors);
-                allColors.forEach(function(hex) { colorMappings[hex] = hex; });
-            }
-
-            setTimeout(function() {
-                fabricCanvas.getObjects().forEach(function(obj) {
-                    if (obj.type === 'group') {
-                        obj.subTargetCheck = false;
-                        obj.set({ selectable: true, objectCaching: false });
-                    }
-                });
-                fabricCanvas.renderAll();
-
-                // Pehla object select karo — colors panel khulega
-                var firstObj = fabricCanvas.getObjects()[0];
-                if (firstObj) {
-                    fabricCanvas.setActiveObject(firstObj);
-                    fabricCanvas.fire('selection:created', { selected: [firstObj] });
-                    fabricCanvas.renderAll();
-                }
-            }, 200);
-
-            undoHistory = [];
-            redoHistory = [];
-            saveStateForUndo();
-            updateLayers();
-            updateLayerSelection();
-        });
-    }
-
-    // ✅ CASE 2: Sirf image hai
-    else if (imageData && imageData.length > 10) {
-        fabric.Image.fromURL(imageData, function(img) {
-            fabricCanvas.clear();
-            img.set({ selectable: true, hasControls: true, hasBorders: true });
-            fabricCanvas.add(img);
-            fabricCanvas.setActiveObject(img);
-            fabricCanvas.renderAll();
-            undoHistory = [];
-            redoHistory = [];
-            saveStateForUndo();
-            updateLayers();
-        }, { crossOrigin: 'anonymous' });
-    }
-
-});
-</script>
-@endif
-
-
+        </script>
+    @endif
 @endsection

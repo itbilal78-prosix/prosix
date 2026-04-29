@@ -3,129 +3,102 @@
 namespace App\Http\Controllers;
 
 use App\Models\Template;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class TemplateController extends Controller
 {
-    // Display all templates
+    // index: categories ke saath templates load karo
     public function index()
     {
-        $templates = Template::latest()->get();
-        return view('templates.index', compact('templates'));
+        $categories = Category::whereNull('parent_id')
+            ->where('status', 1)
+            ->with(['templates' => function ($q) {
+                $q->latest();
+            }])
+            ->get();
+
+        $uncategorized = Template::whereNull('category_id')->latest()->get();
+
+        return view('templates.index', compact('categories', 'uncategorized'));
     }
 
-    // Show create form
     public function create()
     {
         return view('templates.create');
     }
 
-    // Store new template
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
-            'svg_data' => 'nullable|string',
-            'image_data' => 'nullable|string',
-            'description' => 'nullable|string',
-            'source' => 'nullable|string',
-            'box_index' => 'nullable|integer'
+            'title'       => 'required|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
+            'svg_data'    => 'nullable|string',
+            'image_data'  => 'nullable|string',
         ]);
 
         Template::create($request->all());
 
-        return redirect()->route('templates.index')
-            ->with('success', 'Template created successfully!');
+        return redirect()->route('templates.index')->with('success', 'Template created!');
     }
 
-    // Show single template
     public function show(Template $template)
     {
         return view('templates.show', compact('template'));
     }
 
-    // Show edit form
     public function edit(Template $template)
     {
         return view('templates.edit', compact('template'));
     }
 
-    // Update template
-public function update(Request $request, $id)
-{
-    $template = Template::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $template = Template::findOrFail($id);
 
-    $request->validate([
-        'title' => 'required|string|max:255',
-    ]);
+        $request->validate([
+            'title' => 'required|string|max:255',
+        ]);
 
-    $template->title = $request->title;
+        $template->title = $request->title;
+        $template->save();
 
-    $template->save();
+        return redirect()->route('templates.index')->with('success', 'Template updated!');
+    }
 
-    return redirect()->route('templates.index')
-        ->with('success', 'Template name updated successfully!');
-}
-
-
-    // Delete template
     public function destroy(Template $template)
     {
         $template->delete();
-
-        return redirect()->route('templates.index')
-            ->with('success', 'Template deleted successfully!');
+        return redirect()->route('templates.index')->with('success', 'Template deleted!');
     }
 
-    // API endpoint for saving from mascot customizer
-    // public function saveFromCustomizer(Request $request)
-    // {
-    //     $request->validate([
-    //         'title' => 'required|string|max:255',
-    //         'svg_data' => 'required|string',
-    //         'image_data' => 'required|string',
-    //     ]);
+    // Mascot customizer se save hoga — category_id bhi aayega ab
+    public function saveFromCustomizer(Request $request)
+    {
+        $request->validate([
+            'title'       => 'required|string',
+            'svg_data'    => 'required|string',
+            'image_data'  => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
 
-    //     $template = Template::create([
-    //         'title' => $request->title,
-    //         'svg_data' => $request->svg_data,
-    //         'image_data' => $request->image_data,
-    //         'source' => 'mascot-customizer',
-    //         'box_index' => $request->box_index ?? 0
-    //     ]);
+        $template = Template::create([
+            'title'       => $request->title,
+            'svg_data'    => $request->svg_data,
+            'image_data'  => $request->image_data ?? null,
+            'source'      => 'customizer',
+            'category_id' => $request->category_id ?? null,
+        ]);
 
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Template saved successfully!',
-    //         'template' => $template
-    //     ]);
-    // }
+        return response()->json([
+            'success' => true,
+            'id'      => $template->id,
+            'message' => 'Template saved successfully',
+        ]);
+    }
 
-
-
-public function saveFromCustomizer(Request $request)
-{
-    $request->validate([
-        'title'      => 'required|string',
-        'svg_data'   => 'required|string',
-        'image_data' => 'nullable|string',
-    ]);
-
-    $template = Template::create([
-        'title'      => $request->title,
-        'svg_data'   => $request->svg_data,
-        'image_data' => $request->image_data ?? null,
-        'source'     => 'customizer',
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'id'      => $template->id,
-        'message' => 'Template saved successfully',
-    ]);
-}
-
-    public function apiList() {
-    return response()->json(\App\Models\Template::latest()->get());
-}
+    public function apiList()
+    {
+        return response()->json(Template::latest()->get());
+    }
 }

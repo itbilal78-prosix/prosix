@@ -171,8 +171,8 @@
             style="width:100%;height:100%;object-fit:contain;pointer-events:none;opacity:1;">
 
         {{-- 4 VIEWS OVERLAY --}}
-        <div style="position:absolute;inset:0;z-index:1;display:flex;gap:16px;justify-content:center;align-items:center;padding:30px;flex-wrap:wrap;">
- <div class="preview-card-horizontal" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+<div class="preview-views-row">
+     <div class="preview-card-horizontal" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
                 <div id="previewRight" class="preview-container-horizontal"></div>
                 <div style="font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#111;">Right</div>
             </div>
@@ -302,7 +302,74 @@
                                 'name' => $c->name,
                             ]));
                 </script>
+<script>
+// =====================================================
+// PROSIX SECURED — DEVTOOLS PROTECTION
+// =====================================================
 
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+document.addEventListener('keydown', e => {
+    if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I','J','C','K','S'].includes(e.key.toUpperCase())) ||
+        (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+        (e.ctrlKey && e.key.toUpperCase() === 'P') ||
+        (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
+    ) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+});
+
+//  DevTools size detection
+const devToolsCheck = () => {
+    const isRealMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isRealMobile) return;
+
+    const threshold = 160;
+    const widthDiff = window.outerWidth - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
+
+    if (widthDiff > threshold || heightDiff > threshold) {
+        document.body.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:sans-serif;">
+                <h1 style="font-size:48px;margin:0;">😜</h1>
+                <h2 style="margin:16px 0 8px;">Access Denied</h2>
+                <p style="color:#aaa;font-size:14px;">PROSIX SECURED</p>
+            </div>`;
+        clearInterval(checkInterval);
+    }
+};
+
+window.addEventListener('resize', devToolsCheck);
+const checkInterval = setInterval(devToolsCheck, 1000);
+
+// Console clear + warning
+setInterval(() => { console.clear(); }, 100);
+console.log('%cPROSIX SECURED', 'color:#C9A84C;font-size:40px;font-weight:900;');
+console.log('%c⚠ Stop! This browser feature is for developers only.', 'color:red;font-size:14px;font-weight:bold;');
+console.log('%cIf someone told you to paste something here, it is a scam.', 'color:red;font-size:13px;');
+
+// Debugger trap
+(function antiDebug() {
+    function trap() {
+        const start = performance.now();
+        debugger;
+        if (performance.now() - start > 100) {
+            document.body.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:sans-serif;">
+                    <h1 style="font-size:48px;margin:0;">🔒</h1>
+                    <h2 style="margin:16px 0 8px;">Access Denied</h2>
+                    <p style="color:#aaa;font-size:14px;">PROSIX SECURED</p>
+                </div>`;
+        }
+        setTimeout(trap, 1000);
+    }
+    trap();
+})();
+</script>
                 <script>
                     // ============================================================
                     // ✅ BACKGROUND CANVAS

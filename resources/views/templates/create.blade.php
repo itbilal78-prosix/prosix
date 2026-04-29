@@ -152,7 +152,7 @@
                         <canvas id="hiddenCanvasMascot" style="display: none;"></canvas>
                         <!-- Save Button -->
                         <div class="save-section">
-<button class="btn btn-dark" onclick="openSaveDesignDialog()">Save</button>
+                            <button class="btn btn-dark" onclick="openSaveDesignDialog()">Save</button>
                         </div>
                     </div>
                 </main>
@@ -426,23 +426,33 @@
 
 
         <!-- Save Design Modal -->
-        <div class="modal-overlay" id="saveDesignModal" style="display: none;">
-            <div class="modal-content">
-                <h3>Save Design</h3>
-                <div class="modal-body">
-                    <label for="designTitle">Design Title:</label>
-                    <input type="text" id="designTitle" placeholder="Enter design title..." maxlength="50">
-                  <div class="modal-buttons">
-    <button class="btn btn-secondary" onclick="closeSaveDesignDialog()">Cancel</button>
-<button class="btn btn-dark" id="saveDesignBtn" onclick="saveDesignToSVG()">
-    <span id="saveBtnText">Save</span>
-    <span id="saveBtnSpinner" class="btn-spinner"></span>
-</button>
-</div>
+      <!-- Save Design Modal -->
+<div class="modal-overlay" id="saveDesignModal" style="display: none;">
+    <div class="modal-content">
+        <h3>Save Design</h3>
+        <div class="modal-body">
 
-                </div>
+            <label for="designTitle">Design Title:</label>
+            <input type="text" id="designTitle" placeholder="Enter design title..." maxlength="50">
+
+            <!-- ↓ NAYA: Category dropdown -->
+            <label for="designCategory" style="margin-top:12px;display:block;">Category:</label>
+            <select id="designCategory" class="form-select mt-1 mb-2">
+                <option value="">-- No Category --</option>
+                <!-- JS se options aayenge -->
+            </select>
+            <!-- ↑ NAYA ends -->
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeSaveDesignDialog()">Cancel</button>
+                <button class="btn btn-dark" id="saveDesignBtn" onclick="saveDesignToSVG()">
+                    <span id="saveBtnText">Save</span>
+                    <span id="saveBtnSpinner" class="btn-spinner"></span>
+                </button>
             </div>
         </div>
+    </div>
+</div>
         <div id="backendFontModal" class="backend-color-modal">
 
             <div class="backend-color-box">

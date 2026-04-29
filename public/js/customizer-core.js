@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-console.log('FILE A LOADED');
+    console.log('FILE A LOADED');
     // =================== APPLICATION STATE ===================
     window.currentModelId = window.MODEL_ID;
     // ✅ LOAD USER SAVED DESIGN (VERY IMPORTANT)
@@ -755,7 +755,7 @@ console.log('FILE A LOADED');
         });
     };
 
-//     // =================== UPDATE LAYERS LIST ===================
+    //     // =================== UPDATE LAYERS LIST ===================
 
 
 
@@ -2888,10 +2888,10 @@ window.isDraggingKnob = false;
 
 
 
-window.saveDesign = async function () {
-    if (window.isSaving) return;
+    window.saveDesign = async function () {
+        if (window.isSaving) return;
 
-    if (window.isUserMode) {
+        if (window.isUserMode) {
 
             const designName = prompt('Apne design ka naam rakho:', 'My Design ' + new Date().toLocaleDateString());
             if (!designName) return;
@@ -2950,14 +2950,15 @@ window.saveDesign = async function () {
 
                 if (res.ok) {
                     await generateAndSaveThumbnail();
-window.showSaveSuccessToast('Successfully Saved', `Design "${designName}" saved`);
+                    window.showSaveSuccessToast('Successfully Saved', `Design "${designName}" saved`);
                 } else {
                     alert('❌ Save failed: ' + (responseData.message || 'Please login first'));
                 }
 
             } catch (e) {
                 console.error('Save error:', e);
-window.showSaveSuccessToast('Save Failed', 'Please try again');            }
+                window.showSaveSuccessToast('Save Failed', 'Please try again');
+            }
 
             window.isSaving = false;
             return;
@@ -3045,7 +3046,7 @@ window.showSaveSuccessToast('Save Failed', 'Please try again');            }
                 window.embedFontsInSvg(liveSvgForThumb);
             }
             await generateAndSaveThumbnail();
-window.showSaveSuccessToast('Successfully Saved', 'Design saved successfully');
+            window.showSaveSuccessToast('Successfully Saved', 'Design saved successfully');
 
         } catch (e) {
             console.error(e);
@@ -3055,23 +3056,23 @@ window.showSaveSuccessToast('Successfully Saved', 'Design saved successfully');
         window.isSaving = false;
     };
 
-window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle = 'Your design has been saved') {
-    const toast = document.getElementById('saveSuccessToast');
-    if (!toast) return;
+    window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle = 'Your design has been saved') {
+        const toast = document.getElementById('saveSuccessToast');
+        if (!toast) return;
 
-    const titleEl = toast.querySelector('.save-success-title');
-    const subtitleEl = toast.querySelector('.save-success-subtitle');
+        const titleEl = toast.querySelector('.save-success-title');
+        const subtitleEl = toast.querySelector('.save-success-subtitle');
 
-    if (titleEl) titleEl.textContent = title;
-    if (subtitleEl) subtitleEl.textContent = subtitle;
+        if (titleEl) titleEl.textContent = title;
+        if (subtitleEl) subtitleEl.textContent = subtitle;
 
-    toast.classList.add('show');
+        toast.classList.add('show');
 
-    clearTimeout(window._saveToastTimer);
-    window._saveToastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-    }, 2200);
-};
+        clearTimeout(window._saveToastTimer);
+        window._saveToastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2200);
+    };
 
     /* ================= RESET ================= */
 
@@ -3190,27 +3191,27 @@ window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle =
 
     /* ================= PREVIEW ================= */
 
-window.openPreviewPanel = function () {
-    // ✅ Preview panel ko branded banao
-    const previewPanel = document.getElementById('previewPanel');
+    window.openPreviewPanel = function () {
+        // ✅ Preview panel ko branded banao
+        const previewPanel = document.getElementById('previewPanel');
 
-    // Existing header already hai, bas background update karo
-    // 4 views capture karo
-    captureCurrentViewsForPreview();
+        // Existing header already hai, bas background update karo
+        // 4 views capture karo
+        captureCurrentViewsForPreview();
 
-    previewPanel.style.right = '0px';
-    document.getElementById('previewBtn').classList.add('active');
+        previewPanel.style.right = '0px';
+        document.getElementById('previewBtn').classList.add('active');
 
-    // ✅ Preview panel background branded banao
-    _renderBrandedPreviewBg();
-};
+        // ✅ Preview panel background branded banao
+        _renderBrandedPreviewBg();
+    };
 
-function _renderBrandedPreviewBg() {
-    const panel = document.getElementById('previewPanel');
-    if (!panel) return;
+    function _renderBrandedPreviewBg() {
+        const panel = document.getElementById('previewPanel');
+        if (!panel) return;
 
-    // Diagonal lines background
-    panel.style.background = `
+        // Diagonal lines background
+        panel.style.background = `
         repeating-linear-gradient(
             45deg,
             #f8f8f8,
@@ -3219,7 +3220,7 @@ function _renderBrandedPreviewBg() {
             #f0f0f0 20px
         )
     `;
-}
+    }
 
     window.closePreviewPanel = function () {
         // Slide panel out
@@ -3233,10 +3234,8 @@ function _renderBrandedPreviewBg() {
     async function captureCurrentViewsForPreview() {
         const views = ['front', 'back', 'left', 'right'];
 
-        // ✅ Pehle current SVG se saare layers ka bbox save karo
         const mainSvg = window.getMainSvg();
         if (mainSvg) {
-            // ✅ Sirf current view ka bbox update karo (jo live SVG mein hai)
             const currentV = window.currentView;
             if (window.applicationsApplied?.[currentV]) {
                 Object.entries(window.applicationsApplied[currentV]).forEach(([partId, layers]) => {
@@ -3247,7 +3246,6 @@ function _renderBrandedPreviewBg() {
                             if (bb.width > 0) {
                                 const bbox = { x: bb.x, y: bb.y, width: bb.width, height: bb.height };
                                 layers.forEach(layer => {
-                                    if (layer.view !== view) return;
                                     layer._savedBbox = bbox;
                                     if (!layer._bboxByView) layer._bboxByView = {};
                                     layer._bboxByView[currentV] = bbox;
@@ -3259,7 +3257,6 @@ function _renderBrandedPreviewBg() {
             }
         }
 
-        // ✅ Sequential (ek ke baad ek) - parallel nahi
         for (const view of views) {
             const container = document.getElementById(`preview${view.charAt(0).toUpperCase() + view.slice(1)}`);
             if (!container) continue;
@@ -3272,12 +3269,18 @@ function _renderBrandedPreviewBg() {
             }
 
             try {
-                const canvas = await createMergedCanvas(view);
-                const img = document.createElement('img');
-                img.src = canvas.toDataURL('image/png');
-                img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+                const modelCanvas = await createMergedCanvas(view);
+
+                // ✅ No drag — canvas use karo
+                modelCanvas.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;display:block;';
+                modelCanvas.draggable = false;
+                modelCanvas.addEventListener('contextmenu', e => e.preventDefault());
+                modelCanvas.addEventListener('dragstart', e => e.preventDefault());
+                modelCanvas.addEventListener('mousedown', e => e.preventDefault());
+
                 container.innerHTML = '';
-                container.appendChild(img);
+                container.appendChild(modelCanvas);
+
             } catch (err) {
                 console.error(`Preview error (${view}):`, err);
                 container.innerHTML = '<div style="color:#f33;padding:20px;text-align:center;">Error</div>';
@@ -3595,63 +3598,64 @@ function _renderBrandedPreviewBg() {
 
     });
 
-// ============================================================
-// DOWNLOAD FIX v6 — No view labels below images
-// ============================================================
-document.addEventListener('click', async function(e) {
-    if (e.target.id !== 'downloadClean') return;
-    if (window.isUserMode) return;
+    // ============================================================
+    // DOWNLOAD FIX v8 — Frame BG, no white card, no footer
+    // ============================================================
 
-    const btn = e.target;
-    btn.disabled = true;
-    btn.textContent = 'Generating...';
+    function loadImg(src) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+            img.src = src;
+        });
+    }
 
-    try {
+    async function buildDesignCanvas({ withWatermark }) {
         const viewOrder = ['right', 'front', 'back', 'left'];
         const canvases = {};
 
         for (const view of viewOrder) {
             if (!modelViews[view]?.svg_url) {
                 const blank = document.createElement('canvas');
-                blank.width = 800; blank.height = 800;
+                blank.width = 800;
+                blank.height = 800;
                 canvases[view] = blank;
             } else {
                 canvases[view] = await createMergedCanvas(view);
             }
         }
 
-        function loadImg(src) {
-            return new Promise(resolve => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload  = () => resolve(img);
-                img.onerror = () => resolve(null);
-                img.src = src;
-            });
-        }
+        const COLS = 4;
+        const CELL_W = 380;
+        const CELL_H = 480;
+        const GAP = 30;
+        const HEADER_H = 130;
+        const PAD = 36;    // top/bottom
+        const PAD_LEFT = 60;    // ← left extra space
+        const PAD_RIGHT = 60;    // ← right extra space
+        const LABEL_H = 50;
 
-      const COLS     = 4;
-const CELL_W   = 480;
-const CELL_H   = 600;   // ← 700 se 600 karo
-const GAP      = 30;    // ← 14 se 30 karo (gap between images)
-const HEADER_H = 130;
-const FOOTER_H = 54;
-const PAD      = 36;
-const LABEL_H  = 50;    // ← 40 se 50 karo
-
-        const totalW = PAD * 2 + CELL_W * COLS + GAP * (COLS - 1);
-        const totalH = HEADER_H + PAD + CELL_H + LABEL_H + PAD + FOOTER_H;
+        const totalW = PAD_LEFT + PAD_RIGHT + CELL_W * COLS + GAP * (COLS - 1);
+        const totalH = HEADER_H + PAD + CELL_H + LABEL_H + PAD;
 
         const finalCanvas = document.createElement('canvas');
-        finalCanvas.width  = totalW;
+        finalCanvas.width = totalW;
         finalCanvas.height = totalH;
         const ctx = finalCanvas.getContext('2d');
 
-        // White BG
+        // 1. White base
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, totalW, totalH);
 
-        // Header
+        // 2. Frame.png full background
+        const frameImg = await loadImg('/assets/images/frame.png');
+        if (frameImg) {
+            ctx.drawImage(frameImg, 0, 0, totalW, totalH);
+        }
+
+        // 3. Header
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, totalW, HEADER_H);
         ctx.fillStyle = '#C9A84C';
@@ -3659,363 +3663,148 @@ const LABEL_H  = 50;    // ← 40 se 50 karo
         ctx.fillStyle = '#C9A84C';
         ctx.fillRect(0, HEADER_H - 4, totalW, 4);
 
-        const pLogo      = await loadImg('/assets/images/P LOGO WHITE.png');
+        const pLogo = await loadImg('/assets/images/P LOGO WHITE.png');
         const prosixLogo = await loadImg('/assets/images/PROSIX SPORTS LOGO PNG WHITE.png');
 
         const logoH = 72;
-        const midY  = HEADER_H / 2;
+        const midY = HEADER_H / 2;
 
-        let pLogoW      = pLogo      ? (pLogo.width / pLogo.height) * logoH : 64;
-        let prosixLogoW = prosixLogo ? (prosixLogo.width / prosixLogo.height) * logoH : 180;
+        const pLogoW = pLogo ? (pLogo.width / pLogo.height) * logoH : 64;
+        const prosixLogoW = prosixLogo ? (prosixLogo.width / prosixLogo.height) * logoH : 180;
 
-        const pipeGap     = 20;
+        const pipeGap = 20;
         const totalLogosW = pLogoW + pipeGap + 1 + pipeGap + prosixLogoW;
         const logosBlockX = (totalW - totalLogosW) / 2;
 
-        if (pLogo) {
-            ctx.drawImage(pLogo, logosBlockX, (HEADER_H - logoH) / 2 + 3, pLogoW, logoH);
-        }
+        if (pLogo) ctx.drawImage(pLogo, logosBlockX, (HEADER_H - logoH) / 2 + 3, pLogoW, logoH);
+        if (prosixLogo) ctx.drawImage(prosixLogo, logosBlockX + pLogoW + pipeGap * 2 + 1, (HEADER_H - logoH) / 2 + 3, prosixLogoW, logoH);
 
-        const pipeX = logosBlockX + pLogoW + pipeGap;
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth   = 2.5;
-        ctx.lineCap     = 'round';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(pipeX, HEADER_H * 0.2);
-        ctx.lineTo(pipeX, HEADER_H * 0.8);
+        ctx.moveTo(logosBlockX + pLogoW + pipeGap, HEADER_H * 0.2);
+        ctx.lineTo(logosBlockX + pLogoW + pipeGap, HEADER_H * 0.8);
         ctx.stroke();
-
-        const prosixX = pipeX + pipeGap;
-        if (prosixLogo) {
-            ctx.drawImage(prosixLogo, prosixX, (HEADER_H - logoH) / 2 + 3, prosixLogoW, logoH);
-        }
 
         ctx.font = 'bold 26px Arial Black, Arial';
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        ctx.fillText('DESIGN PREVIEW', totalW - PAD, midY - 12);
+        ctx.fillText('DESIGN PREVIEW', totalW - PAD_RIGHT, midY - 12);
 
         const previewTextW = ctx.measureText('DESIGN PREVIEW').width;
         ctx.fillStyle = '#C9A84C';
-        ctx.fillRect(totalW - PAD - previewTextW, midY, previewTextW, 2);
+        ctx.fillRect(totalW - PAD_RIGHT - previewTextW, midY, previewTextW, 2);
 
         ctx.font = '12px Arial';
         ctx.fillStyle = '#C9A84C';
         ctx.textAlign = 'right';
-        ctx.fillText('APPROVED FOR PRODUCTION', totalW - PAD, midY + 18);
+        ctx.fillText(
+            withWatermark ? 'DRAFT  —  NOT FOR PRODUCTION' : 'APPROVED FOR PRODUCTION',
+            totalW - PAD_RIGHT,
+            midY + 18
+        );
 
-        // 4 images — NO watermark
+        // 4. View images
         viewOrder.forEach((view, idx) => {
-            const cellX = PAD + idx * (CELL_W + GAP);
+            const cellX = PAD_LEFT + idx * (CELL_W + GAP);  // ← PAD_LEFT use
             const cellY = HEADER_H + PAD;
 
             if (canvases[view]) {
-                const src   = canvases[view];
+                const src = canvases[view];
                 const scale = Math.min(CELL_W / src.width, CELL_H / src.height);
-                const dw    = src.width  * scale;
-                const dh    = src.height * scale;
-                const dx    = cellX + (CELL_W - dw) / 2;
-                const dy    = cellY + (CELL_H - dh) / 2;
+                const dw = src.width * scale;
+                const dh = src.height * scale;
+                const dx = cellX + (CELL_W - dw) / 2;
+                const dy = cellY + (CELL_H - dh) / 2;
                 ctx.drawImage(src, dx, dy, dw, dh);
             }
 
-            // ✅ View label neeche — NO watermark
+            // Draft watermark
+            if (withWatermark) {
+                ctx.save();
+                ctx.translate(cellX + CELL_W / 2, HEADER_H + PAD + CELL_H / 2);
+                ctx.rotate(-Math.PI / 5.5);
+                ctx.globalAlpha = 0.13;
+                ctx.fillStyle = '#970000';
+                ctx.font = 'bold 80px Arial Black, Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('DRAFT', 0, -25);
+                ctx.font = 'bold 30px Arial Black, Arial';
+                ctx.fillText('NOT PURCHASED', 0, 25);
+                ctx.restore();
+            }
+
+            // View label
             ctx.font = 'bold 22px Arial Black, Arial';
             ctx.fillStyle = '#1a1a1a';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
-            ctx.fillText(view.toUpperCase(), cellX + CELL_W / 2, HEADER_H + PAD + CELL_H + 8);
-
-            if (idx < COLS - 1) {
-                ctx.strokeStyle = 'rgba(0,0,0,0.07)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(cellX + CELL_W + GAP / 2, HEADER_H + PAD / 2);
-                ctx.lineTo(cellX + CELL_W + GAP / 2, HEADER_H + PAD + CELL_H + PAD / 2);
-                ctx.stroke();
-            }
+            ctx.fillText(view.toUpperCase(), cellX + CELL_W / 2, HEADER_H + PAD + CELL_H + 10);
         });
 
-        // Footer
-        const footerY = totalH - FOOTER_H;
-        ctx.fillStyle = '#C9A84C';
-        ctx.fillRect(0, footerY, totalW, 3);
-        ctx.fillStyle = '#0a0a0a';
-        ctx.fillRect(0, footerY + 3, totalW, FOOTER_H - 3);
-
-        const fMidY = footerY + 3 + (FOOTER_H - 3) / 2;
-        const third = totalW / 3;
-        ctx.textBaseline = 'middle';
-        ctx.font = '12px Arial';
-        ctx.fillStyle = '#C9A84C';
-        ctx.textAlign = 'center';
-        ctx.fillText('www.prosix.com', third * 0.5, fMidY);
-
-        ctx.strokeStyle = '#444444';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(third, footerY + 3 + 12);
-        ctx.lineTo(third, footerY + 3 + (FOOTER_H - 3) - 12);
-        ctx.stroke();
-
-        ctx.fillStyle = '#aaaaaa';
-        ctx.fillText('sales@prosix.com  |  929-210-4402', third * 1.5, fMidY);
-
-        ctx.beginPath();
-        ctx.moveTo(third * 2, footerY + 3 + 12);
-        ctx.lineTo(third * 2, footerY + 3 + (FOOTER_H - 3) - 12);
-        ctx.stroke();
-
-        ctx.fillStyle = '#777777';
-        ctx.fillText('ALL RIGHTS RESERVED BY PROSIX SPORTS LLC', third * 2.5, fMidY);
-
-        const dataUrl = finalCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `prosix-design-clean-${Date.now()}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        if (window.showSaveSuccessToast) {
-            window.showSaveSuccessToast('Downloaded!', 'Clean design saved as PNG');
-        }
-
-    } catch(err) {
-        console.error(err);
-        alert('Download failed: ' + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Download Clean (No Watermark)';
+        return finalCanvas;
     }
-});
+    // ─── Download Draft ───────────────────────────────────────────
+    document.addEventListener('click', async function (e) {
+        if (e.target.id !== 'downloadAllViews') return;
 
-// watermark //
+        const btn = e.target;
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
 
+        try {
+            const canvas = await buildDesignCanvas({ withWatermark: true });
+            const link = document.createElement('a');
+            link.download = `prosix-design-draft-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-document.addEventListener('click', async function (e) {
-    if (e.target.id !== 'downloadAllViews') return;
-
-
-
-    const btn = e.target;
-    btn.disabled = true;
-    btn.textContent = 'Generating...';
-
-    try {
-        const viewOrder = ['right', 'front', 'back', 'left'];
-        const canvases = {};
-
-        for (const view of viewOrder) {
-            if (!modelViews[view]?.svg_url) {
-                const blank = document.createElement('canvas');
-                blank.width = 800; blank.height = 800;
-                const bCtx = blank.getContext('2d');
-                bCtx.fillStyle = '#eeeeee';
-                bCtx.fillRect(0, 0, 800, 800);
-                canvases[view] = blank;
-            } else {
-                canvases[view] = await createMergedCanvas(view);
+            if (window.showSaveSuccessToast) {
+                window.showSaveSuccessToast('Downloaded!', 'Design sheet saved as PNG');
             }
+        } catch (err) {
+            console.error('Download error:', err);
+            alert('Download failed: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-download" style="color:#C9A84C;"></i> Download Draft';
         }
+    });
 
-        function loadImg(src) {
-            return new Promise(resolve => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload  = () => resolve(img);
-                img.onerror = () => resolve(null);
-                img.src = src;
-            });
-        }
+    // ─── Download Clean (admin only) ─────────────────────────────
+    document.addEventListener('click', async function (e) {
+        if (e.target.id !== 'downloadClean') return;
+        if (window.isUserMode) return;
 
-     const COLS     = 4;
-const CELL_W   = 480;
-const CELL_H   = 600;   // ← 700 se 600 karo
-const GAP      = 30;    // ← 14 se 30 karo (gap between images)
-const HEADER_H = 130;
-const FOOTER_H = 54;
-const PAD      = 36;
-const LABEL_H  = 50;    // ← 40 se 50 karo
+        const btn = e.target;
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
 
-        const totalW = PAD * 2 + CELL_W * COLS + GAP * (COLS - 1);
-        const totalH = HEADER_H + PAD + CELL_H + LABEL_H + PAD + FOOTER_H;
+        try {
+            const canvas = await buildDesignCanvas({ withWatermark: false });
+            const link = document.createElement('a');
+            link.download = `prosix-design-clean-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-        const finalCanvas = document.createElement('canvas');
-        finalCanvas.width  = totalW;
-        finalCanvas.height = totalH;
-        const ctx = finalCanvas.getContext('2d');
-
-        // White BG
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, totalW, totalH);
-
-        // Diagonal lines BG
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0,0,0,0.04)';
-        ctx.lineWidth = 1.2;
-        for (let i = -totalH; i < totalW + totalH; i += 28) {
-            ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i + totalH, totalH);
-            ctx.stroke();
-        }
-        ctx.restore();
-
-        // Header
-        ctx.fillStyle = '#0a0a0a';
-        ctx.fillRect(0, 0, totalW, HEADER_H);
-        ctx.fillStyle = '#C9A84C';
-        ctx.fillRect(0, 0, totalW, 6);
-        ctx.fillStyle = '#C9A84C';
-        ctx.fillRect(0, HEADER_H - 4, totalW, 4);
-
-        const pLogo      = await loadImg('/assets/images/P LOGO WHITE.png');
-        const prosixLogo = await loadImg('/assets/images/PROSIX SPORTS LOGO PNG WHITE.png');
-
-        const logoH = 72;
-        const midY  = HEADER_H / 2;
-
-        let pLogoW      = pLogo      ? (pLogo.width      / pLogo.height)      * logoH : 64;
-        let prosixLogoW = prosixLogo ? (prosixLogo.width  / prosixLogo.height) * logoH : 180;
-
-        const pipeGap     = 20;
-        const totalLogosW = pLogoW + pipeGap + 1 + pipeGap + prosixLogoW;
-        const logosBlockX = (totalW - totalLogosW) / 2;
-
-        if (pLogo) {
-            ctx.drawImage(pLogo, logosBlockX, (HEADER_H - logoH) / 2 + 3, pLogoW, logoH);
-        }
-
-        const pipeX = logosBlockX + pLogoW + pipeGap;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth   = 2.5;
-        ctx.lineCap     = 'round';
-        ctx.beginPath();
-        ctx.moveTo(pipeX, HEADER_H * 0.2);
-        ctx.lineTo(pipeX, HEADER_H * 0.8);
-        ctx.stroke();
-
-        const prosixX = pipeX + pipeGap;
-        if (prosixLogo) {
-            ctx.drawImage(prosixLogo, prosixX, (HEADER_H - logoH) / 2 + 3, prosixLogoW, logoH);
-        }
-
-        ctx.font = 'bold 26px Arial Black, Arial';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('DESIGN PREVIEW', totalW - PAD, midY - 12);
-
-        const previewTextW = ctx.measureText('DESIGN PREVIEW').width;
-        ctx.fillStyle = '#C9A84C';
-        ctx.fillRect(totalW - PAD - previewTextW, midY, previewTextW, 2);
-
-        ctx.font = '12px Arial';
-        ctx.fillStyle = '#C9A84C';
-        ctx.textAlign = 'right';
-        ctx.fillText('DRAFT  —  NOT FOR PRODUCTION', totalW - PAD, midY + 18);
-
-        // 4 images
-        viewOrder.forEach((view, idx) => {
-            const cellX = PAD + idx * (CELL_W + GAP);
-            const cellY = HEADER_H + PAD;
-
-            if (canvases[view]) {
-                const src   = canvases[view];
-                const scale = Math.min(CELL_W / src.width, CELL_H / src.height);
-                const dw    = src.width  * scale;
-                const dh    = src.height * scale;
-                const dx    = cellX + (CELL_W - dw) / 2;
-                const dy    = cellY + (CELL_H - dh) / 2;
-                ctx.drawImage(src, dx, dy, dw, dh);
+            if (window.showSaveSuccessToast) {
+                window.showSaveSuccessToast('Downloaded!', 'Clean design saved as PNG');
             }
-
-            // ✅ DRAFT watermark har view pe
-            ctx.save();
-            ctx.translate(PAD + idx * (CELL_W + GAP) + CELL_W / 2, HEADER_H + PAD + CELL_H / 2);
-            ctx.rotate(-Math.PI / 5.5);
-            ctx.globalAlpha = 0.13;
-            ctx.fillStyle = '#cc0000';
-            ctx.font = 'bold 80px Arial Black, Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('DRAFT', 0, -25);
-            ctx.font = 'bold 30px Arial Black, Arial';
-            ctx.fillText('NOT PURCHASED', 0, 25);
-            ctx.restore();
-
-            // ✅ View label neeche
-            ctx.font = 'bold 22px Arial Black, Arial';
-            ctx.fillStyle = '#1a1a1a';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText(view.toUpperCase(), cellX + CELL_W / 2, HEADER_H + PAD + CELL_H + 8);
-
-            if (idx < COLS - 1) {
-                ctx.strokeStyle = 'rgba(0,0,0,0.07)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(cellX + CELL_W + GAP / 2, HEADER_H + PAD / 2);
-                ctx.lineTo(cellX + CELL_W + GAP / 2, HEADER_H + PAD + CELL_H + PAD / 2);
-                ctx.stroke();
-            }
-        });
-
-        // Footer
-        const footerY = totalH - FOOTER_H;
-        ctx.fillStyle = '#C9A84C';
-        ctx.fillRect(0, footerY, totalW, 3);
-        ctx.fillStyle = '#0a0a0a';
-        ctx.fillRect(0, footerY + 3, totalW, FOOTER_H - 3);
-
-        const fMidY = footerY + 3 + (FOOTER_H - 3) / 2;
-        const third = totalW / 3;
-        ctx.textBaseline = 'middle';
-        ctx.font = '12px Arial';
-        ctx.fillStyle = '#C9A84C';
-        ctx.textAlign = 'center';
-        ctx.fillText('www.prosix.com', third * 0.5, fMidY);
-
-        ctx.strokeStyle = '#444444';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(third, footerY + 3 + 12);
-        ctx.lineTo(third, footerY + 3 + (FOOTER_H - 3) - 12);
-        ctx.stroke();
-
-        ctx.fillStyle = '#aaaaaa';
-        ctx.fillText('sales@prosix.com  |  929-210-4402', third * 1.5, fMidY);
-
-        ctx.beginPath();
-        ctx.moveTo(third * 2, footerY + 3 + 12);
-        ctx.lineTo(third * 2, footerY + 3 + (FOOTER_H - 3) - 12);
-        ctx.stroke();
-
-        ctx.fillStyle = '#777777';
-        ctx.fillText('ALL RIGHTS RESERVED BY PROSIX SPORTS LLC', third * 2.5, fMidY);
-
-        const dataUrl = finalCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `prosix-design-draft-${Date.now()}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        if (window.showSaveSuccessToast) {
-            window.showSaveSuccessToast('Downloaded!', 'Design sheet saved as PNG');
+        } catch (err) {
+            console.error(err);
+            alert('Download failed: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-download" style="color:#C9A84C;"></i> Download Clean';
         }
-
-    } catch (err) {
-        console.error('Download error:', err);
-        alert('Download failed: ' + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Download All (PNG)';
-    }
-});
+    });
 
 
 
@@ -4276,17 +4065,17 @@ const LABEL_H  = 50;    // ← 40 se 50 karo
             activateTab('colorBtn');
         }
     }
-function showSaveSuccessToast() {
-    const toast = document.getElementById('saveSuccessToast');
-    if (!toast) return;
+    function showSaveSuccessToast() {
+        const toast = document.getElementById('saveSuccessToast');
+        if (!toast) return;
 
-    toast.classList.add('show');
+        toast.classList.add('show');
 
-    clearTimeout(window.saveToastTimer);
-    window.saveToastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-    }, 1800);
-}
+        clearTimeout(window.saveToastTimer);
+        window.saveToastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 1800);
+    }
     // ===== ROTATE POPUP =====
     function showRotatePopup() {
         var ov = document.getElementById('rotateOverlay');

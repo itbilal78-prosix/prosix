@@ -52,7 +52,7 @@ function initializeCanvas() {
     fabricCanvas = new fabric.Canvas('designCanvas', {
         width: 1000,
         height: 600,
-        backgroundColor: 'white',
+        backgroundColor: '',
         selection: true,
         preserveObjectStacking: true,
         perPixelTargetFind: true,      // 🔥 Changed to true
@@ -2919,57 +2919,86 @@ function saveDesignToSVG(){
    return;
  }
 
+ const categoryId = document.getElementById('designCategory')?.value || null;
+
  const saveBtn = document.getElementById('saveDesignBtn');
  const btnText = document.getElementById('saveBtnText');
  const btnSpinner = document.getElementById('saveBtnSpinner');
 
- // 🔥 Spinner ON
  saveBtn.disabled = true;
  btnText.style.display = "none";
  btnSpinner.style.display = "inline-block";
 
- const svgData = fabricCanvas.toSVG({ suppressPreamble:false });
- const imageData = fabricCanvas.toDataURL({ format:'png', quality:1 });
+ const svgData = fabricCanvas.toSVG({ suppressPreamble: false });
+
+ // ✅ Background remove karke PNG banao
+ const originalBg = fabricCanvas.backgroundColor;
+ fabricCanvas.backgroundColor = '';  // transparent
+ fabricCanvas.renderAll();
+
+ const imageData = fabricCanvas.toDataURL({
+   format: 'png',
+   quality: 1
+ });
+
+ // ✅ Background restore karo
+ fabricCanvas.backgroundColor = originalBg;
+ fabricCanvas.renderAll();
 
  const templateId = document.getElementById('editingTemplateId')?.value;
 
  fetch(templateId ? `/templates/${templateId}` : '/templates/save-from-customizer', {
-   method:'POST',
-   headers:{
-     'Content-Type':'application/json',
-     'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
+   method: 'POST',
+   headers: {
+     'Content-Type': 'application/json',
+     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
    },
-   body:JSON.stringify({
+   body: JSON.stringify({
      _method: templateId ? 'PUT' : 'POST',
-     title:title,
-     svg_data:svgData,
-     image_data:imageData
+     title: title,
+     category_id: categoryId || null,
+     svg_data: svgData,
+     image_data: imageData
    })
  })
- .then(r=>r.json())
- .then(data=>{
+ .then(r => r.json())
+ .then(data => {
    if(data.success){
-
-     // ✅ DIRECT INDEX PAGE
      window.location.href = "/templates";
-
-   }else{
+   } else {
      resetBtn();
      alert("Save failed");
    }
  })
- .catch(err=>{
+ .catch(err => {
    console.error(err);
    resetBtn();
    alert("Server error");
  });
 
  function resetBtn(){
-   saveBtn.disabled=false;
-   btnSpinner.style.display="none";
-   btnText.style.display="inline";
+   saveBtn.disabled = false;
+   btnSpinner.style.display = "none";
+   btnText.style.display = "inline";
  }
 }
 
+// ← YEH FILE KE END MEIN ADD KARO (sabse neeche)
+async function loadCategoriesForSaveDialog() {
+    try {
+        const res = await fetch('/api/categories-for-templates');
+        const data = await res.json();
+        const sel = document.getElementById('designCategory');
+        if (!sel) return;
+        data.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            sel.appendChild(opt);
+        });
+    } catch (e) {
+        console.error('Categories load error:', e);
+    }
+}
 
-
+loadCategoriesForSaveDialog();

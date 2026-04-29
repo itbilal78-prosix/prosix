@@ -41,4 +41,8 @@ public function models()
 {
     return $this->hasMany(CustomizerModel::class, 'category_id');
 }
+public function templates()
+{
+    return $this->hasMany(\App\Models\Template::class, 'category_id');
+}
 }

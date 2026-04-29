@@ -193,7 +193,19 @@ Route::post('/templates/save-from-customizer',
     [TemplateController::class, 'saveFromCustomizer']
 );
 Route::get('/api/mascot-templates', function () {
-    return \App\Models\Template::latest()->get();
+    return \App\Models\Template::with('category')
+        ->latest()
+        ->get()
+        ->map(function ($t) {
+            return [
+                'id'         => $t->id,
+                'title'      => $t->title,
+                'svg_data'   => $t->svg_data,
+                'image_data' => $t->image_data,
+                'category'   => $t->category ? $t->category->name : 'Uncategorized',
+                'category_id'=> $t->category_id,
+            ];
+        });
 });
 Route::get('/products/featured', [ProductController::class, 'featured'])
     ->name('products.featured.list');
@@ -316,7 +328,13 @@ Route::middleware(['auth:admin'])
         ->name('models.bulkToggleHidden');
 
 });
-
+Route::get('/api/categories-for-templates', function () {
+    return \App\Models\Category::whereNull('parent_id')
+        ->where('status', 1)
+        ->select('id', 'name')
+        ->orderBy('name')
+        ->get();
+});
 
 Route::get('/{any}', function () {
     return view('welcome');
