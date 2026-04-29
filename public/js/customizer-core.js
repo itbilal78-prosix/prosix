@@ -3744,7 +3744,6 @@ window.isDraggingKnob = false;
             ctx.textBaseline = 'top';
             ctx.fillText(view.toUpperCase(), cellX + CELL_W / 2, HEADER_H + PAD + CELL_H + 10);
         });
-
         return finalCanvas;
     }
     // ─── Download Draft ───────────────────────────────────────────

@@ -759,25 +759,36 @@ window.mcApplyOnly = function () {
     };
 
     // ======= APPLY BUTTON in main modal =======
-    window.applySelectedMascotToApplication = function() {
-        var state = window._mascotState;
-        var mascotData = state.selectedMascotData;
+ // ======= APPLY BUTTON in main modal =======
+window.applySelectedMascotToApplication = function() {
+    var state = window._mascotState;
+    var mascotData = state.selectedMascotData;
 
-        if (!mascotData) {
-            alert('Please select a mascot first.');
-            return;
-        }
+    if (!mascotData) {
+        alert('Please select a mascot first.');
+        return;
+    }
 
-        var layerId = state.pendingLayerId || window.currentApplicationLayer;
-        if (!layerId) {
-            alert('No application layer found.');
-            return;
-        }
+    var layerId = state.pendingLayerId || window.currentApplicationLayer;
+    if (!layerId) {
+        alert('No application layer found.');
+        return;
+    }
 
-        // Open customize modal BEFORE applying
-        closeMascotSelectModal();
+    closeMascotSelectModal();
+
+    // ✅ KEY FIX: Sirf upload pe customize modal dikhao
+    // Existing ya creator mascot directly apply ho
+    if (mascotData.source === 'upload') {
+        // Upload ke liye customize modal dikhao
         openMascotCustomizeModal(mascotData, layerId);
-    };
+    } else {
+        // Existing / creator — seedha apply karo, no popup
+        if (window.applyDirectMascotToLayer) {
+            window.applyDirectMascotToLayer(mascotData.svg || mascotData.imageUrl, layerId, true);
+        }
+    }
+};
 
     // ============================================================
     // =================== MASCOT CUSTOMIZE MODAL =================
