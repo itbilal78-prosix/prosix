@@ -69,7 +69,7 @@
                   <img :src="activeThumb.src || displayImage" class="zoom-layer zoom-svg" :style="zoomTransformStyle" />
                 </template>
               </div>
-
+ 
               <!-- MAIN DISPLAY -->
               <template v-if="isModel">
                 <div v-if="activeThumb && activeThumb.isLayered" class="model-layer-container" :class="{ 'zoomed-hidden': zoomActive }">

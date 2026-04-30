@@ -144,7 +144,8 @@
                 <div class="model-grid">
                   <div v-for="model in groupModels" :key="model.id" class="model-col">
                     <div class="model-card">
-                      <div class="card-image-wrapper" @click.stop="router.push(`/product/${model.id}?type=model`)">
+                      <!-- <div class="card-image-wrapper" @click.stop="router.push(`/product/${model.id}?type=model`)"> -->
+                      <div class="card-image-wrapper" @click.stop="handleCardClick(model.id)">
                         <template v-if="shouldUseCompositePreview(model)">
                           <img
                             v-if="getCompositeBase(model)"
@@ -219,7 +220,8 @@
               <div class="model-grid">
                 <div v-for="model in filteredModels" :key="model.id" class="model-col">
                   <div class="model-card">
-                    <div class="card-image-wrapper" @click.stop="router.push(`/product/${model.id}?type=model`)">
+                    <!-- <div class="card-image-wrapper" @click.stop="router.push(`/product/${model.id}?type=model`)"> -->
+                    <div class="card-image-wrapper" @click.stop="handleCardClick(model.id)"">
                       <template v-if="shouldUseCompositePreview(model)">
                         <img
                           v-if="getCompositeBase(model)"
@@ -1544,6 +1546,14 @@ const groupedFilteredModels = computed(() => {
   })
   return groups
 })
+const handleCardClick = (modelId) => {
+  alert('This page is coming soon! We are working on it.')
+}
+
+// working //
+
+
+
 
 const handleCustomizerClick = (modelId) => {
   const token = localStorage.getItem('auth_token')
