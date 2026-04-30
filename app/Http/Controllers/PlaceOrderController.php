@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PlaceOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;   // ← YEH NAYA HAI
 use Illuminate\Support\Str;
 
 class PlaceOrderController extends Controller
@@ -207,53 +208,41 @@ class PlaceOrderController extends Controller
     /**
      * Send new order email (admin + customer)
      */
-    private function sendOrderEmail(PlaceOrder $order, string $type = 'new')
-    {
-        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-            ->setApiKey('api-key', env('BREVO_API_KEY'));
+   private function sendOrderEmail(PlaceOrder $order, string $type = 'new')
+{
+    $html = view('emails.place-order-admin', ['order' => $order])->render();
 
-        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-            new \GuzzleHttp\Client(), $config
-        );
-
-        $htmlAdmin = view('emails.place-order-admin', ['order' => $order])->render();
-
-        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
-            'subject'     => 'New Place Order Received — ' . $order->order_number,
-            'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
-            'to'          => [
-                ['email' => 'sales@prosix.com'],
-                ['email' => $order->email],
-            ],
-            'htmlContent' => $htmlAdmin,
-        ]);
-
-        $apiInstance->sendTransacEmail($email);
-    }
+    Http::withHeaders([
+        'api-key'      => env('BREVO_API_KEY'),
+        'Content-Type' => 'application/json',
+    ])->post('https://api.brevo.com/v3/smtp/email', [
+        'subject'     => 'New Place Order Received — ' . $order->order_number,
+        'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
+        'to'          => [
+            ['email' => 'sales@prosix.com'],
+            ['email' => $order->email, 'name' => $order->full_name],
+        ],
+        'htmlContent' => $html,
+    ]);
+}
 
     /**
      * Send status update email to customer
      */
-    private function sendStatusEmail(PlaceOrder $order)
-    {
-        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-            ->setApiKey('api-key', env('BREVO_API_KEY'));
+   private function sendStatusEmail(PlaceOrder $order)
+{
+    $html = view('emails.place-order-status', ['order' => $order])->render();
 
-        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-            new \GuzzleHttp\Client(), $config
-        );
-
-        $htmlContent = view('emails.place-order-status', ['order' => $order])->render();
-
-        $statusLabel = ucfirst($order->status);
-
-        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
-            'subject'     => "Your Order #{$order->order_number} is now {$statusLabel}",
-            'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
-            'to'          => [['email' => $order->email, 'name' => $order->full_name]],
-            'htmlContent' => $htmlContent,
-        ]);
-
-        $apiInstance->sendTransacEmail($email);
-    }
+    Http::withHeaders([
+        'api-key'      => env('BREVO_API_KEY'),
+        'Content-Type' => 'application/json',
+    ])->post('https://api.brevo.com/v3/smtp/email', [
+        'subject'     => 'Your Order #' . $order->order_number . ' is now ' . ucfirst($order->status),
+        'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
+        'to'          => [
+            ['email' => $order->email, 'name' => $order->full_name],
+        ],
+        'htmlContent' => $html,
+    ]);
+}
 }

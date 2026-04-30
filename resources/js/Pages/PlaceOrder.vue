@@ -611,8 +611,8 @@ export default {
 .po-modal p { color: rgba(255,255,255,.7); margin: 0 0 6px; }
 .po-modal-order { font-weight: 700; color: #fff !important; font-size: 16px; margin-bottom: 20px !important; }
 @keyframes popUp { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@media (max-width: 1200px) { .po-top-row { grid-template-columns: repeat(4,1fr); } .po-mid-row { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 900px) { .how-to-sidebar { display: none; } .po-container { padding: 20px; } }
-@media (max-width: 768px) { .po-top-row { grid-template-columns: 1fr 1fr; } .po-mid-row { grid-template-columns: 1fr; } .po-color-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 480px) { .po-top-row { grid-template-columns: 1fr; } }
+@media (max-width: 1200px){ .po-top-row { grid-template-columns: repeat(4,1fr); } .po-mid-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 900px){ .how-to-sidebar { display: none; } .po-container { padding: 20px; } }
+@media (max-width: 768px){ .po-top-row { grid-template-columns: 1fr 1fr; } .po-mid-row { grid-template-columns: 1fr; } .po-color-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 480px){ .po-top-row { grid-template-columns: 1fr; } }
 </style>
