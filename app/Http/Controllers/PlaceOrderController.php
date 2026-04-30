@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\PlaceOrder;
@@ -20,11 +21,11 @@ class PlaceOrderController extends Controller
     }
 
     /**
-     * Download PDF
+     * Download PDF (bulk)
      */
     public function downloadPdf(Request $request)
     {
-        $ids = explode(',', $request->ids);
+        $ids    = explode(',', $request->ids);
         $orders = PlaceOrder::whereIn('id', $ids)->get();
 
         $pdf = Pdf::loadView('pdf.placeorder-pdf', compact('orders'))
@@ -34,13 +35,14 @@ class PlaceOrderController extends Controller
     }
 
     /**
-     * Store Order (MAIN FUNCTION)
+     * Store Order
      */
     public function store(Request $request)
     {
         $request->validate([
             'full_name'     => 'required|string|max:255',
             'email'         => 'required|email',
+            'phone'         => 'nullable|string|max:30',
             'order_number'  => 'required|string',
             'order_date'    => 'required|string',
             'delivery_date' => 'nullable|string',
@@ -55,19 +57,17 @@ class PlaceOrderController extends Controller
             'quote_files.*' => 'file|max:20480',
         ]);
 
-        // ✅ Sanctum guard se user_id lo — guest ho toh null ayega
         $userId = Auth::guard('sanctum')->id();
 
-        // Save files
         $mockupPaths = $this->saveFiles($request, 'mockup_files', 'orders/mockup');
         $rosterPaths = $this->saveFiles($request, 'roster_files', 'orders/roster');
         $quotePaths  = $this->saveFiles($request, 'quote_files',  'orders/quote');
 
-        // Save to DB
         $order = PlaceOrder::create([
-            'user_id'       => $userId,   // ✅ logged in ho toh ID, guest ho toh null
+            'user_id'       => $userId,
             'full_name'     => $request->full_name,
             'email'         => $request->email,
+            'phone'         => $request->phone,
             'order_number'  => $request->order_number,
             'order_date'    => $request->order_date,
             'delivery_date' => $request->delivery_date,
@@ -80,34 +80,9 @@ class PlaceOrderController extends Controller
             'status'        => 'pending',
         ]);
 
-        // ✅ BREVO API EMAIL
+        // Send order confirmation email via Brevo
         try {
-            $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
-                ->setApiKey('api-key', env('BREVO_API_KEY'));
-
-            $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
-                new \GuzzleHttp\Client(), $config
-            );
-
-            $htmlContent = view('emails.place-order-admin', [
-                'order' => $order
-            ])->render();
-
-            $email = new \SendinBlue\Client\Model\SendSmtpEmail([
-                'subject' => 'New Place Order Received',
-                'sender'  => [
-                    'name'  => 'Prosix Sports',
-                    'email' => 'prosixsports@gmail.com'
-                ],
-                'to' => [
-                    ['email' => 'sales@prosix.com'],
-                    ['email' => $order->email],
-                ],
-                'htmlContent' => $htmlContent,
-            ]);
-
-            $apiInstance->sendTransacEmail($email);
-
+            $this->sendOrderEmail($order, 'new');
         } catch (\Exception $e) {
             \Log::error('PlaceOrder Email Error: ' . $e->getMessage());
         }
@@ -120,11 +95,35 @@ class PlaceOrderController extends Controller
     }
 
     /**
-     * User Orders — logged in user ke orders
+     * Update Status — and notify customer
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,processing,completed,cancelled'
+        ]);
+
+        $order = PlaceOrder::findOrFail($id);
+        $order->update(['status' => $request->status]);
+
+        // Send status update email to customer
+        try {
+            $this->sendStatusEmail($order);
+        } catch (\Exception $e) {
+            \Log::error('PlaceOrder Status Email Error: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated and customer notified.'
+        ]);
+    }
+
+    /**
+     * User's own orders
      */
     public function myOrders()
     {
-        // ✅ Sanctum guard se Auth ID lo
         $userId = Auth::guard('sanctum')->id();
 
         $orders = PlaceOrder::where('user_id', $userId)
@@ -135,6 +134,7 @@ class PlaceOrderController extends Controller
                 'order_number'  => $o->order_number,
                 'full_name'     => $o->full_name,
                 'email'         => $o->email,
+                'phone'         => $o->phone,
                 'order_date'    => $o->order_date,
                 'delivery_date' => $o->delivery_date,
                 'sales_rep'     => $o->sales_rep,
@@ -166,43 +166,6 @@ class PlaceOrderController extends Controller
     }
 
     /**
-     * Update Status
-     */
-    public function updateStatus(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled'
-        ]);
-
-        PlaceOrder::findOrFail($id)->update([
-            'status' => $request->status
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status updated.'
-        ]);
-    }
-
-    /**
-     * File Upload Helper
-     */
-    private function saveFiles(Request $request, string $field, string $folder): array
-    {
-        $paths = [];
-
-        if ($request->hasFile($field)) {
-            foreach ($request->file($field) as $file) {
-                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('uploads/' . $folder), $filename);
-                $paths[] = $filename;
-            }
-        }
-
-        return $paths;
-    }
-
-    /**
      * Download Single Order PDF
      */
     public function downloadSinglePdf($id)
@@ -213,5 +176,84 @@ class PlaceOrderController extends Controller
                   ->setPaper('a4');
 
         return $pdf->download('order-' . $order->order_number . '.pdf');
+    }
+
+    /**
+     * File Upload Helper — stores original filename too
+     */
+    private function saveFiles(Request $request, string $field, string $folder): array
+    {
+        $paths = [];
+
+        if ($request->hasFile($field)) {
+            foreach ($request->file($field) as $file) {
+                $ext      = $file->getClientOriginalExtension();
+                $original = $file->getClientOriginalName();
+                $uuid     = Str::uuid() . '.' . $ext;
+                $file->move(public_path('uploads/' . $folder), $uuid);
+
+                // Store both UUID filename and original name
+                $paths[] = [
+                    'filename' => $uuid,
+                    'original' => $original,
+                    'ext'      => strtolower($ext),
+                ];
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Send new order email (admin + customer)
+     */
+    private function sendOrderEmail(PlaceOrder $order, string $type = 'new')
+    {
+        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+            ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+            new \GuzzleHttp\Client(), $config
+        );
+
+        $htmlAdmin = view('emails.place-order-admin', ['order' => $order])->render();
+
+        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+            'subject'     => 'New Place Order Received — ' . $order->order_number,
+            'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
+            'to'          => [
+                ['email' => 'sales@prosix.com'],
+                ['email' => $order->email],
+            ],
+            'htmlContent' => $htmlAdmin,
+        ]);
+
+        $apiInstance->sendTransacEmail($email);
+    }
+
+    /**
+     * Send status update email to customer
+     */
+    private function sendStatusEmail(PlaceOrder $order)
+    {
+        $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+            ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+        $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+            new \GuzzleHttp\Client(), $config
+        );
+
+        $htmlContent = view('emails.place-order-status', ['order' => $order])->render();
+
+        $statusLabel = ucfirst($order->status);
+
+        $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+            'subject'     => "Your Order #{$order->order_number} is now {$statusLabel}",
+            'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
+            'to'          => [['email' => $order->email, 'name' => $order->full_name]],
+            'htmlContent' => $htmlContent,
+        ]);
+
+        $apiInstance->sendTransacEmail($email);
     }
 }

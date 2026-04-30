@@ -207,6 +207,8 @@ Route::middleware('auth:sanctum')->get(
 
 Route::middleware('auth:sanctum')->delete('/user/designs/{id}', [UserCustomizationController::class, 'destroy']);
 
+// Yeh route add karo api.php mein
+Route::post('/place-order/{id}/status', [PlaceOrderController::class, 'updateStatus']);
 
 Route::middleware('auth:sanctum')->get(
     '/user/designs',

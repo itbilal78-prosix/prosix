@@ -556,20 +556,20 @@ const handleResize = () => {
   startFeaturedAuto(); startApparelAuto(); startVideoAuto(); startTestimonialAuto(); startBenefitAuto()
 }
 const goToProduct = (product) => { router.push(`/product/${product.id}`) }
-const goToCustomizer = (product) => {
-  const token = localStorage.getItem('auth_token')
-  if (token) { router.push(`/models/${product.id}`) }
-  else { pendingModelId.value = product.id; showLoginModal.value = true }
-}
 // const goToCustomizer = (product) => {
 //   const token = localStorage.getItem('auth_token')
-//   if (token) {
-//     window.location.href = `/customize/${product.id}`  // ← yeh change karo
-//   } else {
-//     pendingModelId.value = product.id
-//     showLoginModal.value = true
-//   }
+//   if (token) { router.push(`/models/${product.id}`) }
+//   else { pendingModelId.value = product.id; showLoginModal.value = true }
 // }
+const goToCustomizer = (product) => {
+  const token = localStorage.getItem('auth_token')
+  if (token) {
+    window.location.href = `/customize/${product.id}`  // ← yeh change karo
+  } else {
+    pendingModelId.value = product.id
+    showLoginModal.value = true
+  }
+}
 const addToCart = (product) => { cartStore.addItem(product) }
 
 onMounted(async () => {

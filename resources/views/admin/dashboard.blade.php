@@ -146,7 +146,7 @@ canvas { max-height: 220px; }
                         <tr>
                             <td class="fw-semibold">#{{ $order->id }}</td>
                             <td>{{ $order->user->name ?? $order->shipping_name ?? 'Guest' }}</td>
-                            <td class="fw-semibold">Rs. {{ number_format($order->total, 0) }}</td>
+                            <td class="fw-semibold">${{ number_format($order->total, 0) }}</td>
                             <td class="text-capitalize text-muted small">{{ $order->payment_method ?? '-' }}</td>
                             <td>
                                 @php
@@ -156,7 +156,7 @@ canvas { max-height: 220px; }
                                         'pending'   => 'warning',
                                         'cancelled' => 'danger',
                                         'processing'=> 'info',
-                                        default     => 'secondary'
+                                         default     => 'secondary'
                                     };
                                 @endphp
                                 <span class="badge bg-{{ $badge }}">{{ ucfirst($order->status) }}</span>

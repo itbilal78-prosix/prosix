@@ -174,21 +174,14 @@ Route::get('/api/fonts', function () {
 Route::get('/api/colors', function () {
     return \App\Models\Color::select('id', 'name', 'code')->get();
 });
-// Frontend models (ye already hai aapke web.php mein)
-// Route::get('/models', [FrontModel::class, 'index'])->name('frontend.models');
-// Route::get('/models/{id}', [FrontModel::class, 'show'])->name('frontend.models.show');
-// Route::get('/models/{id}/api', [FrontModel::class, 'api'])->name('frontend.models.api');
-// Route::post('/models/{id}/save-design', [FrontModel::class, 'saveDesign'])->name('frontend.models.save-design');
-
 
 
 
 // Route::post('/models/reorder',[CustomizerModelController::class,'reorder'])->name('models.reorder');
 Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
 
-// Template routes
-// Route::post('templates/bulk-destroy', [TemplateController::class, 'bulkDestroy'])
-//      ->name('templates.bulkDestroy');
+Route::post('templates/bulk-destroy', [TemplateController::class, 'bulkDestroy'])
+     ->name('templates.bulkDestroy');
 Route::resource('templates', TemplateController::class);
 
 Route::post('/templates/save-from-customizer',
@@ -209,6 +202,9 @@ Route::get('/api/mascot-templates', function () {
             ];
         });
 });
+
+
+
 Route::get('/products/featured', [ProductController::class, 'featured'])
     ->name('products.featured.list');
 

@@ -72,6 +72,22 @@ class TemplateController extends Controller
         return redirect()->route('templates.index')->with('success', 'Template deleted!');
     }
 
+    // ─── Bulk Delete ───────────────────────────────────────────────────────────
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'required|array',
+            'ids.*' => 'integer|exists:templates,id',
+        ]);
+
+        $count = Template::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$count} template(s) deleted successfully!",
+        ]);
+    }
+
     // Mascot customizer se save hoga — category_id bhi aayega ab
     public function saveFromCustomizer(Request $request)
     {

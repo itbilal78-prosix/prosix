@@ -77,6 +77,44 @@
 
     <hr style="margin:25px 0;">
 
+    <!-- ✅ STATUS SECTION -->
+    @php
+        $statusColors = [
+            'pending'    => '#f59e0b',
+            'processing' => '#3b82f6',
+            'completed'  => '#22c55e',
+            'cancelled'  => '#ef4444',
+        ];
+        $statusColor = $statusColors[$order->status] ?? '#888';
+    @endphp
+
+    <div style="text-align:center;margin-bottom:25px;">
+        <span style="background:{{ $statusColor }};color:#fff;padding:8px 24px;border-radius:20px;font-size:14px;font-weight:700;letter-spacing:1px;">
+            STATUS: {{ strtoupper($order->status) }}
+        </span>
+    </div>
+
+    @if($order->status === 'completed')
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:20px;text-align:center;">
+        <p style="margin:0;color:#166534;font-size:14px;font-weight:600;">
+            🎉 Your order has been completed! Thank you for choosing Prosix Sports.
+        </p>
+    </div>
+    @elseif($order->status === 'processing')
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;">
+        <p style="margin:0;color:#1e40af;font-size:14px;">
+            ⚙️ Your order is currently being processed. We'll notify you when it's ready.
+        </p>
+    </div>
+    @elseif($order->status === 'cancelled')
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px;margin-bottom:20px;">
+        <p style="margin:0;color:#991b1b;font-size:14px;">
+            ❌ Your order has been cancelled. Please contact us if you have any questions.
+        </p>
+    </div>
+    @endif
+    <!-- ✅ STATUS SECTION END -->
+
     <!-- MOCKUP IMAGES -->
     @if(!empty($order->mockup_files))
     <div style="margin-top:20px;">
@@ -91,15 +129,27 @@
                 @endif
 
                 @php
-                    $url = url('uploads/orders/mockup/' . $file);
+                    $filename = is_array($file) ? $file['filename'] : $file;
+                    $original = is_array($file) ? ($file['original'] ?? $filename) : $file;
+                    $ext      = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                    $url      = url('uploads/orders/mockup/' . $filename);
+                    $isImage  = in_array($ext, ['jpg','jpeg','png','gif','webp']);
                 @endphp
 
-                <td width="33%" style="text-align:center;vertical-align:top;">
+                <td width="33%" style="text-align:center;vertical-align:top;padding:8px;">
 
-                    <a href="{{ $url }}" target="_blank">
-                        <img src="{{ $url }}"
-                             style="width:100%;max-width:160px;height:110px;object-fit:cover;border:1px solid #ddd;border-radius:6px;">
-                    </a>
+                    @if($isImage)
+                        <a href="{{ $url }}" target="_blank">
+                            <img src="{{ $url }}"
+                                 style="width:100%;max-width:160px;height:110px;object-fit:cover;border:1px solid #ddd;border-radius:6px;">
+                        </a>
+                    @else
+                        <div style="width:100%;max-width:160px;height:110px;border:1px solid #ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;margin:auto;background:#f8f8f8;">
+                            <span style="font-size:13px;font-weight:700;color:#555;">{{ strtoupper($ext) }}</span>
+                        </div>
+                    @endif
+
+                    <div style="margin-top:6px;font-size:11px;color:#555;">{{ $original }}</div>
 
                     <div style="margin-top:5px;">
                         <a href="{{ $url }}"
@@ -130,12 +180,45 @@
                 @endif
 
                 @php
-                    $url = url('uploads/orders/roster/' . $file);
+                    $filename = is_array($file) ? $file['filename'] : $file;
+                    $original = is_array($file) ? ($file['original'] ?? $filename) : $file;
+                    $url      = url('uploads/orders/roster/' . $filename);
                 @endphp
 
                 <td width="33%" style="text-align:center;">
                     <a href="{{ $url }}" style="font-size:12px;color:#000;text-decoration:none;">
-                        📄 {{ $file }}
+                        📄 {{ $original }}
+                    </a>
+                </td>
+
+            @endforeach
+            </tr>
+        </table>
+    </div>
+    @endif
+
+    <!-- QUOTE FILES -->
+    @if(!empty($order->quote_files))
+    <div style="margin-top:20px;">
+        <p style="font-weight:bold;">Quote / Invoice Files</p>
+
+        <table width="100%" cellpadding="5">
+            <tr>
+            @foreach($order->quote_files as $index => $file)
+
+                @if($index % 3 == 0 && $index != 0)
+                    </tr><tr>
+                @endif
+
+                @php
+                    $filename = is_array($file) ? $file['filename'] : $file;
+                    $original = is_array($file) ? ($file['original'] ?? $filename) : $file;
+                    $url      = url('uploads/orders/quote/' . $filename);
+                @endphp
+
+                <td width="33%" style="text-align:center;">
+                    <a href="{{ $url }}" style="font-size:12px;color:#000;text-decoration:none;">
+                        📄 {{ $original }}
                     </a>
                 </td>
 
@@ -148,8 +231,8 @@
     <!-- NOTES -->
     <div style="margin-top:25px;">
         <p><strong>Notes:</strong></p>
-        <div style="border:1px solid #ccc;padding:15px;border-radius:8px;height:100px;">
-            {{ $order->notes ?? 'No notes provided' }}
+        <div style="border:1px solid #ccc;padding:15px;border-radius:8px;min-height:60px;">
+            {!! $order->notes ?? 'No notes provided' !!}
         </div>
     </div>
 

@@ -3629,12 +3629,12 @@ window.isDraggingKnob = false;
 
         const COLS = 4;
         const CELL_W = 380;
-        const CELL_H = 480;
+        const CELL_H = 470;
         const GAP = 30;
         const HEADER_H = 130;
-        const PAD = 36;    // top/bottom
-        const PAD_LEFT = 60;    // ← left extra space
-        const PAD_RIGHT = 60;    // ← right extra space
+        const PAD = 36;
+        const PAD_LEFT = 60;
+        const PAD_RIGHT = 60;    
         const LABEL_H = 50;
 
         const totalW = PAD_LEFT + PAD_RIGHT + CELL_W * COLS + GAP * (COLS - 1);

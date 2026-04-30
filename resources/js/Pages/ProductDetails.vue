@@ -831,6 +831,8 @@ const fetchRelated=async()=>{
 const toggleLike=()=>{cartStore.toggleLike(product.value.id);showToast(cartStore.isLiked(product.value.id)?'❤️ Added to wishlist!':'🤍 Removed from wishlist')}
 const handleShare=()=>{if(navigator.share) navigator.share({title:product.value.name,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);showToast('🔗 Link copied!')}}
 
+
+
 const addToCart=()=>{
   if(!effectiveSize.value){showToast('⚠️ Please select a size!');return}
   if(!stockAvailable.value){showToast('❌ Out of stock!');return}
