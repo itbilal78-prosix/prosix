@@ -28,53 +28,33 @@
             <tr>
                 <td>
                     <label><b>Full Name</b></label>
-                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">
-                        {{ $order->full_name }}
-                    </div>
+                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">{{ $order->full_name }}</div>
                 </td>
-
                 <td>
                     <label><b>Email</b></label>
-                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">
-                        {{ $order->email }}
-                    </div>
+                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">{{ $order->email }}</div>
                 </td>
-
                 <td>
                     <label><b>Order Date</b></label>
-                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">
-                        {{ $order->order_date }}
-                    </div>
+                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">{{ $order->order_date }}</div>
                 </td>
-
                 <td>
                     <label><b>Delivery Date</b></label>
-                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">
-                        {{ $order->delivery_date ?? '-' }}
-                    </div>
+                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">{{ $order->delivery_date ?? '-' }}</div>
                 </td>
             </tr>
-
             <tr>
                 <td>
                     <label><b>Sales Rep</b></label>
-                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">
-                        {{ $order->sales_rep ?? '-' }}
-                    </div>
+                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">{{ $order->sales_rep ?? '-' }}</div>
                 </td>
-
                 <td>
                     <label><b>Team Colors</b></label>
-                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">
-                        {{ $order->team_colors ?? '-' }}
-                    </div>
+                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;">{{ $order->team_colors ?? '-' }}</div>
                 </td>
-
                 <td colspan="2">
                     <label><b>Order #</b></label>
-                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;font-weight:bold;">
-                        {{ $order->order_number }}
-                    </div>
+                    <div style="border:1px solid #ccc;padding:10px;border-radius:6px;font-weight:bold;">{{ $order->order_number }}</div>
                 </td>
             </tr>
         </table>
@@ -94,100 +74,83 @@
             </div>
         </div>
 
-<hr style="margin:25px 0;">
+        <hr style="margin:25px 0;">
 
-<!-- 👇 YAHAN LGANA HAI -->
-<div style="text-align:center;margin-top:20px;">
-    <a href="{{ url('/order/download/'.$order->id) }}"
-       style="background:#000;color:#fff;padding:12px 25px;border-radius:6px;text-decoration:none;">
-       ⬇ Download Full Order (PDF)
-    </a>
-</div>
-
-
-
-
-
-
+        <!-- DOWNLOAD BUTTON -->
+        <div style="text-align:center;margin-top:20px;">
+            <a href="{{ url('/order/download/'.$order->id) }}"
+               style="background:#000;color:#fff;padding:12px 25px;border-radius:6px;text-decoration:none;">
+               ⬇ Download Full Order (PDF)
+            </a>
+        </div>
 
         <!-- MOCKUP FILES -->
         @if(!empty($order->mockup_files))
-        <div>
+        <div style="margin-top:20px;">
             <p style="font-weight:bold;">Final Mockup Files</p>
-
-            <table width="100%" cellpadding="6">
-                <tr>
-                @foreach($order->mockup_files as $index => $file)
-
-                    @if($index % 3 == 0 && $index != 0)
-                        </tr><tr>
+            <table width="100%" cellpadding="6"><tr>
+            @foreach($order->mockup_files as $index => $file)
+                @if($index % 3 == 0 && $index != 0) </tr><tr> @endif
+                @php
+                    $filename = is_array($file) ? $file['filename'] : $file;
+                    $original = is_array($file) ? ($file['original'] ?? $filename) : $file;
+                    $ext      = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                    $url      = url('uploads/orders/mockup/' . $filename);
+                    $isImage  = in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                @endphp
+                <td width="33%" style="text-align:center;padding:8px;vertical-align:top;">
+                    @if($isImage)
+                        <img src="{{ $url }}" style="width:100%;max-width:150px;height:110px;object-fit:cover;border:1px solid #ddd;border-radius:6px;">
+                    @else
+                        <div style="width:150px;height:110px;border:1px solid #ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;margin:auto;background:#f8f8f8;">
+                            <span style="font-weight:800;color:#555;">{{ strtoupper($ext) }}</span>
+                        </div>
                     @endif
-
-                    @php $url = url('uploads/orders/mockup/' . $file); @endphp
-
-                    <td width="33%" style="text-align:center;">
-                        <img src="{{ $url }}"
-                             style="width:100%;max-width:150px;height:110px;object-fit:cover;border:1px solid #ddd;border-radius:6px;">
-
-                        <br>
-                        <a href="{{ $url }}" style="font-size:11px;text-decoration:none;color:#1565c0;">
-                            ⬇ Download
-                        </a>
-                    </td>
-
-                @endforeach
-                </tr>
-            </table>
+                    <div style="margin-top:4px;font-size:11px;color:#555;">{{ $original }}</div>
+                    <a href="{{ $url }}" style="display:inline-block;background:#000;color:#fff;font-size:11px;padding:4px 10px;border-radius:4px;text-decoration:none;margin-top:4px;">Download</a>
+                </td>
+            @endforeach
+            </tr></table>
         </div>
         @endif
 
-        <!-- ROSTER -->
+        <!-- ROSTER FILES -->
         @if(!empty($order->roster_files))
         <div style="margin-top:20px;">
             <p style="font-weight:bold;">Roster Files</p>
-
-            <table width="100%" cellpadding="6">
-                <tr>
-                @foreach($order->roster_files as $index => $file)
-
-                    @if($index % 3 == 0 && $index != 0)
-                        </tr><tr>
-                    @endif
-
-                    @php $url = url('uploads/orders/roster/' . $file); @endphp
-
-                    <td width="33%" style="text-align:center;">
-                        <a href="{{ $url }}">{{ $file }}</a>
-                    </td>
-
-                @endforeach
-                </tr>
-            </table>
+            <table width="100%" cellpadding="6"><tr>
+            @foreach($order->roster_files as $index => $file)
+                @if($index % 3 == 0 && $index != 0) </tr><tr> @endif
+                @php
+                    $filename = is_array($file) ? $file['filename'] : $file;
+                    $original = is_array($file) ? ($file['original'] ?? $filename) : $file;
+                    $url      = url('uploads/orders/roster/' . $filename);
+                @endphp
+                <td width="33%" style="text-align:center;">
+                    <a href="{{ $url }}" style="font-size:12px;color:#000;text-decoration:none;">📄 {{ $original }}</a>
+                </td>
+            @endforeach
+            </tr></table>
         </div>
         @endif
 
-        <!-- QUOTE -->
+        <!-- QUOTE FILES -->
         @if(!empty($order->quote_files))
         <div style="margin-top:20px;">
             <p style="font-weight:bold;">Quote / Invoice Files</p>
-
-            <table width="100%" cellpadding="6">
-                <tr>
-                @foreach($order->quote_files as $index => $file)
-
-                    @if($index % 3 == 0 && $index != 0)
-                        </tr><tr>
-                    @endif
-
-                    @php $url = url('uploads/orders/quote/' . $file); @endphp
-
-                    <td width="33%" style="text-align:center;">
-                        <a href="{{ $url }}">{{ $file }}</a>
-                    </td>
-
-                @endforeach
-                </tr>
-            </table>
+            <table width="100%" cellpadding="6"><tr>
+            @foreach($order->quote_files as $index => $file)
+                @if($index % 3 == 0 && $index != 0) </tr><tr> @endif
+                @php
+                    $filename = is_array($file) ? $file['filename'] : $file;
+                    $original = is_array($file) ? ($file['original'] ?? $filename) : $file;
+                    $url      = url('uploads/orders/quote/' . $filename);
+                @endphp
+                <td width="33%" style="text-align:center;">
+                    <a href="{{ $url }}" style="font-size:12px;color:#000;text-decoration:none;">📄 {{ $original }}</a>
+                </td>
+            @endforeach
+            </tr></table>
         </div>
         @endif
 
