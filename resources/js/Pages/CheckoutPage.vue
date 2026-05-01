@@ -244,8 +244,8 @@
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                   Back
                 </button>
-                <button class="btn-place" :disabled="!form.paymentMethod || loading" @click="placeOrder">
-                  <svg v-if="!loading" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+<button class="btn-place" :disabled="activeGroup !== 'card' || loading" @click="placeOrder">
+                      <svg v-if="!loading" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   <span v-if="loading" class="spin"></span>
                   {{ loading ? 'Processing...' : `Place Order — $${totalAmount}` }}
                 </button>
@@ -348,6 +348,8 @@ const router    = useRouter()
 const STRIPE_PK = 'pk_test_51T8ITpHdpb4oZa9ZRkYey6WFkWkp9YsKftIp9WfBYMeYI76cCUCuVm0PoPu93IFH072Zk1DHLD3wFjfBp5kFjdAc00NzHMVUfk'
 
 const loading          = ref(false)
+const orderNumber  = ref('')        // ← yeh add karo
+const orderSuccess = ref(false)
 const currentStep      = ref(1)
 const activeGroup      = ref('card')
 const stripeError      = ref('')
@@ -560,30 +562,111 @@ const removeItem = (item) => {
   }
 }
 
+// const placeOrder = async () => {
+//   stripeError.value = ''
+//   loading.value = true
+//   try {
+//     let paymentToken = null
+
+//     if (activeGroup.value === 'card') {
+//       // ✅ Use cardNumber element (split elements ka main element)
+//       const { paymentMethod, error } = await stripe.createPaymentMethod({
+//         type: 'card',
+//         card: cardNumber,  // ← cardNumber element use karo
+//         billing_details: {
+//           name:  form.value.name,
+//           phone: form.value.phone,
+//           email: form.value.email || undefined,
+//         }
+//       })
+//       if (error) {
+//         stripeError.value = error.message
+//         loading.value = false
+//         return
+//       }
+//       paymentToken = paymentMethod.id
+//     }
+
+//     const orderPayload = {
+//       cart: cartStore.items.map(i => ({
+//         id:       i.id,
+//         name:     i.name,
+//         price:    i.price,
+//         quantity: i.quantity,
+//         size:     i.size,
+//         image:    i.image,
+//       })),
+//       checkout: {
+//         name:          form.value.name,
+//         email:         form.value.email       || '',
+//         phone:         form.value.phone,
+//         address:       form.value.address,
+//         city:          form.value.city,
+//         postalCode:    form.value.postalCode  || '',
+//         province:      form.value.province    || '',
+//         country:       form.value.country     || '',
+//         deliveryDays:  form.value.deliveryDays || 'standard',
+//         paymentMethod: activeGroup.value === 'card' ? 'stripe' : form.value.paymentMethod,
+//         stripeToken:   paymentToken,
+//         total:         totalAmount.value,
+//         shipping:      shipping.value,
+//       }
+//     }
+
+//     const res = await axios.post('/api/orders', orderPayload, {
+//       headers: {
+//         Authorization: `Bearer ${localStorage.getItem('auth_token') || localStorage.getItem('token') || ''}`
+//       }
+//     })
+
+//     alert(`✅ Order placed! ID: ${res.data.order_id || 'N/A'}`)
+//     cartStore.clearCart()
+//     router.push('/')
+
+//   } catch (e) {
+//     const errData = e.response?.data
+//     console.error('Order error:', errData)
+//     if (errData?.errors) {
+//       alert('❌ Validation:\n' + Object.values(errData.errors).flat().join('\n'))
+//     } else {
+//       alert('❌ ' + (errData?.message || 'Something went wrong.'))
+//     }
+//   } finally {
+//     loading.value = false
+//   }
+// }
+
+
 const placeOrder = async () => {
   stripeError.value = ''
+
+  // ✅ Card ke ilawa kuch bhi select ho to rok do
+  if (activeGroup.value !== 'card') {
+    stripeError.value = 'Please select Card payment to place order.'
+    return
+  }
+
   loading.value = true
   try {
     let paymentToken = null
 
-    if (activeGroup.value === 'card') {
-      // ✅ Use cardNumber element (split elements ka main element)
-      const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardNumber,  // ← cardNumber element use karo
-        billing_details: {
-          name:  form.value.name,
-          phone: form.value.phone,
-          email: form.value.email || undefined,
-        }
-      })
-      if (error) {
-        stripeError.value = error.message
-        loading.value = false
-        return
+    const { paymentMethod, error } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardNumber,
+      billing_details: {
+        name:  form.value.name,
+        phone: form.value.phone,
+        email: form.value.email || undefined,
       }
-      paymentToken = paymentMethod.id
+    })
+
+    if (error) {
+      stripeError.value = error.message
+      loading.value = false
+      return
     }
+
+    paymentToken = paymentMethod.id
 
     const orderPayload = {
       cart: cartStore.items.map(i => ({
@@ -596,7 +679,7 @@ const placeOrder = async () => {
       })),
       checkout: {
         name:          form.value.name,
-        email:         form.value.email       || '',
+        email:         form.value.email    || '',
         phone:         form.value.phone,
         address:       form.value.address,
         city:          form.value.city,
@@ -604,7 +687,7 @@ const placeOrder = async () => {
         province:      form.value.province    || '',
         country:       form.value.country     || '',
         deliveryDays:  form.value.deliveryDays || 'standard',
-        paymentMethod: activeGroup.value === 'card' ? 'stripe' : form.value.paymentMethod,
+        paymentMethod: 'stripe',
         stripeToken:   paymentToken,
         total:         totalAmount.value,
         shipping:      shipping.value,
@@ -617,22 +700,25 @@ const placeOrder = async () => {
       }
     })
 
-    alert(`✅ Order placed! ID: ${res.data.order_id || 'N/A'}`)
+    // ✅ Order number save karo aur success screen dikhao
+    orderNumber.value = res.data.order_number
+    orderSuccess.value = true
     cartStore.clearCart()
-    router.push('/')
 
   } catch (e) {
     const errData = e.response?.data
     console.error('Order error:', errData)
     if (errData?.errors) {
-      alert('❌ Validation:\n' + Object.values(errData.errors).flat().join('\n'))
+      alert(' Validation:\n' + Object.values(errData.errors).flat().join('\n'))
     } else {
-      alert('❌ ' + (errData?.message || 'Something went wrong.'))
+      alert(' ' + (errData?.message || 'Something went wrong.'))
     }
   } finally {
     loading.value = false
   }
 }
+
+
 </script>
 
 <style scoped>

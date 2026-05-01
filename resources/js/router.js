@@ -103,6 +103,12 @@ component: () => import('@/Pages/Flipbookpage.vue'),
     component: () => import('@/Pages/PlaceOrder.vue'),
     meta: { breadcrumb: 'PlaceOrder' }
   },
+  {
+  path: '/track',
+  name: 'TrackOrder',
+  component: () => import('@/Pages/TrackingPage.vue'),
+  meta: { public: true, breadcrumb: 'Track Order' }
+},
 ]
 
 const router = createRouter({

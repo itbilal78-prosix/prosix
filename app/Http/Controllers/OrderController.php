@@ -492,4 +492,44 @@ class OrderController extends Controller
 
         return back()->with('success', 'Notes updated + email sent');
     }
+
+
+public function trackOrder(Request $request)
+{
+    $tracking = trim($request->query('tracking'));
+
+    if (!$tracking) {
+        return response()->json(['message' => 'Tracking number required'], 422);
+    }
+
+    $order = Order::where('order_number', $tracking)
+                  ->orWhere('tracking_number', $tracking)
+                  ->first();
+
+    if (!$order) {
+        return response()->json(['message' => 'Order not found'], 404);
+    }
+
+    return response()->json([
+        'id'              => $order->id,
+        'order_number'    => $order->order_number,
+        'status'          => $order->status,
+        'payment_method'  => $order->payment_method,
+        'payment_status'  => $order->payment_status,
+        'total'           => $order->total,
+        'items'           => $order->items,
+        'shipping_name'   => $order->shipping_name,
+        'shipping_phone'  => $order->shipping_phone,
+        'shipping_city'   => $order->shipping_city,
+        'shipping_address'=> $order->shipping_address,
+        'courier_name'    => $order->courier_name,
+        'tracking_number' => $order->tracking_number,
+        'dispatch_date'   => $order->dispatch_date,
+        'delivered_date'  => $order->delivered_date,
+        'admin_notes'     => $order->admin_notes,
+        'created_at'      => $order->created_at,
+    ]);
+}
+
+
 }

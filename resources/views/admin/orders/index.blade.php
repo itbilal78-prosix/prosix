@@ -75,6 +75,7 @@
               <th>Customer</th>
               <th>Phone</th>
               <th>City</th>
+              <th>Tracking #</th>  {{-- ✅ NEW COLUMN --}}
               <th>Date</th>
               <th>Action</th>
             </tr>
@@ -117,6 +118,23 @@
               <td>{{ $order->shipping_name }}</td>
               <td>{{ $order->shipping_phone }}</td>
               <td>{{ $order->shipping_city }}</td>
+
+              {{-- ✅ TRACKING NUMBER CELL --}}
+              <td>
+                @if($order->tracking_number)
+                  <span
+                    class="tracking-copy"
+                    onclick="copyTracking('{{ $order->tracking_number }}')"
+                    title="Click to copy"
+                  >
+                    {{ $order->tracking_number }}
+                    <i class="bi bi-clipboard ms-1" style="font-size:12px;"></i>
+                  </span>
+                @else
+                  <span class="text-muted" style="font-size:13px;">—</span>
+                @endif
+              </td>
+
               <td class="text-muted">
                 {{ $order->created_at->format('d M Y') }}<br>
                 <small>{{ $order->created_at->format('h:i A') }}</small>
@@ -286,6 +304,29 @@
   border-radius: 6px;
 }
 
+/* ── TRACKING COPY ── */
+.tracking-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  background: #f3f4f6;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #111;
+  border: 1px solid #e5e7eb;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.tracking-copy:hover {
+  background: #e0e7ff;
+  border-color: #6366f1;
+  color: #4338ca;
+}
+
 /* ── VIEW BUTTON ── */
 .btn-view {
   display: inline-flex;
@@ -318,6 +359,25 @@ function filterByStatus(status) {
   document.querySelectorAll('.order-row').forEach(row => {
     row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none'
   })
+}
+
+function copyTracking(number) {
+  navigator.clipboard.writeText(number).then(() => {
+    let toast = document.createElement('div');
+    toast.textContent = '✓ Copied: ' + number;
+    toast.style.cssText = `
+      position:fixed; bottom:24px; right:24px;
+      background:#111; color:#fff;
+      padding:10px 20px; border-radius:10px;
+      font-size:14px; font-weight:600;
+      z-index:9999; opacity:1;
+      transition: opacity .4s;
+      box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; }, 1800);
+    setTimeout(() => toast.remove(), 2200);
+  });
 }
 </script>
 @endsection
