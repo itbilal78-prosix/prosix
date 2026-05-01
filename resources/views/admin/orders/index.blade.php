@@ -68,6 +68,7 @@
           <thead>
             <tr>
               <th>#ID</th>
+              <th>Order #</th>         {{-- ✅ ORDER NUMBER COLUMN --}}
               <th>User</th>
               <th>Total</th>
               <th>Payment</th>
@@ -75,7 +76,7 @@
               <th>Customer</th>
               <th>Phone</th>
               <th>City</th>
-              <th>Tracking #</th>  {{-- ✅ NEW COLUMN --}}
+              <th>Courier Tracking</th>
               <th>Date</th>
               <th>Action</th>
             </tr>
@@ -85,6 +86,22 @@
             <tr class="order-row" data-status="{{ $order->status }}">
 
               <td class="fw-semibold text-muted">#{{ $order->id }}</td>
+
+              {{-- ✅ ORDER NUMBER — customer tracking ke liye use hoga --}}
+              <td>
+                @if($order->order_number)
+                  <span
+                    class="order-num-copy"
+                    onclick="copyText('{{ $order->order_number }}')"
+                    title="Click to copy"
+                  >
+                    {{ $order->order_number }}
+                    <i class="bi bi-clipboard ms-1" style="font-size:11px;"></i>
+                  </span>
+                @else
+                  <span class="text-muted" style="font-size:13px;">—</span>
+                @endif
+              </td>
 
               <td>
                 @if($order->user)
@@ -119,12 +136,12 @@
               <td>{{ $order->shipping_phone }}</td>
               <td>{{ $order->shipping_city }}</td>
 
-              {{-- ✅ TRACKING NUMBER CELL --}}
+              {{-- Courier tracking (admin assign karta hai) --}}
               <td>
                 @if($order->tracking_number)
                   <span
                     class="tracking-copy"
-                    onclick="copyTracking('{{ $order->tracking_number }}')"
+                    onclick="copyText('{{ $order->tracking_number }}')"
                     title="Click to copy"
                   >
                     {{ $order->tracking_number }}
@@ -156,136 +173,45 @@
 
 {{-- ── STYLES ── --}}
 <style>
-/* ── TABS ── */
-.order-status-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+.order-status-tabs { display: flex; flex-wrap: wrap; gap: 10px; }
+.status-tab { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 12px; border: 2px solid #e5e5e5; background: #fff; font-size: 17px; font-weight: 600; color: #555; cursor: pointer; transition: all .18s; text-align: left; }
+.tab-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tab-color); flex-shrink: 0; }
+.tab-label { white-space: nowrap; min-width: 70px; }
+.tab-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; border-left: 1px solid #e5e5e5; padding-left: 12px; margin-left: 2px; }
+.tab-count  { font-size: 15px; font-weight: 700; color: #888; white-space: nowrap; }
+.tab-amount { font-size: 15px; font-weight: 800; color: #333; white-space: nowrap; }
+.status-tab.active, .status-tab:hover { border-color: var(--tab-color); background: #fff; }
+.status-tab.active .tab-label, .status-tab:hover .tab-label { color: var(--tab-color); }
+.status-tab.active .tab-right, .status-tab:hover .tab-right { border-left-color: var(--tab-color); }
+.status-tab.active .tab-amount { color: var(--tab-color); }
+.orders-card { border: 1.5px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.orders-card .card-header { background: #fff; border-bottom: 1.5px solid #e5e7eb; border-radius: 12px 12px 0 0; padding: 16px 22px; font-size: 18px; font-weight: 700; color: #111; }
+#ordersTable thead tr th { background: #f8f9fa; font-size: 15.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #6b7280; padding: 14px 16px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+#ordersTable tbody tr td { padding: 14px 16px; font-size: 17px; color: #111; vertical-align: middle; border-color: #f0f0f0; }
+#ordersTable tbody tr:hover { background: #fafafa; }
 
-.status-tab {
+/* ✅ ORDER NUMBER BADGE */
+.order-num-copy {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
-  border-radius: 12px;
-  border: 2px solid #e5e5e5;
-  background: #fff;
-  font-size: 17px;
-  font-weight: 600;
-  color: #555;
+  gap: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  background: #eef2ff;
+  padding: 5px 10px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all .18s;
-  text-align: left;
-}
-
-.tab-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--tab-color);
-  flex-shrink: 0;
-}
-
-.tab-label {
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+  transition: background .15s, border-color .15s;
   white-space: nowrap;
-  min-width: 70px;
+  user-select: none;
+  letter-spacing: 0.3px;
 }
+.order-num-copy:hover { background: #e0e7ff; border-color: #6366f1; color: #4338ca; }
 
-.tab-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 3px;
-  border-left: 1px solid #e5e5e5;
-  padding-left: 12px;
-  margin-left: 2px;
-}
-
-.tab-count {
-  font-size: 15px;
-  font-weight: 700;
-  color: #888;
-  white-space: nowrap;
-}
-
-.tab-amount {
-  font-size: 15px;
-  font-weight: 800;
-  color: #333;
-  white-space: nowrap;
-}
-
-.status-tab.active,
-.status-tab:hover {
-  border-color: var(--tab-color);
-  background: #fff;
-}
-
-.status-tab.active .tab-label,
-.status-tab:hover .tab-label {
-  color: var(--tab-color);
-}
-
-.status-tab.active .tab-right,
-.status-tab:hover .tab-right {
-  border-left-color: var(--tab-color);
-}
-
-.status-tab.active .tab-amount {
-  color: var(--tab-color);
-}
-
-/* ── CARD ── */
-.orders-card {
-  border: 1.5px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.06);
-}
-
-.orders-card .card-header {
-  background: #fff;
-  border-bottom: 1.5px solid #e5e7eb;
-  border-radius: 12px 12px 0 0;
-  padding: 16px 22px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #111;
-}
-
-/* ── TABLE ── */
-#ordersTable thead tr th {
-  background: #f8f9fa;
-  font-size: 15.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .4px;
-  color: #6b7280;
-  padding: 14px 16px;
-  border-bottom: 2px solid #e5e7eb;
-  white-space: nowrap;
-}
-
-#ordersTable tbody tr td {
-  padding: 14px 16px;
-  font-size: 17px;
-  color: #111;
-  vertical-align: middle;
-  border-color: #f0f0f0;
-}
-
-#ordersTable tbody tr:hover {
-  background: #fafafa;
-}
-
-/* ── STATUS BADGES ── */
-.order-status-badge {
-  display: inline-block;
-  padding: 4px 13px;
-  border-radius: 20px;
-  font-size: 15.5px;
-  font-weight: 700;
-}
+.order-status-badge { display: inline-block; padding: 4px 13px; border-radius: 20px; font-size: 15.5px; font-weight: 700; }
 .status-new        { background:#ede9fe; color:#5b21b6; }
 .status-confirmed  { background:#dbeafe; color:#1e40af; }
 .status-production { background:#fef3c7; color:#92400e; }
@@ -293,61 +219,11 @@
 .status-delivered  { background:#d1fae5; color:#065f46; }
 .status-cancelled  { background:#fee2e2; color:#991b1b; }
 .status-default    { background:#f3f4f6; color:#374151; }
-
-/* ── PAYMENT BADGE ── */
-.payment-badge {
-  font-size: 15.5px;
-  font-weight: 600;
-  color: #374151;
-  background: #f3f4f6;
-  padding: 4px 11px;
-  border-radius: 6px;
-}
-
-/* ── TRACKING COPY ── */
-.tracking-copy {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  background: #f3f4f6;
-  padding: 5px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #111;
-  border: 1px solid #e5e7eb;
-  transition: background .15s, border-color .15s, color .15s;
-  white-space: nowrap;
-  user-select: none;
-}
-.tracking-copy:hover {
-  background: #e0e7ff;
-  border-color: #6366f1;
-  color: #4338ca;
-}
-
-/* ── VIEW BUTTON ── */
-.btn-view {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #111;
-  border: 1.5px solid #d1d5db;
-  border-radius: 7px;
-  background: #fff;
-  text-decoration: none;
-  transition: all .15s;
-  white-space: nowrap;
-}
-.btn-view:hover {
-  background: #111;
-  color: #fff;
-  border-color: #111;
-}
+.payment-badge { font-size: 15.5px; font-weight: 600; color: #374151; background: #f3f4f6; padding: 4px 11px; border-radius: 6px; }
+.tracking-copy { display: inline-flex; align-items: center; gap: 5px; font-family: 'Courier New', monospace; font-size: 13px; background: #f3f4f6; padding: 5px 10px; border-radius: 6px; cursor: pointer; color: #111; border: 1px solid #e5e7eb; transition: background .15s, border-color .15s, color .15s; white-space: nowrap; user-select: none; }
+.tracking-copy:hover { background: #e0e7ff; border-color: #6366f1; color: #4338ca; }
+.btn-view { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; font-size: 16px; font-weight: 600; color: #111; border: 1.5px solid #d1d5db; border-radius: 7px; background: #fff; text-decoration: none; transition: all .15s; white-space: nowrap; }
+.btn-view:hover { background: #111; color: #fff; border-color: #111; }
 </style>
 
 {{-- ── JAVASCRIPT ── --}}
@@ -361,10 +237,11 @@ function filterByStatus(status) {
   })
 }
 
-function copyTracking(number) {
-  navigator.clipboard.writeText(number).then(() => {
+// ✅ Generic copy function — order number aur tracking dono ke liye
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
     let toast = document.createElement('div');
-    toast.textContent = '✓ Copied: ' + number;
+    toast.textContent = '✓ Copied: ' + text;
     toast.style.cssText = `
       position:fixed; bottom:24px; right:24px;
       background:#111; color:#fff;

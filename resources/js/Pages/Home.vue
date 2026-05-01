@@ -570,6 +570,9 @@ const goToCustomizer = (product) => {
     showLoginModal.value = true
   }
 }
+
+
+
 const addToCart = (product) => { cartStore.addItem(product) }
 
 onMounted(async () => {

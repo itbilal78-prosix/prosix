@@ -2,16 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'user_id',
         'order_number',
+        'user_id',
         'total',
         'status',
         'payment_status',
@@ -20,11 +17,6 @@ class Order extends Model
         'stripe_payment_intent_id',
         'stripe_charge_id',
         'stripe_session_id',
-        'tracking_number',
-        'courier_name',
-        'dispatch_date',
-        'delivered_date',
-        'admin_notes',
         'paid_amount',
         'transaction_date',
         'shipping_name',
@@ -35,48 +27,59 @@ class Order extends Model
         'shipping_province',
         'shipping_postal_code',
         'delivery_days',
-        'items'
+        'items',
+        'tracking_number',
+        'courier_name',
+        'dispatch_date',
+        'delivered_date',
+        'admin_notes',
     ];
 
     protected $casts = [
-        'items' => 'array',
-        'dispatch_date' => 'date',
-        'delivered_date' => 'date',
+        'items'            => 'array',
         'transaction_date' => 'datetime',
+        'dispatch_date'    => 'datetime',
+        'delivered_date'   => 'datetime',
     ];
 
     /**
-     * Auto-generate Order Number
+     * ✅ Order create hote waqt auto order_number generate karo
+     * Format: P6S-2026-XXXX (e.g. P6S-2026-4821)
      */
-    protected static function boot()
+    protected static function booted(): void
     {
-        parent::boot();
-
         static::creating(function ($order) {
-
-            $latestOrder = self::latest()->first();
-
-            $number = 1;
-
-            if ($latestOrder && $latestOrder->order_number) {
-
-                $lastNumber = intval(substr($latestOrder->order_number, -4));
-
-                $number = $lastNumber + 1;
+            if (empty($order->order_number)) {
+                $order->order_number = static::generateOrderNumber();
             }
-
-            $order->order_number =
-                'ORD-' . date('Y') . '-' . str_pad($number, 4, '0', STR_PAD_LEFT);
-
         });
     }
 
-    /**
-     * Relationship with User
-     */
+    public static function generateOrderNumber(): string
+    {
+        do {
+            $year   = date('Y');
+            $random = rand(1000, 9999);
+            $number = "P6S-{$year}-{$random}";
+        } while (static::where('order_number', $number)->exists());
+
+        return $number;
+    }
+
+    // ─── Relationships ───────────────────────────────────────
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function statusLogs()
+    {
+        return $this->hasMany(OrderStatusLog::class);
+    }
 }

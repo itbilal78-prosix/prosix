@@ -245,4 +245,44 @@ class PlaceOrderController extends Controller
         'htmlContent' => $html,
     ]);
 }
+
+
+/**
+ * Track PlaceOrder by order_number
+ */
+public function trackOrder(Request $request)
+{
+    $tracking = trim($request->query('tracking', ''));
+
+    if (!$tracking) {
+        return response()->json(['message' => 'Tracking number required'], 422);
+    }
+
+    // ✅ PlaceOrder table mein search karo
+    $order = PlaceOrder::where('order_number', $tracking)->first();
+
+    if (!$order) {
+        return response()->json(['message' => 'Order not found'], 404);
+    }
+
+    return response()->json([
+        'id'            => $order->id,
+        'order_number'  => $order->order_number,
+        'status'        => $order->status,       // pending/processing/completed/cancelled
+        'payment_method'=> 'Invoice',
+        'payment_status'=> 'pending',
+        'total'         => 0,
+        'items'         => [],
+        'shipping_name' => $order->full_name,
+        'shipping_phone'=> $order->phone,
+        'shipping_city' => '',
+        'shipping_address' => '',
+        'courier_name'  => null,
+        'tracking_number'  => null,
+        'dispatch_date' => null,
+        'delivered_date'=> null,
+        'admin_notes'   => $order->notes,
+        'created_at'    => $order->created_at,
+    ]);
+}
 }

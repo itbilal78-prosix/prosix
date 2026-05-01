@@ -205,6 +205,8 @@ Route::middleware('auth:sanctum')->get(
 );
 
 Route::get('/track-order', [OrderController::class, 'trackOrder']);
+Route::get('/track-place-order', [PlaceOrderController::class, 'trackOrder']);
+
 Route::middleware('auth:sanctum')->delete('/user/designs/{id}', [UserCustomizationController::class, 'destroy']);
 
 // Yeh route add karo api.php mein

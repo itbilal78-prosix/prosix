@@ -1,4 +1,6 @@
 <template>
+      <nav-component />
+  <breadcrumb-component />
   <div class="track-wrap">
 
     <!-- Search Bar -->
@@ -132,6 +134,8 @@
     </div>
 
   </div>
+    <footer-component />
+
 </template>
 
 <script setup>
@@ -151,16 +155,26 @@ const fetchTracking = async () => {
   loading.value = true
   error.value = ''
   order.value = null
+
   try {
-const res = await axios.get('http://127.0.0.1:8000/api/track-order', {
-          params: { tracking: trackingInput.value.trim() }
+    // ✅ Pehle checkout orders mein dhundo
+    const res = await axios.get('/api/track-order', {
+      params: { tracking: trackingInput.value.trim() }
     })
     order.value = res.data
-  } catch (e) {
-    if (e.response?.status === 404) {
-      error.value = 'No order found with this tracking number. Please check and try again.'
-    } else {
-      error.value = 'Something went wrong. Please try again.'
+  } catch (e1) {
+    try {
+      // ✅ Nahi mila to PlaceOrder mein dhundo
+      const res2 = await axios.get('/api/track-place-order', {
+        params: { tracking: trackingInput.value.trim() }
+      })
+      order.value = res2.data
+    } catch (e2) {
+      if (e2.response?.status === 404) {
+        error.value = 'No order found with this tracking number.'
+      } else {
+        error.value = 'Something went wrong. Please try again.'
+      }
     }
   } finally {
     loading.value = false

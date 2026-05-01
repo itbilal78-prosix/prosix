@@ -331,7 +331,7 @@ export default {
     const year  = today.getFullYear();
     const minDate = new Date();
     minDate.setDate(today.getDate() + 7);
-    const orderNum = `P6S: ${year}-${Math.floor(1000 + Math.random() * 9000)}`;
+const orderNum = `P6S-${year}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     return {
       showCustomPicker: false,
@@ -490,7 +490,7 @@ export default {
       this.mockupFiles = []; this.rosterFiles = []; this.quoteFiles = [];
       if (this.$refs.notesEditor) this.$refs.notesEditor.innerHTML = '';
       const today = new Date();
-      this.orderNumber = `P6S: ${today.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+this.orderNumber = `P6S-${today.getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     },
   },
 };
