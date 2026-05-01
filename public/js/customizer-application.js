@@ -2502,20 +2502,38 @@ window.openFontModal = function () {
 };
     window.closeFontModal = function () { document.getElementById('fontModal').style.display = 'none'; };
 
-   function renderFontGrid() {
+function renderFontGrid(search = '') {
     const grid = document.getElementById('fontGrid');
     if (!grid) return;
+
     grid.innerHTML = '';
 
     let previewText = 'Aa';
     const currentLayer = findLayerById(window.currentApplicationLayer);
+
     if (currentLayer?.text?.trim()) previewText = currentLayer.text.trim();
     else {
         const ti = document.getElementById('applicationText');
         if (ti?.value?.trim()) previewText = ti.value.trim();
     }
 
-    window.backendFonts.forEach(f => {
+    const q = (search || '').toLowerCase().trim();
+
+    const filteredFonts = (window.backendFonts || []).filter(f => {
+        const name = (f.name || '').toLowerCase();
+        return !q || name.includes(q);
+    });
+
+    if (!filteredFonts.length) {
+        grid.innerHTML = `
+            <div style="grid-column:1 / -1; padding:30px; text-align:center; color:#777; background:#fff;">
+                No font found
+            </div>
+        `;
+        return;
+    }
+
+    filteredFonts.forEach(f => {
         const div = document.createElement('div');
 
         const isSelected = currentLayer && currentLayer.fontFamily === `font_${f.id}`;
@@ -2530,8 +2548,12 @@ window.openFontModal = function () {
             grid.querySelectorAll('div[class]').forEach(d => {
                 d.classList.remove('font-selected');
                 const prev = d.querySelector('.font-card-preview');
-                if (prev) { prev.style.background = '#f2f2f2'; prev.style.color = '#222'; }
+                if (prev) {
+                    prev.style.background = '#f2f2f2';
+                    prev.style.color = '#222';
+                }
             });
+
             div.classList.add('font-selected');
             window.updateFontFamily(`font_${f.id}`);
             closeFontModal();
@@ -2540,6 +2562,8 @@ window.openFontModal = function () {
         grid.appendChild(div);
     });
 }
+
+window.renderFontGrid = renderFontGrid;
 
     // ============================================================
     // =================== PATTERN — TEXT FILL (FIXED) ===================

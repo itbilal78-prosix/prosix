@@ -143,18 +143,14 @@ gap:6px;
             </div>
 
             {{-- Scale --}}
-           <div class="control-group" style="margin-bottom:15px;">
-    <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-        Scale: <span id="directMascotScaleValue">100</span>%
-    </label>
-    <input type="range" id="directMascotScale"
-           min="30"
-           max="400"
-           value="100"
-           step="5"
-           oninput="updateDirectMascotScale(this.value)"
-           class="app-slider" style="width:100%; cursor:pointer;">
-</div>
+            <div class="control-group" style="margin-bottom:15px;">
+                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
+                    Scale: <span id="directMascotScaleValue">100</span>%
+                </label>
+                <input type="range" id="directMascotScale" min="30" max="400" value="100" step="5"
+                    oninput="updateDirectMascotScale(this.value)" class="app-slider"
+                    style="width:100%; cursor:pointer;">
+            </div>
 
             {{-- Opacity --}}
             <div class="control-group" style="margin-bottom:15px;">
@@ -167,40 +163,43 @@ gap:6px;
             </div>
 
             {{-- Rotation --}}
-           {{-- Rotation --}}
-<div class="control-group" style="margin-bottom:15px;">
-    <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-        Rotation: <span id="directMascotRotationValue">0</span>°
-    </label>
-    <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
-            <svg id="mascotRotationSvg" width="160" height="160"
-                style="position:absolute; top:0; left:0; cursor:grab;">
-                <circle cx="80" cy="80" r="68" fill="#e0e0e0" stroke="#bbb" stroke-width="3" />
-                <circle id="mascotRotationArc" cx="80" cy="80" r="68" fill="none"
-                    stroke="#333" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 427.26"
-                    transform="rotate(-90 80 80)" style="transition:none;" />
-                <circle cx="80" cy="80" r="52" fill="#888" />
-                <circle id="mascotRotationDot" cx="80" cy="12" r="9" fill="#222"
-                    stroke="#fff" stroke-width="2.5" />
-            </svg>
-            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
-                <input type="number" id="mascotRotationManual" min="0" max="360" value="0"
-                    style="width:56px; height:40px; text-align:center;
+            {{-- Rotation --}}
+            <div class="control-group" style="margin-bottom:15px;">
+                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
+                    Rotation: <span id="directMascotRotationValue">0</span>°
+                </label>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+                        <svg id="mascotRotationSvg" width="160" height="160"
+                            style="position:absolute; top:0; left:0; cursor:grab;">
+                            <circle cx="80" cy="80" r="68" fill="#e0e0e0" stroke="#bbb"
+                                stroke-width="3" />
+                            <circle id="mascotRotationArc" cx="80" cy="80" r="68" fill="none"
+                                stroke="#333" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 427.26"
+                                transform="rotate(-90 80 80)" style="transition:none;" />
+                            <circle cx="80" cy="80" r="52" fill="#888" />
+                            <circle id="mascotRotationDot" cx="80" cy="12" r="9" fill="#222"
+                                stroke="#fff" stroke-width="2.5" />
+                        </svg>
+                        <div
+                            style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+                            <input type="number" id="mascotRotationManual" min="0" max="360"
+                                value="0"
+                                style="width:56px; height:40px; text-align:center;
                            border-radius:8px; border:2px solid #ccc;
                            font-weight:700; font-size:14px;
                            background:#fff; color:#222;
                            -moz-appearance:textfield;
                            pointer-events:all;"
-                    oninput="
+                                oninput="
                         var v = Math.min(360, Math.max(0, parseInt(this.value) || 0));
                         setMascotWheelAngle(v);
                         updateDirectMascotRotation(v);
                     ">
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
             {{-- Position --}}
             <div class="control-group" style="margin-bottom:15px;">
@@ -209,13 +208,15 @@ gap:6px;
                 </label>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div>
-                        <label style="font-size:12px; color:#666;">X: <span id="mascotDirectPosXValue">0</span></label>
+                        <label style="font-size:12px; color:#666;">X: <span
+                                id="mascotDirectPosXValue">0</span></label>
                         <input type="range" id="mascotDirectPosX" min="-500" max="500" value="0"
                             oninput="updateDirectMascotPosition('x', this.value)" class="app-slider"
                             style="width:100%; cursor:pointer;">
                     </div>
                     <div>
-                        <label style="font-size:12px; color:#666;">Y: <span id="mascotDirectPosYValue">0</span></label>
+                        <label style="font-size:12px; color:#666;">Y: <span
+                                id="mascotDirectPosYValue">0</span></label>
                         <input type="range" id="mascotDirectPosY" min="-500" max="500" value="0"
                             oninput="updateDirectMascotPosition('y', this.value)" class="app-slider"
                             style="width:100%; cursor:pointer;">
@@ -867,23 +868,38 @@ gap:6px;
     </div>
 </div>
 
-{{-- FONT MODAL — 1000px wide, 6 per row --}}
 {{-- FONT MODAL — 3-column, screenshot style --}}
 <div id="fontModal" class="color-modal" style="display:none;">
     <div class="color-modal-content" style="width:1060px; max-width:96%; border-radius:0; overflow:hidden;">
 
         {{-- Header --}}
-        <div style="padding:16px 28px; background:#fff; border-bottom:1px solid #e0e0e0; display:flex; align-items:center; justify-content:center; position:relative;">
-            <h3 id="fontModalTitle" style="margin:0; font-size:14px; font-weight:700; color:#222; letter-spacing:1.5px; text-transform:uppercase;">SELECT FONT</h3>
-            <span onclick="closeFontModal()" style="position:absolute; right:20px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:24px; color:#555; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">×</span>
+        <div
+            style="padding:16px 28px; background:#fff; border-bottom:1px solid #e0e0e0; display:flex; align-items:center; justify-content:center; position:relative;">
+            <h3 id="fontModalTitle"
+                style="margin:0; font-size:14px; font-weight:700; color:#222; letter-spacing:1.5px; text-transform:uppercase;">
+                SELECT FONT
+            </h3>
+
+            <span onclick="closeFontModal()"
+                style="position:absolute; right:20px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:24px; color:#555; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px;"
+                onmouseover="this.style.background='#f0f0f0'"
+                onmouseout="this.style.background='transparent'">×</span>
         </div>
 
-
+        {{-- Search Bar --}}
+        <div style="padding:14px 20px; background:#fff; border-bottom:1px solid #ddd;">
+            <input
+                type="text"
+                id="fontSearchInput"
+                placeholder="Search font..."
+                oninput="window.renderFontGrid(this.value)"
+                style="width:100%; height:42px; padding:10px 14px; border:1px solid #ccc; border-radius:6px; font-size:14px; outline:none;">
+        </div>
 
         {{-- Grid --}}
         <div id="fontGrid"
-    style="padding:20px; display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; max-height:68vh; overflow-y:auto; background:#e9e9e9;">
-</div>
+            style="padding:20px; display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; max-height:62vh; overflow-y:auto; background:#e9e9e9;">
+        </div>
 
     </div>
 </div>
@@ -1081,32 +1097,33 @@ gap:6px;
     }
 
     /* Font grid items */
-   /* Font grid cards - screenshot style */
-#fontGrid > div {
-    border: 1.5px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    background: #fff;
-    transition: border-color 0.18s, box-shadow 0.18s;
-    overflow: hidden;
-    padding: 0;  /* padding remove karo */
-}
+    /* Font grid cards - screenshot style */
+    #fontGrid>div {
+        border: 1.5px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        background: #fff;
+        transition: border-color 0.18s, box-shadow 0.18s;
+        overflow: hidden;
+        padding: 0;
+        /* padding remove karo */
+    }
 
 
 
-/* Font name top bar */
-#fontGrid > div .font-card-name {
-    padding: 8px 12px 6px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #555;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    background: #fff;
-}
+    /* Font name top bar */
+    #fontGrid>div .font-card-name {
+        padding: 8px 12px 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #555;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        background: #fff;
+    }
 
-/* Preview area */
-/* #fontGrid > div .font-card-preview {
+    /* Preview area */
+    /* #fontGrid > div .font-card-preview {
     height: 120px;
     display: flex;
     align-items: center;
@@ -1118,30 +1135,35 @@ gap:6px;
     color: #222;
     transition: background 0.18s, color 0.18s;
 } */
- /* Preview area */
-#fontGrid > div .font-card-preview {
-    min-height: 120px;
-    height: auto;          /* ← fixed height hatao */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #e9e9e9;
-    font-size: 35px;
-    font-weight: 700;
-    border: 14px solid white;
-    color: #222;
-    transition: background 0.18s, color 0.18s;
-    padding: 10px;         /* ← padding add karo */
-    word-break: break-word; /* ← long words break hone dena */
-    text-align: center;    /* ← center align */
-    line-height: 1.2;      /* ← line height */
-    overflow-wrap: break-word;
-}
+    /* Preview area */
+    #fontGrid>div .font-card-preview {
+        min-height: 120px;
+        height: auto;
+        /* ← fixed height hatao */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9e9e9;
+        font-size: 35px;
+        font-weight: 700;
+        border: 14px solid white;
+        color: #222;
+        transition: background 0.18s, color 0.18s;
+        padding: 10px;
+        /* ← padding add karo */
+        word-break: break-word;
+        /* ← long words break hone dena */
+        text-align: center;
+        /* ← center align */
+        line-height: 1.2;
+        /* ← line height */
+        overflow-wrap: break-word;
+    }
 
-#fontGrid > div.font-selected .font-card-preview {
-    background: #353535;
-    color: #fff;
-}
+    #fontGrid>div.font-selected .font-card-preview {
+        background: #353535;
+        color: #fff;
+    }
 
     .accent-card:hover {
         border-color: #000000 !important;
@@ -1235,30 +1257,28 @@ gap:6px;
         var b = document.getElementById(bubId);
         if (b) b.style.display = 'none';
     }
+
     function setSidebarPosition() {
-  const sidebar = document.getElementById('applicationsSidebar')
-                  || document.querySelector('.applications-sidebar');
-  if (!sidebar) return;
+        const sidebar = document.getElementById('applicationsSidebar') ||
+            document.querySelector('.applications-sidebar');
+        if (!sidebar) return;
 
-  const isLandscape = window.innerWidth > window.innerHeight;
-  const isMobile = window.innerHeight < 600;
+        const isLandscape = window.innerWidth > window.innerHeight;
+        const isMobile = window.innerHeight < 600;
 
-  if (isLandscape && isMobile) {
-    sidebar.style.right = '260px';   /* tools bar width */
-    sidebar.style.width = '220px';
-    sidebar.style.top   = '60px';
-  } else {
-    /* Desktop/Portrait — default values */
-    sidebar.style.right = '510px';
-    sidebar.style.width = '320px';
-    sidebar.style.top   = '70px';
-  }
-}
+        if (isLandscape && isMobile) {
+            sidebar.style.right = '260px'; /* tools bar width */
+            sidebar.style.width = '220px';
+            sidebar.style.top = '60px';
+        } else {
+            /* Desktop/Portrait — default values */
+            sidebar.style.right = '510px';
+            sidebar.style.width = '320px';
+            sidebar.style.top = '70px';
+        }
+    }
 
-window.addEventListener('resize', setSidebarPosition);
-window.addEventListener('orientationchange', setSidebarPosition);
-document.addEventListener('DOMContentLoaded', setSidebarPosition);
-
+    window.addEventListener('resize', setSidebarPosition);
+    window.addEventListener('orientationchange', setSidebarPosition);
+    document.addEventListener('DOMContentLoaded', setSidebarPosition);
 </script>
-
-
