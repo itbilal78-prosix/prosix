@@ -2054,7 +2054,8 @@ if (display) display.textContent = layer.rotation || 0;
         value = parseInt(value) || 100;
 
         // ==================== SAFETY LIMITS ====================
-        if (value < 30) value = 30;      // Minimum size (bahut chhota na ho)
+        if (value < 0) value = 0;
+     // Minimum size (bahut chhota na ho)
         if (value > 400) value = 400;    // Maximum size (ab 4x tak ja sakta hai)
 
         if (!window.currentApplicationLayer) return;

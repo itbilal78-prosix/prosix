@@ -147,7 +147,8 @@ gap:6px;
                 <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
                     Scale: <span id="directMascotScaleValue">100</span>%
                 </label>
-                <input type="range" id="directMascotScale" min="30" max="400" value="100" step="5"
+                <input type="range" id="directMascotScale" min="1" max="400" value="100"
+ step="1"
                     oninput="updateDirectMascotScale(this.value)" class="app-slider"
                     style="width:100%; cursor:pointer;">
             </div>
