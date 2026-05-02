@@ -365,36 +365,85 @@
         setTimeout(() => { loadPartsForApplicationModal(); updateModalPreview(); }, 300);
     };
 
-    window.loadPartsForApplicationModal = function () {
-        const container = document.getElementById('partSelectionGrid');
-        if (!container) return;
-        const view = window.selectedApplicationView;
-        const modelData = window.modelDataByView?.[view];
-        if (!modelData?.parts?.length) {
-            container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">No parts available</p>';
+    // window.loadPartsForApplicationModal = function () {
+    //     const container = document.getElementById('partSelectionGrid');
+    //     if (!container) return;
+    //     const view = window.selectedApplicationView;
+    //     const modelData = window.modelDataByView?.[view];
+    //     if (!modelData?.parts?.length) {
+    //         container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">No parts available</p>';
+    //         return;
+    //     }
+    //     container.innerHTML = '';
+    //     modelData.parts.forEach((part, index) => {
+    //         const btn = document.createElement('button');
+    //         btn.className = 'part-btn';
+    //         btn.textContent = part.title || `Part ${index + 1}`;
+    //         btn.dataset.partId = part.part;
+    //         btn.dataset.partIndex = index;
+    //         if (part.part === window.selectedApplicationPart) btn.classList.add('selected');
+    //         btn.onclick = function () {
+    //             window.selectedApplicationPart = part.part;
+    //             const partIndex = parseInt(this.dataset.partIndex);
+    //             if (window.allSvgParts?.[partIndex] && window.selectSvgElement) {
+    //                 window.selectSvgElement(window.allSvgParts[partIndex]);
+    //             }
+    //             container.querySelectorAll('.part-btn').forEach(b => b.classList.remove('selected'));
+    //             this.classList.add('selected');
+    //             updateModalPreview();
+    //         };
+    //         container.appendChild(btn);
+    //     });
+    // };
+
+window.loadPartsForApplicationModal = function () {
+    const container = document.getElementById('partSelectionGrid');
+    if (!container) return;
+    const view = window.selectedApplicationView;
+    const modelData = window.modelDataByView?.[view];
+    if (!modelData?.parts?.length) {
+        container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">No parts available</p>';
+        return;
+    }
+    container.innerHTML = '';
+
+    modelData.parts.forEach((part, index) => {
+        // ✅ svg-part-* wale skip karo — sirf proper names show karo
+        if (!part.title ||
+            part.title.toLowerCase().startsWith('svg-part') ||
+            part.title.toLowerCase().startsWith('svg_part') ||
+            part.title.toLowerCase().match(/^svg[-_]?part[-_]?\d+$/i)) {
             return;
         }
-        container.innerHTML = '';
-        modelData.parts.forEach((part, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'part-btn';
-            btn.textContent = part.title || `Part ${index + 1}`;
-            btn.dataset.partId = part.part;
-            btn.dataset.partIndex = index;
-            if (part.part === window.selectedApplicationPart) btn.classList.add('selected');
-            btn.onclick = function () {
-                window.selectedApplicationPart = part.part;
-                const partIndex = parseInt(this.dataset.partIndex);
-                if (window.allSvgParts?.[partIndex] && window.selectSvgElement) {
-                    window.selectSvgElement(window.allSvgParts[partIndex]);
-                }
-                container.querySelectorAll('.part-btn').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                updateModalPreview();
-            };
-            container.appendChild(btn);
-        });
-    };
+
+        const btn = document.createElement('button');
+        btn.className = 'part-btn';
+        btn.textContent = part.title;
+        btn.dataset.partId = part.part;
+        btn.dataset.partIndex = index;
+
+        if (part.part === window.selectedApplicationPart) btn.classList.add('selected');
+
+        btn.onclick = function () {
+            window.selectedApplicationPart = part.part;
+            const partIndex = parseInt(this.dataset.partIndex);
+            if (window.allSvgParts?.[partIndex] && window.selectSvgElement) {
+                window.selectSvgElement(window.allSvgParts[partIndex]);
+            }
+            container.querySelectorAll('.part-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            updateModalPreview();
+        };
+        container.appendChild(btn);
+    });
+
+    // Agar koi part show nahi hua — fallback message
+    if (!container.children.length) {
+        container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">No named parts found</p>';
+    }
+};
+
+
 
     window.updateModalPreview = function () {
         const previewContainer = document.getElementById('modalPreviewSvg');
