@@ -194,7 +194,32 @@
             </div>
             <p v-if="selectedSize === '__other__' && customSizeOk" class="custom-confirmed">✅ Custom: <strong>{{ customSizeVal }}</strong></p>
           </div>
-
+<!-- Notes -->
+<div class="option-group">
+  <div class="option-header">
+    <label class="option-label">Order Notes</label>
+    <button
+      class="notes-toggle-btn"
+      @click="showNotes = !showNotes"
+      :class="{ active: showNotes }"
+    >
+      <i :class="showNotes ? 'bi bi-chat-dots-fill' : 'bi bi-chat-dots'"></i>
+      {{ showNotes ? 'Hide Notes' : 'Add Notes' }}
+    </button>
+  </div>
+  <transition name="notes-slide">
+    <div v-if="showNotes" class="notes-wrap">
+      <textarea
+        v-model="orderNotes"
+        class="notes-textarea"
+        rows="3"
+        placeholder="e.g. Name on jersey: Ahmed #10, any special request..."
+        maxlength="500"
+      ></textarea>
+      <div class="notes-char-count">{{ orderNotes.length }}/500</div>
+    </div>
+  </transition>
+</div>
           <!-- Quantity -->
           <div class="option-group">
             <label class="option-label">Quantity</label>
@@ -211,7 +236,7 @@
               <i class="bi bi-cart-plus"></i>
               {{ !stockAvailable ? 'Out of Stock' : 'Add to Cart' }}
             </button>
-            <button class="btn-checkout" @click="router.push('/checkout')" :disabled="cartStore.items.length === 0">Buy Now</button>
+<button class="btn-checkout" @click="buyNow" :disabled="!effectiveSize || !stockAvailable">Buy Now</button>
           </div>
           <p v-if="!effectiveSize && stockAvailable" class="size-warning">⚠ Select a size to continue</p>
 
@@ -783,7 +808,8 @@ const toastVisible=ref(false),toastText=ref('')
 let toastTimer
 const showToast=(msg)=>{toastText.value=msg;toastVisible.value=true;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toastVisible.value=false},2800)}
 const formatPrice=(p)=>{if(typeof p==='string') return parseFloat(p.replace(/[^0-9.]/g,''))||0;return Number(p)||0}
-
+const showNotes = ref(false)  // ← YEH ADD KARO
+const orderNotes = ref('')    // ← YEH ADD KARO
 const loadProduct=async()=>{
   const type=route.query.type
   if(type==='model'){
@@ -833,17 +859,39 @@ const handleShare=()=>{if(navigator.share) navigator.share({title:product.value.
 
 
 
-const addToCart=()=>{
-  if(!effectiveSize.value){showToast('⚠️ Please select a size!');return}
-  if(!stockAvailable.value){showToast('❌ Out of stock!');return}
-  let cartImage=displayImage.value||product.value.image
-  if(isModel.value&&appliedPreview.value.hasDesign&&coloredSvgCache.value['front']){
-    cartImage=coloredSvgCache.value['front']
+const addToCart = () => {
+  if (!effectiveSize.value) { showToast('⚠️ Please select a size!'); return }
+  if (!stockAvailable.value) { showToast('❌ Out of stock!'); return }
+
+  let cartImage = displayImage.value || product.value.image
+  if (isModel.value && appliedPreview.value.hasDesign && coloredSvgCache.value['front']) {
+    cartImage = coloredSvgCache.value['front']
   }
-  const cartItem={...product.value,image:cartImage,shipping_enabled:product.value.shipping_enabled??false,shipping_cost:product.value.shipping_cost??0,free_shipping_above:product.value.free_shipping_above??null,stock_quantity:product.value.stock_quantity??null,appliedDesign:appliedPreview.value.hasDesign?{name:appliedPreview.value.name,colors:appliedPreview.value.colors,coloredImage:coloredSvgCache.value['front']||null}:null}
-  cartStore.addToCart(cartItem,effectiveSize.value,quantity.value)
+
+  const cartItem = {
+    ...product.value,
+    image: cartImage,
+    shipping_enabled: product.value.shipping_enabled ?? false,
+    shipping_cost: product.value.shipping_cost ?? 0,
+    free_shipping_above: product.value.free_shipping_above ?? null,
+    stock_quantity: product.value.stock_quantity ?? null,
+    notes: orderNotes.value.trim(), // ✅ NOTES ADD
+    appliedDesign: appliedPreview.value.hasDesign ? {
+      name: appliedPreview.value.name,
+      colors: appliedPreview.value.colors,
+      coloredImage: coloredSvgCache.value['front'] || null
+    } : null
+  }
+
+  cartStore.addToCart(cartItem, effectiveSize.value, quantity.value)
   showToast(`🛒 ${quantity.value}× (${effectiveSize.value}) added!`)
-  quantity.value=1
+  quantity.value = 1
+}
+const buyNow = () => {
+  if (!effectiveSize.value) { showToast('⚠️ Please select a size first!'); return }
+  if (!stockAvailable.value) { showToast('❌ Out of stock!'); return }
+  addToCart()
+  router.push('/checkout')
 }
 
 const resetState=()=>{
@@ -859,7 +907,7 @@ const resetState=()=>{
 onMounted(async()=>{
   await loadProduct()
   // Restore design state BEFORE fetchRelated so related also gets colored
-  
+
   if(isModel.value&&product.value.category_id){
     restoreCategoryPreviewState(product.value.category_id)
   }
@@ -885,6 +933,47 @@ watch(()=>route.params.id,async(newId)=>{
 </script>
 
 <style scoped>
+.notes-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: .2s;
+  color: #555;
+}
+.notes-toggle-btn:hover,
+.notes-toggle-btn.active {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+.notes-wrap { margin-top: 10px; }
+.notes-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color .2s;
+  line-height: 1.6;
+}
+.notes-textarea:focus { outline: none; border-color: #000; }
+.notes-char-count { text-align: right; font-size: 12px; color: #aaa; margin-top: 4px; }
+.notes-slide-enter-active,
+.notes-slide-leave-active { transition: all .25s ease; overflow: hidden; }
+.notes-slide-enter-from,
+.notes-slide-leave-to { opacity: 0; max-height: 0; }
+.notes-slide-enter-to,
+.notes-slide-leave-from { opacity: 1; max-height: 200px; }
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 .page-wrapper{font-family:'Montserrat',sans-serif;background:#fff;color:#000;min-height:100vh}

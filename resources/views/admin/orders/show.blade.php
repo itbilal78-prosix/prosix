@@ -564,12 +564,12 @@
             <span>›</span>
             <span>Order #{{ $order->id }}</span>
         </div>
-<a href="{{ route('admin.orders.index') }}" class="od-back">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <polyline points="15 18 9 12 15 6"/>
-    </svg>
-    Back to Orders
-</a>
+        <a href="{{ route('admin.orders.index') }}" class="od-back">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back to Orders
+        </a>
         {{-- Header --}}
         <div class="od-header">
 
@@ -679,6 +679,26 @@
                                                 </svg>
                                                 Size: {{ $item['size'] }}
                                             </span>
+                                        @endif
+                                        @if (!empty($item['notes']))
+                                            <div
+                                                style="
+        margin-top: 8px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-size: 12px;
+        color: #92400e;
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        width: 100%;
+    ">
+                                                <i class="bi bi-chat-dots-fill"
+                                                    style="color:#f59e0b; margin-top:1px; flex-shrink:0;"></i>
+                                                <span><strong>Customer Note:</strong> {{ $item['notes'] }}</span>
+                                            </div>
                                         @endif
                                     </div>
                                 </div>

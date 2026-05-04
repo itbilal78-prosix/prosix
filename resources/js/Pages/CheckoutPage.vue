@@ -549,9 +549,10 @@ const placeOrder = async () => {
 
     const orderPayload = {
       cart: cartStore.items.map(i => ({
-        id: i.id, name: i.name, price: i.price,
-        quantity: i.quantity, size: i.size, image: i.image,
-      })),
+  id: i.id, name: i.name, price: i.price,
+  quantity: i.quantity, size: i.size, image: i.image,
+  notes: i.notes || '',  // ✅ NOTES ADD
+})),
       checkout: {
         name:          form.value.name,
         email:         form.value.email    || '',
