@@ -50,15 +50,31 @@
     </main>
 
     <!-- Password Modal -->
-    <div v-if="showPasswordModal" class="pw-overlay">
-      <div class="pw-box">
-        <button class="pw-close" @click="closePasswordModal">&times;</button>
-        <h5 class="fw-bold mb-3">Enter Password</h5>
-        <input type="password" v-model="enteredPassword" class="form-control mb-2" placeholder="Password" />
-        <p v-if="passwordError" class="text-danger small mb-2">{{ passwordError }}</p>
-        <button class="btn btn-dark w-100" @click="submitPassword">Unlock</button>
-      </div>
+  <!-- Password Modal -->
+<div v-if="showPasswordModal" class="pw-overlay">
+  <div class="pw-box">
+    <button class="pw-close" @click="closePasswordModal">&times;</button>
+    <h5 class="fw-bold mb-1"> Enter Password</h5>
+    <p class="text-muted small mb-3">This category is password protected.</p>
+
+    <!-- Password input with show/hide -->
+    <div class="pw-input-wrap mb-2">
+      <input
+        :type="showPw ? 'text' : 'password'"
+        v-model="enteredPassword"
+        class="form-control"
+        placeholder="Enter password..."
+        @keyup.enter="submitPassword"
+      />
+      <button class="pw-eye" @click="showPw = !showPw" type="button">
+        <i :class="showPw ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+      </button>
     </div>
+
+    <p v-if="passwordError" class="text-danger small mb-2">{{ passwordError }}</p>
+    <button class="btn btn-dark w-100" @click="submitPassword">Unlock</button>
+  </div>
+</div>
 
     <footer-component />
   </div>
@@ -81,6 +97,8 @@ const enteredPassword    = ref("")
 const passwordError      = ref("")
 const pendingRoute       = ref(null)
 const selectedCategoryId = ref(null)
+const showPw = ref(false)
+
 
 const handleCategoryClick = (cat) => {
   if (cat.password) {
@@ -99,16 +117,22 @@ const handleCategoryClick = (cat) => {
 }
 
 const submitPassword = async () => {
+  if (!enteredPassword.value.trim()) {
+    passwordError.value = 'Please enter password'
+    return
+  }
   try {
     await axios.post(`/api/categories/${selectedCategoryId.value}/verify-password`, {
       password: enteredPassword.value
     })
     showPasswordModal.value = false
-    enteredPassword.value   = ""
-    passwordError.value     = ""
+    enteredPassword.value   = ''
+    passwordError.value     = ''
     router.push(pendingRoute.value)
   } catch {
-    passwordError.value = "Wrong password"
+    // ✅ Wrong password — sirf error dikhao, kahin nahi jao
+    passwordError.value   = ' Wrong password. Please try again.'
+    enteredPassword.value = ''
   }
 }
 
@@ -116,10 +140,11 @@ const handleImageError = (e) => { e.target.src = defaultImage }
 
 const closePasswordModal = () => {
   showPasswordModal.value  = false
-  enteredPassword.value    = ""
-  passwordError.value      = ""
+  enteredPassword.value    = ''
+  passwordError.value      = ''
   pendingRoute.value       = null
   selectedCategoryId.value = null
+  showPw.value             = false  // ✅ yeh add karo
 }
 
 const loadData = async () => {
@@ -173,6 +198,25 @@ watch(() => route.params.slug, loadData)
   grid-template-columns: repeat(5, 1fr);
   gap: 24px;
 }
+.pw-input-wrap {
+  position: relative;
+}
+.pw-input-wrap .form-control {
+  padding-right: 42px;
+}
+.pw-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 16px;
+  padding: 0;
+}
+.pw-eye:hover { color: #000; }
 
 @media (max-width: 1200px) { .cat-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 900px)  { .cat-grid { grid-template-columns: repeat(3, 1fr); } }

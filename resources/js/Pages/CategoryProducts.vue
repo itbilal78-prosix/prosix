@@ -35,7 +35,7 @@
                     <span class="color-dot" :style="{ background: v.hex }"></span>
                   </div>
                 </div>
-                <div class="product-img-wrapper flex-grow-1">
+<div class="product-img-wrapper flex-grow-1" @click="router.push(`/product/${product.id}`)" style="cursor:pointer;">
                   <transition name="color-swap" mode="out-in">
                     <img :key="getVariantImg(product)" :src="getVariantImg(product)" class="product-img" />
                   </transition>

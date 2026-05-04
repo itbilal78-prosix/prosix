@@ -8,10 +8,19 @@ window.axios = axios
 axios.interceptors.response.use(
   response => response,
   error => {
+    // if (error.response?.status === 401 || error.response?.status === 403) {
+    //   localStorage.removeItem('auth_token')
+    //   window.location.href = '/user-login'
+    // }
     if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem('auth_token')
-      window.location.href = '/user-login'
-    }
+  // ✅ verify-password route skip karo
+  const url = error.config?.url || ''
+  if (url.includes('verify-password')) {
+    return Promise.reject(error)
+  }
+  localStorage.removeItem('auth_token')
+  window.location.href = '/user-login'
+}
     return Promise.reject(error)
   }
 )
