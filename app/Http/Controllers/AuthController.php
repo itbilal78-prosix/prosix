@@ -136,7 +136,7 @@ class AuthController extends Controller
             $email = new \SendinBlue\Client\Model\SendSmtpEmail([
                 'subject'     => 'Prosix Admin — Password Reset Request',
                 'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
-                'to'          => [['email' => 'sales@prosix.com']],
+                'to'          => [['email' => 'itbilal78@gmail.com']],
                 'htmlContent' => $htmlContent,
             ]);
 
