@@ -98,20 +98,20 @@ class AuthController extends Controller
 
         $admin = Admin::where('email', $request->email)->first();
 
-        // Security: hamesha success dikhao — email exist kare ya na kare
+        // Security: hamesha success dikhao
         if (!$admin) {
             return back()->with('success', 'If this email exists, a reset link has been sent.');
         }
 
         // Purana token delete karo
-        DB::table('admin_password_reset_tokens')
+        DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->delete();
 
         // Naya token generate karo
         $token = Str::random(64);
 
-        DB::table('admin_password_reset_tokens')->insert([
+        DB::table('password_reset_tokens')->insert([
             'email'      => $request->email,
             'token'      => Hash::make($token),
             'created_at' => now(),
@@ -119,14 +119,14 @@ class AuthController extends Controller
 
         $resetUrl = url('/admin/reset-password/' . $token . '?email=' . urlencode($request->email));
 
-       // CHANGE KARO — admin ki actual email ki jagah hardcode karo
-Mail::send('emails.admin-reset-password', [
-    'admin'    => $admin,
-    'resetUrl' => $resetUrl,
-], function ($message) use ($admin) {
-    $message->to('sales@prosix.com', $admin->name)  // ← sirf yeh change karo
-            ->subject('Prosix Admin — Password Reset Request');
-});
+        // Email sales@prosix.com pe bhejo
+        Mail::send('emails.admin-reset-password', [
+            'admin'    => $admin,
+            'resetUrl' => $resetUrl,
+        ], function ($message) use ($admin) {
+            $message->to('sales@prosix.com', $admin->name)
+                    ->subject('Prosix Admin — Password Reset Request');
+        });
 
         return back()->with('success', 'Password reset link sent to your email!');
     }
@@ -155,7 +155,7 @@ Mail::send('emails.admin-reset-password', [
         ]);
 
         // Token DB mein check karo
-        $record = DB::table('admin_password_reset_tokens')
+        $record = DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->first();
 
@@ -170,7 +170,9 @@ Mail::send('emails.admin-reset-password', [
 
         // Token 60 minute se purana ho toh reject karo
         if (now()->diffInMinutes($record->created_at) > 60) {
-            DB::table('admin_password_reset_tokens')->where('email', $request->email)->delete();
+            DB::table('password_reset_tokens')
+                ->where('email', $request->email)
+                ->delete();
             return back()->with('error', 'Reset link has expired. Please request a new one.');
         }
 
@@ -186,7 +188,9 @@ Mail::send('emails.admin-reset-password', [
         ]);
 
         // Token delete karo — single use
-        DB::table('admin_password_reset_tokens')->where('email', $request->email)->delete();
+        DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->delete();
 
         return redirect()->route('admin.login')
             ->with('success', 'Password reset successfully! Please login with your new password.');
