@@ -395,15 +395,21 @@ const svgGlobe  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" s
 const svgWire   = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><polyline points="8 8 3 12 8 16"/><polyline points="16 8 21 12 16 16"/></svg>'
 const svgBox    = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
 
+// const paymentGroups = [
+//   { id: 'card',    svg: svgCard,   label: 'Card',   defaultMethod: 'stripe'   },
+//   { id: 'wallets', svg: svgWallet, label: 'Wallets',defaultMethod: 'applepay' },
+//   { id: 'p2p',     svg: svgDollar, label: 'P2P',    defaultMethod: 'cashapp'  },
+//   { id: 'paypal',  svg: svgGlobe,  label: 'PayPal', defaultMethod: 'paypal'   },
+//   { id: 'wire',    svg: svgWire,   label: 'Wire',   defaultMethod: 'wire'     },
+//   { id: 'cod',     svg: svgBox,    label: 'COD',    defaultMethod: 'cod'      },
+// ]
 const paymentGroups = [
   { id: 'card',    svg: svgCard,   label: 'Card',   defaultMethod: 'stripe'   },
   { id: 'wallets', svg: svgWallet, label: 'Wallets',defaultMethod: 'applepay' },
   { id: 'p2p',     svg: svgDollar, label: 'P2P',    defaultMethod: 'cashapp'  },
   { id: 'paypal',  svg: svgGlobe,  label: 'PayPal', defaultMethod: 'paypal'   },
   { id: 'wire',    svg: svgWire,   label: 'Wire',   defaultMethod: 'wire'     },
-  { id: 'cod',     svg: svgBox,    label: 'COD',    defaultMethod: 'cod'      },
 ]
-
 const formatPrice = (p) => {
   if (typeof p === 'string') return parseFloat(p.replace(/[^0-9.]/g, '')) || 0
   return Number(p) || 0

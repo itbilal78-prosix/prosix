@@ -334,6 +334,19 @@ Route::get('/api/categories-for-templates', function () {
         ->get();
 });
 
+Route::get('/admin/forgot-password', [AuthController::class, 'showForgotForm'])
+    ->name('admin.password.request');
+
+Route::post('/admin/forgot-password', [AuthController::class, 'sendResetLink'])
+    ->name('admin.password.send');
+
+Route::get('/admin/reset-password/{token}', [AuthController::class, 'showResetForm'])
+    ->name('admin.password.reset.form');
+
+Route::post('/admin/reset-password', [AuthController::class, 'resetPassword'])
+    ->name('admin.password.reset');
+
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -18,19 +22,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $credentials = $request->only('email', 'password');
-
-        // Use admin guard
-        if (Auth::guard('admin')->attempt($credentials)) {
+        if (Auth::guard('admin')->attempt($request->only('email', 'password'))) {
             $request->session()->regenerate();
-
-            // return redirect()->route('products.index');
             return redirect()->route('admin.dashboard');
-
         }
 
         return back()->with('error', 'Invalid credentials.');
@@ -42,54 +40,155 @@ class AuthController extends Controller
         Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         return redirect()->route('admin.login');
     }
 
-    // Show all users (for admin)
+    // Show all users
     public function index()
     {
         $users = User::where('role', 'user')->latest()->get();
-
         return view('user_mangment.all_user', compact('users'));
     }
-
 
     public function toggleStatus($id)
     {
         $user = \App\Models\User::findOrFail($id);
 
         if ($user->status == 'blocked') {
-    $user->status = 'approved'; // unblock
-} else {
-    $user->status = 'blocked'; // block
-
-
-            DB::table('sessions')
-                ->where('user_id', $user->id)
-                ->delete();
+            $user->status = 'approved';
+        } else {
+            $user->status = 'blocked';
+            DB::table('sessions')->where('user_id', $user->id)->delete();
         }
 
         $user->save();
-
         return back()->with('success', 'User status updated.');
     }
 
+    public function loginAsUser($id)
+    {
+        $user = User::findOrFail($id);
 
+        if ($user->status !== 'approved') {
+            return back()->with('error', 'User not approved');
+        }
 
+        $user->tokens()->delete();
+        $token = $user->createToken('admin_impersonation')->plainTextToken;
 
-
-public function loginAsUser($id)
-{
-    $user = User::findOrFail($id);
-
-    if ($user->status !== 'approved') {
-        return back()->with('error', 'User not approved');
+        return redirect('/dashboard?token=' . $token . '&impersonate=1&tab=my-design');
     }
 
-    $user->tokens()->delete();
-    $token = $user->createToken('admin_impersonation')->plainTextToken;
+    // ─────────────────────────────────────────
+    // FORGOT PASSWORD — Form dikhao
+    // ─────────────────────────────────────────
+    public function showForgotForm()
+    {
+        return view('auth.admin-forgot-password');
+    }
 
-    return redirect('/dashboard?token=' . $token . '&impersonate=1&tab=my-design');
-}
+    // ─────────────────────────────────────────
+    // FORGOT PASSWORD — Email bhejo
+    // ─────────────────────────────────────────
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $admin = Admin::where('email', $request->email)->first();
+
+        // Security: hamesha success dikhao — email exist kare ya na kare
+        if (!$admin) {
+            return back()->with('success', 'If this email exists, a reset link has been sent.');
+        }
+
+        // Purana token delete karo
+        DB::table('admin_password_reset_tokens')
+            ->where('email', $request->email)
+            ->delete();
+
+        // Naya token generate karo
+        $token = Str::random(64);
+
+        DB::table('admin_password_reset_tokens')->insert([
+            'email'      => $request->email,
+            'token'      => Hash::make($token),
+            'created_at' => now(),
+        ]);
+
+        $resetUrl = url('/admin/reset-password/' . $token . '?email=' . urlencode($request->email));
+
+       // CHANGE KARO — admin ki actual email ki jagah hardcode karo
+Mail::send('emails.admin-reset-password', [
+    'admin'    => $admin,
+    'resetUrl' => $resetUrl,
+], function ($message) use ($admin) {
+    $message->to('sales@prosix.com', $admin->name)  // ← sirf yeh change karo
+            ->subject('Prosix Admin — Password Reset Request');
+});
+
+        return back()->with('success', 'Password reset link sent to your email!');
+    }
+
+    // ─────────────────────────────────────────
+    // RESET PASSWORD — Form dikhao
+    // ─────────────────────────────────────────
+    public function showResetForm(Request $request, $token)
+    {
+        return view('auth.admin-reset-password', [
+            'token' => $token,
+            'email' => $request->query('email'),
+        ]);
+    }
+
+    // ─────────────────────────────────────────
+    // RESET PASSWORD — Password update karo
+    // ─────────────────────────────────────────
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email'                 => 'required|email',
+            'token'                 => 'required',
+            'password'              => 'required|min:8|confirmed',
+            'password_confirmation' => 'required',
+        ]);
+
+        // Token DB mein check karo
+        $record = DB::table('admin_password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record) {
+            return back()->with('error', 'Invalid or expired reset link.');
+        }
+
+        // Token verify karo
+        if (!Hash::check($request->token, $record->token)) {
+            return back()->with('error', 'Invalid or expired reset link.');
+        }
+
+        // Token 60 minute se purana ho toh reject karo
+        if (now()->diffInMinutes($record->created_at) > 60) {
+            DB::table('admin_password_reset_tokens')->where('email', $request->email)->delete();
+            return back()->with('error', 'Reset link has expired. Please request a new one.');
+        }
+
+        // Admin find karo aur password update karo
+        $admin = Admin::where('email', $request->email)->first();
+
+        if (!$admin) {
+            return back()->with('error', 'Admin not found.');
+        }
+
+        $admin->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Token delete karo — single use
+        DB::table('admin_password_reset_tokens')->where('email', $request->email)->delete();
+
+        return redirect()->route('admin.login')
+            ->with('success', 'Password reset successfully! Please login with your new password.');
+    }
 }

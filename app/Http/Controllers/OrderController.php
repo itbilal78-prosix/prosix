@@ -39,7 +39,9 @@ class OrderController extends Controller
                 'checkout.postalCode'     => 'nullable|string',
                 'checkout.country'        => 'nullable|string',
                 'checkout.deliveryDays'   => 'required|string',
-                'checkout.paymentMethod'  => 'required|string|in:stripe,cod,paypal,wire',
+                // 'checkout.paymentMethod'  => 'required|string|in:stripe,cod,paypal,wire',
+                'checkout.paymentMethod' => 'required|string|in:stripe',
+
             ]);
 
             /**
@@ -263,7 +265,6 @@ class OrderController extends Controller
         $orders = Order::with('user')->latest()->get();
         return view('admin.orders.index', compact('orders'));
     }
-
     /**
      * ADMIN SINGLE ORDER
      */

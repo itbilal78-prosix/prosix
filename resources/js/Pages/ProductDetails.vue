@@ -69,7 +69,7 @@
                   <img :src="activeThumb.src || displayImage" class="zoom-layer zoom-svg" :style="zoomTransformStyle" />
                 </template>
               </div>
- 
+
               <!-- MAIN DISPLAY -->
               <template v-if="isModel">
                 <div v-if="activeThumb && activeThumb.isLayered" class="model-layer-container" :class="{ 'zoomed-hidden': zoomActive }">
@@ -859,6 +859,7 @@ const resetState=()=>{
 onMounted(async()=>{
   await loadProduct()
   // Restore design state BEFORE fetchRelated so related also gets colored
+  
   if(isModel.value&&product.value.category_id){
     restoreCategoryPreviewState(product.value.category_id)
   }

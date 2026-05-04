@@ -122,6 +122,15 @@
                         <polyline points="12 5 19 12 12 19"/>
                     </svg>
                 </button>
+                   {{-- Forgot Password --}}
+                <div style="text-align:center; margin-top:14px;">
+                    <a href="{{ route('admin.password.request') }}"
+                       style="font-size:13px; color:#888; text-decoration:none;"
+                       onmouseover="this.style.color='#111'"
+                       onmouseout="this.style.color='#888'">
+                        Forgot Password?
+                    </a>
+                </div>
 
             </form>
 
