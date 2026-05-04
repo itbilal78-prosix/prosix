@@ -317,7 +317,18 @@
         <div class="password-modal-box">
             <button class="close-btn" @click="closePasswordModal">×</button>
             <h5 class="mb-3 text-center">Enter Password</h5>
-            <input type="password" v-model="enteredPassword" class="form-control mb-3" placeholder="Password" />
+<div class="pw-input-wrap mb-3">
+  <input
+    :type="showPw ? 'text' : 'password'"
+    v-model="enteredPassword"
+    class="form-control"
+    placeholder="Password"
+    @keyup.enter="submitPassword"
+  />
+  <button class="pw-eye" @click="showPw = !showPw" type="button">
+    <i :class="showPw ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+  </button>
+</div>
             <p v-if="passwordError" class="text-danger small text-center">{{ passwordError }}</p>
             <button class="btn btn-dark w-100" @click="submitPassword">Unlock</button>
         </div>
@@ -336,6 +347,7 @@ const goToCheckout = () => { showCartSidebar.value = false; router.push('/checko
 
 const isScrolled = ref(false)
 const handleScroll = () => { isScrolled.value = window.scrollY > 80 }
+const showPw = ref(false)
 
 const searchQuery           = ref('')
 const searchLoading         = ref(false)
@@ -426,11 +438,25 @@ const handleCategoryClickInNav = (item) => {
   }
 }
 const submitPassword = async () => {
+  if (!enteredPassword.value.trim()) {
+    passwordError.value = 'Please enter password'
+    return
+  }
   try {
-    await axios.post(`/api/categories/${selectedCategoryId.value}/verify-password`, { password: enteredPassword.value })
-    showPasswordModal.value = false; enteredPassword.value = ''; passwordError.value = ''
-    router.push(pendingRoute.value)
-  } catch { passwordError.value = 'Incorrect password. Contact admin.' }
+    const res = await axios.post(`/api/categories/${selectedCategoryId.value}/verify-password`, { password: enteredPassword.value })
+    if (res.data.success === true) {
+      showPasswordModal.value = false
+      enteredPassword.value   = ''
+      passwordError.value     = ''
+      router.push(pendingRoute.value)
+    } else {
+      passwordError.value   = ' Wrong password. Please try again.'
+      enteredPassword.value = ''
+    }
+  } catch {
+    passwordError.value   = ' Wrong password. Please try again.'
+    enteredPassword.value = ''
+  }
 }
 const closePasswordModal = () => {
   showPasswordModal.value = false; enteredPassword.value = ''; passwordError.value = ''
@@ -459,6 +485,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.pw-input-wrap { position: relative; }
+.pw-input-wrap .form-control { padding-right: 42px; }
+.pw-eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #666; font-size: 16px; padding: 0; }
+.pw-eye:hover { color: #000; }
 .custom-navbar { height: 50px; background: transparent; transition: all 0.35s ease; z-index: 1000; display: flex; align-items: center; }
 .custom-navbar::before { content: ""; position: absolute; top: 0; right: 0; width: 73%; height: 100%; background: #000; clip-path: polygon(0% 0, 100% 0, 100% 100%, 4% 100%); transition: all 0.35s ease; z-index: -1; }
 .badge { font-size: 12px; margin-top: 2px; padding: 2px 5px; min-width: 15px; height: 15px; border-radius: 50%; }
