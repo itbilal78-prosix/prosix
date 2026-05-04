@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -88,7 +88,7 @@ class AuthController extends Controller
     }
 
     // ─────────────────────────────────────────
-    // FORGOT PASSWORD — Email bhejo
+    // FORGOT PASSWORD — Email bhejo (Brevo API)
     // ─────────────────────────────────────────
     public function sendResetLink(Request $request)
     {
@@ -119,14 +119,32 @@ class AuthController extends Controller
 
         $resetUrl = url('/admin/reset-password/' . $token . '?email=' . urlencode($request->email));
 
-        // Email sales@prosix.com pe bhejo
-        Mail::send('emails.admin-reset-password', [
-            'admin'    => $admin,
-            'resetUrl' => $resetUrl,
-        ], function ($message) use ($admin) {
-            $message->to('sales@prosix.com', $admin->name)
-                    ->subject('Prosix Admin — Password Reset Request');
-        });
+        // Brevo API se email bhejo (SMTP ki jagah)
+        try {
+            $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
+                ->setApiKey('api-key', env('BREVO_API_KEY'));
+
+            $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(
+                new \GuzzleHttp\Client, $config
+            );
+
+            $htmlContent = view('emails.admin-reset-password', [
+                'admin'    => $admin,
+                'resetUrl' => $resetUrl,
+            ])->render();
+
+            $email = new \SendinBlue\Client\Model\SendSmtpEmail([
+                'subject'     => 'Prosix Admin — Password Reset Request',
+                'sender'      => ['name' => 'Prosix Sports', 'email' => 'prosixsports@gmail.com'],
+                'to'          => [['email' => 'sales@prosix.com']],
+                'htmlContent' => $htmlContent,
+            ]);
+
+            $apiInstance->sendTransacEmail($email);
+
+        } catch (\Exception $e) {
+            Log::error('Reset email failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Password reset link sent to your email!');
     }
