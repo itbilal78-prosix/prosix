@@ -96,7 +96,8 @@ class AuthController extends Controller
             'email' => 'required|email',
         ]);
 
-        $admin = Admin::where('email', $request->email)->first();
+        // Case-insensitive email search
+        $admin = Admin::whereRaw('LOWER(email) = ?', [strtolower($request->email)])->first();
 
         // Security: hamesha success dikhao
         if (!$admin) {
@@ -105,21 +106,21 @@ class AuthController extends Controller
 
         // Purana token delete karo
         DB::table('password_reset_tokens')
-            ->where('email', $request->email)
+            ->whereRaw('LOWER(email) = ?', [strtolower($request->email)])
             ->delete();
 
-        // Naya token generate karo
+        // Naya token generate karo — email lowercase mein save karo
         $token = Str::random(64);
 
         DB::table('password_reset_tokens')->insert([
-            'email'      => $request->email,
+            'email'      => strtolower($admin->email),
             'token'      => Hash::make($token),
             'created_at' => now(),
         ]);
 
-        $resetUrl = url('/admin/reset-password/' . $token . '?email=' . urlencode($request->email));
+        $resetUrl = url('/admin/reset-password/' . $token . '?email=' . urlencode(strtolower($admin->email)));
 
-        // Brevo API se email bhejo (SMTP ki jagah)
+        // Brevo API se email bhejo
         try {
             $config = \SendinBlue\Client\Configuration::getDefaultConfiguration()
                 ->setApiKey('api-key', env('BREVO_API_KEY'));
@@ -172,9 +173,9 @@ class AuthController extends Controller
             'password_confirmation' => 'required',
         ]);
 
-        // Token DB mein check karo
+        // Case-insensitive token check
         $record = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
+            ->whereRaw('LOWER(email) = ?', [strtolower($request->email)])
             ->first();
 
         if (!$record) {
@@ -189,13 +190,13 @@ class AuthController extends Controller
         // Token 60 minute se purana ho toh reject karo
         if (now()->diffInMinutes($record->created_at) > 60) {
             DB::table('password_reset_tokens')
-                ->where('email', $request->email)
+                ->whereRaw('LOWER(email) = ?', [strtolower($request->email)])
                 ->delete();
             return back()->with('error', 'Reset link has expired. Please request a new one.');
         }
 
-        // Admin find karo aur password update karo
-        $admin = Admin::where('email', $request->email)->first();
+        // Case-insensitive admin find karo
+        $admin = Admin::whereRaw('LOWER(email) = ?', [strtolower($request->email)])->first();
 
         if (!$admin) {
             return back()->with('error', 'Admin not found.');
@@ -207,7 +208,7 @@ class AuthController extends Controller
 
         // Token delete karo — single use
         DB::table('password_reset_tokens')
-            ->where('email', $request->email)
+            ->whereRaw('LOWER(email) = ?', [strtolower($request->email)])
             ->delete();
 
         return redirect()->route('admin.login')
