@@ -784,6 +784,7 @@
     </style>
 
     {{-- ════ SCRIPTS ════ --}}
+    @if(empty($isUserMode))
     <script>
         // ── Toast ──
         function showToast(message, type = 'success', duration = 3000) {
@@ -1215,4 +1216,6 @@
             });
         });
     </script>
+    @endif
+
 @endsection
