@@ -88,7 +88,7 @@
 <div class="pf-wrap">
   <div class="pf-header">
     <h1><i class="bi bi-plus-circle me-2"></i>Add Model</h1>
-    <a href="{{ route('models.index') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back</a>
+    <a href="{{ route('admin.models.index') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back</a>
   </div>
 
   @if($errors->any())
@@ -97,7 +97,7 @@
     </div>
   @endif
 
-  <form id="modelForm" action="{{ route('models.store') }}" method="POST" enctype="multipart/form-data">
+  <form id="modelForm" action="{{ route('admin.models.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
 
     {{-- ROW 1: Basic Info + Navigation/Category --}}
@@ -307,7 +307,7 @@
     {{-- Actions --}}
     <div class="pf-actions">
       <button type="submit" class="btn-save"><i class="bi bi-check-lg"></i> Save Model</button>
-      <a href="{{ route('models.index') }}" class="btn-back">Cancel</a>
+      <a href="{{ route('admin.models.index') }}" class="btn-back">Cancel</a>
     </div>
 
   </form>
