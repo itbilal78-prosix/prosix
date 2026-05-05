@@ -97,7 +97,10 @@
                     <ul class="collapse list-unstyled ps-4" id="customizerSubmenu">
                         <li><a class="nav-link text-light py-1" href="#">Customizer Control</a></li>
                         {{-- <li><a class="nav-link text-light py-1" href="{{ route('customizer.models.index') }}">Models</a></li> --}}
-                        <li><a class="nav-link text-light py-1" href="https://customizer.prosix.com/models">Models</a></li>
+                        {{-- <li><a class="nav-link text-light py-1" href="https://customizer.prosix.com/models">Models</a></li> --}}
+                        <li>
+    <a class="nav-link text-light py-1" href="{{ url('/models') }}">Models</a>
+</li>
                         <li><a class="nav-link text-light py-1" href="{{ route('admin.patterns.index') }}">Patterns</a></li>
                         <li><a class="nav-link text-light py-1" href="{{ route('admin.colors.index') }}">Color</a></li>
                         <li><a class="nav-link text-light py-1" href="{{ route('admin.templates.index') }}">Templates</a></li>

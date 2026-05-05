@@ -54,7 +54,8 @@
 
     <div class="customize-container">
         @php
-$backUrl = isset($isUserMode) && $isUserMode ? url('/models') : route('admin.models.index');
+// $backUrl = isset($isUserMode) && $isUserMode ? url('/models') : route('admin.models.index');
+$backUrl = url('/models');
      @endphp
 
         <!-- HEADER -->

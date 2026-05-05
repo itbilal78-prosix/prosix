@@ -4,27 +4,32 @@
     // =================== APPLICATION STATE ===================
     window.currentModelId = window.MODEL_ID;
     // ✅ LOAD USER SAVED DESIGN (VERY IMPORTANT)
-if (window.USER_DESIGN) {
+    if (window.USER_DESIGN) {
 
-    console.log("User design found:", window.USER_DESIGN);
+        console.log("User design found:", window.USER_DESIGN);
 
-    // ✅ FIXED: deep copy everything
-    if (window.USER_DESIGN.applications) {
-        window.applicationsApplied = JSON.parse(JSON.stringify(window.USER_DESIGN.applications));
+        // restore applications
+        if (window.USER_DESIGN.applications) {
+            window.applicationsApplied = window.USER_DESIGN.applications;
+        }
+
+        // restore colors
+        if (window.USER_DESIGN.color_changes) {
+            window.selectedColors = window.USER_DESIGN.color_changes;
+        }
+
+        // restore patterns
+        if (window.USER_DESIGN.pattern_changes &&
+            typeof window.USER_DESIGN.pattern_changes === 'object' &&
+            !Array.isArray(window.USER_DESIGN.pattern_changes)) {
+            window.patternsApplied = window.USER_DESIGN.pattern_changes;
+        }
+        if (window.USER_DESIGN.mascot_changes &&
+            typeof window.USER_DESIGN.mascot_changes === 'object' &&
+            !Array.isArray(window.USER_DESIGN.mascot_changes)) {
+            window.mascotsApplied = window.USER_DESIGN.mascot_changes;
+        }
     }
-
-    if (window.USER_DESIGN.color_changes) {
-        window.selectedColors = JSON.parse(JSON.stringify(window.USER_DESIGN.color_changes));
-    }
-
-    if (window.USER_DESIGN.pattern_changes) {
-        window.patternsApplied = JSON.parse(JSON.stringify(window.USER_DESIGN.pattern_changes));
-    }
-
-    if (window.USER_DESIGN.mascot_changes) {
-        window.mascotsApplied = JSON.parse(JSON.stringify(window.USER_DESIGN.mascot_changes));
-    }
-}
 
     console.log('MODEL ID FOUND:', window.MODEL_ID);
 
@@ -3021,8 +3026,8 @@ window.isDraggingKnob = false;
                 allSvgs[v] = new XMLSerializer().serializeToString(svg);
             }
 
-            await fetch(`/models/${MODEL_ID}/save-design`, {
-                method: 'POST',
+await fetch(`/models/${MODEL_ID}/save-design`, {
+                    method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content

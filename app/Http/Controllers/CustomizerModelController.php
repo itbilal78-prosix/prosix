@@ -118,7 +118,7 @@ class CustomizerModelController extends Controller
 
         CustomizerModel::create($data);
 
-        return redirect()->route('models.index')->with('success', 'Model Added Successfully');
+        return redirect()->route('customizer.models.index')->with('success', 'Model Added Successfully');
     }
 
     // ─── SHOW ─────────────────────────────────────────────────────
@@ -270,7 +270,7 @@ class CustomizerModelController extends Controller
         $data['colors_data'] = $colorsData;
         $model->update($data);
 
-        return redirect()->route('models.index')->with('success', 'Model Updated Successfully');
+        return redirect()->route('customizer.models.index')->with('success', 'Model Updated Successfully');
     }
 
     // ─── API: SINGLE MODEL ────────────────────────────────────────
@@ -363,24 +363,15 @@ public function destroy(CustomizerModel $model)
     }
 
     // ─── DUPLICATE ────────────────────────────────────────────────
-  public function duplicate($id)
-{
-    $model = CustomizerModel::findOrFail($id);
+    public function duplicate($id)
+    {
+        $model      = CustomizerModel::findOrFail($id);
+        $new        = $model->replicate();
+        $new->title = $model->title.' (Copy)';
+        $new->save();
 
-    $new = $model->replicate();
-    $new->title = $model->title . ' (Copy)';
-
-    // ❗ IMPORTANT: reset custom design fields
-    $new->custom_front_svg = null;
-    $new->custom_back_svg  = null;
-    $new->custom_left_svg  = null;
-    $new->custom_right_svg = null;
-
-    $new->applications = $model->applications; // copy JSON (ok)
-    $new->save();
-
-    return back()->with('success', 'Model Duplicated with Design');
-}
+        return back()->with('success', 'Model Duplicated with Design');
+    }
 
     // ─── BULK DELETE ──────────────────────────────────────────────
     public function bulkDestroy(Request $request)
@@ -455,7 +446,7 @@ public function destroy(CustomizerModel $model)
         $model = CustomizerModel::findOrFail($id);
         foreach ($request->svgs ?? [] as $view => $svgContent) {
             if (! $svgContent) continue;
-$filename = "custom_{$view}_{$id}_" . time() . ".svg";
+            $filename = "custom_{$view}_{$id}.svg";
             file_put_contents(public_path('uploads/models/'.$filename), $svgContent);
             $model->{"custom_{$view}_svg"} = $filename;
         }

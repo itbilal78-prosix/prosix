@@ -26,8 +26,20 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserCustomizationController;
 
 $host         = request()->getHost();
-$isAdmin      = str_contains($host, 'admin.');
-$isCustomizer = str_contains($host, 'customizer.');
+// $isAdmin      = str_contains($host, 'admin.');
+// $isCustomizer = str_contains($host, 'customizer.');
+$isLocal = app()->environment('local') || in_array($host, ['127.0.0.1', 'localhost']);
+
+$isAdmin = str_contains($host, 'admin.');
+
+$isCustomizer = str_contains($host, 'customizer.')
+    || ($isLocal && (
+        request()->is('models*') ||
+        request()->is('customize*') ||
+        request()->is('user/*') ||
+        request()->is('api/*') ||
+        request()->is('storage/*')
+    ));
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 
@@ -389,6 +401,22 @@ Route::post('/models/{id}/save-design-admin', [CustomizerModelController::class,
         return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
 ->with('isUserMode', false);
     });
+
+
+
+
+
+
+
+Route::get('/api/fonts', function() {
+    return \App\Models\Font::all()->map(function($font) {
+        return [
+            'id' => $font->id,
+            'name' => $font->name,
+            'file_url' => asset('storage/' . $font->file)
+        ];
+    });
+});
 
     Route::get('/{any}', fn() => view('welcome'))->where('any', '.*');
 }
