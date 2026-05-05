@@ -25,42 +25,25 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserCustomizationController;
 
-// ═══════════════════════════════════════════
-// SUBDOMAIN DETECT
-// ═══════════════════════════════════════════
 $host         = request()->getHost();
 $isAdmin      = str_contains($host, 'admin.');
 $isCustomizer = str_contains($host, 'customizer.');
 
-// ═══════════════════════════════════════════
-// STRIPE WEBHOOK — koi subdomain nahi chahiye
-// ═══════════════════════════════════════════
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 
-// ═══════════════════════════════════════════════════════════
-// ADMIN SUBDOMAIN
-// admin.prosix.com/login       → login page
-// admin.prosix.com/dashboard   → dashboard
-// ═══════════════════════════════════════════════════════════
 if ($isAdmin) {
 
-    // Public routes (login, forgot password)
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/login', [AuthController::class, 'login'])->name('admin.login.post');
     Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
-
     Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('admin.password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('admin.password.send');
     Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('admin.password.reset.form');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('admin.password.reset');
 
-    // Protected routes
     Route::middleware(['auth:admin'])->group(function () {
 
-        // Root redirect → dashboard
         Route::get('/', fn() => redirect()->route('admin.dashboard'));
-
-        // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
         // Users
@@ -70,7 +53,15 @@ if ($isAdmin) {
         Route::post('/api/verify-otp', [AuthController::class, 'verifyOtp']);
 
         // Admins
-        Route::resource('admins', \App\Http\Controllers\AdminManagerController::class);
+        Route::resource('admins', \App\Http\Controllers\AdminManagerController::class)->names([
+            'index'   => 'admin.admins.index',
+            'create'  => 'admin.admins.create',
+            'store'   => 'admin.admins.store',
+            'show'    => 'admin.admins.show',
+            'edit'    => 'admin.admins.edit',
+            'update'  => 'admin.admins.update',
+            'destroy' => 'admin.admins.destroy',
+        ]);
 
         // Memberships
         Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('admin.memberships');
@@ -87,16 +78,32 @@ if ($isAdmin) {
         Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('admin.orders.cancel');
 
         // Products
-        Route::post('products/featured', [ProductController::class, 'featured'])->name('products.featured');
-        Route::post('products/apparel', [ProductController::class, 'apparel'])->name('products.apparel');
-        Route::post('products/bulk-category', [ProductController::class, 'bulkCategory'])->name('products.bulkCategory');
-        Route::get('/products/featured', [ProductController::class, 'featured'])->name('products.featured.list');
+        Route::post('products/featured', [ProductController::class, 'featured'])->name('admin.products.featured');
+        Route::post('products/apparel', [ProductController::class, 'apparel'])->name('admin.products.apparel');
+        Route::post('products/bulk-category', [ProductController::class, 'bulkCategory'])->name('admin.products.bulkCategory');
+        Route::get('/products/featured', [ProductController::class, 'featured'])->name('admin.products.featured.list');
         Route::middleware(['admin.permission:can_products'])
-            ->resource('products', ProductController::class);
+            ->resource('products', ProductController::class)->names([
+                'index'   => 'admin.products.index',
+                'create'  => 'admin.products.create',
+                'store'   => 'admin.products.store',
+                'show'    => 'admin.products.show',
+                'edit'    => 'admin.products.edit',
+                'update'  => 'admin.products.update',
+                'destroy' => 'admin.products.destroy',
+            ]);
 
-        // Models / Customizer
+        // Models
         Route::middleware(['admin.permission:can_customizer'])
-            ->resource('models', CustomizerModelController::class);
+            ->resource('models', CustomizerModelController::class)->names([
+                'index'   => 'admin.models.index',
+                'create'  => 'admin.models.create',
+                'store'   => 'admin.models.store',
+                'show'    => 'admin.models.show',
+                'edit'    => 'admin.models.edit',
+                'update'  => 'admin.models.update',
+                'destroy' => 'admin.models.destroy',
+            ]);
         Route::post('models/{id}/duplicate', [CustomizerModelController::class, 'duplicate'])->name('models.duplicate');
         Route::get('models/{model}/api', [CustomizerModelController::class, 'api'])->name('models.api.get');
         Route::post('models/{id}/save-design', [CustomizerModelController::class, 'saveDesign'])->name('admin.models.save-design');
@@ -110,36 +117,104 @@ if ($isAdmin) {
         Route::post('/models/update-order', [CustomizerModelController::class, 'updateOrder'])->name('models.updateOrder');
 
         // Colors, Fonts, Patterns
-        Route::resource('colors', ColorController::class);
-        Route::resource('fonts', FontController::class);
-        Route::resource('patterns', PatternController::class);
+        Route::resource('colors', ColorController::class)->names([
+            'index' => 'admin.colors.index', 'create' => 'admin.colors.create',
+            'store' => 'admin.colors.store', 'show' => 'admin.colors.show',
+            'edit'  => 'admin.colors.edit',  'update' => 'admin.colors.update',
+            'destroy' => 'admin.colors.destroy',
+        ]);
+        Route::resource('fonts', FontController::class)->names([
+            'index' => 'admin.fonts.index', 'create' => 'admin.fonts.create',
+            'store' => 'admin.fonts.store', 'show' => 'admin.fonts.show',
+            'edit'  => 'admin.fonts.edit',  'update' => 'admin.fonts.update',
+            'destroy' => 'admin.fonts.destroy',
+        ]);
+        Route::resource('patterns', PatternController::class)->names([
+            'index' => 'admin.patterns.index', 'create' => 'admin.patterns.create',
+            'store' => 'admin.patterns.store', 'show' => 'admin.patterns.show',
+            'edit'  => 'admin.patterns.edit',  'update' => 'admin.patterns.update',
+            'destroy' => 'admin.patterns.destroy',
+        ]);
 
         // Banners
-        Route::resource('banners', BannerController::class);
+        Route::resource('banners', BannerController::class)->names([
+            'index' => 'admin.banners.index', 'create' => 'admin.banners.create',
+            'store' => 'admin.banners.store', 'show' => 'admin.banners.show',
+            'edit'  => 'admin.banners.edit',  'update' => 'admin.banners.update',
+            'destroy' => 'admin.banners.destroy',
+        ]);
         Route::post('/banners/reorder', [BannerController::class, 'reorder'])->name('banners.reorder');
 
         // Socials
-        Route::resource('socials', SocialMediaController::class);
+        Route::resource('socials', SocialMediaController::class)->names([
+            'index' => 'admin.socials.index', 'create' => 'admin.socials.create',
+            'store' => 'admin.socials.store', 'show' => 'admin.socials.show',
+            'edit'  => 'admin.socials.edit',  'update' => 'admin.socials.update',
+            'destroy' => 'admin.socials.destroy',
+        ]);
 
         // Categories
         Route::middleware(['admin.permission:can_categories'])
-            ->resource('categories', CategoryController::class)->except(['show']);
+            ->resource('categories', CategoryController::class)->except(['show'])->names([
+                'index'   => 'admin.categories.index',
+                'create'  => 'admin.categories.create',
+                'store'   => 'admin.categories.store',
+                'edit'    => 'admin.categories.edit',
+                'update'  => 'admin.categories.update',
+                'destroy' => 'admin.categories.destroy',
+            ]);
         Route::get('categories/sub-create', [CategoryController::class, 'subCreate'])->name('categories.subcreate');
         Route::patch('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
         Route::post('/categories/reorder', [CategoryController::class, 'reorder'])->name('categories.reorder');
 
         // Navigations
-        Route::resource('navigations', NavigationController::class);
+        Route::resource('navigations', NavigationController::class)->names([
+            'index' => 'admin.navigations.index', 'create' => 'admin.navigations.create',
+            'store' => 'admin.navigations.store', 'show' => 'admin.navigations.show',
+            'edit'  => 'admin.navigations.edit',  'update' => 'admin.navigations.update',
+            'destroy' => 'admin.navigations.destroy',
+        ]);
         Route::patch('navigations/{navigation}/toggle-status', [NavigationController::class, 'toggleStatus'])->name('navigations.toggle-status');
 
-        // Videos, Deals, Blogs, Testimonials
-        Route::resource('videos', VideoController::class);
-        Route::resource('deals', DealController::class);
-        Route::resource('blogs', BlogController::class);
-        Route::resource('testimonials', TestimonialController::class);
+        // Videos
+        Route::resource('videos', VideoController::class)->names([
+            'index' => 'admin.videos.index', 'create' => 'admin.videos.create',
+            'store' => 'admin.videos.store', 'show' => 'admin.videos.show',
+            'edit'  => 'admin.videos.edit',  'update' => 'admin.videos.update',
+            'destroy' => 'admin.videos.destroy',
+        ]);
+
+        // Deals
+        Route::resource('deals', DealController::class)->names([
+            'index' => 'admin.deals.index', 'create' => 'admin.deals.create',
+            'store' => 'admin.deals.store', 'show' => 'admin.deals.show',
+            'edit'  => 'admin.deals.edit',  'update' => 'admin.deals.update',
+            'destroy' => 'admin.deals.destroy',
+        ]);
+
+        // Blogs
+        Route::resource('blogs', BlogController::class)->names([
+            'index' => 'admin.blogs.index', 'create' => 'admin.blogs.create',
+            'store' => 'admin.blogs.store', 'show' => 'admin.blogs.show',
+            'edit'  => 'admin.blogs.edit',  'update' => 'admin.blogs.update',
+            'destroy' => 'admin.blogs.destroy',
+        ]);
+
+        // Testimonials
+        Route::resource('testimonials', TestimonialController::class)->names([
+            'index' => 'admin.testimonials.index', 'create' => 'admin.testimonials.create',
+            'store' => 'admin.testimonials.store', 'show' => 'admin.testimonials.show',
+            'edit'  => 'admin.testimonials.edit',  'update' => 'admin.testimonials.update',
+            'destroy' => 'admin.testimonials.destroy',
+        ]);
 
         // Flipbooks
-        Route::resource('flipbooks', FlipbookController::class);
+        Route::resource('flipbooks', FlipbookController::class)->names([
+            'index' => 'admin.flipbooks.index', 'create' => 'admin.flipbooks.create',
+            'store' => 'admin.flipbooks.store', 'show' => 'admin.flipbooks.show',
+            'edit'  => 'admin.flipbooks.edit',  'update' => 'admin.flipbooks.update',
+            'destroy' => 'admin.flipbooks.destroy',
+        ]);
 
         // Artwork
         Route::get('/artwork-requests', [ArtworkRequestController::class, 'index'])->name('admin.artwork');
@@ -155,7 +230,12 @@ if ($isAdmin) {
 
         // Templates / Mascots
         Route::post('templates/bulk-destroy', [TemplateController::class, 'bulkDestroy'])->name('templates.bulkDestroy');
-        Route::resource('templates', TemplateController::class);
+        Route::resource('templates', TemplateController::class)->names([
+            'index' => 'admin.templates.index', 'create' => 'admin.templates.create',
+            'store' => 'admin.templates.store', 'show' => 'admin.templates.show',
+            'edit'  => 'admin.templates.edit',  'update' => 'admin.templates.update',
+            'destroy' => 'admin.templates.destroy',
+        ]);
         Route::post('/templates/save-from-customizer', [TemplateController::class, 'saveFromCustomizer']);
         Route::get('/mascots/create', fn() => view('templates.create'))->name('mascots.create');
         Route::get('/mascots/{id}/edit', function ($id) {
@@ -190,12 +270,8 @@ if ($isAdmin) {
         );
         Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']);
 
-    }); // end auth:admin
+    });
 
-// ═══════════════════════════════════════════════════════════
-// CUSTOMIZER SUBDOMAIN
-// customizer.prosix.com/customize/{id}
-// ═══════════════════════════════════════════════════════════
 } elseif ($isCustomizer) {
 
     Route::get('/', fn() => redirect('/customize/1'));
@@ -218,20 +294,15 @@ if ($isAdmin) {
     Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']);
     Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
     Route::post('/templates/save-from-customizer', [TemplateController::class, 'saveFromCustomizer']);
-
     Route::get('/api/fonts', fn() => \App\Models\Font::all()->map(fn($f) => [
-        'id'       => $f->id,
-        'name'     => $f->name,
-        'file_url' => asset('storage/' . $f->file),
+        'id' => $f->id, 'name' => $f->name, 'file_url' => asset('storage/' . $f->file),
     ]));
     Route::get('/api/colors', fn() => \App\Models\Color::select('id', 'name', 'code')->get());
     Route::get('/api/mascot-templates', function () {
         return \App\Models\Template::with('category')->latest()->get()->map(fn($t) => [
-            'id'          => $t->id,
-            'title'       => $t->title,
-            'svg_data'    => $t->svg_data,
-            'image_data'  => $t->image_data,
-            'category'    => $t->category?->name ?? 'Uncategorized',
+            'id' => $t->id, 'title' => $t->title, 'svg_data' => $t->svg_data,
+            'image_data' => $t->image_data,
+            'category' => $t->category?->name ?? 'Uncategorized',
             'category_id' => $t->category_id,
         ]);
     });
@@ -241,13 +312,8 @@ if ($isAdmin) {
         return response()->file($fullPath);
     })->where('path', '.*');
 
-// ═══════════════════════════════════════════════════════════
-// MAIN DOMAIN — prosix.com
-// Frontend React app + public API routes
-// ═══════════════════════════════════════════════════════════
 } else {
 
-    // API routes
     Route::get('/api/fonts', fn() => \App\Models\Font::select('id', 'name', 'file')->get());
     Route::get('/api/colors', fn() => \App\Models\Color::select('id', 'name', 'code')->get());
     Route::get('/api/search', [App\Http\Controllers\SearchController::class, 'search']);
@@ -257,11 +323,9 @@ if ($isAdmin) {
     Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']);
     Route::get('/api/mascot-templates', function () {
         return \App\Models\Template::with('category')->latest()->get()->map(fn($t) => [
-            'id'          => $t->id,
-            'title'       => $t->title,
-            'svg_data'    => $t->svg_data,
-            'image_data'  => $t->image_data,
-            'category'    => $t->category?->name ?? 'Uncategorized',
+            'id' => $t->id, 'title' => $t->title, 'svg_data' => $t->svg_data,
+            'image_data' => $t->image_data,
+            'category' => $t->category?->name ?? 'Uncategorized',
             'category_id' => $t->category_id,
         ]);
     });
@@ -273,14 +337,11 @@ if ($isAdmin) {
         if (!file_exists($fullPath)) abort(404);
         return response()->file($fullPath);
     })->where('path', '.*');
-
     Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
         $model  = \App\Models\CustomizerModel::findOrFail($id);
         $colors = \App\Models\Color::all();
         $fonts  = \App\Models\Font::all()->map(fn($font) => [
-            'id'       => $font->id,
-            'name'     => $font->name,
-            'file_url' => asset('storage/' . $font->file),
+            'id' => $font->id, 'name' => $font->name, 'file_url' => asset('storage/' . $font->file),
         ]);
         $design = $request->has('design_id')
             ? \App\Models\UserCustomization::find($request->design_id)
@@ -289,7 +350,5 @@ if ($isAdmin) {
             ->with('isUserMode', true);
     });
 
-    // React Frontend — sab kuch
     Route::get('/{any}', fn() => view('welcome'))->where('any', '.*');
-
 }
