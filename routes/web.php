@@ -281,6 +281,11 @@ if ($isAdmin) {
     Route::put('/models/{model}', [CustomizerModelController::class, 'update'])->name('customizer.models.update');
     Route::delete('/models/{model}', [CustomizerModelController::class, 'destroy'])->name('customizer.models.destroy');
 
+    // old route name fixes
+Route::get('/models-admin', fn() => redirect('/models'))->name('admin.models.index');
+Route::put('/models/{model}/update', [CustomizerModelController::class, 'update'])->name('models.update');
+Route::get('/models/{model}/admin-api', [CustomizerModelController::class, 'api'])->name('admin.models.api.get');
+
     // Extra model actions
     Route::post('/models/{id}/duplicate', [CustomizerModelController::class, 'duplicate'])->name('models.duplicate');
     Route::get('/models/{model}/api', [CustomizerModelController::class, 'api'])->name('models.api.get');
