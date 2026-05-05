@@ -145,26 +145,30 @@
                                             <p class="card-text small">{{ Str::limit($model->description, 50) }}</p>
                                         </div>
 
-                                        <div class="card-footer p-2">
-                                            <div class="d-flex gap-2 mb-2">
-                                                <a href="{{ route('admin.models.show', $model->id) }}"
-                                                    class="btn btn-custom btn-sm flex-fill">Customize</a>
-                                                <a href="{{ route('admin.models.edit', $model->id) }}"
-                                                    class="btn btn-custom btn-sm flex-fill">Edit</a>
-                                            </div>
-                                            <div class="d-flex gap-2">
-                                                <form action="{{ route('models.duplicate', $model->id) }}" method="POST"
-                                                    class="flex-fill">
-                                                    @csrf
-                                                    <button class="btn btn-custom btn-sm w-100">Duplicate</button>
-                                                </form>
-                                                <form action="{{ route('admin.models.destroy', $model->id) }}" method="POST"
-                                                    class="flex-fill" onsubmit="return confirmDelete(event, this)">
-                                                    @csrf @method('DELETE')
-                                                    <button class="btn btn-custom btn-sm w-100">Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
+                                       <div class="card-footer p-2">
+
+    @if(empty($isUserMode))
+        <div class="d-flex gap-2 mb-2">
+            <a href="{{ route('admin.models.show', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
+            <a href="{{ route('admin.models.edit', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
+        </div>
+        <div class="d-flex gap-2">
+            <form action="{{ route('models.duplicate', $model->id) }}" method="POST" class="flex-fill">
+                @csrf
+                <button class="btn btn-custom btn-sm w-100">Duplicate</button>
+            </form>
+            <form action="{{ route('admin.models.destroy', $model->id) }}" method="POST" class="flex-fill">
+                @csrf @method('DELETE')
+                <button class="btn btn-custom btn-sm w-100">Delete</button>
+            </form>
+        </div>
+    @else
+        <a href="/customize/{{ $model->id }}" class="btn btn-custom btn-sm w-100">
+            Customize
+        </a>
+    @endif
+
+</div>
                                     </div>
                                 </div>
                             @endforeach
@@ -296,25 +300,29 @@
                                         </div>
 
                                         <div class="card-footer p-2">
-                                            <div class="d-flex gap-2 mb-2">
-                                                <a href="{{ route('admin.models.show', $model->id) }}"
-                                                    class="btn btn-custom btn-sm flex-fill">Customize</a>
-                                                <a href="{{ route('admin.models.edit', $model->id) }}"
-                                                    class="btn btn-custom btn-sm flex-fill">Edit</a>
-                                            </div>
-                                            <div class="d-flex gap-2">
-                                                <form action="{{ route('models.duplicate', $model->id) }}" method="POST"
-                                                    class="flex-fill">
-                                                    @csrf
-                                                    <button class="btn btn-custom btn-sm w-100">Duplicate</button>
-                                                </form>
-                                                <form action="{{ route('admin.models.destroy', $model->id) }}" method="POST"
-                                                    class="flex-fill" onsubmit="return confirmDelete(event, this)">
-                                                    @csrf @method('DELETE')
-                                                    <button class="btn btn-custom btn-sm w-100">Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
+
+    @if(empty($isUserMode))
+        <div class="d-flex gap-2 mb-2">
+            <a href="{{ route('admin.models.show', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
+            <a href="{{ route('admin.models.edit', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
+        </div>
+        <div class="d-flex gap-2">
+            <form action="{{ route('models.duplicate', $model->id) }}" method="POST" class="flex-fill">
+                @csrf
+                <button class="btn btn-custom btn-sm w-100">Duplicate</button>
+            </form>
+            <form action="{{ route('admin.models.destroy', $model->id) }}" method="POST" class="flex-fill">
+                @csrf @method('DELETE')
+                <button class="btn btn-custom btn-sm w-100">Delete</button>
+            </form>
+        </div>
+    @else
+        <a href="/customize/{{ $model->id }}" class="btn btn-custom btn-sm w-100">
+            Customize
+        </a>
+    @endif
+
+</div>
                                     </div>
                                 </div>
                             @endforeach
