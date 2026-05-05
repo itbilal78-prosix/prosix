@@ -291,6 +291,8 @@ Route::get('/models/{model}/admin-api', [CustomizerModelController::class, 'api'
     Route::get('/models/{model}/api', [CustomizerModelController::class, 'api'])->name('models.api.get');
     Route::get('/models/{model}/admin-api', [CustomizerModelController::class, 'api'])->name('admin.models.api.get');
     Route::post('/models/{id}/save-design', [CustomizerModelController::class, 'saveDesign'])->name('customizer.models.save-design');
+    Route::post('/models/{id}/save', [CustomizerModelController::class, 'saveDesign'])->name('models.save');
+Route::post('/models/{id}/save-design-admin', [CustomizerModelController::class, 'saveDesign'])->name('admin.models.save-design');
     Route::post('/models/{id}/save-thumbnail', [CustomizerModelController::class, 'saveThumbnail'])->name('models.save-thumbnail');
     Route::post('/models/featured', [CustomizerModelController::class, 'bulkFeatured'])->name('models.featured');
     Route::post('/models/apparel', [CustomizerModelController::class, 'bulkApparel'])->name('models.apparel');
