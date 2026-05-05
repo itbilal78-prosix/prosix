@@ -497,24 +497,41 @@ public function destroy(CustomizerModel $model)
     }
 
     // ─── SAVE DESIGN ──────────────────────────────────────────────
-    public function saveDesign(Request $request, $id)
-    {
-        $model = CustomizerModel::findOrFail($id);
-        foreach ($request->svgs ?? [] as $view => $svgContent) {
-            if (! $svgContent) continue;
-            $filename = "custom_{$view}_{$id}.svg";
-            file_put_contents(public_path('uploads/models/'.$filename), $svgContent);
-            $model->{"custom_{$view}_svg"} = $filename;
-        }
-        $model->pattern_changes = $request->pattern_changes;
-        $model->color_changes   = $request->color_changes;
-        $model->mascot_changes  = $request->mascot_changes;
-        $model->applications    = $request->applications;
-        $model->customized_at   = now();
-        $model->save();
+   public function saveDesign(Request $request, $id)
+{
+    $model = CustomizerModel::findOrFail($id);
 
-        return response()->json(['success' => true, 'message' => 'Design saved']);
+    foreach ($request->svgs ?? [] as $view => $svgContent) {
+        if (! $svgContent) continue;
+
+        // har save par unique file banao
+        $filename = "custom_{$view}_{$model->id}_" . time() . "_" . uniqid() . ".svg";
+
+        file_put_contents(public_path('uploads/models/' . $filename), $svgContent);
+
+        $field = "custom_{$view}_svg";
+
+        // old custom file delete karo sirf isi model ki
+        if ($model->{$field} && file_exists(public_path('uploads/models/' . $model->{$field}))) {
+            @unlink(public_path('uploads/models/' . $model->{$field}));
+        }
+
+        $model->{$field} = $filename;
     }
+
+    $model->pattern_changes = $request->pattern_changes;
+    $model->color_changes   = $request->color_changes;
+    $model->mascot_changes  = $request->mascot_changes;
+    $model->applications    = $request->applications;
+    $model->customized_at   = now();
+
+    $model->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Design saved only for this model'
+    ]);
+}
 
     // ─── MODELS BY CATEGORY ───────────────────────────────────────
     public function modelsByCategory($id)
