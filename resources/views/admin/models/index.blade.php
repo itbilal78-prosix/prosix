@@ -1,4 +1,4 @@
-@extends(empty($isUserMode) ? 'layouts.dashboard' : 'layouts.public')
+@extends('layouts.dashboard')
 @section('content')
     @php
         use Illuminate\Support\Str;

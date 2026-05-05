@@ -233,6 +233,7 @@ if ($isAdmin) {
 } elseif ($isCustomizer) {
 
     Route::get('/', fn() => redirect('/models'));
+    Route::get('/dashboard', fn() => redirect('/models'))->name('admin.dashboard');
 
     Route::get('/models', function () {
         $models = \App\Models\CustomizerModel::with(['category', 'subcategory'])
@@ -254,7 +255,7 @@ return view('admin.models.index', compact('models', 'categories'))
         ]);
         $design = $request->has('design_id')
             ? \App\Models\UserCustomization::find($request->design_id) : null;
-        return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
+return view('customizer.index', compact('model', 'colors', 'fonts', 'design'))
             ->with('isUserMode', true);
     });
 
