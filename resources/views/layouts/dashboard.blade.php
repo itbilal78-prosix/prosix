@@ -42,12 +42,9 @@
 <body>
 <div id="overlay"></div>
 
-@if(empty($isUserMode))
-    @include('partials.sidebar')
-@endif
-@if(empty($isUserMode))
-    @include('partials.header')
-@endif
+@include('partials.sidebar')
+@include('partials.header')
+
 <div id="content">
     <div class="container-fluid p-4">
         @yield('content')

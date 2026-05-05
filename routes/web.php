@@ -243,8 +243,7 @@ if ($isAdmin) {
             ->with(['models' => fn($q) => $q->where('is_hidden', false), 'subcategories'])
             ->get();
 return view('admin.models.index', compact('models', 'categories'))
-    ->with('isUserMode', true);
-        });
+->with('isUserMode', false);        });
 
     Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
         $model  = \App\Models\CustomizerModel::findOrFail($id);
@@ -256,8 +255,7 @@ return view('admin.models.index', compact('models', 'categories'))
         $design = $request->has('design_id')
             ? \App\Models\UserCustomization::find($request->design_id) : null;
 return view('customizer.index', compact('model', 'colors', 'fonts', 'design'))
-            ->with('isUserMode', true);
-    });
+->with('isUserMode', false);    });
 
     Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']);
     Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
@@ -318,7 +316,7 @@ return view('customizer.index', compact('model', 'colors', 'fonts', 'design'))
         $design = $request->has('design_id')
             ? \App\Models\UserCustomization::find($request->design_id) : null;
         return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
-            ->with('isUserMode', true);
+->with('isUserMode', false);
     });
 
     Route::get('/{any}', fn() => view('welcome'))->where('any', '.*');
