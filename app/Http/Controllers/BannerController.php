@@ -59,7 +59,7 @@ class BannerController extends Controller
             'position'                => $maxPosition + 1,
         ]);
 
-        return redirect()->route('banners.index')->with('success', 'Banner created successfully!');
+        return redirect()->route('admin.banners.index')->with('success', 'Banner created successfully!');
     }
 
     public function edit($id)
@@ -119,7 +119,7 @@ class BannerController extends Controller
 
         $banner->save(); // ✅ سب changes کے بعد ایک بار save
 
-        return redirect()->route('banners.index')->with('success', 'Banner updated successfully!');
+        return redirect()->route('admin.banners.index')->with('success', 'Banner updated successfully!');
     }
 
     public function destroy($id)
@@ -134,7 +134,7 @@ class BannerController extends Controller
 
         $banner->delete();
 
-        return redirect()->route('banners.index')->with('success', 'Banner deleted successfully!');
+        return redirect()->route('admin.banners.index')->with('success', 'Banner deleted successfully!');
     }
 
     // ✅ API for Vue / Frontend
