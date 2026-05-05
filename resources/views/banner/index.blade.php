@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <h2>Banners</h2>
 
-    <a href="{{ route('banners.create') }}" class="btn add_banner mb-3">
+    <a href="{{ route('admin.banners.create') }}" class="btn add_banner mb-3">
         Add New Banner
     </a>
 
@@ -16,7 +16,7 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Position</th>        
+                <th>Position</th>
                 <th>Title</th>
                 <th>Button</th>
                 <th>Background</th>
@@ -28,7 +28,7 @@
             @forelse($banners as $banner)
             <tr data-id="{{ $banner->id }}">
                 <td>{{ $banner->id }}</td>
-                <td><strong>#{{ $banner->position }}</strong></td>  
+                <td><strong>#{{ $banner->position }}</strong></td>
                 <td>{{ $banner->title }}</td>
                 <td>{{ $banner->button_text ?? '—' }}</td>
                 <td>
@@ -43,12 +43,12 @@
                 </td>
               <td class="d-flex gap-2">
     <!-- Edit Button -->
-    <a href="{{ route('banners.edit', $banner->id) }}" class="btn btn-sm banner-btn">
+    <a href="{{ route('admin.banners.edit', $banner->id) }}" class="btn btn-sm banner-btn">
         <i class="bi bi-pencil-fill"></i> <!-- Bootstrap icon -->
     </a>
 
     <!-- Delete Button -->
-    <form action="{{ route('banners.destroy', $banner->id) }}" method="POST">
+    <form action="{{ route('admin.banners.destroy', $banner->id) }}" method="POST">
         @csrf
         @method('DELETE')
         <button type="submit" class="btn btn-sm banner-btn" onclick="return confirm('Are you sure you want to delete this banner?')">
@@ -87,7 +87,7 @@ $(function() {
             });
 
             $.ajax({
-                url: '{{ route("banners.reorder") }}',
+                url: '{{ route("admin.banners.reorder") }}',
                 method: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',

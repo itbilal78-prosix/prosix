@@ -5,7 +5,7 @@
 <div class="container mt-4">
     <h2 class="mb-4 text-black">Add New Banner</h2>
 
-    <a href="{{ route('banners.index') }}" class="btn btn-outline-dark mb-3">
+    <a href="{{ route('admin.banners.index') }}" class="btn btn-outline-dark mb-3">
         <i class="bi bi-arrow-left-circle me-2"></i> Back to List
     </a>
 
@@ -19,7 +19,7 @@
         </div>
     @endif
 
-    <form action="{{ route('banners.store') }}" method="POST" enctype="multipart/form-data"
+    <form action="{{ route('admin.banners.store') }}" method="POST" enctype="multipart/form-data"
           class="p-4 border rounded shadow-sm bg-white">
         @csrf
 
