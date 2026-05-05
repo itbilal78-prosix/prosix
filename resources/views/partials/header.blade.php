@@ -19,7 +19,7 @@
 
         <!-- Center Logo -->
         <div class="logo-container">
-            <a href="{{ route('products.index') }}" class="logo-link">
+            <a href="{{ route('admin.dashboard') }}" class="logo-link">
                 <img src="{{ asset('assets/images/P LOGO WHITE.png') }}" alt="Logo" class="logo-main" height="35">
                 <img src="{{ asset('assets/images/PROSIX SPORTS LOGO PNG WHITE.png') }}" alt="Logo Hover" class="logo-hover" height="35">
             </a>
@@ -34,7 +34,7 @@
 
             <!-- User Profile Dropdown -->
             <div class="dropdown">
-                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" 
+                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center"
                         id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-circle fs-5"></i>
                 </button>
@@ -67,7 +67,7 @@ body {
 
 /* Left Side width */
 #left-side {
-    width: 200px; 
+    width: 200px;
 }
 
 /* Center Logo */
@@ -120,8 +120,8 @@ body {
 .search-form {
     display: flex;
     align-items: center;
-    width: 40px;           
-    height: 40px;           
+    width: 40px;
+    height: 40px;
     transition: width 0.4s ease;
     overflow: hidden;
     background-color: #222;
@@ -130,7 +130,7 @@ body {
 }
 
 .search-form.expanded {
-    width: 300px;          
+    width: 300px;
 }
 
 .search-input {
@@ -141,11 +141,11 @@ body {
     background: transparent;
     color: #fff;
     font-size: 0.9rem;
-    display: none;         
+    display: none;
 }
 
 .search-form.expanded .search-input {
-    display: block;        
+    display: block;
 }
 
 .search-btn {
