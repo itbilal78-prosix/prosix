@@ -42,7 +42,9 @@
 <body>
 <div id="overlay"></div>
 
-@include('partials.sidebar')
+@if(empty($isUserMode))
+    @include('partials.sidebar')
+@endif
 @include('partials.header')
 
 <div id="content">
