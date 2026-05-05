@@ -30,7 +30,12 @@ $host         = request()->getHost();
 // $isCustomizer = str_contains($host, 'customizer.');
 $isLocal = app()->environment('local') || in_array($host, ['127.0.0.1', 'localhost']);
 
-$isAdmin = str_contains($host, 'admin.');
+$isAdmin = str_contains($host, 'admin.')
+    || ($isLocal && (
+        request()->is('login') ||
+        request()->is('dashboard') ||
+        request()->is('users*')
+    ));
 
 $isCustomizer = str_contains($host, 'customizer.')
     || ($isLocal && (
