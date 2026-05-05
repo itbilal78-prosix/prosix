@@ -87,7 +87,7 @@ $(function() {
             });
 
             $.ajax({
-                url: '{{ route("admin.banners.reorder") }}',
+                url: '{{ route("banners.reorder") }}',
                 method: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
