@@ -403,8 +403,8 @@ Route::post('/models/{id}/save-design-admin', [CustomizerModelController::class,
         ]);
         $design = $request->has('design_id')
             ? \App\Models\UserCustomization::find($request->design_id) : null;
-        return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
-->with('isUserMode', false);
+     return view('customizer.index', compact('model', 'colors', 'fonts', 'design'))
+    ->with('isUserMode', true);
     });
 
 
