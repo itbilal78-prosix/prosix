@@ -19,7 +19,7 @@
         {{-- ── Page Header ── --}}
         <div class="d-flex justify-content-center align-items-center add-model flex-wrap position-relative">
             <h1 class="mb-2 text-center">All Models</h1>
-            <a href="{{ route('admin.models.create') }}" class="btn btn-dark mb-2 position-absolute end-0">
+            <a href="{{ route('customizer.models.create') }}" class="btn btn-dark mb-2 position-absolute end-0">
                 <i class="bi bi-plus-lg"></i> Add Model
             </a>
         </div>
