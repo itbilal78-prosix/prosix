@@ -363,15 +363,42 @@ public function destroy(CustomizerModel $model)
     }
 
     // ─── DUPLICATE ────────────────────────────────────────────────
-    public function duplicate($id)
-    {
-        $model      = CustomizerModel::findOrFail($id);
-        $new        = $model->replicate();
-        $new->title = $model->title.' (Copy)';
-        $new->save();
+   public function duplicate($id)
+{
+    $model = CustomizerModel::findOrFail($id);
 
-        return back()->with('success', 'Model Duplicated with Design');
+    $new = $model->replicate();
+    $new->title = $model->title . ' (Copy)';
+
+    // pehle custom svg empty rakho
+    $new->custom_front_svg = null;
+    $new->custom_back_svg  = null;
+    $new->custom_left_svg  = null;
+    $new->custom_right_svg = null;
+
+    $new->save();
+
+    foreach (['front', 'back', 'left', 'right'] as $view) {
+        $field = "custom_{$view}_svg";
+        $oldFile = $model->{$field};
+
+        if ($oldFile && file_exists(public_path('uploads/models/' . $oldFile))) {
+            $ext = pathinfo($oldFile, PATHINFO_EXTENSION) ?: 'svg';
+            $newFile = "custom_{$view}_{$new->id}_" . time() . ".{$ext}";
+
+            copy(
+                public_path('uploads/models/' . $oldFile),
+                public_path('uploads/models/' . $newFile)
+            );
+
+            $new->{$field} = $newFile;
+        }
     }
+
+    $new->save();
+
+    return back()->with('success', 'Model Duplicated with Separate Design');
+}
 
     // ─── BULK DELETE ──────────────────────────────────────────────
     public function bulkDestroy(Request $request)
@@ -387,24 +414,53 @@ public function destroy(CustomizerModel $model)
     }
 
     // ─── BULK DUPLICATE ───────────────────────────────────────────
-    public function bulkDuplicate(Request $request)
-    {
-        $ids = $request->input('product_ids', []);
-        if (empty($ids) || ! is_array($ids)) {
-            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
-        }
-        $count = 0;
-        foreach ($ids as $id) {
-            $original = CustomizerModel::find($id);
-            if (! $original) continue;
-            $copy        = $original->replicate();
-            $copy->title = $original->title.' (Copy)';
-            $copy->save();
-            $count++;
+  public function bulkDuplicate(Request $request)
+{
+    $ids = $request->input('product_ids', []);
+
+    if (empty($ids) || ! is_array($ids)) {
+        return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
+    }
+
+    $count = 0;
+
+    foreach ($ids as $id) {
+        $original = CustomizerModel::find($id);
+        if (! $original) continue;
+
+        $copy = $original->replicate();
+        $copy->title = $original->title . ' (Copy)';
+
+        $copy->custom_front_svg = null;
+        $copy->custom_back_svg  = null;
+        $copy->custom_left_svg  = null;
+        $copy->custom_right_svg = null;
+
+        $copy->save();
+
+        foreach (['front', 'back', 'left', 'right'] as $view) {
+            $field = "custom_{$view}_svg";
+            $oldFile = $original->{$field};
+
+            if ($oldFile && file_exists(public_path('uploads/models/' . $oldFile))) {
+                $ext = pathinfo($oldFile, PATHINFO_EXTENSION) ?: 'svg';
+                $newFile = "custom_{$view}_{$copy->id}_" . time() . ".{$ext}";
+
+                copy(
+                    public_path('uploads/models/' . $oldFile),
+                    public_path('uploads/models/' . $newFile)
+                );
+
+                $copy->{$field} = $newFile;
+            }
         }
 
-        return response()->json(['success' => true, 'message' => $count.' Model(s) duplicated!']);
+        $copy->save();
+        $count++;
     }
+
+    return response()->json(['success' => true, 'message' => $count . ' Model(s) duplicated!']);
+}
 
     // ─── TOGGLE HIDDEN (single) ───────────────────────────────────
     public function toggleHidden(Request $request, $id)
