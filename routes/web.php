@@ -278,8 +278,8 @@ if ($isAdmin) {
     Route::get('/payments', fn() => redirect('https://admin.prosix.com/payments'))->name('admin.payments.index');
 
     // Models page
-    Route::get('/models', function () {
-        $models = \App\Models\CustomizerModel::with(['category', 'subcategory'])
+Route::get('/models', function (Illuminate\Http\Request $request) {
+            $models = \App\Models\CustomizerModel::with(['category', 'subcategory'])
             ->get();
 
         $categories = \App\Models\Category::whereNull('parent_id')
@@ -287,7 +287,7 @@ if ($isAdmin) {
             ->get();
 
         return view('admin.models.index', compact('models', 'categories'))
-            ->with('isUserMode', false);
+->with('isUserMode', $request->query('user_mode') == '1');
     })->name('customizer.models.index');
 
     // Model admin routes on customizer subdomain
@@ -334,7 +334,7 @@ Route::post('/models/{id}/save-design-admin', [CustomizerModelController::class,
             : null;
 
         return view('customizer.index', compact('model', 'colors', 'fonts', 'design'))
-            ->with('isUserMode', false);
+->with('isUserMode', $request->query('user_mode') == '1');
     });
 
     // APIs
@@ -394,18 +394,17 @@ Route::post('/models/{id}/save-design-admin', [CustomizerModelController::class,
         if (!file_exists($fullPath)) abort(404);
         return response()->file($fullPath);
     })->where('path', '.*');
-    Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
-        $model  = \App\Models\CustomizerModel::findOrFail($id);
-        $colors = \App\Models\Color::all();
-        $fonts  = \App\Models\Font::all()->map(fn($font) => [
-            'id' => $font->id, 'name' => $font->name,
-            'file_url' => asset('storage/' . $font->file),
-        ]);
-        $design = $request->has('design_id')
-            ? \App\Models\UserCustomization::find($request->design_id) : null;
-     return view('customizer.index', compact('model', 'colors', 'fonts', 'design'))
-    ->with('isUserMode', true);
-    });
+Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
+    $query = $request->getQueryString();
+
+    $baseUrl = app()->environment('local')
+        ? url('/customize/' . $id)
+        : 'https://customizer.prosix.com/customize/' . $id;
+
+    return redirect()->away(
+        $baseUrl . '?user_mode=1' . ($query ? '&' . $query : '')
+    );
+});
 
 
 
