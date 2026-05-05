@@ -410,7 +410,8 @@ Route::post('/models/{id}/save-design-admin', [CustomizerModelController::class,
 
 
 
-
+Route::get('/users/{id}/login', [AuthController::class, 'loginAsUser'])
+    ->name('admin.users.loginAsUser');
 
 
 Route::get('/api/fonts', function() {

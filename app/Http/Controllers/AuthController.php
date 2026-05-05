@@ -76,7 +76,11 @@ class AuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('admin_impersonation')->plainTextToken;
 
-        return redirect('/dashboard?token=' . $token . '&impersonate=1&tab=my-design');
+return redirect()->away(
+    app()->environment('local')
+        ? 'http://127.0.0.1:8000/dashboard?token=' . $token . '&impersonate=1&tab=my-design'
+        : 'https://prosix.com/dashboard?token=' . $token . '&impersonate=1&tab=my-design'
+);
     }
 
     // ─────────────────────────────────────────
