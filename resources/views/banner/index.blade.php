@@ -111,7 +111,7 @@ $(function() {
 <style>
 .ui-state-highlight {
     height: 70px;
-    background: #f8f9fa;
+    background: #f1f2f3;
     border: 2px dashed #6c757d;
     border-radius: 6px;
 }
