@@ -241,8 +241,9 @@ if ($isAdmin) {
             ->whereHas('models', fn($q) => $q->where('is_hidden', false))
             ->with(['models' => fn($q) => $q->where('is_hidden', false), 'subcategories'])
             ->get();
-        return view('admin.models.index', compact('models', 'categories'));
-    });
+return view('admin.models.index', compact('models', 'categories'))
+    ->with('isUserMode', true);
+        });
 
     Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
         $model  = \App\Models\CustomizerModel::findOrFail($id);
