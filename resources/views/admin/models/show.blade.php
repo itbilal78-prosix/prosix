@@ -25,7 +25,7 @@
 
         window.API_URL = window.isUserMode ?
             '/user/model-api/{{ $model->id }}' + (window.DESIGN_ID ? '?customization_id=' + window.DESIGN_ID : '') :
-            '{{ route('admin.models.api.get', $model->id) }}';
+            '{{ route('customizer.models.api.get', $model->id) }}';
 
         console.log('API_URL:', window.API_URL);
         console.log('USER_DESIGN:', window.USER_DESIGN);
@@ -55,7 +55,7 @@
 
     <div class="customize-container">
         @php
-            $backUrl = isset($isUserMode) && $isUserMode ? url('/dashboard') : route('admin.models.index');
+            $backUrl = isset($isUserMode) && $isUserMode ? url('/dashboard') : route('customizer.models.index');
         @endphp
 
         <!-- HEADER -->
@@ -96,9 +96,9 @@
 
                 <!-- TOOL PAGES -->
                 <div class="color-wheel-section">
-                    @include('admin.models.partials.color')
-                    @include('admin.models.partials.pattern')
-                    @include('admin.models.partials.application')
+                    @include('customizer.models.partials.color')
+                    @include('customizer.models.partials.pattern')
+                    @include('customizer.models.partials.application')
                 </div>
 
                 <!-- TABS -->

@@ -88,7 +88,7 @@
 <div class="pf-wrap">
   <div class="pf-header">
     <h1><i class="bi bi-pencil-square me-2"></i>Edit Model</h1>
-    <a href="{{ route('admin.models.index') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back</a>
+    <a href="{{ route('customizer.models.index') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back</a>
   </div>
 
   @if($errors->any())
@@ -376,7 +376,7 @@
     {{-- Actions --}}
     <div class="pf-actions">
       <button type="submit" class="btn-save"><i class="bi bi-check-lg"></i> Update Model</button>
-      <a href="{{ route('admin.models.index') }}" class="btn-back">Cancel</a>
+      <a href="{{ route('customizer.models.index') }}" class="btn-back">Cancel</a>
     </div>
 
   </form>
