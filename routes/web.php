@@ -233,62 +233,93 @@ if ($isAdmin) {
 // ═══════════════════════════════════════════
 } elseif ($isCustomizer) {
 
-    // Root → Models list
-  Route::get('/', function () {
-    $models = \App\Models\CustomizerModel::with('category')
-        ->where('is_hidden', false)
-        ->get();
-    $categories = \App\Models\Category::whereNull('parent_id')
-        ->whereHas('models', fn($q) => $q->where('is_hidden', false))
-        ->get();
-    return view('admin.models.index', compact('models', 'categories')); // ← YAHI VIEW
-});
+    // Login
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/login', [AuthController::class, 'login'])->name('admin.login.post');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
-Route::get('/models', function () {
-    $models = \App\Models\CustomizerModel::with('category')
-        ->where('is_hidden', false)
-        ->get();
-    $categories = \App\Models\Category::whereNull('parent_id')
-        ->whereHas('models', fn($q) => $q->where('is_hidden', false))
-        ->get();
-    return view('admin.models.index', compact('models', 'categories')); // ← YAHI VIEW
-});
-    // Customizer page
-    Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
-        $model  = \App\Models\CustomizerModel::findOrFail($id);
-        $colors = \App\Models\Color::all();
-        $fonts  = \App\Models\Font::all()->map(fn($font) => [
-            'id'       => $font->id,
-            'name'     => $font->name,
-            'file_url' => asset('storage/' . $font->file),
-        ]);
-        $design = $request->has('design_id')
-            ? \App\Models\UserCustomization::find($request->design_id)
-            : null;
-        return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
-            ->with('isUserMode', true);
-    });
+    Route::middleware(['auth:admin'])->group(function () {
 
-    Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']);
-    Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
-    Route::post('/templates/save-from-customizer', [TemplateController::class, 'saveFromCustomizer']);
-    Route::get('/api/fonts', fn() => \App\Models\Font::all()->map(fn($f) => [
-        'id' => $f->id, 'name' => $f->name, 'file_url' => asset('storage/' . $f->file),
-    ]));
-    Route::get('/api/colors', fn() => \App\Models\Color::select('id', 'name', 'code')->get());
-    Route::get('/api/mascot-templates', function () {
-        return \App\Models\Template::with('category')->latest()->get()->map(fn($t) => [
-            'id' => $t->id, 'title' => $t->title, 'svg_data' => $t->svg_data,
-            'image_data' => $t->image_data,
-            'category' => $t->category?->name ?? 'Uncategorized',
-            'category_id' => $t->category_id,
+        Route::get('/', fn() => redirect('/models'));
+
+        // Models CRUD
+        Route::middleware(['admin.permission:can_customizer'])
+            ->resource('models', CustomizerModelController::class)->names([
+                'index'   => 'customizer.models.index',
+                'create'  => 'customizer.models.create',
+                'store'   => 'customizer.models.store',
+                'show'    => 'customizer.models.show',
+                'edit'    => 'customizer.models.edit',
+                'update'  => 'customizer.models.update',
+                'destroy' => 'customizer.models.destroy',
+            ]);
+
+        Route::post('models/{id}/duplicate', [CustomizerModelController::class, 'duplicate'])->name('models.duplicate');
+        Route::get('models/{model}/api', [CustomizerModelController::class, 'api'])->name('models.api.get');
+        Route::post('models/{id}/save-design', [CustomizerModelController::class, 'saveDesign'])->name('customizer.models.save-design');
+        Route::post('models/{id}/save-thumbnail', [CustomizerModelController::class, 'saveThumbnail'])->name('models.save-thumbnail');
+        Route::post('/models/featured', [CustomizerModelController::class, 'bulkFeatured'])->name('models.featured');
+        Route::post('/models/apparel', [CustomizerModelController::class, 'bulkApparel'])->name('models.apparel');
+        Route::post('/models/bulk-destroy', [CustomizerModelController::class, 'bulkDestroy'])->name('models.bulkDestroy');
+        Route::post('/models/bulk-duplicate', [CustomizerModelController::class, 'bulkDuplicate'])->name('models.bulkDuplicate');
+        Route::post('models/{id}/toggle-hidden', [CustomizerModelController::class, 'toggleHidden'])->name('models.toggleHidden');
+        Route::post('models/bulk-toggle-hidden', [CustomizerModelController::class, 'bulkToggleHidden'])->name('models.bulkToggleHidden');
+        Route::post('/models/update-order', [CustomizerModelController::class, 'updateOrder'])->name('models.updateOrder');
+
+        // Customize page
+        Route::get('/customize/{id}', function ($id, Illuminate\Http\Request $request) {
+            $model  = \App\Models\CustomizerModel::findOrFail($id);
+            $colors = \App\Models\Color::all();
+            $fonts  = \App\Models\Font::all()->map(fn($font) => [
+                'id'       => $font->id,
+                'name'     => $font->name,
+                'file_url' => asset('storage/' . $font->file),
+            ]);
+            $design = $request->has('design_id')
+                ? \App\Models\UserCustomization::find($request->design_id)
+                : null;
+            return view('admin.models.show', compact('model', 'colors', 'fonts', 'design'))
+                ->with('isUserMode', false);
+        });
+
+        // Templates
+        Route::post('templates/bulk-destroy', [TemplateController::class, 'bulkDestroy'])->name('templates.bulkDestroy');
+        Route::resource('templates', TemplateController::class)->names([
+            'index' => 'admin.templates.index', 'create' => 'admin.templates.create',
+            'store' => 'admin.templates.store', 'show' => 'admin.templates.show',
+            'edit'  => 'admin.templates.edit',  'update' => 'admin.templates.update',
+            'destroy' => 'admin.templates.destroy',
         ]);
+        Route::post('/templates/save-from-customizer', [TemplateController::class, 'saveFromCustomizer']);
+        Route::get('/mascots/create', fn() => view('templates.create'))->name('mascots.create');
+        Route::get('/mascots/{id}/edit', function ($id) {
+            $template = \App\Models\Template::findOrFail($id);
+            return view('templates.edit', compact('template'));
+        })->name('mascots.edit');
+
+        // API
+        Route::get('/api/fonts', fn() => \App\Models\Font::select('id', 'name', 'file')->get());
+        Route::get('/api/colors', fn() => \App\Models\Color::select('id', 'name', 'code')->get());
+        Route::get('/api/mascot-templates', function () {
+            return \App\Models\Template::with('category')->latest()->get()->map(fn($t) => [
+                'id' => $t->id, 'title' => $t->title, 'svg_data' => $t->svg_data,
+                'image_data' => $t->image_data,
+                'category' => $t->category?->name ?? 'Uncategorized',
+                'category_id' => $t->category_id,
+            ]);
+        });
+        Route::get('/api/categories-for-templates', fn() =>
+            \App\Models\Category::whereNull('parent_id')->where('status', 1)->select('id', 'name')->orderBy('name')->get()
+        );
+        Route::get('/user/model-api/{id}', [CustomizerModelController::class, 'userApi']);
+        Route::get('/user/categories-with-models', [CustomizerModelController::class, 'userCategoriesWithModels']);
+        Route::get('/storage/{path}', function ($path) {
+            $fullPath = storage_path('app/public/' . $path);
+            if (!file_exists($fullPath)) abort(404);
+            return response()->file($fullPath);
+        })->where('path', '.*');
+
     });
-    Route::get('/storage/{path}', function ($path) {
-        $fullPath = storage_path('app/public/' . $path);
-        if (!file_exists($fullPath)) abort(404);
-        return response()->file($fullPath);
-    })->where('path', '.*');
 
 // ═══════════════════════════════════════════
 // MAIN DOMAIN — prosix.com
