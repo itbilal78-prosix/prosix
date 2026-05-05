@@ -45,8 +45,9 @@
 @if(empty($isUserMode))
     @include('partials.sidebar')
 @endif
-@include('partials.header')
-
+@if(empty($isUserMode))
+    @include('partials.header')
+@endif
 <div id="content">
     <div class="container-fluid p-4">
         @yield('content')
