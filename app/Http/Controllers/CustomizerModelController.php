@@ -122,9 +122,8 @@ class CustomizerModelController extends Controller
     }
 
     // ─── SHOW ─────────────────────────────────────────────────────
-    public function show($id)
-    {
-        $model  = CustomizerModel::findOrFail($id);
+  public function show(CustomizerModel $model)
+{
         $colors = Color::all();
         $fonts  = Font::all()->map(fn ($font) => [
             'id'       => $font->id,
@@ -140,9 +139,8 @@ class CustomizerModelController extends Controller
     }
 
     // ─── EDIT ─────────────────────────────────────────────────────
-    public function edit($id)
-    {
-        $model            = CustomizerModel::findOrFail($id);
+  public function edit(CustomizerModel $model)
+{
         $navigations      = Navigation::where('status', 1)->get() ?? collect();
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
@@ -155,9 +153,8 @@ class CustomizerModelController extends Controller
     }
 
     // ─── UPDATE ───────────────────────────────────────────────────
-    public function update(Request $request, $id)
-    {
-        $model = CustomizerModel::findOrFail($id);
+   public function update(Request $request, CustomizerModel $model)
+{
 
         $request->validate([
             'title'              => 'required',
@@ -346,9 +343,8 @@ class CustomizerModelController extends Controller
     }
 
     // ─── DESTROY ──────────────────────────────────────────────────
-    public function destroy($id)
-    {
-        $model = CustomizerModel::findOrFail($id);
+public function destroy(CustomizerModel $model)
+{
 
         foreach ($model->colors_data ?? [] as $c) {
             foreach ($c['views'] ?? [] as $vData) {
