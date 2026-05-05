@@ -881,7 +881,7 @@
                 return;
             }
 
-            const res = await fetch('{{ route('models.bulkToggleHidden') }}', {
+            const res = await fetch('/admin/models/bulk-toggle-hidden', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
