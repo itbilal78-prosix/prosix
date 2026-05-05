@@ -97,7 +97,7 @@
     </div>
   @endif
 
-  <form action="{{ route('models.update', $model->id) }}" method="POST" enctype="multipart/form-data">
+  <form action="{{ route('customizer.models.update', $model->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
 

@@ -3026,8 +3026,8 @@ window.isDraggingKnob = false;
                 allSvgs[v] = new XMLSerializer().serializeToString(svg);
             }
 
-            await fetch(`/admin/models/${MODEL_ID}/save-design`, {
-                method: 'POST',
+await fetch(`/models/${MODEL_ID}/save-design`, {
+                    method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -3634,7 +3634,7 @@ window.isDraggingKnob = false;
         const HEADER_H = 130;
         const PAD = 36;
         const PAD_LEFT = 60;
-        const PAD_RIGHT = 60;    
+        const PAD_RIGHT = 60;
         const LABEL_H = 50;
 
         const totalW = PAD_LEFT + PAD_RIGHT + CELL_W * COLS + GAP * (COLS - 1);
@@ -4009,7 +4009,7 @@ window.isDraggingKnob = false;
                     formData.append('thumbnail', blob, 'thumbnail.png');
                     const thumbnailUrl = window.isUserMode
                         ? `/api/user/save-thumbnail/${MODEL_ID}`
-                        : `/admin/models/${MODEL_ID}/save-thumbnail`;
+                        : `/models/${MODEL_ID}/save-thumbnail`;
 
                     await fetch(thumbnailUrl, {
                         method: 'POST',

@@ -146,8 +146,8 @@
 
                                    <div class="card-footer p-2">
     <div class="d-flex gap-2 mb-2">
-        <a href="{{ route('customizer.models.show', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
-        <a href="{{ route('customizer.models.edit', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
+        <a href="{{ route('customizer.models.show', $model) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
+        <a href="{{ route('customizer.models.edit', $model) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
     </div>
     <div class="d-flex gap-2">
         <form action="{{ route('models.duplicate', $model->id) }}" method="POST" class="flex-fill">
@@ -291,8 +291,8 @@
                                         </div>
 <div class="card-footer p-2">
     <div class="d-flex gap-2 mb-2">
-        <a href="{{ route('customizer.models.show', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
-        <a href="{{ route('customizer.models.edit', $model->id) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
+        <a href="{{ route('customizer.models.show', $model) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
+        <a href="{{ route('customizer.models.edit', $model) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
     </div>
     <div class="d-flex gap-2">
         <form action="{{ route('models.duplicate', $model->id) }}" method="POST" class="flex-fill">
