@@ -233,16 +233,7 @@ if ($isAdmin) {
 // ═══════════════════════════════════════════
 } elseif ($isCustomizer) {
 
-    // Login + Forgot Password
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('/login', [AuthController::class, 'login'])->name('admin.login.post');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
-    Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('admin.password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('admin.password.send');
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('admin.password.reset.form');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('admin.password.reset');
 
-    Route::middleware(['auth:admin'])->group(function () {
 
         Route::get('/', fn() => redirect('/models'));
 
