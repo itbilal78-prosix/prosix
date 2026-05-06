@@ -1,4 +1,5 @@
 @extends('layouts.dashboard')
+
 @section('content')
     @php
         use Illuminate\Support\Str;
@@ -18,11 +19,9 @@
         {{-- ── Page Header ── --}}
         <div class="d-flex justify-content-center align-items-center add-model flex-wrap position-relative">
             <h1 class="mb-2 text-center">All Models</h1>
-           @if(empty($isUserMode))
-    <a href="{{ route('customizer.models.create') }}" class="btn btn-dark mb-2 position-absolute end-0">
-        <i class="bi bi-plus-lg"></i> Add Model
-    </a>
-@endif
+            <a href="{{ route('models.create') }}" class="btn btn-dark mb-2 position-absolute end-0">
+                <i class="bi bi-plus-lg"></i> Add Model
+            </a>
         </div>
 
         <script>
@@ -144,22 +143,26 @@
                                             <p class="card-text small">{{ Str::limit($model->description, 50) }}</p>
                                         </div>
 
-                                   <div class="card-footer p-2">
-    <div class="d-flex gap-2 mb-2">
-        <a href="{{ route('customizer.models.show', $model) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
-        <a href="{{ route('customizer.models.edit', $model) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
-    </div>
-    <div class="d-flex gap-2">
-        <form action="{{ route('models.duplicate', $model->id) }}" method="POST" class="flex-fill">
-            @csrf
-            <button class="btn btn-custom btn-sm w-100">Duplicate</button>
-        </form>
-        <form action="{{ route('customizer.models.destroy', $model->id) }}" method="POST" class="flex-fill">
-            @csrf @method('DELETE')
-            <button class="btn btn-custom btn-sm w-100">Delete</button>
-        </form>
-    </div>
-</div>
+                                        <div class="card-footer p-2">
+                                            <div class="d-flex gap-2 mb-2">
+                                                <a href="{{ route('models.show', $model->id) }}"
+                                                    class="btn btn-custom btn-sm flex-fill">Customize</a>
+                                                <a href="{{ route('models.edit', $model->id) }}"
+                                                    class="btn btn-custom btn-sm flex-fill">Edit</a>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <form action="{{ route('models.duplicate', $model->id) }}" method="POST"
+                                                    class="flex-fill">
+                                                    @csrf
+                                                    <button class="btn btn-custom btn-sm w-100">Duplicate</button>
+                                                </form>
+                                                <form action="{{ route('models.destroy', $model->id) }}" method="POST"
+                                                    class="flex-fill" onsubmit="return confirmDelete(event, this)">
+                                                    @csrf @method('DELETE')
+                                                    <button class="btn btn-custom btn-sm w-100">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -289,22 +292,27 @@
                                             </div>
                                             <p class="card-text small">{{ Str::limit($model->description, 50) }}</p>
                                         </div>
-<div class="card-footer p-2">
-    <div class="d-flex gap-2 mb-2">
-        <a href="{{ route('customizer.models.show', $model) }}" class="btn btn-custom btn-sm flex-fill">Customize</a>
-        <a href="{{ route('customizer.models.edit', $model) }}" class="btn btn-custom btn-sm flex-fill">Edit</a>
-    </div>
-    <div class="d-flex gap-2">
-        <form action="{{ route('models.duplicate', $model->id) }}" method="POST" class="flex-fill">
-            @csrf
-            <button class="btn btn-custom btn-sm w-100">Duplicate</button>
-        </form>
-        <form action="{{ route('customizer.models.destroy', $model->id) }}" method="POST" class="flex-fill">
-            @csrf @method('DELETE')
-            <button class="btn btn-custom btn-sm w-100">Delete</button>
-        </form>
-    </div>
-</div>
+
+                                        <div class="card-footer p-2">
+                                            <div class="d-flex gap-2 mb-2">
+                                                <a href="{{ route('models.show', $model->id) }}"
+                                                    class="btn btn-custom btn-sm flex-fill">Customize</a>
+                                                <a href="{{ route('models.edit', $model->id) }}"
+                                                    class="btn btn-custom btn-sm flex-fill">Edit</a>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <form action="{{ route('models.duplicate', $model->id) }}" method="POST"
+                                                    class="flex-fill">
+                                                    @csrf
+                                                    <button class="btn btn-custom btn-sm w-100">Duplicate</button>
+                                                </form>
+                                                <form action="{{ route('models.destroy', $model->id) }}" method="POST"
+                                                    class="flex-fill" onsubmit="return confirmDelete(event, this)">
+                                                    @csrf @method('DELETE')
+                                                    <button class="btn btn-custom btn-sm w-100">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -766,7 +774,6 @@
     </style>
 
     {{-- ════ SCRIPTS ════ --}}
-    @if(empty($isUserMode))
     <script>
         // ── Toast ──
         function showToast(message, type = 'success', duration = 3000) {
@@ -864,7 +871,7 @@
                 return;
             }
 
-            const res = await fetch('/admin/models/bulk-toggle-hidden', {
+            const res = await fetch('{{ route('models.bulkToggleHidden') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1198,6 +1205,4 @@
             });
         });
     </script>
-    @endif
-
 @endsection

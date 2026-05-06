@@ -3026,8 +3026,8 @@ window.isDraggingKnob = false;
                 allSvgs[v] = new XMLSerializer().serializeToString(svg);
             }
 
-await fetch(`/models/${MODEL_ID}/save-design`, {
-                    method: 'POST',
+await fetch(`/admin/models/${MODEL_ID}/save-design`, {
+                        method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -4009,7 +4009,7 @@ await fetch(`/models/${MODEL_ID}/save-design`, {
                     formData.append('thumbnail', blob, 'thumbnail.png');
                     const thumbnailUrl = window.isUserMode
                         ? `/api/user/save-thumbnail/${MODEL_ID}`
-                        : `/models/${MODEL_ID}/save-thumbnail`;
+                        : `/admin/models/${MODEL_ID}/save-thumbnail`;
 
                     await fetch(thumbnailUrl, {
                         method: 'POST',

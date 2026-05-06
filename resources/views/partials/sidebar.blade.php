@@ -4,11 +4,16 @@
 
 <!-- Sidebar -->
 <div id="sidebar" class="bg-sidbare text-light position-fixed mt-5">
+    {{-- <div class="sidebar-header d-flex align-items-center justify-content-between border-bottom">
+        <button class="btn btn-sm d-md-none text-light" id="sidebarClose">
+            <i class="bi bi-x"></i>
+        </button>
+    </div> --}}
 
     @if ($admin)
         <ul class="nav flex-column mt-3">
 
-            {{-- DASHBOARD --}}
+            {{-- DASHBOARD (SABKO) --}}
             <li class="nav-item">
                 <a class="nav-link text-light d-flex align-items-center px-3 py-2" href="{{ route('admin.dashboard') }}">
                     <i class="bi bi-speedometer2 me-2"></i>
@@ -16,7 +21,7 @@
                 </a>
             </li>
 
-            {{-- WEBSITE MANAGEMENT --}}
+            {{-- WEBSITE MANAGEMENT (SIRF SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
                 <li class="nav-item">
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
@@ -28,15 +33,20 @@
                     <ul class="collapse list-unstyled ps-4" id="websiteSubmenu">
                         <li><a class="nav-link text-light py-1" href="#">Website Info</a></li>
                         <li><a class="nav-link text-light py-1" href="#">Pages</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.banners.index') }}">Banner</a></li>
-                        <li><a class="nav-link text-light py-1 d-flex align-items-center gap-2" href="{{ route('admin.flipbooks.index') }}"><span>Flip Books</span></a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.blogs.index') }}">Blog / News</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.testimonials.index') }}">Testimonials</a></li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('banners.index') }}">Banner</a></li>
+
+                            <a class="nav-link text-light py-1 d-flex align-items-center gap-2"
+                                href="{{ route('admin.flipbooks.index') }}">
+                                <span>Flip Books</span>
+                            </a>
+                        </li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('blogs.index') }}">Blog / News</a></li>
+                        <li><a class="nav-link text-light py-1"
+                                href="{{ route('testimonials.index') }}">Testimonials</a></li>
                         <li><a class="nav-link text-light py-1" href="#">Media Library</a></li>
                     </ul>
                 </li>
             @endif
-
             {{-- FORMS MANAGEMENT --}}
             <li class="nav-item">
                 <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
@@ -45,13 +55,26 @@
                     <span class="flex-grow-1">Forms</span>
                     <i class="bi bi-chevron-right ms-auto"></i>
                 </a>
+
                 <ul class="collapse list-unstyled ps-4" id="formsSubmenu">
-                    <li><a class="nav-link text-light py-1" href="{{ route('admin.artwork') }}">Artwork Requests</a></li>
-                    <li><a class="nav-link text-light py-1" href="{{ route('admin.memberships') }}">Memberships</a></li>
-                    <li><a class="nav-link text-light py-1" href="{{ route('admin.placeorder') }}">Place Orders Data</a></li>
+                    <li>
+                        <a class="nav-link text-light py-1" href="{{ route('admin.artwork') }}">
+                            Artwork Requests
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="nav-link text-light py-1" href="{{ route('admin.memberships') }}">
+                            Memberships
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link text-light py-1" href="{{ route('admin.placeorder') }}">
+                            Place Orders Data
+                        </a>
+                    </li>
                 </ul>
             </li>
-
             {{-- PRODUCT MANAGEMENT --}}
             @if ($admin->is_super_admin || $admin->can_products)
                 <li class="nav-item">
@@ -62,29 +85,49 @@
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
                     <ul class="collapse list-unstyled ps-4" id="productSubmenu">
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.products.index') }}">All Products</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.deals.index') }}">Deals & Offers</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.videos.index') }}">Video Management</a></li>
+
+                        <li><a class="nav-link text-light py-1" href="{{ route('products.index') }}">All Products</a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link text-light py-1" href="{{ route('deals.index') }}">
+                                Deals & Offers
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link text-light py-1" href="{{ route('videos.index') }}">
+                                Video Management
+                            </a>
+                        </li>
                     </ul>
                 </li>
             @endif
+<li class="nav-item">
+    <a class="nav-link text-light d-flex align-items-center px-3 py-2"
+        data-bs-toggle="collapse"
+        href="#navigationSubmenu"
+        role="button"
+        aria-expanded="false">
 
-            {{-- NAVIGATION & CATEGORIES --}}
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
-                    href="#navigationSubmenu" role="button" aria-expanded="false">
-                    <i class="bi bi-list-ul me-2"></i>
-                    <span class="flex-grow-1">Navi & Cata..</span>
-                    <i class="bi bi-chevron-right ms-auto"></i>
-                </a>
-                <ul class="collapse list-unstyled ps-4" id="navigationSubmenu">
-                    @if ($admin->is_super_admin || $admin->can_categories)
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.categories.index') }}">Categories</a></li>
-                    @endif
-                    <li><a class="nav-link text-light py-1" href="{{ route('admin.navigations.index') }}">Navigation Menu</a></li>
-                </ul>
-            </li>
+        <i class="bi bi-list-ul me-2"></i>
+        <span class="flex-grow-1">Navi & Cata..</span>
+        <i class="bi bi-chevron-right ms-auto"></i>
+    </a>
 
+    <ul class="collapse list-unstyled ps-4" id="navigationSubmenu">
+
+         @if ($admin->is_super_admin || $admin->can_categories)
+                            <li><a class="nav-link text-light py-1"
+                                    href="{{ route('categories.index') }}">Categories</a></li>
+                        @endif
+
+
+          <li><a class="nav-link text-light py-1" href="{{ route('navigations.index') }}">Navigation
+                                Menu</a></li>
+                        <li>
+
+    </ul>
+</li>
             {{-- CUSTOMIZER MANAGEMENT --}}
             @if ($admin->is_super_admin || $admin->can_customizer)
                 <li class="nav-item">
@@ -96,23 +139,18 @@
                     </a>
                     <ul class="collapse list-unstyled ps-4" id="customizerSubmenu">
                         <li><a class="nav-link text-light py-1" href="#">Customizer Control</a></li>
-                        {{-- <li><a class="nav-link text-light py-1" href="{{ route('customizer.models.index') }}">Models</a></li> --}}
-                        {{-- <li><a class="nav-link text-light py-1" href="https://customizer.prosix.com/models">Models</a></li> --}}
-                        <li>
-    <a class="nav-link text-light py-1"
-       href="{{ app()->environment('local') ? url('/models') : 'https://customizer.prosix.com/models' }}">
-        Models
-    </a>
-</li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.patterns.index') }}">Patterns</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.colors.index') }}">Color</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.templates.index') }}">Templates</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.fonts.index') }}">Font</a></li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('models.index') }}">Models</a></li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('patterns.index') }}">Patterns</a></li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('colors.index') }}">Color</a></li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('templates.index') }}">Templates</a>
+                        </li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('fonts.index') }}">Font</a></li>
                     </ul>
                 </li>
             @endif
 
-            {{-- USER MANAGEMENT --}}
+
+ {{-- USER MANAGEMENT (SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
                 <li class="nav-item">
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
@@ -122,36 +160,42 @@
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
                     <ul class="collapse list-unstyled ps-4" id="userSubmenu">
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.users.index') }}">All Users</a></li>
+                        <li><a class="nav-link text-light py-1" href="{{ route('admin.users.index') }}">All Users</a>
+                        </li>
                         <li><a class="nav-link text-light py-1" href="#">Add User</a></li>
                         <li><a class="nav-link text-light py-1" href="#">Roles</a></li>
                         <li><a class="nav-link text-light py-1" href="#">Permissions</a></li>
-                        <li><a class="nav-link text-light py-1" href="{{ route('admin.admins.index') }}"><i class="bi bi-person-gear me-1"></i> Manage Admins</a></li>
+                        <li>
+                            <a class="nav-link text-light py-1" href="{{ route('admin.admins.index') }}">
+                                <i class="bi bi-person-gear me-1"></i> Manage Admins
+                            </a>
+                        </li>
                     </ul>
                 </li>
             @endif
 
+
             {{-- ORDERS --}}
             @if ($admin->is_super_admin || $admin->can_orders)
                 <li class="nav-item">
-                    <a class="nav-link text-light d-flex align-items-center px-3 py-2" href="{{ route('admin.orders.index') }}">
+                    <a class="nav-link text-light d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.orders.index') }}">
                         <i class="bi bi-bag me-2"></i>
                         <span class="flex-grow-1">Orders</span>
                     </a>
                 </li>
             @endif
-
             {{-- PAYMENTS --}}
             @if ($admin->is_super_admin || $admin->can_orders)
                 <li class="nav-item">
-                    <a class="nav-link text-light d-flex align-items-center px-3 py-2" href="{{ route('admin.payments.index') }}">
+                    <a class="nav-link text-light d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.payments.index') }}">
                         <i class="bi bi-credit-card me-2"></i>
                         <span class="flex-grow-1">Payments</span>
                     </a>
                 </li>
             @endif
-
-            {{-- CUSTOMERS --}}
+            {{-- CUSTOMERS (SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
                 <li class="nav-item">
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" href="#">
@@ -161,7 +205,7 @@
                 </li>
             @endif
 
-            {{-- REPORTS --}}
+            {{-- REPORTS (SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
                 <li class="nav-item">
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" href="#">
@@ -171,7 +215,9 @@
                 </li>
             @endif
 
-            {{-- SEO & MARKETING --}}
+
+
+            {{-- SEO & MARKETING (SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
                 <li class="nav-item">
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
@@ -189,7 +235,7 @@
                 </li>
             @endif
 
-            {{-- SYSTEM & SECURITY --}}
+            {{-- SYSTEM & SECURITY (SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
                 <li class="nav-item">
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
@@ -207,7 +253,7 @@
                 </li>
             @endif
 
-            {{-- SETTINGS --}}
+            {{-- SETTINGS (SUPER ADMIN) --}}
             @if ($admin->is_super_admin)
                 <li class="nav-item">
                     <a class="nav-link text-light d-flex align-items-center px-3 py-2" data-bs-toggle="collapse"
@@ -229,18 +275,29 @@
 
 </div>
 
+<!-- Sidebar CSS -->
 <style>
-    .bg-sidbare { background-color: #000; }
+    .bg-sidbare {
+        background-color: #000;
+    }
+
     #sidebar {
         background-color: #000000;
         width: 260px;
         transition: all 0.35s ease;
         overflow-y: auto;
+        /* yeh already hai */
         z-index: 999;
         height: 100vh;
+        /* yeh add karo */
         padding-bottom: 40px;
+        /* bottom tak space */
     }
-    #sidebar.hide { transform: translateX(-100%); }
+
+    #sidebar.hide {
+        transform: translateX(-100%);
+    }
+
     #sidebar .nav-link {
         position: relative;
         color: #bbb;
@@ -251,34 +308,89 @@
         display: flex;
         align-items: center;
     }
+
+    /* ACTIVE MAIN MENU */
     #sidebar .nav-link.active {
         background: #1a1a1a;
         color: #fff;
         border: 1px solid #333;
     }
-    #sidebar .nav-link:hover { background: #111; color: #fff; }
-    #sidebar .nav-link i { transition: color 0.25s ease; }
-    #sidebar .nav-link.active i, #sidebar .nav-link:hover i { color: #fff; }
-    #sidebar .bi-chevron-right { transition: transform 0.3s ease; }
-    #sidebar .nav-link[aria-expanded="true"] .bi-chevron-right { transform: rotate(90deg); }
-    #sidebar ul ul .nav-link { position: relative; font-size: 13px; color: #999; padding: 8px 14px; }
+
+    /* Hover */
+    #sidebar .nav-link:hover {
+        background: #111;
+        color: #fff;
+    }
+
+    #sidebar .nav-link i {
+        transition: color 0.25s ease;
+    }
+
+    #sidebar .nav-link.active i,
+    #sidebar .nav-link:hover i {
+        color: #fff;
+    }
+
+    /* Chevron */
+    #sidebar .bi-chevron-right {
+        transition: transform 0.3s ease;
+    }
+
+    #sidebar .nav-link[aria-expanded="true"] .bi-chevron-right {
+        transform: rotate(90deg);
+    }
+
+    /* Submenu links */
+    #sidebar ul ul .nav-link {
+        position: relative;
+        font-size: 13px;
+        color: #999;
+        padding: 8px 14px;
+    }
+
+    /* Active submenu indicator */
     #sidebar ul ul .nav-link.active::before {
         content: "";
         position: absolute;
-        left: 0; top: 0;
-        width: 4px; height: 100%;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
         background: #fff;
         border-radius: 2px;
     }
-    #sidebar ul ul .nav-link:hover { background: #111; color: #fff; }
-    .sidebar-header { border-bottom: 1px solid #222; min-height: 50px; padding: 10px 15px; }
-    #sidebar::-webkit-scrollbar { width: 4px; }
-    #sidebar::-webkit-scrollbar-track { background: #000; }
-    #sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+    #sidebar ul ul .nav-link:hover {
+        background: #111;
+        color: #fff;
+    }
+
+    /* Header */
+    .sidebar-header {
+        border-bottom: 1px solid #222;
+        min-height: 50px;
+        padding: 10px 15px;
+    }
+
+    /* Scrollbar style */
+    #sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    #sidebar::-webkit-scrollbar-track {
+        background: #000;
+    }
+
+    #sidebar::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+    }
 </style>
 
+<!-- Sidebar JS -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggleTop');
         const sidebarClose = document.getElementById('sidebarClose');
@@ -286,9 +398,20 @@
         const allLinks = document.querySelectorAll('#sidebar .nav-link');
         const subLinks = document.querySelectorAll('#sidebar ul ul .nav-link');
 
-        if (sidebarToggle) sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('hide'));
-        if (sidebarClose) sidebarClose.addEventListener('click', () => sidebar.classList.add('hide'));
+        /* Sidebar open / close */
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('hide');
+            });
+        }
 
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', () => {
+                sidebar.classList.add('hide');
+            });
+        }
+
+        /* MAIN MENU - collapse toggle */
         mainLinks.forEach(link => {
             link.addEventListener('click', function() {
                 mainLinks.forEach(l => {
@@ -302,6 +425,7 @@
             });
         });
 
+        /* LINKS WITHOUT SUBMENU */
         allLinks.forEach(link => {
             if (!link.hasAttribute('data-bs-toggle')) {
                 link.addEventListener('click', function() {
@@ -312,10 +436,12 @@
             }
         });
 
+        /* SUBMENU CLICK */
         subLinks.forEach(sub => {
             sub.addEventListener('click', function() {
                 subLinks.forEach(s => s.classList.remove('active'));
                 this.classList.add('active');
+
                 const parentCollapse = this.closest('.collapse');
                 if (parentCollapse) {
                     const parentLink = document.querySelector(`[href="#${parentCollapse.id}"]`);
@@ -324,11 +450,14 @@
             });
         });
 
+        /* AUTO HIGHLIGHT CURRENT PAGE */
         const currentUrl = window.location.href;
         allLinks.forEach(link => {
             const href = link.getAttribute('href');
             if (href && href !== '#' && currentUrl.includes(href)) {
                 link.classList.add('active');
+
+                // Open parent collapse if exists
                 const parentCollapse = link.closest('.collapse');
                 if (parentCollapse) {
                     parentCollapse.classList.add('show');
@@ -340,5 +469,6 @@
                 }
             }
         });
+
     });
 </script>

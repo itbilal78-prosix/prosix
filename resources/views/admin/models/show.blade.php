@@ -25,7 +25,8 @@
 
         window.API_URL = window.isUserMode ?
             '/user/model-api/{{ $model->id }}' + (window.DESIGN_ID ? '?customization_id=' + window.DESIGN_ID : '') :
-'/models/{{ $model->id }}/api';
+            '{{ route('models.api.get', $model->id) }}';
+
         console.log('API_URL:', window.API_URL);
         console.log('USER_DESIGN:', window.USER_DESIGN);
     </script>
@@ -54,9 +55,8 @@
 
     <div class="customize-container">
         @php
-// $backUrl = isset($isUserMode) && $isUserMode ? url('/models') : route('admin.models.index');
-$backUrl = url('/models');
-     @endphp
+            $backUrl = isset($isUserMode) && $isUserMode ? url('/dashboard') : route('models.index');
+        @endphp
 
         <!-- HEADER -->
         <div class="header-bar">
@@ -302,7 +302,7 @@ $backUrl = url('/models');
                                 'name' => $c->name,
                             ]));
                 </script>
-<script>
+{{-- <script>
 // =====================================================
 // PROSIX SECURED — DEVTOOLS PROTECTION
 // =====================================================
@@ -369,7 +369,7 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
     }
     trap();
 })();
-</script>
+</script> --}}
                 <script>
                     // ============================================================
                     // ✅ BACKGROUND CANVAS

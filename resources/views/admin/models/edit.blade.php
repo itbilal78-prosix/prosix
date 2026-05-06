@@ -88,7 +88,7 @@
 <div class="pf-wrap">
   <div class="pf-header">
     <h1><i class="bi bi-pencil-square me-2"></i>Edit Model</h1>
-    <a href="{{ route('customizer.models.index') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back</a>
+    <a href="{{ route('models.index') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Back</a>
   </div>
 
   @if($errors->any())
@@ -97,7 +97,7 @@
     </div>
   @endif
 
-  <form action="{{ route('customizer.models.update', $model->id) }}" method="POST" enctype="multipart/form-data">
+  <form action="{{ route('models.update', $model->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
 
@@ -376,7 +376,7 @@
     {{-- Actions --}}
     <div class="pf-actions">
       <button type="submit" class="btn-save"><i class="bi bi-check-lg"></i> Update Model</button>
-      <a href="{{ route('customizer.models.index') }}" class="btn-back">Cancel</a>
+      <a href="{{ route('models.index') }}" class="btn-back">Cancel</a>
     </div>
 
   </form>

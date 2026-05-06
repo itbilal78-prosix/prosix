@@ -111,7 +111,7 @@ canvas { max-height: 220px; }
                 <span class="dash-card-label">Total Products</span>
                 <span class="dash-card-value">{{ $total_products }}</span>
             </div>
-<a href="{{ route('admin.products.index') }}" class="dash-card-link"><i class="bi bi-arrow-right text-dark"></i></a>
+<a href="{{ route('products.index') }}" class="dash-card-link"><i class="bi bi-arrow-right text-dark"></i></a>
         </div>
     </div>
 

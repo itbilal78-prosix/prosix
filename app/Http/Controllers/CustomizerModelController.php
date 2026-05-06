@@ -118,7 +118,7 @@ class CustomizerModelController extends Controller
 
         CustomizerModel::create($data);
 
-        return redirect()->route('customizer.models.index')->with('success', 'Model Added Successfully');
+        return redirect()->route('models.index')->with('success', 'Model Added Successfully');
     }
 
     // ─── SHOW ─────────────────────────────────────────────────────
@@ -139,8 +139,9 @@ class CustomizerModelController extends Controller
     }
 
     // ─── EDIT ─────────────────────────────────────────────────────
-  public function edit(CustomizerModel $model)
+    public function edit($id)
 {
+        $model            = CustomizerModel::findOrFail($id);
         $navigations      = Navigation::where('status', 1)->get() ?? collect();
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
@@ -153,8 +154,9 @@ class CustomizerModelController extends Controller
     }
 
     // ─── UPDATE ───────────────────────────────────────────────────
-   public function update(Request $request, CustomizerModel $model)
+    public function update(Request $request, $id)
 {
+        $model = CustomizerModel::findOrFail($id);
 
         $request->validate([
             'title'              => 'required',
@@ -270,7 +272,7 @@ class CustomizerModelController extends Controller
         $data['colors_data'] = $colorsData;
         $model->update($data);
 
-        return redirect()->route('customizer.models.index')->with('success', 'Model Updated Successfully');
+        return redirect()->route('models.index')->with('success', 'Model Updated Successfully');
     }
 
     // ─── API: SINGLE MODEL ────────────────────────────────────────
@@ -343,8 +345,9 @@ class CustomizerModelController extends Controller
     }
 
     // ─── DESTROY ──────────────────────────────────────────────────
-public function destroy(CustomizerModel $model)
+    public function destroy($id)
 {
+        $model = CustomizerModel::findOrFail($id);
 
         foreach ($model->colors_data ?? [] as $c) {
             foreach ($c['views'] ?? [] as $vData) {

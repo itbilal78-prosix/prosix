@@ -82,12 +82,4 @@ class CustomizerModel extends Model
     {
         return $this->belongsTo(Category::class, 'subcategory_id');
     }
-//     public function getRouteKeyName()
-// {
-//     return 'title';
-// }
-public function getRouteKeyName()
-{
-    return 'id';
-}
 }
