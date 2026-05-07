@@ -44,11 +44,14 @@ class AuthController extends Controller
     }
 
     // Show all users
-    public function index()
-    {
-        $users = User::where('role', 'user')->latest()->get();
-        return view('user_mangment.all_user', compact('users'));
-    }
+   public function index()
+{
+    $users = User::orderByDesc('is_pinned')
+        ->latest()
+        ->get();
+
+    return view('user_mangment.all_user', compact('users'));
+}
 
     public function toggleStatus($id)
     {
