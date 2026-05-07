@@ -33,6 +33,8 @@ class Order extends Model
         'dispatch_date',
         'delivered_date',
         'admin_notes',
+            'is_read',
+
     ];
 
     protected $casts = [

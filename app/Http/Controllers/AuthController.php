@@ -214,4 +214,14 @@ class AuthController extends Controller
         return redirect()->route('admin.login')
             ->with('success', 'Password reset successfully! Please login with your new password.');
     }
+    public function togglePin($id)
+{
+    $user = User::findOrFail($id);
+
+    $user->is_pinned = !$user->is_pinned;
+
+    $user->save();
+
+    return back()->with('success', 'User pin updated.');
+}
 }

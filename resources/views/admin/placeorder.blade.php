@@ -413,5 +413,33 @@ function updateStatus() {
     .finally(() => { btn.disabled = false; btn.innerText = 'Update Status'; });
 }
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
 
+    if (window.location.pathname === '/admin/place-orders') {
+
+        // ⏳ 3 second wait
+        setTimeout(async () => {
+
+            await fetch('/admin/place-orders-mark-read', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            // badge hide instantly
+            const badge = document.getElementById('placeOrderBadge');
+
+            if (badge) {
+                badge.style.display = 'none';
+            }
+
+        }, 1000);
+
+    }
+
+});
+</script>
 @endsection

@@ -101,6 +101,8 @@ class OrderController extends Controller
                 'user_id'                  => auth('sanctum')->id(),
                 'total'                    => $total,
                 'status'                   => $stripePaymentIntentId ? 'confirmed' : 'new',
+                    'is_read'                  => false,
+
                 'payment_status'           => $stripePaymentIntentId ? 'paid' : 'pending',
                 'payment_method'           => $request->checkout['paymentMethod'],
                 'currency'                 => 'usd',
@@ -260,20 +262,29 @@ class OrderController extends Controller
     /**
      * ADMIN ORDER LIST
      */
-    public function adminIndex()
-    {
-        $orders = Order::with('user')->latest()->get();
-        return view('admin.orders.index', compact('orders'));
-    }
+public function adminIndex()
+{
+    Order::where('is_read', false)->update([
+        'is_read' => true
+    ]);
+
+    $orders = Order::with('user')->latest()->get();
+
+    return view('admin.orders.index', compact('orders'));
+}
     /**
      * ADMIN SINGLE ORDER
      */
-    public function adminShow($id)
-    {
-        $order = Order::findOrFail($id);
-        return view('admin.orders.show', compact('order'));
+public function adminShow($id)
+{
+    $order = Order::findOrFail($id);
+
+    if (!$order->is_read) {
+        $order->update(['is_read' => true]);
     }
 
+    return view('admin.orders.show', compact('order'));
+}
     /**
      * UPDATE ORDER STATUS
      */
@@ -452,4 +463,10 @@ class OrderController extends Controller
 
         return response()->json($order);
     }
+    public function unreadCount()
+{
+    return response()->json([
+        'count' => Order::where('is_read', false)->count()
+    ]);
+}
 }

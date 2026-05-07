@@ -67,6 +67,9 @@ Route::prefix('admin')
             ->get('/orders', [OrderController::class, 'adminIndex'])
             ->name('orders.index');  // ← yeh add karo
 
+Route::get('/orders-unread-count', [OrderController::class, 'unreadCount'])
+    ->name('orders.unreadCount');
+
         Route::get('/orders/{id}', [OrderController::class, 'adminShow'])
             ->name('orders.show');
 
@@ -345,7 +348,12 @@ Route::get('/admin/reset-password/{token}', [AuthController::class, 'showResetFo
 
 Route::post('/admin/reset-password', [AuthController::class, 'resetPassword'])
     ->name('admin.password.reset');
-
+Route::patch('/users/{id}/pin', [AuthController::class, 'togglePin'])
+    ->name('admin.users.pin');
+Route::get('/place-orders-unread-count', [PlaceOrderController::class, 'unreadCount'])
+    ->name('placeorders.unreadCount');
+Route::post('/admin/place-orders-mark-read',
+    [PlaceOrderController::class, 'markAllRead']);
 
 Route::get('/{any}', function () {
     return view('welcome');

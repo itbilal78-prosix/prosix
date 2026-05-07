@@ -69,9 +69,21 @@
                         </a>
                     </li>
                     <li>
-                        <a class="nav-link text-light py-1" href="{{ route('admin.placeorder') }}">
-                            Place Orders Data
-                        </a>
+                      @php
+    $newPlaceOrders = \App\Models\PlaceOrder::where('is_read', false)->count();
+@endphp
+
+<a class="nav-link text-light py-1 d-flex align-items-center justify-content-between"
+   href="{{ route('admin.placeorder') }}">
+
+    <span>Place Orders Data</span>
+
+    <span id="placeOrderBadge"
+          class="badge bg-danger rounded-pill"
+          style="{{ $newPlaceOrders > 0 ? '' : 'display:none;' }}">
+        {{ $newPlaceOrders }}
+    </span>
+</a>
                     </li>
                 </ul>
             </li>
@@ -175,16 +187,26 @@
             @endif
 
 
-            {{-- ORDERS --}}
-            @if ($admin->is_super_admin || $admin->can_orders)
-                <li class="nav-item">
-                    <a class="nav-link text-light d-flex align-items-center px-3 py-2"
-                        href="{{ route('admin.orders.index') }}">
-                        <i class="bi bi-bag me-2"></i>
-                        <span class="flex-grow-1">Orders</span>
-                    </a>
-                </li>
-            @endif
+          {{-- ORDERS --}}
+@if ($admin->is_super_admin || $admin->can_orders)
+    @php
+        $newOrdersCount = \App\Models\Order::where('is_read', false)->count();
+    @endphp
+
+    <li class="nav-item">
+        <a class="nav-link text-light d-flex align-items-center px-3 py-2"
+            href="{{ route('admin.orders.index') }}">
+            <i class="bi bi-bag me-2"></i>
+            <span class="flex-grow-1">Orders</span>
+
+            <span id="orderBadge"
+                class="badge bg-danger rounded-pill"
+                style="{{ $newOrdersCount > 0 ? '' : 'display:none;' }}">
+                {{ $newOrdersCount }}
+            </span>
+        </a>
+    </li>
+@endif
             {{-- PAYMENTS --}}
             @if ($admin->is_super_admin || $admin->can_orders)
                 <li class="nav-item">
@@ -399,13 +421,13 @@
         const subLinks = document.querySelectorAll('#sidebar ul ul .nav-link');
 
         /* Sidebar open / close */
-        if (sidebarToggle) {
+        if (sidebarToggle && sidebar) {
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('hide');
             });
         }
 
-        if (sidebarClose) {
+        if (sidebarClose && sidebar) {
             sidebarClose.addEventListener('click', () => {
                 sidebar.classList.add('hide');
             });
@@ -454,13 +476,14 @@
         const currentUrl = window.location.href;
         allLinks.forEach(link => {
             const href = link.getAttribute('href');
+
             if (href && href !== '#' && currentUrl.includes(href)) {
                 link.classList.add('active');
 
-                // Open parent collapse if exists
                 const parentCollapse = link.closest('.collapse');
                 if (parentCollapse) {
                     parentCollapse.classList.add('show');
+
                     const parentLink = document.querySelector(`[href="#${parentCollapse.id}"]`);
                     if (parentLink) {
                         parentLink.classList.add('active');
@@ -469,6 +492,64 @@
                 }
             }
         });
+async function updatePlaceOrderBadge() {
+    try {
+
+        const badge = document.getElementById('placeOrderBadge');
+        if (!badge) return;
+
+        const res = await fetch('/admin/place-orders-unread-count');
+        const data = await res.json();
+
+        if (data.count > 0) {
+            badge.innerText = data.count;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+
+    } catch (e) {
+        console.log('Place order count failed');
+    }
+}
+
+updatePlaceOrderBadge();
+
+setInterval(updatePlaceOrderBadge, 5000);
+
+        /* ✅ LIVE ORDER BADGE COUNT */
+        async function updateOrderBadge() {
+            try {
+                const badge = document.getElementById('orderBadge');
+                if (!badge) return;
+
+                const res = await fetch("{{ route('admin.orders.unreadCount') }}", {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) return;
+
+                const data = await res.json();
+                const count = Number(data.count || 0);
+
+                if (count > 0) {
+                    badge.innerText = count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.innerText = '';
+                    badge.style.display = 'none';
+                }
+
+            } catch (e) {
+                console.log('Order count check failed');
+            }
+        }
+
+        updateOrderBadge();
+        setInterval(updateOrderBadge, 5000);
 
     });
 </script>

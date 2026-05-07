@@ -10,7 +10,7 @@ class PlaceOrder extends Model
         'user_id', 'full_name', 'email', 'phone',
         'order_number', 'order_date', 'delivery_date',
         'sales_rep', 'team_colors', 'notes',
-        'mockup_files', 'roster_files', 'quote_files',
+        'mockup_files', 'roster_files', 'quote_files','is_read',
         'status',
     ];
 

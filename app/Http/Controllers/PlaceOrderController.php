@@ -15,11 +15,12 @@ class PlaceOrderController extends Controller
     /**
      * Admin View
      */
-    public function index()
-    {
-        $orders = PlaceOrder::latest()->paginate(20);
-        return view('admin.placeorder', compact('orders'));
-    }
+public function index()
+{
+    $orders = PlaceOrder::latest()->paginate(20);
+
+    return view('admin.placeorder', compact('orders'));
+}
 
     /**
      * Download PDF (bulk)
@@ -77,9 +78,10 @@ class PlaceOrderController extends Controller
             'notes'         => $request->notes,
             'mockup_files'  => $mockupPaths,
             'roster_files'  => $rosterPaths,
-            'quote_files'   => $quotePaths,
-            'status'        => 'pending',
-        ]);
+          'quote_files'   => $quotePaths,
+'status'        => 'pending',
+'is_read'       => false,
+]);
 
         // Send order confirmation email via Brevo
         try {
@@ -283,6 +285,23 @@ public function trackOrder(Request $request)
         'delivered_date'=> null,
         'admin_notes'   => $order->notes,
         'created_at'    => $order->created_at,
+    ]);
+}
+public function unreadCount()
+{
+    return response()->json([
+        'count' => PlaceOrder::where('is_read', false)->count()
+    ]);
+}
+public function markAllRead()
+{
+    PlaceOrder::where('is_read', false)
+        ->update([
+            'is_read' => true
+        ]);
+
+    return response()->json([
+        'success' => true
     ]);
 }
 }
