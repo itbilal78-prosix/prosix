@@ -131,9 +131,9 @@
                 <label class="form-label fw-bold mb-1">Customer Label</label>
                 <input type="text" id="customerLabelInput" class="form-control"
                        placeholder="e.g. Ali Bhai, VIP Client, Team Nike...">
-                <small class="text-muted mt-1 d-block">
-                    Yeh naam <strong>Customers</strong> page par dikhega — sirf admin ke liye.
-                </small>
+              <small class="text-muted mt-1 d-block">
+    This name will appear on the <strong>Customers</strong> page — visible to admins only.
+</small>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (isPinned) {
                 // Seedha unpin — no popup
-                if (!confirm('Is user ko Customers list se hataana chahte hain?')) return;
+                if (!confirm('Are you sure you want to remove this user from the Customers list?')) return;
                 doPinRequest(pinUserId, '', true);
             } else {
                 // Popup kholo with default name
