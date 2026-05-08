@@ -217,14 +217,30 @@ class AuthController extends Controller
         return redirect()->route('admin.login')
             ->with('success', 'Password reset successfully! Please login with your new password.');
     }
-    public function togglePin($id)
+  public function togglePin(Request $request, $id)
 {
     $user = User::findOrFail($id);
 
-    $user->is_pinned = !$user->is_pinned;
+    if ($user->is_pinned) {
+        // Unpin — label bhi clear
+        $user->is_pinned       = false;
+        $user->customer_label  = null;
+    } else {
+        // Pin — label save karo
+        $user->is_pinned      = true;
+        $user->customer_label = $request->input('customer_label', $user->name);
+    }
 
     $user->save();
 
-    return back()->with('success', 'User pin updated.');
+    return response()->json(['success' => true, 'is_pinned' => $user->is_pinned]);
+}
+public function customers()
+{
+    $customers = User::where('is_pinned', true)
+        ->orderByDesc('created_at')
+        ->get();
+
+    return view('user_mangment.customer', compact('customers'));
 }
 }

@@ -54,29 +54,27 @@
                                 @endif
                             </td>
                             <td>{{ $req->created_at->format('d M Y') }}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-dark view-artwork-btn"
-                                    data-id="{{ $req->id }}"
-                                    data-name="{{ $req->full_name }}"
-                                    data-email="{{ $req->email }}"
-                                    data-phone="{{ $req->phone }}"
-                                    data-instagram="{{ $req->instagram }}"
-                                    data-address="{{ $req->address }}"
-                                    data-team="{{ $req->team_name }}"
-                                    data-role="{{ $req->role }}"
-                                    data-qty="{{ $req->quantity }}"
-                                    data-color="{{ $req->team_color }}"
-                                    data-homeaway="{{ $req->home_away }}"
-                                    data-style="{{ $req->design_style }}"
-                                    data-material="{{ $req->material }}"
-                                    data-sports="{{ is_array($req->products) ? implode(', ', $req->products) : $req->products }}"
-                                    data-details="{{ $req->additional }}"
-                                    data-source="{{ $req->source }}"
-                                    data-submitted="{{ $req->created_at->format('d M Y - h:i A') }}"
-                                    data-images="{{ json_encode($images) }}">
-                                    <i class="bi bi-eye"></i> View
-                                </button>
-                            </td>
+                           <td>
+    <button type="button" class="btn btn-sm btn-dark view-artwork-btn"
+        data-id="{{ $req->id }}"
+        data-name="{{ $req->full_name }}"
+        data-email="{{ $req->email }}">
+        <i class="bi bi-eye"></i> View
+    </button>
+
+    <form action="{{ route('admin.artwork.destroy', $req->id) }}"
+          method="POST"
+          style="display:inline-block; margin-top:5px;"
+          onsubmit="return confirm('Move this request to Recycle Bin?')">
+
+        @csrf
+        @method('DELETE')
+
+        <button type="submit" class="btn btn-sm btn-danger">
+            <i class="bi bi-trash"></i> Delete
+        </button>
+    </form>
+</td>
                         </tr>
                     @empty
                         <tr><td colspan="10" class="text-center text-muted py-4">No Artwork Requests Found</td></tr>
@@ -288,6 +286,32 @@ document.addEventListener('DOMContentLoaded', function () {
         form.submit();
         document.body.removeChild(form);
     });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    setTimeout(async () => {
+        await fetch('/admin/artwork-mark-read', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const badge = document.getElementById('artworkBadge');
+        if (badge) badge.style.display = 'none';
+        const totalBadge = document.getElementById('totalFormsBadge');
+        if (totalBadge) {
+            const current = parseInt(totalBadge.textContent || '0');
+            const artCount = parseInt(badge?.textContent || '0');
+            const newTotal = Math.max(0, current - artCount);
+            if (newTotal > 0) {
+                totalBadge.textContent = newTotal;
+            } else {
+                totalBadge.style.display = 'none';
+            }
+        }
+    }, 1000);
 });
 </script>
 @endsection

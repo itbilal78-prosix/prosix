@@ -32,8 +32,6 @@
         <div class="stat-bg-circle"></div>
       </div>
     </div>
-
-    <!-- Recent Orders -->
    <!-- Recent Orders -->
 <div class="section-card">
   <div class="section-header">
@@ -94,6 +92,31 @@ const props = defineProps({
 })
 
 const recentOrders = ref([])
+const favoriteCount = ref(0)
+const myDesignCount = ref(0)
+const myRequestCount = ref(0)
+
+const loadMyRequestsCount = async () => {
+  try {
+    const res = await fetch('/api/user/my-requests', {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token()}`
+      }
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      myRequestCount.value = data.data?.length || 0
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+const loadFavorites = () => {
+  const likes = JSON.parse(localStorage.getItem('favorite_designs') || '[]')
+  favoriteCount.value = Array.isArray(likes) ? likes.length : 0
+}
 
 const token = () => localStorage.getItem('auth_token')
 
@@ -117,6 +140,9 @@ const fetchRecentOrders = async () => {
 
 onMounted(() => {
   fetchRecentOrders()
+  loadFavorites()
+  loadMyRequestsCount()
+  loadMyDesigns()
 })
 
 const formatPrice = (price) =>
@@ -132,7 +158,25 @@ const statusClass = (status) => {
   if (s === 'cancelled') return 'status-cancelled'
   return 'status-pending'
 }
+const loadMyDesigns = async () => {
+  try {
+    const token = localStorage.getItem('auth_token')
 
+    const res = await fetch('/api/user/designs', {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      myDesignCount.value = data.data?.length || 0
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
 // ✅ Sab props.dashboardStats se aa raha hai
 const statCards = computed(() => [
   {
@@ -142,13 +186,13 @@ const statCards = computed(() => [
     light: '#e8e8f0',
     icon: `<svg width="22" height="22" fill="none" stroke="#1a1a2e" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`
   },
-  {
-    label: 'Pending Orders',
-    value: props.dashboardStats?.pending_orders ?? 0,
-    color: '#d97706',
-    light: '#fef3c7',
-    icon: `<svg width="22" height="22" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
-  },
+//   {
+//     label: 'Pending Orders',
+//     value: props.dashboardStats?.pending_orders ?? 0,
+//     color: '#d97706',
+//     light: '#fef3c7',
+//     icon: `<svg width="22" height="22" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
+//   },
   {
     label: 'Delivered',
     value: props.dashboardStats?.delivered_orders ?? 0,
@@ -170,13 +214,27 @@ const statCards = computed(() => [
     light: '#dbeafe',
     icon: `<svg width="22" height="22" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
   },
-  {
-    label: 'My Requests',
-    value: props.dashboardStats?.requests ?? 0,
-    color: '#7c3aed',
-    light: '#ede9fe',
-    icon: `<svg width="22" height="22" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>`
+ {
+  label: 'My Requests',
+  value: myRequestCount.value,
+  color: '#7c3aed',
+  light: '#ede9fe',
+  icon: `<svg width="22" height="22" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>`
+},
+    {
+    label: 'Favorite Designs',
+    value: favoriteCount.value,
+    color: '#e11d48',
+    light: '#ffe4e6',
+    icon: `<svg width="22" height="22" fill="none" stroke="#e11d48" stroke-width="2" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`
   },
+ {
+  label: 'My Designs',
+  value: myDesignCount.value,
+  color: '#0f172a',
+  light: '#e2e8f0',
+  icon: `<svg width="22" height="22" fill="none" stroke="#0f172a" stroke-width="2" viewBox="0 0 24 24"><path d="M18 3l3 3-9 9-3-3 9-9z"/><path d="M15 6l3 3"/><path d="M2 22s4-1 6-3 3-6 3-6"/></svg>`
+},
 ])
 </script>
 

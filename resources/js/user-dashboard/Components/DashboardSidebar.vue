@@ -72,7 +72,7 @@ const navItems = computed(() => [
     label: 'Overview',
     icon: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`
   },
- 
+
   {
     tab: 'my-requests',
     label: 'My Requests',
@@ -93,6 +93,12 @@ const navItems = computed(() => [
     label: 'My Design',
     icon: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 3l3 3-9 9-3-3 9-9z"/><path d="M15 6l3 3"/><path d="M2 22s4-1 6-3 3-6 3-6"/></svg>`
   }
+  ,
+{
+  tab: 'favorite-designs',
+  label: 'Favorite Designs',
+  icon: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`
+}
 ])
 </script>
 

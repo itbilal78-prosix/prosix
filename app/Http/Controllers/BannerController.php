@@ -122,20 +122,17 @@ class BannerController extends Controller
         return redirect()->route('banners.index')->with('success', 'Banner updated successfully!');
     }
 
-    public function destroy($id)
-    {
-        $banner = Banner::findOrFail($id);
+public function destroy($id)
+{
+    $banner = Banner::findOrFail($id);
 
-        Storage::disk('public')->delete(array_filter([
-            $banner->background_image,
-            $banner->mobile_background_image, // ✅
-            $banner->png_image,
-        ]));
+    // Image delete nahi karni, sirf recycle bin me bhejna hai
+    $banner->delete();
 
-        $banner->delete();
-
-        return redirect()->route('banners.index')->with('success', 'Banner deleted successfully!');
-    }
+    return redirect()
+        ->route('banners.index')
+        ->with('success', 'Banner moved to Recycle Bin.');
+}
 
     // ✅ API for Vue / Frontend
     public function apiIndex()

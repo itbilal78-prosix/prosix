@@ -12,16 +12,12 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'role',
-    'status',
-    'otp',
-        'is_pinned',
-
-    'otp_verified_at'
+ // App\Models\User.php — fillable mein add karo
+protected $fillable = [
+    'name', 'email', 'password', 'role', 'status', 'otp',
+    'phone', 'location', 'is_pinned',
+    'customizer_name',      // ✅ NAYA
+    'send_to_customizer',   // ✅ NAYA
 ];
 
     protected $hidden = [

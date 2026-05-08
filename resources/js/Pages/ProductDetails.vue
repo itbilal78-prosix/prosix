@@ -99,10 +99,8 @@
                 @mouseenter.stop="pauseZoom"
                 @mouseleave.stop="resumeZoom"
                 @click.stop="toggleLike"
-                :class="{ active: cartStore.isLiked(product.id) }"
-              >
-                <i :class="cartStore.isLiked(product.id) ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
-              </button>
+:class="{ active: isFavorite }"              >
+<i :class="isFavorite ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>              </button>
 
               <button
                 class="img-action-btn share-btn"
@@ -854,7 +852,39 @@ const fetchRelated=async()=>{
   relatedLoading.value=false
 }
 
-const toggleLike=()=>{cartStore.toggleLike(product.value.id);showToast(cartStore.isLiked(product.value.id)?'❤️ Added to wishlist!':'🤍 Removed from wishlist')}
+const toggleLike = () => {
+  const key = 'favorite_designs'
+  let saved = JSON.parse(localStorage.getItem(key) || '[]')
+
+  const already = saved.some(x => String(x.id) === String(product.value.id))
+
+  if (already) {
+    saved = saved.filter(x => String(x.id) !== String(product.value.id))
+    showToast('🤍 Removed from Favorite Designs')
+  } else {
+    saved.unshift({
+      id: product.value.id,
+      name: product.value.name,
+      price: product.value.price,
+      image: displayImage.value || product.value.image || product.value.thumbnail,
+      type: isModel.value ? 'model' : 'product'
+    })
+    showToast('❤️ Added to Favorite Designs!')
+  }
+
+  localStorage.setItem(key, JSON.stringify(saved))
+  loadFavoriteIds()
+}
+const favoriteIds = ref([])
+
+const loadFavoriteIds = () => {
+  const saved = JSON.parse(localStorage.getItem('favorite_designs') || '[]')
+  favoriteIds.value = saved.map(x => String(x.id))
+}
+
+const isFavorite = computed(() => {
+  return favoriteIds.value.includes(String(product.value.id))
+})
 const handleShare=()=>{if(navigator.share) navigator.share({title:product.value.name,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);showToast('🔗 Link copied!')}}
 
 
@@ -906,6 +936,7 @@ const resetState=()=>{
 
 onMounted(async()=>{
   await loadProduct()
+  loadFavoriteIds()
   // Restore design state BEFORE fetchRelated so related also gets colored
 
   if(isModel.value&&product.value.category_id){

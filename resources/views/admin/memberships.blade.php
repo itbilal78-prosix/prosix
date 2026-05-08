@@ -12,7 +12,7 @@
             <form id="downloadForm" method="GET" action="{{ route('membership.download') }}" style="display:none;">
                 <input type="hidden" name="ids" id="downloadIds">
             </form>
-          
+
         </div>
     </div>
 
@@ -221,13 +221,20 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(form);
     });
 
-    // ── Download Excel ──
-    document.getElementById('downloadXlsxBtn').addEventListener('click', function() {
-        const selected = getSelected();
-        if (selected.length === 0) { alert('Please select at least one request!'); return; }
-        document.getElementById('downloadIds').value = selected.join(',');
-        document.getElementById('downloadForm').submit();
-    });
+
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    setTimeout(async () => {
+        await fetch('/admin/membership-mark-read', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+    }, 1000);
 });
 </script>
 @endsection

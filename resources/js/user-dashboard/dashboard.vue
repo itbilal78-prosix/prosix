@@ -64,6 +64,10 @@
             v-else-if="!isLoading && activeTab === 'my-design'"
             key="my-design"
           />
+          <favorite-designs-tab
+  v-else-if="!isLoading && activeTab === 'favorite-designs'"
+  key="favorite-designs"
+/>
         </transition>
 
       </main>
@@ -77,7 +81,7 @@ import { useRouter } from 'vue-router'
 import MyOrdersTab from './Components/MyOrdersTab.vue'
 import Mydesigntab from './Components/Mydesigntab.vue'
 import DashboardHeader from './Components/DashboardHeader.vue'
-
+import FavoriteDesignsTab from './Components/FavoriteDesignsTab.vue'
 const router = useRouter()
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -89,7 +93,7 @@ const isLoading         = ref(true)
 const isLoggingOut      = ref(false)
 const isUpdatingProfile = ref(false)
 const sidebarCollapsed  = ref(false)
- 
+
 const myRequests         = ref([])
 const requestsLoading    = ref(false)
 const myPlaceOrders      = ref([])

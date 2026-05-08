@@ -24,7 +24,7 @@ use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserCustomizationController;
-
+use App\Http\Controllers\RecycleBinController;
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -55,8 +55,10 @@ Route::middleware(['auth:admin'])
         Route::get('/memberships', [MembershipRequestController::class, 'index'])->name('memberships');
         Route::resource('flipbooks', FlipbookController::class);
     });
-Route::get('/artwork-requests', [ArtworkRequestController::class, 'index'])
+Route::get('/admin/artwork-requests', [ArtworkRequestController::class, 'index'])
+    ->middleware(['auth:admin'])
     ->name('admin.artwork');
+
 Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth:admin'])
@@ -329,6 +331,9 @@ Route::middleware(['auth:admin'])
         ->name('models.bulkToggleHidden');
 
 });
+Route::delete('/admin/artwork-requests/{id}', [ArtworkRequestController::class, 'destroy'])
+    ->middleware(['auth:admin'])
+    ->name('admin.artwork.destroy');
 Route::get('/api/categories-for-templates', function () {
     return \App\Models\Category::whereNull('parent_id')
         ->where('status', 1)
@@ -348,13 +353,48 @@ Route::get('/admin/reset-password/{token}', [AuthController::class, 'showResetFo
 
 Route::post('/admin/reset-password', [AuthController::class, 'resetPassword'])
     ->name('admin.password.reset');
-Route::patch('/users/{id}/pin', [AuthController::class, 'togglePin'])
+Route::post('/users/{id}/pin', [AuthController::class, 'togglePin'])
     ->name('admin.users.pin');
-Route::get('/place-orders-unread-count', [PlaceOrderController::class, 'unreadCount'])
+Route::get('/admin/place-orders-unread-count', [PlaceOrderController::class, 'unreadCount'])
     ->name('placeorders.unreadCount');
 Route::post('/admin/place-orders-mark-read',
     [PlaceOrderController::class, 'markAllRead']);
 
+Route::get('/admin/customers', [AuthController::class, 'customers'])
+    ->middleware(['auth:admin'])
+    ->name('admin.customers');
+
+
+Route::get('/admin/artwork-unread-count',
+    [ArtworkRequestController::class, 'unreadCount'])
+    ->name('artwork.unreadCount');
+
+Route::post('/admin/artwork-mark-read',
+    [ArtworkRequestController::class, 'markAllRead'])
+    ->middleware(['auth:admin']);
+
+// ── Membership Requests ───────────────────────────────────────
+Route::get('/admin/membership-unread-count',
+    [MembershipRequestController::class, 'unreadCount'])
+    ->name('membership.unreadCount');
+
+Route::post('/admin/membership-mark-read',
+    [MembershipRequestController::class, 'markAllRead'])
+    ->middleware(['auth:admin']);
+
+Route::get('/recycle-bin', [RecycleBinController::class, 'index'])
+    ->name('recycle-bin.index');
+
+Route::post('/recycle-bin/artwork/{id}/restore', [RecycleBinController::class, 'restoreArtwork'])
+    ->name('recycle-bin.artwork.restore');
+
+Route::delete('/recycle-bin/artwork/{id}/delete', [RecycleBinController::class, 'deleteArtwork'])
+    ->name('recycle-bin.artwork.delete');
+Route::post('/recycle-bin/banner/{id}/restore', [RecycleBinController::class, 'restoreBanner'])
+    ->name('recycle-bin.banner.restore');
+
+Route::delete('/recycle-bin/banner/{id}/delete', [RecycleBinController::class, 'deleteBanner'])
+    ->name('recycle-bin.banner.delete');
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

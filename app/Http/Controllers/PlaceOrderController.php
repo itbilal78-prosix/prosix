@@ -17,7 +17,7 @@ class PlaceOrderController extends Controller
      */
 public function index()
 {
-    $orders = PlaceOrder::latest()->paginate(20);
+$orders = PlaceOrder::latest()->get();
 
     return view('admin.placeorder', compact('orders'));
 }
