@@ -64,32 +64,30 @@ Route::prefix('admin')
     ->middleware(['auth:admin'])
     ->group(function () {
 
-        // ✅ FIX
-        Route::middleware(['auth:admin', 'admin.permission:can_orders'])
+        Route::middleware(['admin.permission:can_orders'])
             ->get('/orders', [OrderController::class, 'adminIndex'])
-            ->name('orders.index');  // ← yeh add karo
+            ->name('orders.index');
 
-Route::get('/orders-unread-count', [OrderController::class, 'unreadCount'])
-    ->name('orders.unreadCount');
+        Route::get('/orders-unread-count', [OrderController::class, 'unreadCount'])
+            ->name('orders.unreadCount');
+
+        // ✅ bulk-status PEHLE — {id} se pehle hona zaroori hai
+        Route::post('/orders/bulk-status', [OrderController::class, 'bulkUpdateStatus'])
+            ->name('orders.bulkStatus');
 
         Route::get('/orders/{id}', [OrderController::class, 'adminShow'])
             ->name('orders.show');
 
+        Route::post('/orders/{id}/status', [OrderController::class,'updateStatus'])
+            ->name('orders.updateStatus');
 
+        Route::post('/orders/{id}/shipping', [OrderController::class,'updateShipping'])
+            ->name('orders.updateShipping');
 
-Route::post('/orders/{id}/status',
-    [OrderController::class,'updateStatus'])
-    ->name('orders.updateStatus');
-
-Route::post('/orders/{id}/shipping',
-    [OrderController::class,'updateShipping'])
-    ->name('orders.updateShipping');
-
-Route::post('/orders/{id}/notes',
-    [OrderController::class,'updateNotes'])
-    ->name('orders.updateNotes');
-
-
+        Route::post('/orders/{id}/notes', [OrderController::class,'updateNotes'])
+            ->name('orders.updateNotes');
+            Route::post('/orders/download-pdf', [OrderController::class, 'downloadPdf'])
+    ->name('orders.downloadPdf');
     });
 
 
@@ -395,6 +393,13 @@ Route::post('/recycle-bin/banner/{id}/restore', [RecycleBinController::class, 'r
 
 Route::delete('/recycle-bin/banner/{id}/delete', [RecycleBinController::class, 'deleteBanner'])
     ->name('recycle-bin.banner.delete');
+
+Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])
+        ->name('activity-logs.index');
+});
+
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any', '^(?!admin).*$');

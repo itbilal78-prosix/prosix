@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('savePinBtn').click();
         }
     });
-
+    
     // ── Search filter ─────────────────────────────────
     document.getElementById('searchInput').addEventListener('input', function () {
         const q = this.value.toLowerCase();
