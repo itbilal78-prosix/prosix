@@ -151,7 +151,7 @@ Puri file same rakhni hai, bas yeh block change hoga
                         Video Management
                     </a>
                 </li>
-                
+
             </ul>
         </li>
     @endif
@@ -304,19 +304,25 @@ Puri file same rakhni hai, bas yeh block change hoga
                 <i class="bi bi-chevron-right ms-auto"></i>
             </a>
             <ul class="collapse list-unstyled ps-4" id="systemSubmenu">
-                <li><a class="nav-link text-light py-1" href="#">Security Settings</a></li>
-                <li><a class="nav-link text-light py-1" href="#">Login Logs</a></li>
-                <li><a class="nav-link text-light py-1" href="#">Backups</a></li>
-                {{-- <li>
+               <li><a class="nav-link text-light py-1" href="#">Security Settings</a></li>
+<li><a class="nav-link text-light py-1" href="#">Login Logs</a></li>
+<li><a class="nav-link text-light py-1" href="#">Backups</a></li>
+<li>
+    <a class="nav-link text-light py-1 d-flex align-items-center justify-content-between"
+       href="{{ route('admin.activity-logs.index') }}">
+        <span><i class="bi bi-clock-history me-1"></i> Activity Logs</span>
+    </a>
+</li>
+<li><a class="nav-link text-light py-1" href="#">System Logs</a></li>
+
+            </ul>
+        </li>
+    @endif
+     {{-- <li>
     <a class="nav-link text-light py-1" href="{{ route('recycle-bin.index') }}">
         Recycle Bin
     </a>
 </li> --}}
-                <li><a class="nav-link text-light py-1" href="#">System Logs</a></li>
-            </ul>
-        </li>
-    @endif
-
     {{-- SETTINGS (SUPER ADMIN) --}}
     @if ($admin->is_super_admin)
         <li class="nav-item">
