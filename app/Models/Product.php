@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -19,8 +20,6 @@ class Product extends Model
         'is_featured',
         'is_apparel',
         'show_in_category',
-
-        // ── New fields ──
         'shipping_enabled',
         'shipping_cost',
         'free_shipping_above',
@@ -33,16 +32,16 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'is_featured'       => 'boolean',
-        'is_apparel'        => 'boolean',
-        'show_in_category'  => 'boolean',
-        'shipping_enabled'  => 'boolean',
-        'in_stock'          => 'boolean',
-        'sizes'             => 'array',
-        'colors'            => 'array',
-        'gallery_images'    => 'array',
-        'shipping_cost'     => 'float',
-        'free_shipping_above' => 'float',
+        'is_featured'        => 'boolean',
+        'is_apparel'         => 'boolean',
+        'show_in_category'   => 'boolean',
+        'shipping_enabled'   => 'boolean',
+        'in_stock'           => 'boolean',
+        'sizes'              => 'array',
+        'colors'             => 'array',
+        'gallery_images'     => 'array',
+        'shipping_cost'      => 'float',
+        'free_shipping_above'=> 'float',
     ];
 
     public function category()

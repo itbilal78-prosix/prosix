@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pattern;
+use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,7 +11,7 @@ class PatternController extends Controller
 {
     public function index()
     {
-$patterns = Pattern::latest()->get();
+        $patterns = Pattern::latest()->get();
         return view('patterns.index', compact('patterns'));
     }
 
@@ -23,18 +24,23 @@ $patterns = Pattern::latest()->get();
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'svg' => 'required|mimes:svg,xml|max:2048',
+            'svg'  => 'required|mimes:svg,xml|max:2048',
         ]);
 
         $path = $request->file('svg')->store('patterns', 'public');
 
-        Pattern::create([
-            'name' => $request->name,
+        $pattern = Pattern::create([
+            'name'     => $request->name,
             'svg_path' => $path,
         ]);
 
-        return redirect()->route('patterns.index')
-            ->with('success', 'Pattern created successfully!');
+        // ✅ Activity Log
+        ActivityLogger::log('created', 'Pattern', $pattern->name, $pattern->id, [
+            'name'     => $pattern->name,
+            'svg_path' => $pattern->svg_path,
+        ]);
+
+        return redirect()->route('patterns.index')->with('success', 'Pattern created successfully!');
     }
 
     public function edit(Pattern $pattern)
@@ -46,13 +52,10 @@ $patterns = Pattern::latest()->get();
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'svg' => 'nullable|mimes:svg,xml|max:2048',
+            'svg'  => 'nullable|mimes:svg,xml|max:2048',
         ]);
 
         if ($request->hasFile('svg')) {
-            // Optional: purana file delete kar sakte ho
-            // Storage::disk('public')->delete($pattern->svg_path);
-
             $path = $request->file('svg')->store('patterns', 'public');
             $pattern->svg_path = $path;
         }
@@ -60,20 +63,25 @@ $patterns = Pattern::latest()->get();
         $pattern->name = $request->name;
         $pattern->save();
 
-        return redirect()->route('patterns.index')
-            ->with('success', 'Pattern updated successfully!');
+        // ✅ Activity Log
+        ActivityLogger::log('updated', 'Pattern', $pattern->name, $pattern->id, [
+            'name'     => $pattern->name,
+            'svg_path' => $pattern->svg_path,
+        ]);
+
+        return redirect()->route('patterns.index')->with('success', 'Pattern updated successfully!');
     }
 
     public function destroy(Pattern $pattern)
     {
-        // Optional: file bhi delete karna chahiye storage se
-        // Storage::disk('public')->delete($pattern->svg_path);
+        // ✅ Activity Log
+        ActivityLogger::log('deleted', 'Pattern', $pattern->name, $pattern->id, [
+            'name'     => $pattern->name,
+            'svg_path' => $pattern->svg_path,
+        ]);
 
         $pattern->delete();
 
-        return redirect()->route('patterns.index')
-            ->with('success', 'Pattern deleted successfully!');
+        return redirect()->route('patterns.index')->with('success', 'Pattern deleted successfully!');
     }
-
-
 }

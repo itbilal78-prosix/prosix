@@ -394,6 +394,87 @@ Route::post('/recycle-bin/banner/{id}/restore', [RecycleBinController::class, 'r
 Route::delete('/recycle-bin/banner/{id}/delete', [RecycleBinController::class, 'deleteBanner'])
     ->name('recycle-bin.banner.delete');
 
+Route::post('/recycle-bin/blog/{id}/restore', [RecycleBinController::class, 'restoreBlog'])
+    ->name('recycle-bin.blog.restore');
+
+Route::delete('/recycle-bin/blog/{id}/delete', [RecycleBinController::class, 'deleteBlog'])
+    ->name('recycle-bin.blog.delete');
+
+Route::post('/recycle-bin/testimonial/{id}/restore', [RecycleBinController::class, 'restoreTestimonial'])
+    ->name('recycle-bin.testimonial.restore');
+
+Route::delete('/recycle-bin/testimonial/{id}/delete', [RecycleBinController::class, 'deleteTestimonial'])
+    ->name('recycle-bin.testimonial.delete');
+
+
+Route::post('/recycle-bin/flipbook/{id}/restore', [RecycleBinController::class, 'restoreFlipbook'])
+    ->name('recycle-bin.flipbook.restore');
+
+Route::delete('/recycle-bin/flipbook/{id}/delete', [RecycleBinController::class, 'deleteFlipbook'])
+    ->name('recycle-bin.flipbook.delete');
+Route::post('/recycle-bin/product/{id}/restore', [RecycleBinController::class, 'restoreProduct'])
+    ->name('recycle-bin.product.restore');
+
+Route::delete('/recycle-bin/product/{id}/delete', [RecycleBinController::class, 'deleteProduct'])
+    ->name('recycle-bin.product.delete');
+
+
+
+Route::post('/recycle-bin/deal/{id}/restore', [RecycleBinController::class, 'restoreDeal'])
+    ->name('recycle-bin.deal.restore');
+
+Route::delete('/recycle-bin/deal/{id}/delete', [RecycleBinController::class, 'deleteDeal'])
+    ->name('recycle-bin.deal.delete');
+
+Route::post('/recycle-bin/video/{id}/restore', [RecycleBinController::class, 'restoreVideo'])
+    ->name('recycle-bin.video.restore');
+
+Route::delete('/recycle-bin/video/{id}/delete', [RecycleBinController::class, 'deleteVideo'])
+    ->name('recycle-bin.video.delete');
+
+Route::post('/recycle-bin/category/{id}/restore', [RecycleBinController::class, 'restoreCategory'])
+    ->name('recycle-bin.category.restore');
+
+Route::delete('/recycle-bin/category/{id}/delete', [RecycleBinController::class, 'deleteCategory'])
+    ->name('recycle-bin.category.delete');
+
+Route::post('/recycle-bin/navigation/{id}/restore', [RecycleBinController::class, 'restoreNavigation'])
+    ->name('recycle-bin.navigation.restore');
+
+Route::delete('/recycle-bin/navigation/{id}/delete', [RecycleBinController::class, 'deleteNavigation'])
+    ->name('recycle-bin.navigation.delete');
+Route::post('/recycle-bin/customizer-model/{id}/restore', [RecycleBinController::class, 'restoreCustomizerModel'])
+    ->name('recycle-bin.customizer-model.restore');
+
+Route::delete('/recycle-bin/customizer-model/{id}/delete', [RecycleBinController::class, 'deleteCustomizerModel'])
+    ->name('recycle-bin.customizer-model.delete');
+Route::post('/recycle-bin/pattern/{id}/restore', [RecycleBinController::class, 'restorePattern'])
+    ->name('recycle-bin.pattern.restore');
+
+Route::delete('/recycle-bin/pattern/{id}/delete', [RecycleBinController::class, 'deletePattern'])
+    ->name('recycle-bin.pattern.delete');
+Route::post('/recycle-bin/color/{id}/restore', [RecycleBinController::class, 'restoreColor'])
+    ->name('recycle-bin.color.restore');
+
+Route::delete('/recycle-bin/color/{id}/delete', [RecycleBinController::class, 'deleteColor'])
+    ->name('recycle-bin.color.delete');
+Route::post('/recycle-bin/template/{id}/restore', [RecycleBinController::class, 'restoreTemplate'])
+    ->name('recycle-bin.template.restore');
+
+Route::delete('/recycle-bin/template/{id}/delete', [RecycleBinController::class, 'deleteTemplate'])
+    ->name('recycle-bin.template.delete');
+
+Route::post('/recycle-bin/font/{id}/restore', [RecycleBinController::class, 'restoreFont'])
+    ->name('recycle-bin.font.restore');
+
+Route::delete('/recycle-bin/font/{id}/delete', [RecycleBinController::class, 'deleteFont'])
+    ->name('recycle-bin.font.delete');
+
+Route::get('/recycle-bin/download-images', [RecycleBinController::class, 'downloadImages'])
+    ->name('recycle-bin.download-images');
+
+
+
 Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])
         ->name('activity-logs.index');

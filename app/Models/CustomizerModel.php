@@ -4,26 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CustomizerModel extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'model_name',
         'title', 'description', 'price',
-
-        // Default views
         'front_black', 'front_white', 'front_svg',
         'back_black',  'back_white',  'back_svg',
         'left_black',  'left_white',  'left_svg',
         'right_black', 'right_white', 'right_svg',
-
         'thumbnail',
-
         'navigation_id', 'category_id', 'subcategory_id',
-
-        // Customizer
         'color_changes',
         'pattern_changes',
         'mascot_changes',
@@ -36,10 +31,7 @@ class CustomizerModel extends Model
         'is_featured',
         'is_apparel',
         'position',
-            'is_hidden',
-
-
-        // ── NEW: Product-like fields ──
+        'is_hidden',
         'in_stock',
         'stock_quantity',
         'shipping_enabled',
@@ -64,8 +56,7 @@ class CustomizerModel extends Model
         'mascot_changes'      => 'array',
         'applications'        => 'array',
         'customized_at'       => 'datetime',
-            'is_hidden' => 'boolean',
-
+        'is_hidden'           => 'boolean',
     ];
 
     public function navigation()

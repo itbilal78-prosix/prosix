@@ -7,6 +7,7 @@ use App\Models\Color;
 use App\Models\CustomizerModel;
 use App\Models\Font;
 use App\Models\Navigation;
+use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,13 +43,13 @@ class CustomizerModelController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title'              => 'required',
-            'price'              => 'nullable|numeric|min:0',
-            'shipping_cost'      => 'nullable|numeric|min:0',
-            'free_shipping_above'=> 'nullable|numeric|min:0',
-            'stock_quantity'     => 'nullable|integer|min:0',
-            'sizes'              => 'nullable|array',
-            'size_chart_image'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'title'               => 'required',
+            'price'               => 'nullable|numeric|min:0',
+            'shipping_cost'       => 'nullable|numeric|min:0',
+            'free_shipping_above' => 'nullable|numeric|min:0',
+            'stock_quantity'      => 'nullable|integer|min:0',
+            'sizes'               => 'nullable|array',
+            'size_chart_image'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
         $data = $request->only([
@@ -56,13 +57,13 @@ class CustomizerModelController extends Controller
             'navigation_id', 'category_id', 'subcategory_id',
         ]);
 
-        $data['in_stock']          = $request->input('in_stock') == '1';
-        $data['stock_quantity']    = $request->input('stock_quantity') ?: null;
-        $data['shipping_enabled']  = $request->input('shipping_enabled') == '1';
-        $data['shipping_cost']     = $request->input('shipping_cost') ?? 0;
+        $data['in_stock']            = $request->input('in_stock') == '1';
+        $data['stock_quantity']      = $request->input('stock_quantity') ?: null;
+        $data['shipping_enabled']    = $request->input('shipping_enabled') == '1';
+        $data['shipping_cost']       = $request->input('shipping_cost') ?? 0;
         $data['free_shipping_above'] = $request->input('free_shipping_above') ?: null;
 
-        $sizes = $request->input('sizes', []);
+        $sizes         = $request->input('sizes', []);
         $data['sizes'] = is_array($sizes) ? $sizes : [];
 
         if ($request->hasFile('size_chart_image')) {
@@ -116,14 +117,21 @@ class CustomizerModelController extends Controller
 
         $data['colors_data'] = $colorsData;
 
-        CustomizerModel::create($data);
+        $model = CustomizerModel::create($data);
+
+        // ✅ Activity Log
+        ActivityLogger::log('created', 'CustomizerModel', $model->title, $model->id, [
+            'title'       => $model->title,
+            'price'       => $model->price,
+            'category_id' => $model->category_id,
+        ]);
 
         return redirect()->route('models.index')->with('success', 'Model Added Successfully');
     }
 
     // ─── SHOW ─────────────────────────────────────────────────────
-  public function show(CustomizerModel $model)
-{
+    public function show(CustomizerModel $model)
+    {
         $colors = Color::all();
         $fonts  = Font::all()->map(fn ($font) => [
             'id'       => $font->id,
@@ -140,14 +148,14 @@ class CustomizerModelController extends Controller
 
     // ─── EDIT ─────────────────────────────────────────────────────
     public function edit($id)
-{
+    {
         $model            = CustomizerModel::findOrFail($id);
         $navigations      = Navigation::where('status', 1)->get() ?? collect();
         $parentCategories = Category::whereNull('parent_id')
             ->where('status', 1)
             ->with('subcategories')
             ->get();
-        $fonts        = Font::all();
+        $fonts         = Font::all();
         $backendColors = Color::all();
 
         return view('admin.models.edit', compact('model', 'navigations', 'parentCategories', 'fonts', 'backendColors'));
@@ -155,17 +163,17 @@ class CustomizerModelController extends Controller
 
     // ─── UPDATE ───────────────────────────────────────────────────
     public function update(Request $request, $id)
-{
+    {
         $model = CustomizerModel::findOrFail($id);
 
         $request->validate([
-            'title'              => 'required',
-            'price'              => 'nullable|numeric|min:0',
-            'shipping_cost'      => 'nullable|numeric|min:0',
-            'free_shipping_above'=> 'nullable|numeric|min:0',
-            'stock_quantity'     => 'nullable|integer|min:0',
-            'sizes'              => 'nullable|array',
-            'size_chart_image'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'title'               => 'required',
+            'price'               => 'nullable|numeric|min:0',
+            'shipping_cost'       => 'nullable|numeric|min:0',
+            'free_shipping_above' => 'nullable|numeric|min:0',
+            'stock_quantity'      => 'nullable|integer|min:0',
+            'sizes'               => 'nullable|array',
+            'size_chart_image'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
         $data = $request->only([
@@ -173,16 +181,15 @@ class CustomizerModelController extends Controller
             'navigation_id', 'category_id', 'subcategory_id',
         ]);
 
-        $data['in_stock']          = $request->input('in_stock') == '1';
-        $data['stock_quantity']    = $request->input('stock_quantity') ?: null;
-        $data['shipping_enabled']  = $request->input('shipping_enabled') == '1';
-        $data['shipping_cost']     = $request->input('shipping_cost') ?? 0;
+        $data['in_stock']            = $request->input('in_stock') == '1';
+        $data['stock_quantity']      = $request->input('stock_quantity') ?: null;
+        $data['shipping_enabled']    = $request->input('shipping_enabled') == '1';
+        $data['shipping_cost']       = $request->input('shipping_cost') ?? 0;
         $data['free_shipping_above'] = $request->input('free_shipping_above') ?: null;
 
-        $sizes = $request->input('sizes', []);
+        $sizes         = $request->input('sizes', []);
         $data['sizes'] = is_array($sizes) ? $sizes : [];
 
-        // Size chart
         if ($request->input('remove_size_chart') == '1') {
             if ($model->size_chart_image) {
                 Storage::disk('public')->delete($model->size_chart_image);
@@ -243,18 +250,18 @@ class CustomizerModelController extends Controller
 
         $newImagePaths = [];
         foreach ($colorsData as $idx => &$color) {
-            $meta          = $colorsMeta[$idx] ?? [];
+            $meta           = $colorsMeta[$idx] ?? [];
             $color['views'] = [];
             foreach ($views as $view) {
                 $color['views'][$view] = [];
                 foreach ($types as $type) {
                     $fileKey = "color_{$idx}_{$view}_{$type}";
                     if ($request->hasFile($fileKey)) {
-                        $path = $request->file($fileKey)->store('models/colors', 'public');
+                        $path                         = $request->file($fileKey)->store('models/colors', 'public');
                         $color['views'][$view][$type] = $path;
-                        $newImagePaths[] = $path;
+                        $newImagePaths[]              = $path;
                     } else {
-                        $keepPath = $meta[$view][$type] ?? null;
+                        $keepPath                     = $meta[$view][$type] ?? null;
                         $color['views'][$view][$type] = $keepPath;
                         if ($keepPath) $newImagePaths[] = $keepPath;
                     }
@@ -264,7 +271,7 @@ class CustomizerModelController extends Controller
         unset($color);
 
         foreach ($oldImagePaths as $oldPath) {
-            if (! in_array($oldPath, $newImagePaths)) {
+            if (!in_array($oldPath, $newImagePaths)) {
                 Storage::disk('public')->delete($oldPath);
             }
         }
@@ -272,7 +279,140 @@ class CustomizerModelController extends Controller
         $data['colors_data'] = $colorsData;
         $model->update($data);
 
+        // ✅ Activity Log
+        ActivityLogger::log('updated', 'CustomizerModel', $model->title, $model->id, [
+            'title'       => $request->title,
+            'price'       => $request->price,
+            'category_id' => $request->category_id,
+        ]);
+
         return redirect()->route('models.index')->with('success', 'Model Updated Successfully');
+    }
+
+    // ─── DESTROY ──────────────────────────────────────────────────
+    public function destroy($id)
+    {
+        $model = CustomizerModel::findOrFail($id);
+
+        // ✅ Activity Log
+        ActivityLogger::log('deleted', 'CustomizerModel', $model->title, $model->id, [
+            'title'       => $model->title,
+            'price'       => $model->price,
+            'category_id' => $model->category_id,
+        ]);
+
+        foreach ($model->colors_data ?? [] as $c) {
+            foreach ($c['views'] ?? [] as $vData) {
+                foreach ($vData as $path) {
+                    if ($path) Storage::disk('public')->delete($path);
+                }
+            }
+        }
+        if ($model->size_chart_image) {
+            Storage::disk('public')->delete($model->size_chart_image);
+        }
+
+        $model->delete();
+
+        return back()->with('success', 'Model Deleted');
+    }
+
+    // ─── DUPLICATE ────────────────────────────────────────────────
+    public function duplicate($id)
+    {
+        $model      = CustomizerModel::findOrFail($id);
+        $new        = $model->replicate();
+        $new->title = $model->title.' (Copy)';
+        $new->save();
+
+        return back()->with('success', 'Model Duplicated with Design');
+    }
+
+    // ─── BULK DELETE ──────────────────────────────────────────────
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('product_ids', []);
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
+        }
+        $count = CustomizerModel::whereIn('id', $ids)->count();
+        CustomizerModel::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true, 'message' => $count.' Model(s) deleted']);
+    }
+
+    // ─── BULK DUPLICATE ───────────────────────────────────────────
+    public function bulkDuplicate(Request $request)
+    {
+        $ids = $request->input('product_ids', []);
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
+        }
+        $count = 0;
+        foreach ($ids as $id) {
+            $original = CustomizerModel::find($id);
+            if (!$original) continue;
+            $copy        = $original->replicate();
+            $copy->title = $original->title.' (Copy)';
+            $copy->save();
+            $count++;
+        }
+
+        return response()->json(['success' => true, 'message' => $count.' Model(s) duplicated!']);
+    }
+
+    // ─── TOGGLE HIDDEN (single) ───────────────────────────────────
+    public function toggleHidden(Request $request, $id)
+    {
+        $model            = CustomizerModel::findOrFail($id);
+        $model->is_hidden = !$model->is_hidden;
+        $model->save();
+
+        return response()->json([
+            'success'   => true,
+            'is_hidden' => $model->is_hidden,
+            'message'   => $model->is_hidden ? 'Model hidden' : 'Model visible',
+        ]);
+    }
+
+    // ─── BULK TOGGLE HIDDEN ───────────────────────────────────────
+    public function bulkToggleHidden(Request $request)
+    {
+        $ids    = $request->input('product_ids', []);
+        $action = $request->input('action', 'hide');
+
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
+        }
+
+        $isHidden = $action === 'hide';
+        $count    = CustomizerModel::whereIn('id', $ids)->count();
+        CustomizerModel::whereIn('id', $ids)->update(['is_hidden' => $isHidden]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $count.' Model(s) '.($isHidden ? 'hidden' : 'visible').' kar diye',
+        ]);
+    }
+
+    // ─── SAVE DESIGN ──────────────────────────────────────────────
+    public function saveDesign(Request $request, $id)
+    {
+        $model = CustomizerModel::findOrFail($id);
+        foreach ($request->svgs ?? [] as $view => $svgContent) {
+            if (!$svgContent) continue;
+            $filename = "custom_{$view}_{$id}.svg";
+            file_put_contents(public_path('uploads/models/'.$filename), $svgContent);
+            $model->{"custom_{$view}_svg"} = $filename;
+        }
+        $model->pattern_changes = $request->pattern_changes;
+        $model->color_changes   = $request->color_changes;
+        $model->mascot_changes  = $request->mascot_changes;
+        $model->applications    = $request->applications;
+        $model->customized_at   = now();
+        $model->save();
+
+        return response()->json(['success' => true, 'message' => 'Design saved']);
     }
 
     // ─── API: SINGLE MODEL ────────────────────────────────────────
@@ -344,125 +484,6 @@ class CustomizerModelController extends Controller
         ]);
     }
 
-    // ─── DESTROY ──────────────────────────────────────────────────
-    public function destroy($id)
-{
-        $model = CustomizerModel::findOrFail($id);
-
-        foreach ($model->colors_data ?? [] as $c) {
-            foreach ($c['views'] ?? [] as $vData) {
-                foreach ($vData as $path) {
-                    if ($path) Storage::disk('public')->delete($path);
-                }
-            }
-        }
-        if ($model->size_chart_image) {
-            Storage::disk('public')->delete($model->size_chart_image);
-        }
-
-        $model->delete();
-
-        return back()->with('success', 'Model Deleted');
-    }
-
-    // ─── DUPLICATE ────────────────────────────────────────────────
-    public function duplicate($id)
-    {
-        $model      = CustomizerModel::findOrFail($id);
-        $new        = $model->replicate();
-        $new->title = $model->title.' (Copy)';
-        $new->save();
-
-        return back()->with('success', 'Model Duplicated with Design');
-    }
-
-    // ─── BULK DELETE ──────────────────────────────────────────────
-    public function bulkDestroy(Request $request)
-    {
-        $ids = $request->input('product_ids', []);
-        if (empty($ids) || ! is_array($ids)) {
-            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
-        }
-        $count = CustomizerModel::whereIn('id', $ids)->count();
-        CustomizerModel::whereIn('id', $ids)->delete();
-
-        return response()->json(['success' => true, 'message' => $count.' Model(s) deleted']);
-    }
-
-    // ─── BULK DUPLICATE ───────────────────────────────────────────
-    public function bulkDuplicate(Request $request)
-    {
-        $ids = $request->input('product_ids', []);
-        if (empty($ids) || ! is_array($ids)) {
-            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
-        }
-        $count = 0;
-        foreach ($ids as $id) {
-            $original = CustomizerModel::find($id);
-            if (! $original) continue;
-            $copy        = $original->replicate();
-            $copy->title = $original->title.' (Copy)';
-            $copy->save();
-            $count++;
-        }
-
-        return response()->json(['success' => true, 'message' => $count.' Model(s) duplicated!']);
-    }
-
-    // ─── TOGGLE HIDDEN (single) ───────────────────────────────────
-    public function toggleHidden(Request $request, $id)
-    {
-        $model            = CustomizerModel::findOrFail($id);
-        $model->is_hidden = ! $model->is_hidden;
-        $model->save();
-
-        return response()->json([
-            'success'   => true,
-            'is_hidden' => $model->is_hidden,
-            'message'   => $model->is_hidden ? 'Model hidden' : 'Model visible',
-        ]);
-    }
-
-    // ─── BULK TOGGLE HIDDEN ───────────────────────────────────────
-    public function bulkToggleHidden(Request $request)
-    {
-        $ids    = $request->input('product_ids', []);
-        $action = $request->input('action', 'hide');
-
-        if (empty($ids) || ! is_array($ids)) {
-            return response()->json(['success' => false, 'message' => 'Koi model select nahi kiya']);
-        }
-
-        $isHidden = $action === 'hide';
-        $count    = CustomizerModel::whereIn('id', $ids)->count();
-        CustomizerModel::whereIn('id', $ids)->update(['is_hidden' => $isHidden]);
-
-        return response()->json([
-            'success' => true,
-            'message' => $count.' Model(s) '.($isHidden ? 'hidden' : 'visible').' kar diye',
-        ]);
-    }
-
-    // ─── SAVE DESIGN ──────────────────────────────────────────────
-    public function saveDesign(Request $request, $id)
-    {
-        $model = CustomizerModel::findOrFail($id);
-        foreach ($request->svgs ?? [] as $view => $svgContent) {
-            if (! $svgContent) continue;
-            $filename = "custom_{$view}_{$id}.svg";
-            file_put_contents(public_path('uploads/models/'.$filename), $svgContent);
-            $model->{"custom_{$view}_svg"} = $filename;
-        }
-        $model->pattern_changes = $request->pattern_changes;
-        $model->color_changes   = $request->color_changes;
-        $model->mascot_changes  = $request->mascot_changes;
-        $model->applications    = $request->applications;
-        $model->customized_at   = now();
-        $model->save();
-
-        return response()->json(['success' => true, 'message' => 'Design saved']);
-    }
-
     // ─── MODELS BY CATEGORY ───────────────────────────────────────
     public function modelsByCategory($id)
     {
@@ -526,7 +547,7 @@ class CustomizerModelController extends Controller
     {
         $ids    = $request->product_ids;
         $action = $request->action;
-        if (! $ids || ! is_array($ids)) {
+        if (!$ids || !is_array($ids)) {
             return response()->json(['success' => false, 'message' => 'No models selected']);
         }
         CustomizerModel::whereIn('id', $ids)->update(['is_featured' => $action === 'add']);
@@ -539,7 +560,7 @@ class CustomizerModelController extends Controller
     {
         $ids    = $request->product_ids;
         $action = $request->action;
-        if (! $ids || ! is_array($ids)) {
+        if (!$ids || !is_array($ids)) {
             return response()->json(['success' => false, 'message' => 'No models selected']);
         }
         CustomizerModel::whereIn('id', $ids)->update(['is_apparel' => $action === 'add']);
@@ -561,7 +582,7 @@ class CustomizerModelController extends Controller
     // ─── USER API ────────────────────────────────────────────────
     public function userApi($id, $customization_id = null)
     {
-        if (! $customization_id) {
+        if (!$customization_id) {
             $customization_id = request()->query('customization_id');
         }
 
@@ -658,10 +679,10 @@ class CustomizerModelController extends Controller
             'id', 'model_name', 'title', 'price', 'description',
             'front_black', 'front_white', 'front_svg',
             'custom_front_svg', 'thumbnail',
-            'colors_data', 'is_hidden',   // ← is_hidden added
+            'colors_data', 'is_hidden',
             'position'
         )
-        ->where('is_hidden', false)        // ← hidden models filter out
+        ->where('is_hidden', false)
         ->get()
         ->map(fn ($model) => [
             'id'          => $model->id,
@@ -675,7 +696,7 @@ class CustomizerModelController extends Controller
                 ? asset('uploads/models/'.$model->custom_front_svg)
                 : ($model->front_svg ? asset('uploads/models/'.$model->front_svg) : null),
             'thumbnail'   => $model->thumbnail ? asset('uploads/models/'.$model->thumbnail) : null,
-            'is_hidden'   => (bool) $model->is_hidden,   // ← returned to frontend
+            'is_hidden'   => (bool) $model->is_hidden,
             'colors_data' => collect($model->colors_data ?? [])->map(function ($c) {
                 $views = [];
                 foreach (['front', 'back', 'left', 'right'] as $view) {

@@ -4,18 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Template;
 use App\Models\Category;
+use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 
 class TemplateController extends Controller
 {
-    // index: categories ke saath templates load karo
     public function index()
     {
         $categories = Category::whereNull('parent_id')
             ->where('status', 1)
-            ->with(['templates' => function ($q) {
-                $q->latest();
-            }])
+            ->with(['templates' => function ($q) { $q->latest(); }])
             ->get();
 
         $uncategorized = Template::whereNull('category_id')->latest()->get();
@@ -37,7 +35,13 @@ class TemplateController extends Controller
             'image_data'  => 'nullable|string',
         ]);
 
-        Template::create($request->all());
+        $template = Template::create($request->all());
+
+        // ✅ Activity Log
+        ActivityLogger::log('created', 'Template', $template->title, $template->id, [
+            'title'       => $template->title,
+            'category_id' => $template->category_id,
+        ]);
 
         return redirect()->route('templates.index')->with('success', 'Template created!');
     }
@@ -63,16 +67,26 @@ class TemplateController extends Controller
         $template->title = $request->title;
         $template->save();
 
+        // ✅ Activity Log
+        ActivityLogger::log('updated', 'Template', $template->title, $template->id, [
+            'title' => $request->title,
+        ]);
+
         return redirect()->route('templates.index')->with('success', 'Template updated!');
     }
 
     public function destroy(Template $template)
     {
+        // ✅ Activity Log
+        ActivityLogger::log('deleted', 'Template', $template->title, $template->id, [
+            'title'       => $template->title,
+            'category_id' => $template->category_id,
+        ]);
+
         $template->delete();
         return redirect()->route('templates.index')->with('success', 'Template deleted!');
     }
 
-    // ─── Bulk Delete ───────────────────────────────────────────────────────────
     public function bulkDestroy(Request $request)
     {
         $request->validate([
@@ -88,7 +102,6 @@ class TemplateController extends Controller
         ]);
     }
 
-    // Mascot customizer se save hoga — category_id bhi aayega ab
     public function saveFromCustomizer(Request $request)
     {
         $request->validate([
@@ -104,6 +117,13 @@ class TemplateController extends Controller
             'image_data'  => $request->image_data ?? null,
             'source'      => 'customizer',
             'category_id' => $request->category_id ?? null,
+        ]);
+
+        // ✅ Activity Log
+        ActivityLogger::log('created', 'Template', $template->title, $template->id, [
+            'title'       => $template->title,
+            'source'      => 'customizer',
+            'category_id' => $template->category_id,
         ]);
 
         return response()->json([

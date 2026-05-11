@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Color;
+use App\Helpers\ActivityLogger;
 
 class ColorController extends Controller
 {
     public function index()
-{
-    $colors = Color::all(); // gets all colors from DB
-    return view('colors.index', compact('colors'));
-}
-
+    {
+        $colors = Color::all();
+        return view('colors.index', compact('colors'));
+    }
 
     public function create()
     {
@@ -23,37 +23,57 @@ class ColorController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'code' => 'required|string', // hex color code
+            'code' => 'required|string',
         ]);
 
-        Color::create($request->all());
+        $color = Color::create($request->all());
+
+        // ✅ Activity Log
+        ActivityLogger::log('created', 'Color', $color->name, $color->id, [
+            'name' => $color->name,
+            'code' => $color->code,
+        ]);
 
         return redirect()->route('colors.index')->with('success', 'Color added successfully!');
     }
+
     public function edit(Color $color)
-{
-    return view('colors.edit', compact('color'));
-}
-public function apiIndex()
-{
-    return response()->json(Color::all());
-}
-public function update(Request $request, Color $color)
-{
-    $request->validate([
-        'name' => 'required|string',
-        'code' => 'required|string',
-    ]);
+    {
+        return view('colors.edit', compact('color'));
+    }
 
-    $color->update($request->all());
+    public function update(Request $request, Color $color)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'code' => 'required|string',
+        ]);
 
-    return redirect()->route('colors.index')->with('success', 'Color updated successfully!');
-}
+        $color->update($request->all());
 
-public function destroy(Color $color)
-{
-    $color->delete();
-    return redirect()->route('colors.index')->with('success', 'Color deleted successfully!');
-}
+        // ✅ Activity Log
+        ActivityLogger::log('updated', 'Color', $color->name, $color->id, [
+            'name' => $request->name,
+            'code' => $request->code,
+        ]);
 
+        return redirect()->route('colors.index')->with('success', 'Color updated successfully!');
+    }
+
+    public function destroy(Color $color)
+    {
+        // ✅ Activity Log
+        ActivityLogger::log('deleted', 'Color', $color->name, $color->id, [
+            'name' => $color->name,
+            'code' => $color->code,
+        ]);
+
+        $color->delete();
+        return redirect()->route('colors.index')->with('success', 'Color deleted successfully!');
+    }
+
+    public function apiIndex()
+    {
+        return response()->json(Color::all());
+    }
 }

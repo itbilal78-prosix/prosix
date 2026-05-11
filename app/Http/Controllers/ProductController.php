@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\ActivityLogger;   // ✅ NEW
+use App\Helpers\ActivityLogger;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -121,7 +121,6 @@ class ProductController extends Controller
             'size_chart_image'    => $sizeChartPath,
         ]);
 
-        // ✅ ACTIVITY LOG
         ActivityLogger::log('created', 'Product', $product->name, $product->id, [
             'price'       => $product->price,
             'category_id' => $product->category_id,
@@ -260,7 +259,6 @@ class ProductController extends Controller
             'size_chart_image'    => $sizeChartPath,
         ]);
 
-        // ✅ ACTIVITY LOG
         ActivityLogger::log('updated', 'Product', $product->name, $product->id, [
             'price'       => $request->input('price'),
             'category_id' => $request->input('category_id'),
@@ -303,29 +301,21 @@ class ProductController extends Controller
         ]);
     }
 
-   public function destroy(Product $product)
-{
-    // ✅ ACTIVITY LOG — delete se PEHLE
-    ActivityLogger::log('deleted', 'Product', $product->name, $product->id, [
-        'product_name' => $product->name,
-        'price'        => $product->price,
-        'category'     => $product->category?->name ?? 'No Category',
-        'image'        => $product->image ? asset('storage/' . $product->image) : null,
-    ]);
+    // ✅ FIXED — sirf soft delete, files nahi hatao
+    public function destroy(Product $product)
+    {
+        ActivityLogger::log('deleted', 'Product', $product->name, $product->id, [
+            'product_name' => $product->name,
+            'price'        => $product->price,
+            'category'     => $product->category?->name ?? 'No Category',
+            'image'        => $product->image ? asset('storage/' . $product->image) : null,
+        ]);
 
-    if ($product->image) Storage::disk('public')->delete($product->image);
-    foreach ($product->gallery_images ?? [] as $img) Storage::disk('public')->delete($img);
-    foreach ($product->colors ?? [] as $c) {
-        if (!empty($c['image'])) Storage::disk('public')->delete($c['image']);
-        foreach ($c['gallery'] ?? [] as $gp) {
-            if ($gp) Storage::disk('public')->delete($gp);
-        }
+        // ✅ Files DELETE NAHI KARNI — recycle bin ke liye
+        $product->delete(); // sirf soft delete
+
+        return redirect()->route('products.index')->with('success', 'Product deleted!');
     }
-    if ($product->size_chart_image) Storage::disk('public')->delete($product->size_chart_image);
-    $product->delete();
-
-    return redirect()->route('products.index')->with('success', 'Product deleted!');
-}
 
     public function featured(Request $request)
     {

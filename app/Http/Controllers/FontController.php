@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Font;
+use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 
 class FontController extends Controller
@@ -10,7 +11,6 @@ class FontController extends Controller
     public function index()
     {
         $fonts = Font::latest()->get();
-
         return view('admin.fonts.index', compact('fonts'));
     }
 
@@ -23,10 +23,10 @@ class FontController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'file' => 'nullable|file', // ab koi MIME check nahi
+            'file' => 'nullable|file',
         ]);
 
-        $font = new Font;
+        $font       = new Font;
         $font->name = $request->name;
 
         if ($request->hasFile('file')) {
@@ -34,6 +34,12 @@ class FontController extends Controller
         }
 
         $font->save();
+
+        // ✅ Activity Log
+        ActivityLogger::log('created', 'Font', $font->name, $font->id, [
+            'name' => $font->name,
+            'file' => $font->file,
+        ]);
 
         return redirect()->route('fonts.index')->with('success', 'Font added successfully!');
     }
@@ -52,32 +58,38 @@ class FontController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'file' => 'nullable|file', // ab koi MIME check nahi
+            'file' => 'nullable|file',
         ]);
 
         $font->name = $request->name;
 
         if ($request->hasFile('file')) {
-            // Delete old file if exists
-            if ($font->file && file_exists(storage_path('app/public/'.$font->file))) {
-                unlink(storage_path('app/public/'.$font->file));
+            if ($font->file && file_exists(storage_path('app/public/' . $font->file))) {
+                unlink(storage_path('app/public/' . $font->file));
             }
             $font->file = $request->file('file')->store('fonts', 'public');
         }
 
         $font->save();
 
+        // ✅ Activity Log
+        ActivityLogger::log('updated', 'Font', $font->name, $font->id, [
+            'name' => $font->name,
+            'file' => $font->file,
+        ]);
+
         return redirect()->route('fonts.index')->with('success', 'Font updated successfully!');
     }
 
     public function destroy(Font $font)
     {
-        if ($font->file && file_exists(storage_path('app/public/'.$font->file))) {
-            unlink(storage_path('app/public/'.$font->file));
-        }
+        // ✅ Activity Log
+        ActivityLogger::log('deleted', 'Font', $font->name, $font->id, [
+            'name' => $font->name,
+            'file' => $font->file,
+        ]);
 
         $font->delete();
-
         return redirect()->route('fonts.index')->with('success', 'Font deleted successfully!');
     }
 }
