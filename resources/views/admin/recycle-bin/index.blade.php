@@ -3,18 +3,74 @@
 @section('content')
 <div class="container mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    {{-- ─── HEADER ─── --}}
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
             <h3>Recycle Bin</h3>
             <p class="text-muted mb-0">Deleted data will appear here.</p>
         </div>
-        <a href="{{ route('recycle-bin.download-images') }}" class="btn btn-dark">
-            <i class="bi bi-download"></i> Download All Images
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('recycle-bin.download-images') }}" class="btn btn-dark">
+                <i class="bi bi-download"></i> Download All Images
+            </a>
+            <a href="{{ route('recycle-bin.export-backup') }}" class="btn btn-primary">
+                <i class="bi bi-box-arrow-up"></i> Export Backup
+            </a>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="bi bi-box-arrow-in-down"></i> Import Backup
+            </button>
+        </div>
     </div>
 
+    {{-- ─── IMPORT MODAL ─── --}}
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">
+                        <i class="bi bi-box-arrow-in-down me-1"></i> Import Backup
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('recycle-bin.import-backup') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="alert alert-warning d-flex gap-2 align-items-start">
+                            <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+                            <div>
+                                <strong>Warning:</strong> Sirf wahi ZIP upload karo jo is system ne export ki ho.
+                                Duplicate records skip honge, koi data overwrite nahi hoga.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Backup ZIP File Select Karo</label>
+                            <input type="file" class="form-control" name="backup_file" accept=".zip" required>
+                            <div class="form-text">Max size: 200MB &nbsp;|&nbsp; Sirf <code>.zip</code> files</div>
+                        </div>
+                        <div id="importProgress" class="d-none">
+                            <div class="d-flex align-items-center gap-2 text-primary">
+                                <div class="spinner-border spinner-border-sm"></div>
+                                <span>Import ho raha hai, please wait...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="importSubmitBtn">
+                            <i class="bi bi-upload me-1"></i> Import Karo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- ─── SUCCESS / ERROR ALERT ─── --}}
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
     {{-- Artwork Requests --}}
@@ -833,4 +889,26 @@
     </div>
 
 </div>
+
+{{-- ─── Import Spinner Script ─── --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var importModal = document.getElementById('importModal');
+    if (importModal) {
+        var form = importModal.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function () {
+                var progress = document.getElementById('importProgress');
+                var btn = document.getElementById('importSubmitBtn');
+                if (progress) progress.classList.remove('d-none');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Importing...';
+                }
+            });
+        }
+    }
+});
+</script>
+
 @endsection

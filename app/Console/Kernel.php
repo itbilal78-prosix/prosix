@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Har mahine 1 tarikh ko raat 2 baje automatic recycle bin backup
+        $schedule->command('recycle:backup')->monthlyOn(1, '02:00');
     }
 
     /**

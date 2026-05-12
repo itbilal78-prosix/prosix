@@ -475,6 +475,13 @@ Route::get('/recycle-bin/download-images', [RecycleBinController::class, 'downlo
 
 
 
+    Route::get('/recycle-bin/export-backup', [RecycleBinController::class, 'exportBackup'])
+    ->name('recycle-bin.export-backup');
+
+Route::post('/recycle-bin/import-backup', [RecycleBinController::class, 'importBackup'])
+    ->name('recycle-bin.import-backup');
+
+
 Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])
         ->name('activity-logs.index');
