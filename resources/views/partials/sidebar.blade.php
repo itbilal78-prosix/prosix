@@ -224,12 +224,12 @@ Puri file same rakhni hai, bas yeh block change hoga
     @endif
 
 
+
     {{-- ORDERS --}}
     @if ($admin->is_super_admin || $admin->can_orders)
         @php
             $newOrdersCount = \App\Models\Order::where('is_read', false)->count();
         @endphp
-
         <li class="nav-item">
             <a class="nav-link text-light d-flex align-items-center px-3 py-2"
                 href="{{ route('admin.orders.index') }}">
@@ -308,9 +308,15 @@ Puri file same rakhni hai, bas yeh block change hoga
 <li><a class="nav-link text-light py-1" href="#">Login Logs</a></li>
 <li>
     <a class="nav-link text-light py-1" href="{{ route('recycle-bin.index') }}">
-Backup
+        <i class="bi bi-recycle me-1"></i> Recycle Bin
     </a>
-</li><li>
+</li>
+<li>
+    <a class="nav-link text-light py-1" href="{{ route('admin.website-backup.index') }}">
+        <i class="bi bi-shield-check me-1"></i> Website Backup
+    </a>
+</li>
+<li>
     <a class="nav-link text-light py-1 d-flex align-items-center justify-content-between"
        href="{{ route('admin.activity-logs.index') }}">
         <span><i class="bi bi-clock-history me-1"></i> Activity Logs</span>

@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // Har mahine 1 tarikh ko raat 2 baje automatic recycle bin backup
         $schedule->command('recycle:backup')->monthlyOn(1, '02:00');
+        $schedule->command('website:backup')->weekly()->sundays()->at('03:00');
     }
 
     /**

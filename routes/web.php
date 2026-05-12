@@ -482,6 +482,24 @@ Route::post('/recycle-bin/import-backup', [RecycleBinController::class, 'importB
     ->name('recycle-bin.import-backup');
 
 
+
+
+
+
+Route::middleware(['auth:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+    Route::get('/website-backup', [\App\Http\Controllers\WebsiteBackupController::class, 'index'])->name('website-backup.index');
+    Route::post('/website-backup/create', [\App\Http\Controllers\WebsiteBackupController::class, 'create'])->name('website-backup.create');
+    Route::get('/website-backup/download', [\App\Http\Controllers\WebsiteBackupController::class, 'download'])->name('website-backup.download');
+    Route::delete('/website-backup/delete', [\App\Http\Controllers\WebsiteBackupController::class, 'delete'])->name('website-backup.delete');
+    Route::post('/website-backup/restore', [\App\Http\Controllers\WebsiteBackupController::class, 'restore'])->name('website-backup.restore');
+    Route::post('/website-backup/restore-db', [\App\Http\Controllers\WebsiteBackupController::class, 'restoreDb'])->name('website-backup.restore-db');
+
+});
+
 Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])
         ->name('activity-logs.index');
