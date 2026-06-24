@@ -55,10 +55,25 @@
                             </td>
                             <td>{{ $req->created_at->format('d M Y') }}</td>
                            <td>
-    <button type="button" class="btn btn-sm btn-dark view-artwork-btn"
-        data-id="{{ $req->id }}"
-        data-name="{{ $req->full_name }}"
-        data-email="{{ $req->email }}">
+<button type="button" class="btn btn-sm btn-dark view-artwork-btn"
+    data-id="{{ $req->id }}"
+    data-name="{{ $req->full_name }}"
+    data-email="{{ $req->email }}"
+    data-phone="{{ $req->phone }}"
+    data-instagram="{{ $req->instagram }}"
+    data-address="{{ $req->address }}"
+    data-team="{{ $req->team_name }}"
+    data-role="{{ $req->role }}"
+    data-qty="{{ $req->quantity }}"
+    data-color="{{ $req->team_color }}"
+    data-homeaway="{{ $req->home_away }}"
+    data-style="{{ $req->design_style }}"
+    data-material="{{ $req->material }}"
+    data-sports="{{ is_array($req->sports) ? implode(', ', $req->sports) : $req->sports }}"
+    data-details="{{ $req->mockup_details }}"
+    data-source="{{ $req->how_heard }}"
+    data-submitted="{{ $req->created_at->format('d M Y') }}"
+    data-images='@json($images)'>
         <i class="bi bi-eye"></i> View
     </button>
 
