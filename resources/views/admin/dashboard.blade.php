@@ -32,7 +32,7 @@
 .db-date {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     background: #fff;
     border: 1px solid #e5e5e5;
     border-radius: 50px;
