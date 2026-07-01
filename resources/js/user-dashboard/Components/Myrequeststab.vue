@@ -3,7 +3,7 @@
 
     <div class="page-header mb-4">
       <h4 class="fw-bold mb-1">My Requests</h4>
-      <p class="text-muted small">Aapki saari submitted requests yahan dikhti hain</p>
+<p class="text-muted small">All your submitted requests will appear here.</p>
     </div>
 
     <!-- Loading -->
@@ -15,8 +15,8 @@
     <!-- Empty -->
     <div v-else-if="requests.length === 0" class="empty-state">
       <div class="empty-icon">📋</div>
-      <h5>Koi request nahi mili</h5>
-      <p class="text-muted small">Abhi tak koi artwork ya membership request submit nahi ki</p>
+      <h5>No Requests Found</h5>
+<p class="text-muted small">You haven't submitted any artwork or membership requests yet.</p>
       <div class="d-flex gap-2 justify-content-center mt-3">
         <router-link to="/artwork" class="btn btn-dark btn-sm">Artwork Request</router-link>
         <router-link to="/membership" class="btn btn-outline-dark btn-sm">Special Deals</router-link>
