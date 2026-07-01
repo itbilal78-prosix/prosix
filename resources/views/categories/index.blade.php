@@ -134,14 +134,26 @@
                 <td>${thumb}</td>
                 <td>${cat.status}</td>
                 <td class="text-center">${cat.highlight}</td>
-                <td>
-                    <a href="${cat.edit_url}" class="btn btn-xs btn-outline-dark me-1">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <button class="btn btn-xs btn-outline-dark" onclick="event.stopPropagation();deleteRow('${cat.del_url}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
+               <td>
+    <a href="${cat.edit_url}" class="btn btn-xs btn-outline-dark me-1">
+        <i class="bi bi-pencil"></i>
+    </a>
+
+    <form action="{{ route('products.duplicateCategory') }}" method="POST" class="d-inline"
+          onclick="event.stopPropagation();"
+          onsubmit="return confirm('Duplicate this category with products?')">
+        @csrf
+        <input type="hidden" name="category_id" value="${cat.id}">
+        <button type="submit" class="btn btn-xs btn-outline-dark me-1">
+            <i class="bi bi-files"></i>
+        </button>
+    </form>
+
+    <button class="btn btn-xs btn-outline-dark" onclick="event.stopPropagation();deleteRow('${cat.del_url}')">
+        <i class="bi bi-trash"></i>
+    </button>
+</td>
+
             </tr>`;
 
             cat.subs.forEach(sub => {

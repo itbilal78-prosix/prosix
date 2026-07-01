@@ -99,7 +99,9 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::post('products/featured', [ProductController::class, 'featured'])->name('products.featured');
     Route::post('products/apparel', [ProductController::class, 'apparel'])->name('products.apparel');
     Route::post('products/bulk-category', [ProductController::class, 'bulkCategory'])->name('products.bulkCategory');
-
+Route::post('products/duplicate-category', [ProductController::class, 'duplicateCategory'])
+    ->name('products.duplicateCategory');
+    
 
     Route::middleware(['auth:admin', 'admin.permission:can_products'])
         ->resource('products', ProductController::class);

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -342,7 +343,54 @@ class ProductController extends Controller
         Product::whereIn('id', $request->product_ids)->update($updateData);
         return response()->json(['success' => true, 'message' => $request->show_in_category ? count($request->product_ids) . ' products category mein add ho gaye!' : count($request->product_ids) . ' products category se remove ho gaye!']);
     }
+public function duplicateCategory(Request $request)
+{
+    $request->validate([
+        'category_id' => 'required|exists:categories,id',
+    ]);
 
+    DB::transaction(function () use ($request) {
+
+        $oldCat = Category::with('subcategories')->findOrFail($request->category_id);
+
+        // Parent category duplicate
+        $newCat = $oldCat->replicate();
+        $newCat->name = $oldCat->name . ' Copy';
+        $newCat->save();
+
+        $subMap = [];
+
+        // Subcategories duplicate
+        foreach ($oldCat->subcategories as $oldSub) {
+            $newSub = $oldSub->replicate();
+            $newSub->parent_id = $newCat->id;
+            $newSub->name = $oldSub->name . ' Copy';
+            $newSub->save();
+
+            $subMap[$oldSub->id] = $newSub->id;
+        }
+
+        // Products duplicate
+        $products = Product::where('category_id', $oldCat->id)->get();
+
+        foreach ($products as $oldProduct) {
+            $newProduct = $oldProduct->replicate();
+            $newProduct->name = $oldProduct->name . ' Copy';
+            $newProduct->category_id = $newCat->id;
+
+            if ($oldProduct->subcategory_id && isset($subMap[$oldProduct->subcategory_id])) {
+                $newProduct->subcategory_id = $subMap[$oldProduct->subcategory_id];
+            } else {
+                $newProduct->subcategory_id = null;
+            }
+
+            $newProduct->show_in_category = true;
+            $newProduct->save();
+        }
+    });
+
+    return back()->with('success', 'Category, subcategories and products duplicated successfully!');
+}
     public function apiFeaturedProducts()
     {
         $products = Product::where('is_featured', 1)->get()->map(fn($p) => $this->mapProduct($p));

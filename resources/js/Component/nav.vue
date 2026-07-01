@@ -624,7 +624,6 @@ onUnmounted(() => {
 .dropdown-submenu:hover > .sub-dropdown { display: block !important; }
 .sub-dropdown { display: none; position: absolute !important; top: 0; left: 100%; min-width: 200px; margin-left: 2px; background: #222; z-index: 10; }
 .sub-dropdown-left { left: auto !important; right: 100% !important; margin-left: 0 !important; margin-right: 2px !important; }
-
 /* Mobile Drawer */
 .mobile-top-icons a { color: inherit; text-decoration: none; }
 .hamburger-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 4px; }
