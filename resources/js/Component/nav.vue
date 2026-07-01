@@ -613,7 +613,9 @@ onUnmounted(() => {
 /* ✅ Dropdown — dark + 3 columns support */
 .dropdown-menu { display: none; margin-top: 0; border-radius: 6px; background: #1a1a1a; min-width: 220px; padding: 6px 0; }
 .nav-item.dropdown:hover > .dropdown-menu { display: flex; flex-direction: row; }
-.dropdown-menu:not(.two-col):not(.three-col) { flex-direction: column !important; }
+.dropdown-menu:not(.two-col):not(.three-col):not(.four-col):not(.five-col) {
+  flex-direction: column !important;
+}
 .dropdown-col { display: flex; flex-direction: column; min-width: 200px; }
 .dropdown-col-right { border-left: 1px solid rgba(255,255,255,0.08); }
 .dropdown-item { padding: 8px 16px; color: #fff !important; transition: all 0.15s; font-size: clamp(0.88rem, 1vw, 1rem); white-space: nowrap; }
