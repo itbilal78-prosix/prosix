@@ -35,9 +35,11 @@
 
                         <div v-if="nav.has_dropdown" class="dropdown-menu border-0 shadow-lg"
                             :class="{
-                                'two-col':   totalDropdownItems(nav) > 10 && totalDropdownItems(nav) <= 20,
-                                'three-col': totalDropdownItems(nav) > 20
-                            }">
+    'two-col': totalDropdownItems(nav) > 10 && totalDropdownItems(nav) <= 20,
+    'three-col': totalDropdownItems(nav) > 20 && totalDropdownItems(nav) <= 30,
+    'four-col': totalDropdownItems(nav) > 30 && totalDropdownItems(nav) <= 40,
+    'five-col': totalDropdownItems(nav) > 40
+}">
                             <template v-if="nav.sub_items?.length">
                                 <div class="dropdown-col">
                                     <router-link v-for="sub in nav.sub_items" :key="sub.id" class="dropdown-item" :to="sub.route">{{ sub.title }}</router-link>
@@ -86,6 +88,47 @@
                                             </ul>
                                         </div>
                                     </div>
+                                    <!-- ✅ Col 4: 31-40 -->
+<div v-if="fourthColItems(nav).length" class="dropdown-col dropdown-col-right">
+    <div v-for="cat in fourthColItems(nav)" :key="cat.id" class="dropdown-submenu position-relative">
+        <a href="#" class="dropdown-item d-flex justify-content-between align-items-center"
+            @click.prevent="handleCategoryClickInNav(cat)">
+            {{ cat.name }}
+            <i v-if="cat.subcategories?.length" class="bi bi-chevron-right ms-2"></i>
+        </a>
+
+        <ul v-if="cat.subcategories?.length"
+            class="sub-dropdown sub-dropdown-left dropdown-menu border-0 shadow-lg">
+            <li v-for="sub in cat.subcategories" :key="sub.id">
+                <a href="#" class="dropdown-item"
+                    @click.prevent="handleCategoryClickInNav(sub)">
+                    {{ sub.name }}
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- ✅ Col 5: 41-50 -->
+<div v-if="fifthColItems(nav).length" class="dropdown-col dropdown-col-right">
+    <div v-for="cat in fifthColItems(nav)" :key="cat.id" class="dropdown-submenu position-relative">
+        <a href="#" class="dropdown-item d-flex justify-content-between align-items-center"
+            @click.prevent="handleCategoryClickInNav(cat)">
+            {{ cat.name }}
+            <i v-if="cat.subcategories?.length" class="bi bi-chevron-right ms-2"></i>
+        </a>
+
+        <ul v-if="cat.subcategories?.length"
+            class="sub-dropdown sub-dropdown-left dropdown-menu border-0 shadow-lg">
+            <li v-for="sub in cat.subcategories" :key="sub.id">
+                <a href="#" class="dropdown-item"
+                    @click.prevent="handleCategoryClickInNav(sub)">
+                    {{ sub.name }}
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
                                 </template>
 
                                 <!-- 1-10 items — single column -->
@@ -417,6 +460,11 @@ const leftColItems  = (nav) => (categoriesByNav.value[nav.id] || []).slice(0, 10
 const rightColItems = (nav) => (categoriesByNav.value[nav.id] || []).slice(10, 20)
 // ✅ Col 3: 21-30
 const thirdColItems = (nav) => (categoriesByNav.value[nav.id] || []).slice(20, 30)
+// ✅ Col 4: 31-40
+const fourthColItems = (nav) => (categoriesByNav.value[nav.id] || []).slice(30, 40)
+
+// ✅ Col 5: 41-50
+const fifthColItems = (nav) => (categoriesByNav.value[nav.id] || []).slice(40, 50)
 
 const showPasswordModal  = ref(false)
 const enteredPassword    = ref('')
