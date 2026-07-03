@@ -294,7 +294,14 @@ console.log('FILE B LOADED');
             btn.style.color = '#fff';
             btn.style.textShadow = '0 0 4px rgba(0,0,0,.6)';
         }
-
+if (window.customColorNames && window.customColorNames[color.toUpperCase()]) {
+    const customName = window.customColorNames[color.toUpperCase()];
+    btn.innerHTML = `
+        <span style="font-size:28px;font-weight:800;line-height:1.2;display:block;">${customName.charAt(0).toUpperCase()}</span>
+        <span style="font-size:13px;font-weight:600;line-height:1.3;display:block;word-break:break-word;">${customName}</span>
+    `;
+    return;
+}
         const colorObj = window.backendColors?.find(
             c => c.code.toUpperCase() === color.toUpperCase()
         );
@@ -1070,5 +1077,49 @@ window.pickManualStopColor = function (index) {
     applyGradientRealtime();
 };
 
+window.customColorNames = window.customColorNames || {};
 
+window.addCustomColorToPalette = function () {
+    const picker = document.getElementById('customColorPicker');
+    const nameInput = document.getElementById('customColorName');
+
+    if (!picker || !nameInput) return;
+
+    const color = picker.value.toUpperCase();
+    const name = nameInput.value.trim();
+
+    if (!name) {
+        alert('Please enter color name');
+        return;
+    }
+
+    if (paletteSelectedColors.includes(color)) {
+        alert('This color already selected');
+        return;
+    }
+
+    window.customColorNames[color] = name;
+    paletteSelectedColors.push(color);
+
+    const grid = document.querySelector('.inline-color-grid');
+    const customPanel = document.querySelector('.custom-color-panel');
+
+    const item = document.createElement('div');
+    item.className = 'inline-color-item custom-added-color';
+    item.innerHTML = `
+        <div class="color-box modern-box selected"
+             style="background:${color};display:flex;align-items:center;justify-content:center;color:${getContrastColorLocal(color)};font-weight:bold;">
+            ✔
+        </div>
+        <div class="color-name">${name}</div>
+    `;
+
+    item.querySelector('.color-box').onclick = function () {
+        togglePaletteColor(this, color);
+    };
+
+    grid.insertBefore(item, customPanel);
+
+    nameInput.value = '';
+};
 })();

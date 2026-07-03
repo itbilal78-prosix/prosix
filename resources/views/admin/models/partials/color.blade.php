@@ -41,6 +41,24 @@
                         <div class="color-name">{{ $c->name }}</div>
                     </div>
                 @endforeach
+             <div class="custom-color-panel">
+    <div class="custom-title">Other / Custom Color</div>
+
+    <div class="custom-picker-row">
+        <input type="color" id="customColorPicker" value="#00c853">
+
+        <input type="text"
+               id="customColorName"
+               placeholder="Color name"
+               class="custom-color-name">
+    </div>
+
+    <button type="button" class="add-custom-color-btn" onclick="addCustomColorToPalette()">
+        + Add This Color
+    </button>
+
+    <div id="customAddedColors" class="custom-added-colors"></div>
+</div>
             </div>
 
             <div class="inline-color-selector-footer">
@@ -583,7 +601,71 @@
         top: 8px;
         transform: translate(-50%, 0);
     }
+.custom-color-panel {
+    grid-column: 1 / -1;
+    border: 1px dashed #999;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 8px;
+    background: #f7f7f7;
+}
 
+.custom-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.custom-picker-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#customColorPicker {
+    width: 58px;
+    height: 38px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.custom-color-name {
+    flex: 1;
+    height: 36px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+.add-custom-color-btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 9px;
+    border: none;
+    border-radius: 6px;
+    background: #000;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.custom-added-colors {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.custom-added-color {
+    text-align: center;
+    font-size: 10px;
+}
+
+.custom-added-color .color-box {
+    margin: 0 auto 3px;
+}
     @media (max-width: 600px) {
         .gradient-main-row {
             flex-direction: column;
