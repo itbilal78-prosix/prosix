@@ -302,6 +302,7 @@ if (window.customColorNames && window.customColorNames[color.toUpperCase()]) {
     `;
     return;
 }
+
         const colorObj = window.backendColors?.find(
             c => c.code.toUpperCase() === color.toUpperCase()
         );
