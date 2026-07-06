@@ -348,7 +348,7 @@
 #sidebar ul ul .nav-link.active::before {
     content: "";
     position: absolute;
-    left: 0;
+    left: 0;   
     top: 0;
     width: 4px;
     height: 100%;
@@ -384,6 +384,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const allLinks = document.querySelectorAll('#sidebar .nav-link');
     const subLinks = document.querySelectorAll('#sidebar ul ul .nav-link');
 
+
+
+
+
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('hide');
@@ -395,6 +399,8 @@ document.addEventListener('DOMContentLoaded', function () {
             sidebar.classList.add('hide');
         });
     }
+
+
 
     mainLinks.forEach(link => {
         link.addEventListener('click', function () {
@@ -509,7 +515,6 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Form badge update failed');
         }
     }
-
     function setBadge(id, count) {
         const el = document.getElementById(id);
         if (!el) return;
@@ -522,7 +527,6 @@ document.addEventListener('DOMContentLoaded', function () {
             el.style.display = 'none';
         }
     }
-
     updateAllFormBadges();
     setInterval(updateAllFormBadges, 5000);
 });

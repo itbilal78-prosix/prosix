@@ -273,7 +273,14 @@ class CategoryController extends Controller
         if (!$category) {
             return response()->json(['error' => 'Category not found', 'id_received' => $id], 404);
         }
+$lockedCategory = $this->lockedCategory($category);
 
+if ($lockedCategory && !$this->isCategoryUnlocked($lockedCategory->id)) {
+    return response()->json([
+        'locked' => true,
+        'message' => 'Password required'
+    ], 403);
+}
         return response()->json([
             'parent'         => ['id' => $category->id, 'name' => $category->name, 'icon_image' => $category->icon_image ? url($category->icon_image) : null],
             'subcategories'  => $category->subcategories->map(function ($sub) {
@@ -291,6 +298,14 @@ class CategoryController extends Controller
     {
         $category = Category::find($id);
         if (!$category) return response()->json(['error' => 'Category not found'], 404);
+        $lockedCategory = $this->lockedCategory($category);
+
+if ($lockedCategory && !$this->isCategoryUnlocked($lockedCategory->id)) {
+    return response()->json([
+        'locked' => true,
+        'message' => 'Password required'
+    ], 403);
+}
 
         $isSubcategory = !is_null($category->parent_id);
         $query = Product::query()->select('id', 'name', 'price', 'image')->where('show_in_category', true);
@@ -313,19 +328,30 @@ class CategoryController extends Controller
         return response()->json(['category' => ['id' => $category->id, 'name' => $category->name], 'products' => $products]);
     }
 
-    public function verifyCategoryPassword(Request $request, $id)
-    {
-        $request->validate(['password' => 'required|string']);
-        $category = Category::findOrFail($id);
+   public function verifyCategoryPassword(Request $request, $id)
+{
+    $request->validate([
+        'password' => 'required|string'
+    ]);
 
-        if (!$category->password) return response()->json(['success' => true]);
+    $category = Category::findOrFail($id);
 
-        if (!\Hash::check($request->password, $category->password)) {
-            return response()->json(['success' => false, 'message' => 'Invalid password'], 401);
-        }
-
+    if (!$category->password) {
+        session()->put('unlocked_categories.' . $category->id, true);
         return response()->json(['success' => true]);
     }
+
+    if (!Hash::check($request->password, $category->password)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid password'
+        ], 401);
+    }
+
+    session()->put('unlocked_categories.' . $category->id, true);
+
+    return response()->json(['success' => true]);
+}
 
     public function reorder(Request $request)
     {
@@ -334,4 +360,29 @@ class CategoryController extends Controller
         }
         return response()->json(['success' => true]);
     }
+
+private function lockedCategory($category)
+{
+    if (!$category) return null;
+
+    if (!empty($category->password)) {
+        return $category;
+    }
+
+    if ($category->parent_id) {
+        $parent = Category::find($category->parent_id);
+        if ($parent && !empty($parent->password)) {
+            return $parent;
+        }
+    }
+
+    return null;
+}
+
+private function isCategoryUnlocked($categoryId)
+{
+    return session()->get('unlocked_categories.' . $categoryId) === true;
+}
+
+
 }
