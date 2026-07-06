@@ -302,7 +302,10 @@ class CategoryController extends Controller
     }
 
    public function products($id)
+
 {
+        dd('Products function reached');
+
     $category = Category::find($id);
 
     if (!$category) {
