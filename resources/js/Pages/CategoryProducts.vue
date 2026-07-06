@@ -1580,12 +1580,26 @@ const loadModels = async () => {
   }
 }
 
+const showPasswordModal = ref(false)
+const enteredPassword = ref('')
+const passwordError = ref('')
+const lockedCategoryId = ref(null)
+
 const fetchProducts = async () => {
   try {
     const res = await axios.get(`/api/category/${route.params.id}/products`)
+
     products.value = res.data
   } catch (e) {
+
+    if (e.response?.status === 403 && e.response?.data?.locked) {
+      lockedCategoryId.value = e.response.data.category_id
+      showPasswordModal.value = true
+      return
+    }
+
     console.error('Products error:', e)
+
   } finally {
     loading.value = false
   }
