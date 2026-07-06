@@ -406,17 +406,44 @@ public function duplicateCategory(Request $request)
     }
 
     public function apiCategoryProducts($categoryId)
-    {
-        $category      = Category::findOrFail($categoryId);
-        $isSubcategory = !is_null($category->parent_id);
-        $query = Product::where('show_in_category', true)->select('id', 'name', 'price', 'image', 'in_stock', 'sizes', 'colors', 'gallery_images');
-        if ($isSubcategory) {
-            $query->where('subcategory_id', $categoryId);
-        } else {
-            $query->where('category_id', $categoryId);
+{
+    $category = Category::findOrFail($categoryId);
+
+    // Check current category or parent category lock
+    $lockedCategory = null;
+
+    if (!empty($category->password)) {
+        $lockedCategory = $category;
+    } elseif ($category->parent_id) {
+        $parent = Category::find($category->parent_id);
+
+        if ($parent && !empty($parent->password)) {
+            $lockedCategory = $parent;
         }
-        return $query->get()->map(fn($p) => $this->mapProduct($p));
     }
+
+    // If locked and not unlocked in session
+    if ($lockedCategory && !session()->get('unlocked_categories.' . $lockedCategory->id)) {
+        return response()->json([
+            'locked' => true,
+            'category_id' => $lockedCategory->id,
+            'message' => 'Password required'
+        ], 403);
+    }
+
+    $isSubcategory = !is_null($category->parent_id);
+
+    $query = Product::where('show_in_category', true)
+        ->select('id', 'name', 'price', 'image', 'in_stock', 'sizes', 'colors', 'gallery_images');
+
+    if ($isSubcategory) {
+        $query->where('subcategory_id', $categoryId);
+    } else {
+        $query->where('category_id', $categoryId);
+    }
+
+    return $query->get()->map(fn($p) => $this->mapProduct($p));
+}
 
     public function indexApi()
     {
