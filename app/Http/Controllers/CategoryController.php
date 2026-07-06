@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ActivityLogger;
 use App\Models\Category;
 use App\Models\Navigation;
 use App\Models\Product;
-use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,37 +14,40 @@ class CategoryController extends Controller
     public function index()
     {
         $navigations = \App\Models\Navigation::orderBy('title')->get();
-        $categories  = \App\Models\Category::with('subcategories')->orderBy('position')->get();
+        $categories = \App\Models\Category::with('subcategories')->orderBy('position')->get();
+
         return view('categories.index', compact('navigations', 'categories'));
     }
 
     public function create()
     {
         $navigations = Navigation::where('status', 1)->orderBy('position')->get();
+
         return view('categories.create', compact('navigations'));
     }
 
     public function subCreate()
     {
-        $navigations      = Navigation::where('status', 1)->orderBy('position')->get();
+        $navigations = Navigation::where('status', 1)->orderBy('position')->get();
         $parentCategories = Category::where('status', 1)->whereNull('parent_id')->orderBy('name')->get();
+
         return view('categories.sub_create', compact('navigations', 'parentCategories'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'            => 'required|string|max:255',
-            'icon_image'      => 'required|image|mimes:jpg,jpeg,png,webp',
+            'name' => 'required|string|max:255',
+            'icon_image' => 'required|image|mimes:jpg,jpeg,png,webp',
             'highlight_image' => 'nullable|image|mimes:jpg,jpeg,png,webp',
-            'status'          => 'required|boolean',
-            'navigation_id'   => 'nullable|exists:navigations,id',
-            'parent_id'       => 'nullable|exists:categories,id',
-            'highlight'       => 'sometimes|accepted',
-            'password'        => 'nullable|string|max:255',
+            'status' => 'required|boolean',
+            'navigation_id' => 'nullable|exists:navigations,id',
+            'parent_id' => 'nullable|exists:categories,id',
+            'highlight' => 'sometimes|accepted',
+            'password' => 'nullable|string|max:255',
         ]);
 
-        $data            = $request->only(['name', 'status', 'navigation_id', 'parent_id', 'highlight']);
+        $data = $request->only(['name', 'status', 'navigation_id', 'parent_id', 'highlight']);
         $data['highlight'] = $request->has('highlight') ? 1 : 0;
 
         if ($request->filled('password')) {
@@ -53,12 +56,12 @@ class CategoryController extends Controller
 
         if ($request->hasFile('icon_image')) {
             $path = $request->file('icon_image')->store('categories', 'public');
-            $data['icon_image'] = '/storage/' . $path;
+            $data['icon_image'] = '/storage/'.$path;
         }
 
         if ($request->hasFile('highlight_image')) {
             $path = $request->file('highlight_image')->store('categories/highlight', 'public');
-            $data['highlight_image'] = '/storage/' . $path;
+            $data['highlight_image'] = '/storage/'.$path;
         }
 
         if ($request->parent_id) {
@@ -69,9 +72,9 @@ class CategoryController extends Controller
 
         // ✅ Activity Log
         ActivityLogger::log('created', 'Category', $category->name, $category->id, [
-            'name'   => $category->name,
+            'name' => $category->name,
             'status' => $category->status,
-            'type'   => $category->parent_id ? 'Subcategory' : 'Main Category',
+            'type' => $category->parent_id ? 'Subcategory' : 'Main Category',
         ]);
 
         return redirect()->route('categories.index')->with('success', 'Category Added Successfully');
@@ -80,28 +83,29 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         $navigations = Navigation::where('status', 1)->orderBy('position')->get();
-        $categories  = Category::where('status', 1)->get();
+        $categories = Category::where('status', 1)->get();
+
         return view('categories.edit', compact('category', 'navigations', 'categories'));
     }
 
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'name'            => 'required|string|max:255',
-            'icon_image'      => 'nullable|image|mimes:jpg,jpeg,png,webp',
+            'name' => 'required|string|max:255',
+            'icon_image' => 'nullable|image|mimes:jpg,jpeg,png,webp',
             'highlight_image' => 'nullable|image|mimes:jpg,jpeg,png,webp',
-            'status'          => 'required|boolean',
-            'navigation_id'   => 'nullable|exists:navigations,id',
-            'parent_id'       => 'nullable|exists:categories,id',
-            'highlight'       => 'sometimes|boolean',
-            'password'        => 'nullable|string|max:255',
+            'status' => 'required|boolean',
+            'navigation_id' => 'nullable|exists:navigations,id',
+            'parent_id' => 'nullable|exists:categories,id',
+            'highlight' => 'sometimes|boolean',
+            'password' => 'nullable|string|max:255',
         ]);
 
-        $data            = $request->only(['name', 'status', 'navigation_id', 'parent_id', 'highlight']);
+        $data = $request->only(['name', 'status', 'navigation_id', 'parent_id', 'highlight']);
         $data['highlight'] = $request->has('highlight') ? 1 : 0;
 
         if ($category->parent_id) {
-            $data['parent_id']     = $category->parent_id;
+            $data['parent_id'] = $category->parent_id;
             $data['navigation_id'] = null;
         } else {
             $data['parent_id'] = $request->parent_id ?? null;
@@ -118,19 +122,19 @@ class CategoryController extends Controller
 
         if ($request->hasFile('icon_image')) {
             $path = $request->file('icon_image')->store('categories', 'public');
-            $data['icon_image'] = '/storage/' . $path;
+            $data['icon_image'] = '/storage/'.$path;
         }
 
         if ($request->hasFile('highlight_image')) {
             $path = $request->file('highlight_image')->store('categories/highlight', 'public');
-            $data['highlight_image'] = '/storage/' . $path;
+            $data['highlight_image'] = '/storage/'.$path;
         }
 
         $category->update($data);
 
         // ✅ Activity Log
         ActivityLogger::log('updated', 'Category', $category->name, $category->id, [
-            'name'   => $request->name,
+            'name' => $request->name,
             'status' => $request->status,
         ]);
 
@@ -153,7 +157,8 @@ class CategoryController extends Controller
 
     public function toggleStatus(Category $category)
     {
-        $category->update(['status' => !$category->status]);
+        $category->update(['status' => ! $category->status]);
+
         return redirect()->route('categories.index')->with('success', 'Category status updated');
     }
 
@@ -181,14 +186,14 @@ class CategoryController extends Controller
         foreach ($categories as $navId => $cats) {
             $grouped[(int) $navId] = $cats->map(function ($cat) {
                 return [
-                    'id'            => $cat->id,
-                    'name'          => $cat->name,
-                    'icon_image'    => $cat->icon_image,
-                    'password'      => !empty($cat->password),
-                    'subcategories' => $cat->subcategories->map(fn($sub) => [
-                        'id'       => $sub->id,
-                        'name'     => $sub->name,
-                        'password' => !empty($sub->password),
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'icon_image' => $cat->icon_image,
+                    'password' => ! empty($cat->password),
+                    'subcategories' => $cat->subcategories->map(fn ($sub) => [
+                        'id' => $sub->id,
+                        'name' => $sub->name,
+                        'password' => ! empty($sub->password),
                     ])->values()->all(),
                 ];
             })->values()->all();
@@ -201,7 +206,7 @@ class CategoryController extends Controller
     {
         $navigation = Navigation::where('slug', $slug)->where('status', 1)->first();
 
-        if (!$navigation) {
+        if (! $navigation) {
             return response()->json(['error' => 'Menu not found', 'slug_received' => $slug], 404);
         }
 
@@ -214,13 +219,13 @@ class CategoryController extends Controller
             'navigation' => ['id' => $navigation->id, 'title' => $navigation->title, 'slug' => $navigation->slug],
             'categories' => $categories->map(function ($cat) {
                 return [
-                    'id'              => $cat->id,
-                    'name'            => $cat->name,
-                    'icon_image'      => $cat->icon_image,
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'icon_image' => $cat->icon_image,
                     'highlight_image' => $cat->highlight_image,
-                    'password'        => !empty($cat->password),
-                    'subcategories'   => $cat->subcategories->map(fn($sub) => [
-                        'id'   => $sub->id,
+                    'password' => ! empty($cat->password),
+                    'subcategories' => $cat->subcategories->map(fn ($sub) => [
+                        'id' => $sub->id,
                         'name' => $sub->name,
                     ])->values(),
                 ];
@@ -232,6 +237,7 @@ class CategoryController extends Controller
     {
         $category = Category::where('slug', $slug)->firstOrFail();
         $products = Product::where('category_id', $category->id)->where('status', 1)->take(15)->get();
+
         return response()->json(['category_name' => $category->name, 'products' => $products]);
     }
 
@@ -249,15 +255,15 @@ class CategoryController extends Controller
             'navigation' => ['id' => $navigation->id, 'title' => $navigation->title, 'slug' => $navigation->slug],
             'categories' => $categories->map(function ($cat) {
                 return [
-                    'id'              => $cat->id,
-                    'name'            => $cat->name,
-                    'icon_image'      => $cat->icon_image,
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'icon_image' => $cat->icon_image,
                     'highlight_image' => $cat->highlight_image,
-                    'password'        => !empty($cat->password),
-                    'subcategories'   => $cat->subcategories->map(fn($sub) => [
-                        'id'       => $sub->id,
-                        'name'     => $sub->name,
-                        'password' => !empty($sub->password),
+                    'password' => ! empty($cat->password),
+                    'subcategories' => $cat->subcategories->map(fn ($sub) => [
+                        'id' => $sub->id,
+                        'name' => $sub->name,
+                        'password' => ! empty($sub->password),
                     ])->values(),
                 ];
             }),
@@ -270,119 +276,136 @@ class CategoryController extends Controller
             $q->where('status', 1)->orderBy('position')->select('id', 'name', 'icon_image', 'parent_id', 'password');
         }])->where('id', $id)->where('status', 1)->select('id', 'name', 'icon_image')->first();
 
-        if (!$category) {
+        if (! $category) {
             return response()->json(['error' => 'Category not found', 'id_received' => $id], 404);
         }
-$lockedCategory = $this->lockedCategory($category);
+        $lockedCategory = $this->lockedCategory($category);
 
-if ($lockedCategory && !$this->isCategoryUnlocked($lockedCategory->id)) {
-    return response()->json([
-        'locked' => true,
-        'message' => 'Password required'
-    ], 403);
-}
+        if ($lockedCategory && ! $this->isCategoryUnlocked($lockedCategory->id)) {
+            return response()->json([
+                'locked' => true,
+                'message' => 'Password required',
+            ], 403);
+        }
+
         return response()->json([
-            'parent'         => ['id' => $category->id, 'name' => $category->name, 'icon_image' => $category->icon_image ? url($category->icon_image) : null],
-            'subcategories'  => $category->subcategories->map(function ($sub) {
+            'parent' => ['id' => $category->id, 'name' => $category->name, 'icon_image' => $category->icon_image ? url($category->icon_image) : null],
+            'subcategories' => $category->subcategories->map(function ($sub) {
                 return [
-                    'id'         => $sub->id,
-                    'name'       => $sub->name,
+                    'id' => $sub->id,
+                    'name' => $sub->name,
                     'icon_image' => $sub->icon_image ? url($sub->icon_image) : null,
-                    'password'   => !empty($sub->password),
+                    'password' => ! empty($sub->password),
                 ];
             })->values(),
         ]);
     }
 
-    public function products($id)
-    {
-        $category = Category::find($id);
-        if (!$category) return response()->json(['error' => 'Category not found'], 404);
-        $lockedCategory = $this->lockedCategory($category);
+   public function products($id)
+{
+    $category = Category::find($id);
 
-if ($lockedCategory && !$this->isCategoryUnlocked($lockedCategory->id)) {
+    if (!$category) {
+        return response()->json(['error' => 'Category not found'], 404);
+    }
+
+    $lockedCategory = $this->lockedCategory($category);
+
+    if ($lockedCategory && !$this->isCategoryUnlocked($lockedCategory->id)) {
+        return response()->json([
+            'locked' => true,
+            'category_id' => $lockedCategory->id,
+            'message' => 'Password required',
+        ], 403);
+    }
+
+    $isSubcategory = !is_null($category->parent_id);
+
+    $query = Product::query()
+        ->select('id', 'name', 'price', 'image')
+        ->where('show_in_category', true);
+
+    if ($isSubcategory) {
+        $query->where('subcategory_id', $id);
+    } else {
+        $query->where('category_id', $id)->whereNull('subcategory_id');
+    }
+
+    $products = $query->get()->map(function ($product) {
+        return [
+            'id'    => $product->id,
+            'name'  => $product->name,
+            'price' => $product->price,
+            'image' => $product->image ? asset('storage/' . $product->image) : null,
+        ];
+    });
+
     return response()->json([
-        'locked' => true,
-        'message' => 'Password required'
-    ], 403);
+        'category' => [
+            'id' => $category->id,
+            'name' => $category->name,
+        ],
+        'products' => $products,
+    ]);
 }
 
-        $isSubcategory = !is_null($category->parent_id);
-        $query = Product::query()->select('id', 'name', 'price', 'image')->where('show_in_category', true);
+    public function verifyCategoryPassword(Request $request, $id)
+    {
+        $request->validate([
+            'password' => 'required|string',
+        ]);
 
-        if ($isSubcategory) {
-            $query->where('subcategory_id', $id);
-        } else {
-            $query->where('category_id', $id)->whereNull('subcategory_id');
+        $category = Category::findOrFail($id);
+
+        if (! $category->password) {
+            session()->put('unlocked_categories.'.$category->id, true);
+
+            return response()->json(['success' => true]);
         }
 
-        $products = $query->get()->map(function ($product) {
-            return [
-                'id'    => $product->id,
-                'name'  => $product->name,
-                'price' => $product->price,
-                'image' => $product->image ? asset('storage/' . $product->image) : null,
-            ];
-        });
+        if (! Hash::check($request->password, $category->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid password',
+            ], 401);
+        }
 
-        return response()->json(['category' => ['id' => $category->id, 'name' => $category->name], 'products' => $products]);
-    }
+        session()->put('unlocked_categories.'.$category->id, true);
 
-   public function verifyCategoryPassword(Request $request, $id)
-{
-    $request->validate([
-        'password' => 'required|string'
-    ]);
-
-    $category = Category::findOrFail($id);
-
-    if (!$category->password) {
-        session()->put('unlocked_categories.' . $category->id, true);
         return response()->json(['success' => true]);
     }
-
-    if (!Hash::check($request->password, $category->password)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid password'
-        ], 401);
-    }
-
-    session()->put('unlocked_categories.' . $category->id, true);
-
-    return response()->json(['success' => true]);
-}
 
     public function reorder(Request $request)
     {
         foreach ($request->order as $item) {
             Category::where('id', $item['id'])->update(['position' => $item['position']]);
         }
+
         return response()->json(['success' => true]);
     }
 
-private function lockedCategory($category)
-{
-    if (!$category) return null;
-
-    if (!empty($category->password)) {
-        return $category;
-    }
-
-    if ($category->parent_id) {
-        $parent = Category::find($category->parent_id);
-        if ($parent && !empty($parent->password)) {
-            return $parent;
+    private function lockedCategory($category)
+    {
+        if (! $category) {
+            return null;
         }
+
+        if (! empty($category->password)) {
+            return $category;
+        }
+
+        if ($category->parent_id) {
+            $parent = Category::find($category->parent_id);
+            if ($parent && ! empty($parent->password)) {
+                return $parent;
+            }
+        }
+
+        return null;
     }
 
-    return null;
-}
-
-private function isCategoryUnlocked($categoryId)
-{
-    return session()->get('unlocked_categories.' . $categoryId) === true;
-}
-
-
+    private function isCategoryUnlocked($categoryId)
+    {
+        return session()->get('unlocked_categories.'.$categoryId) === true;
+    }
 }
