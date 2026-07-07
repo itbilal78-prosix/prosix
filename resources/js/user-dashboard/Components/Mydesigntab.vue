@@ -175,7 +175,7 @@ const generateWatermarkedBlobUrl = async (design) => {
   canvas.height = img.naturalHeight || img.height
 
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-  drawWatermark(ctx, canvas.width, canvas.height)
+//   drawWatermark(ctx, canvas.width, canvas.height)
 
   const blob = await new Promise((resolve) => {
     canvas.toBlob(resolve, 'image/png')
@@ -249,7 +249,8 @@ const downloadWithWatermark = async (design) => {
   try {
     downloadingId.value = design.id
 
-    const blobUrl = await generateWatermarkedBlobUrl(design)
+    // const blobUrl = await generateWatermarkedBlobUrl(design)
+    const blobUrl = getImageUrl(design)
 
     const link = document.createElement('a')
     link.href = blobUrl
@@ -268,7 +269,8 @@ const downloadWithWatermark = async (design) => {
 // drag card -> pass watermarked image url to browser
 const handleDragStart = async (event, design) => {
   try {
-    const blobUrl = await generateWatermarkedBlobUrl(design)
+    // const blobUrl = await generateWatermarkedBlobUrl(design)
+    const blobUrl = getImageUrl(design)
 
     event.dataTransfer.effectAllowed = 'copy'
     event.dataTransfer.setData('text/uri-list', blobUrl)
