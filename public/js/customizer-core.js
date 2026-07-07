@@ -3650,10 +3650,10 @@ await fetch(`/admin/models/${MODEL_ID}/save-design`, {
         ctx.fillRect(0, 0, totalW, totalH);
 
         // 2. Frame.png full background
-        const frameImg = await loadImg('/assets/images/frame.png');
-        if (frameImg) {
-            ctx.drawImage(frameImg, 0, 0, totalW, totalH);
-        }
+        // const frameImg = await loadImg('/assets/images/frame.png');
+        // if (frameImg) {
+        //     ctx.drawImage(frameImg, 0, 0, totalW, totalH);
+        // }
 
         // 3. Header
         ctx.fillStyle = '#0a0a0a';
@@ -3700,11 +3700,11 @@ await fetch(`/admin/models/${MODEL_ID}/save-design`, {
         ctx.font = '12px Arial';
         ctx.fillStyle = '#C9A84C';
         ctx.textAlign = 'right';
-        ctx.fillText(
-            withWatermark ? 'DRAFT  —  NOT FOR PRODUCTION' : 'APPROVED FOR PRODUCTION',
-            totalW - PAD_RIGHT,
-            midY + 18
-        );
+        // ctx.fillText(
+        //     withWatermark ? 'DRAFT  —  NOT FOR PRODUCTION' : 'APPROVED FOR PRODUCTION',
+        //     totalW - PAD_RIGHT,
+        //     midY + 18
+        // );
 
         // 4. View images
         viewOrder.forEach((view, idx) => {
