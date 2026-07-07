@@ -3722,20 +3722,20 @@ await fetch(`/admin/models/${MODEL_ID}/save-design`, {
             }
 
             // Draft watermark
-            if (withWatermark) {
-                ctx.save();
-                ctx.translate(cellX + CELL_W / 2, HEADER_H + PAD + CELL_H / 2);
-                ctx.rotate(-Math.PI / 5.5);
-                ctx.globalAlpha = 0.13;
-                ctx.fillStyle = '#970000';
-                ctx.font = 'bold 80px Arial Black, Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('DRAFT', 0, -25);
-                ctx.font = 'bold 30px Arial Black, Arial';
-                ctx.fillText('NOT PURCHASED', 0, 25);
-                ctx.restore();
-            }
+            // if (withWatermark) {
+            //     ctx.save();
+            //     ctx.translate(cellX + CELL_W / 2, HEADER_H + PAD + CELL_H / 2);
+            //     ctx.rotate(-Math.PI / 5.5);
+            //     ctx.globalAlpha = 0.13;
+            //     ctx.fillStyle = '#970000';
+            //     ctx.font = 'bold 80px Arial Black, Arial';
+            //     ctx.textAlign = 'center';
+            //     ctx.textBaseline = 'middle';
+            //     ctx.fillText('DRAFT', 0, -25);
+            //     ctx.font = 'bold 30px Arial Black, Arial';
+            //     ctx.fillText('NOT PURCHASED', 0, 25);
+            //     ctx.restore();
+            // }
 
             // View label
             ctx.font = 'bold 22px Arial Black, Arial';
@@ -3755,7 +3755,8 @@ await fetch(`/admin/models/${MODEL_ID}/save-design`, {
         btn.textContent = 'Generating...';
 
         try {
-            const canvas = await buildDesignCanvas({ withWatermark: true });
+            // const canvas = await buildDesignCanvas({ withWatermark: true });
+            const canvas = await buildDesignCanvas({ withWatermark: false });
             const link = document.createElement('a');
             link.download = `prosix-design-draft-${Date.now()}.png`;
             link.href = canvas.toDataURL('image/png');
