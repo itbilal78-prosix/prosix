@@ -63,20 +63,78 @@ app.component('profile-tab', ProfileTab);
 //  GLOBAL INSPECT / DEVTOOLS PROTECTION
 // =====================================================
 
-document.addEventListener('contextmenu', e => e.preventDefault())
+document.addEventListener('contextmenu', event => {
+  event.preventDefault()
+})
 
-document.addEventListener('keydown', e => {
-  if (
-    e.key === 'F12' ||
-    (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-    (e.ctrlKey && e.key.toUpperCase() === 'U') ||
-    (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
-  ) {
-    e.preventDefault()
-    e.stopPropagation()
-    return false
+document.addEventListener('keydown', event => {
+  const key = event.key.toUpperCase()
+
+  const blocked =
+    event.key === 'F12' ||
+    (event.ctrlKey && event.shiftKey && ['I', 'J', 'C'].includes(key)) ||
+    (event.ctrlKey && key === 'U') ||
+    (event.metaKey && event.altKey && ['I', 'J', 'C'].includes(key))
+
+  if (blocked) {
+    event.preventDefault()
+    event.stopImmediatePropagation()
   }
 })
+
+let accessBlocked = false
+
+const blockPage = () => {
+  if (accessBlocked) return
+
+  accessBlocked = true
+  document.documentElement.innerHTML = `
+    <body style="
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#000;
+      color:#fff;
+      font-family:Arial,sans-serif;
+    ">
+      <div style="text-align:center">
+        <h1 style="margin:0 0 10px">Access Denied</h1>
+        <p style="margin:0;color:#aaa">
+          Developer tools are not allowed.
+        </p>
+      </div>
+    </body>
+  `
+}
+
+const detectDevTools = () => {
+  const isMobile =
+    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+      .test(navigator.userAgent)
+
+  if (isMobile) return
+
+  const widthDifference =
+    Math.abs(window.outerWidth - window.innerWidth)
+
+  const heightDifference =
+    Math.abs(window.outerHeight - window.innerHeight)
+
+  if (
+    widthDifference > 100 ||
+    heightDifference > 100
+  ) {
+    blockPage()
+  }
+}
+
+window.addEventListener('resize', detectDevTools)
+
+setInterval(detectDevTools, 500)
+
+detectDevTools()
 
 const devToolsCheck = () => {
   // Real mobile device hai toh skip karo
