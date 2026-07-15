@@ -59,7 +59,7 @@ $orders = PlaceOrder::latest()->get();
             'quote_files.*' => 'file|max:20480',
         ]);
 
-        $userId = Auth::guard('sanctum')->id();
+$userId = $request->user()->id;
 
         $mockupPaths = $this->saveFiles($request, 'mockup_files', 'orders/mockup');
         $rosterPaths = $this->saveFiles($request, 'roster_files', 'orders/roster');

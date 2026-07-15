@@ -79,6 +79,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MyOrdersTab from './Components/MyOrdersTab.vue'
+import MyPlaceOrdersTab from './Components/MyPlaceOrdersTab.vue'
 import Mydesigntab from './Components/Mydesigntab.vue'
 import DashboardHeader from './Components/DashboardHeader.vue'
 import FavoriteDesignsTab from './Components/FavoriteDesignsTab.vue'

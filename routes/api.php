@@ -159,8 +159,19 @@ Route::middleware('auth:sanctum')->group(function () {
 // -----------------------------------------------
 // PLACE ORDER
 // -----------------------------------------------
-Route::post('/place-order', [PlaceOrderController::class, 'store'])
-     ->middleware('auth:sanctum')->withoutMiddleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post(
+        '/place-order',
+        [PlaceOrderController::class, 'store']
+    );
+
+    Route::get(
+        '/place-order/my-orders',
+        [PlaceOrderController::class, 'myOrders']
+    );
+
+});
 // -----------------------------------------------
 // MEMBERSHIP & ARTWORK (Public)
 // -----------------------------------------------

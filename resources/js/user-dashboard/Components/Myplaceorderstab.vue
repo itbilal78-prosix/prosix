@@ -94,7 +94,7 @@
                 <a
                   v-for="(f, i) in order.mockup_files"
                   :key="i"
-                  :href="'/uploads/orders/mockup/' + f"
+:href="'/uploads/orders/mockup/' + getFileName(f)"
                   target="_blank"
                   class="po-file-chip"
                 >
@@ -158,13 +158,48 @@ const props = defineProps({
     default: false
   }
 })
+const getFileName = (file) => {
+  if (!file) return ''
+
+  if (typeof file === 'object') {
+    return file.filename || ''
+  }
+
+  return String(file)
+}
 
 const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : ''
 
-const getExt = (filename) => {
-  if (!filename) return 'FILE'
-  const ext = filename.split('.').pop().toUpperCase()
-  return ext.slice(0, 4)
+const getExt = (file) => {
+  if (!file) return 'FILE'
+
+  if (typeof file === 'object') {
+    if (file.ext) {
+      return String(file.ext).toUpperCase().slice(0, 4)
+    }
+
+    if (file.original) {
+      return String(file.original)
+        .split('.')
+        .pop()
+        .toUpperCase()
+        .slice(0, 4)
+    }
+
+    if (file.filename) {
+      return String(file.filename)
+        .split('.')
+        .pop()
+        .toUpperCase()
+        .slice(0, 4)
+    }
+  }
+
+  return String(file)
+    .split('.')
+    .pop()
+    .toUpperCase()
+    .slice(0, 4)
 }
 </script>
 
