@@ -63,38 +63,38 @@ app.component('profile-tab', ProfileTab);
 //  GLOBAL INSPECT / DEVTOOLS PROTECTION
 // =====================================================
 
-// document.addEventListener('contextmenu', e => e.preventDefault())
+document.addEventListener('contextmenu', e => e.preventDefault())
 
-// document.addEventListener('keydown', e => {
-//   if (
-//     e.key === 'F12' ||
-//     (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-//     (e.ctrlKey && e.key.toUpperCase() === 'U') ||
-//     (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
-//   ) {
-//     e.preventDefault()
-//     e.stopPropagation()
-//     return false
-//   }
-// })
+document.addEventListener('keydown', e => {
+  if (
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+    (e.ctrlKey && e.key.toUpperCase() === 'U') ||
+    (e.metaKey && e.altKey && ['I','J','C'].includes(e.key.toUpperCase()))
+  ) {
+    e.preventDefault()
+    e.stopPropagation()
+    return false
+  }
+})
 
-// const devToolsCheck = () => {
-//   // Real mobile device hai toh skip karo
-//   const isRealMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-//   if (isRealMobile) return
+const devToolsCheck = () => {
+  // Real mobile device hai toh skip karo
+  const isRealMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  if (isRealMobile) return
 
-//   const threshold = 160
-//   const widthDiff = window.outerWidth - window.innerWidth
-//   const heightDiff = window.outerHeight - window.innerHeight
+  const threshold = 160
+  const widthDiff = window.outerWidth - window.innerWidth
+  const heightDiff = window.outerHeight - window.innerHeight
 
-//   if (widthDiff > threshold || heightDiff > threshold) {
-//     document.body.innerHTML = '<h1 style="text-align:center;margin-top:20%;font-family:sans-serif;color:#000;">Access Denied</h1>'
-//     clearInterval(checkInterval)
-//   }
-// }
+  if (widthDiff > threshold || heightDiff > threshold) {
+    document.body.innerHTML = '<h1 style="text-align:center;margin-top:20%;font-family:sans-serif;color:#000;">Access Denied</h1>'
+    clearInterval(checkInterval)
+  }
+}
 
-// window.addEventListener('resize', devToolsCheck)
-// const checkInterval = setInterval(devToolsCheck, 1000)
+window.addEventListener('resize', devToolsCheck)
+const checkInterval = setInterval(devToolsCheck, 1000)
 
 // Mount app
 app.mount('#app');
