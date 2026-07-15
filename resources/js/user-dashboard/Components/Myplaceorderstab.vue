@@ -112,7 +112,7 @@
                 <a
                   v-for="(f, i) in order.roster_files"
                   :key="i"
-                  :href="'/uploads/orders/roster/' + f"
+:href="'/uploads/orders/roster/' + getFileName(f)"
                   target="_blank"
                   class="po-file-chip"
                 >
@@ -130,7 +130,7 @@
                 <a
                   v-for="(f, i) in order.quote_files"
                   :key="i"
-                  :href="'/uploads/orders/quote/' + f"
+:href="'/uploads/orders/quote/' + getFileName(f)"
                   target="_blank"
                   class="po-file-chip"
                 >
