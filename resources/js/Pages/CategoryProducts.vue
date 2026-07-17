@@ -1546,10 +1546,12 @@ const groupedFilteredModels = computed(() => {
   })
   return groups
 })
+// const handleCardClick = (modelId) => {
+//   alert('This page is coming soon! We are working on it.')
+// }
 const handleCardClick = (modelId) => {
-  alert('This page is coming soon! We are working on it.')
+  router.push(`/product/${modelId}?type=model`)
 }
-
 // working //
 
 
