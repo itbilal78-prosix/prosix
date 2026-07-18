@@ -227,7 +227,3 @@ Route::middleware('auth:sanctum')->get(
     '/user/designs',
     [UserCustomizationController::class, 'designs']
 );
-
-
-
-

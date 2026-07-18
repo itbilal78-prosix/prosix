@@ -351,10 +351,10 @@
                 BACK
             </button>
            <div style="display:flex;gap:10px;">
-    <button onclick="mcApplyOnly()"
-        style="padding:11px 24px; background:#1a1a1a; color:#fff; border:none; border-radius:7px; font-weight:700; font-size:13px; cursor:pointer;">
-        APPLY
-    </button>
+<button onclick="mcSaveAndApply(false)"
+    style="padding:11px 24px; background:#1a1a1a; color:#fff; border:none; border-radius:7px; font-weight:700; font-size:13px; cursor:pointer;">
+    APPLY
+</button>
 </div>
         </div>
     </div>
@@ -444,13 +444,14 @@
 
     // ===== MC (Mascot Customize) State =====
     window._mc = {
-        originalSvg: null, // original SVG string
-        currentSvg: null, // working SVG string (after edits)
-        canvas: null, // fabric canvas OR null
+        originalSvg: null, 
+        currentSvg: null,
+        canvas: null,
         undoStack: [],
         tool: 'select',
         eraserRadius: 20,
-        colorMap: {}, // { detectedHex: replacedHex }
+        colorMap: {},
+        selectedSourceColors: [],
         colorCount: 2,
         opacity: 100,
         mascotName: ''
@@ -1261,6 +1262,14 @@ window.applySelectedMascotToApplication = function() {
 
         // FIX: sirf colorCount tak rows dikhao
         detectedColors = detectedColors.slice(0, window._mc.colorCount || 2);
+        window._mc.selectedSourceColors =
+    detectedColors
+        .map(function (hex) {
+            return String(
+                hex || ''
+            ).toLowerCase();
+        })
+        .filter(Boolean);
 
         var backendColors = (window.selectedColors && window.selectedColors.length) ?
             window.selectedColors :
@@ -1275,6 +1284,7 @@ window.applySelectedMascotToApplication = function() {
         detectedColors.forEach(function(detectedHex) {
             var row = document.createElement('div');
             row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
+            row.dataset.sourceColor = detectedHex.toLowerCase();
 
             var fromBox = document.createElement('div');
             fromBox.style.cssText =
@@ -1462,16 +1472,77 @@ window.mcSaveAndApply = function (doSave) {
     var canvas = document.getElementById('mcCanvas');
     if (!canvas) return;
 
-    // ✅ Button se colorCount lo
-    var selectedBtn = document.querySelector('#mcColorCountBtns button[style*="background: rgb(26, 26, 26)"], #mcColorCountBtns button[style*="background:#1a1a1a"], #mcColorCountBtns button[style*="background: #1a1a1a"]');
-    if (selectedBtn) {
-        var btnText = selectedBtn.textContent.trim();
-        window._mc.colorCount = btnText === '8+' ? 8 : parseInt(btnText) || 2;
-    }
+/*
+ * Popup mein jitni color rows visible hain,
+ * unhi ko exact save karo.
+ */
+var colorRows = Array.from(
+    document.querySelectorAll(
+        '#mcColorSwatches [data-source-color]'
+    )
+);
 
-    // ✅ colorCount global variable mein bhi save karo
-    var savedColorCount = window._mc.colorCount;
-    console.log('✅ savedColorCount:', savedColorCount);
+var selectedPopupColors = colorRows
+    .map(function (row) {
+        return String(
+            row.dataset.sourceColor || ''
+        ).toLowerCase();
+    })
+    .filter(Boolean);
+
+var savedColorCount =
+    selectedPopupColors.length;
+
+window._mc.colorCount =
+    savedColorCount;
+
+window._mc.selectedSourceColors =
+    selectedPopupColors.slice();
+
+console.log(
+    'Exact popup color count:',
+    savedColorCount
+);
+
+console.log(
+    'Exact popup colors:',
+    selectedPopupColors
+);
+
+var selectedPopupColors =
+    Array.isArray(
+        window._mc.selectedSourceColors
+    )
+        ? window._mc.selectedSourceColors.slice(
+            0,
+            savedColorCount
+        )
+        : [];
+
+var finalPopupColors =
+    selectedPopupColors.map(
+        function (sourceHex) {
+            var key = String(
+                sourceHex || ''
+            ).toLowerCase();
+
+            return (
+                window._mc.colorMap[key] ||
+                window._mc.colorMap[
+                    sourceHex
+                ] ||
+                sourceHex
+            ).toLowerCase();
+        }
+    );
+
+finalPopupColors =
+    finalPopupColors.filter(Boolean);
+
+savedColorCount =
+    finalPopupColors.length ||
+    savedColorCount;
+        console.log('✅ savedColorCount:', savedColorCount);
 
     var nameEl = document.getElementById('mcMascotName');
     var name = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : (window._mc.mascotName || 'My Mascot');
@@ -1515,8 +1586,19 @@ window.mcSaveAndApply = function (doSave) {
     // ✅ BAAD MEIN layer update karo — applyDirectMascotToLayer ke baad
     var layer = window.findLayerById ? window.findLayerById(layerId) : null;
     if (layer) {
-        layer.mascotTitle = name;
-        layer._selectedColorCount = savedColorCount; // ✅ override karo
+     layer.mascotTitle = name;
+
+layer._selectedMascotColors =
+    finalPopupColors.slice();
+
+layer._selectedColorCount =
+    savedColorCount;
+
+layer._detectedColors =
+    layer._selectedMascotColors.slice();
+
+layer._colorMap = {};
+
         console.log('✅ layer._selectedColorCount SET TO:', layer._selectedColorCount);
 
         if (alphaMap.length > 0) {
@@ -1533,8 +1615,17 @@ window.mcSaveAndApply = function (doSave) {
 setTimeout(function() {
     var updatedLayer = window.findLayerById ? window.findLayerById(layerId) : null;
     if (updatedLayer) {
-        updatedLayer._selectedColorCount = savedColorCount;
-        console.log('🎨 Rendering colors with count:', updatedLayer._selectedColorCount);
+updatedLayer._selectedMascotColors =
+    finalPopupColors.slice();
+
+updatedLayer._selectedColorCount =
+    savedColorCount;
+
+updatedLayer._detectedColors =
+    updatedLayer
+        ._selectedMascotColors
+        .slice();
+                console.log('🎨 Rendering colors with count:', updatedLayer._selectedColorCount);
         // ✅ FIX: _renderDirectMascotColors ki jagah showDirectMascotControls use karo
         if (window.selectApplicationLayer) {
             window.selectApplicationLayer(layerId);

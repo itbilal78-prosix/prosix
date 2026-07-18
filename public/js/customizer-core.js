@@ -2888,174 +2888,606 @@ window.isDraggingKnob = false;
 
 
 
-    window.saveDesign = async function () {
-        if (window.isSaving) return;
+//     window.saveDesign = async function () {
+//         if (window.isSaving) return;
 
-        if (window.isUserMode) {
+//         if (window.isUserMode) {
 
-            const designName = prompt('Apne design ka naam rakho:', 'My Design ' + new Date().toLocaleDateString());
-            if (!designName) return;
+//             const designName = prompt('Apne design ka naam rakho:', 'My Design ' + new Date().toLocaleDateString());
+//             if (!designName) return;
 
-            window.isSaving = true;
+//             window.isSaving = true;
 
-            // ✅ DEBUG - dekho kya save ho raha hai
-            console.log('=== USER SAVE START ===');
-            console.log('colorChanges:', JSON.stringify(window.colorChanges));
-            console.log('patternsApplied:', JSON.stringify(window.patternsApplied));
-            console.log('mascotsApplied:', JSON.stringify(window.mascotsApplied));
-            console.log('applicationsApplied:', JSON.stringify(window.applicationsApplied));
+//             // ✅ DEBUG - dekho kya save ho raha hai
+//             console.log('=== USER SAVE START ===');
+//             console.log('colorChanges:', JSON.stringify(window.colorChanges));
+//             console.log('patternsApplied:', JSON.stringify(window.patternsApplied));
+//             console.log('mascotsApplied:', JSON.stringify(window.mascotsApplied));
+//             console.log('applicationsApplied:', JSON.stringify(window.applicationsApplied));
 
-            try {
-                const token = localStorage.getItem('auth_token') || '';
+//             try {
+//                 const token = localStorage.getItem('auth_token') || '';
 
-                // ✅ window.colorChanges use karo — local variable nahi
-                // ✅ Save se pehle _savedBbox clean karo (server pe save nahi karni)
-                // Aur baad mein restore karni hai
-                const appToSave = JSON.parse(JSON.stringify(window.applicationsApplied || {}));
+//                 // ✅ window.colorChanges use karo — local variable nahi
+//                 // ✅ Save se pehle _savedBbox clean karo (server pe save nahi karni)
+//                 // Aur baad mein restore karni hai
+//                 const appToSave = JSON.parse(JSON.stringify(window.applicationsApplied || {}));
 
-                // _savedBbox remove karo saved data se (private data hai)
-                Object.values(appToSave).forEach(viewData => {
-                    Object.values(viewData).forEach(layers => {
-                        layers.forEach(layer => {
-                            delete layer._savedBbox;
-                        });
-                    });
-                });
+//                 // _savedBbox remove karo saved data se (private data hai)
+//                 Object.values(appToSave).forEach(viewData => {
+//                     Object.values(viewData).forEach(layers => {
+//                         layers.forEach(layer => {
+//                             delete layer._savedBbox;
+//                         });
+//                     });
+//                 });
 
-                const payload = {
-                    name: designName,
-                    color_changes: window.colorChanges || colorChanges || {},
-                    pattern_changes: window.patternsApplied || {},
-                    mascot_changes: window.mascotsApplied || {},
-                    applications: appToSave
-                };
+//                 const payload = {
+//                     name: designName,
+//                     color_changes: window.colorChanges || colorChanges || {},
+//                     pattern_changes: window.patternsApplied || {},
+//                     mascot_changes: window.mascotsApplied || {},
+//                     applications: appToSave
+//                 };
 
-                console.log('=== SAVING PAYLOAD ===', JSON.stringify(payload));
+//                 console.log('=== SAVING PAYLOAD ===', JSON.stringify(payload));
 
-                console.log('Payload:', JSON.stringify(payload));
+//                 console.log('Payload:', JSON.stringify(payload));
 
-                const res = await fetch(`/api/user/save-design/${MODEL_ID}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                    },
-                    body: JSON.stringify(payload)
-                });
+//                 const res = await fetch(`/api/user/save-design/${MODEL_ID}`, {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json',
+//                         'Accept': 'application/json',
+//                         'Authorization': `Bearer ${token}`,
+//                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+//                     },
+//                     body: JSON.stringify(payload)
+//                 });
 
-                const responseData = await res.json();
-                console.log('Server response:', responseData);
+//                 const responseData = await res.json();
+//                 console.log('Server response:', responseData);
 
-                if (res.ok) {
-                    await generateAndSaveThumbnail();
-                    window.showSaveSuccessToast('Successfully Saved', `Design "${designName}" saved`);
-                } else {
-                    alert('❌ Save failed: ' + (responseData.message || 'Please login first'));
-                }
+//                 if (res.ok) {
+//                     await generateAndSaveThumbnail();
+//                     window.showSaveSuccessToast('Successfully Saved', `Design "${designName}" saved`);
+//                 } else {
+//                     alert('❌ Save failed: ' + (responseData.message || 'Please login first'));
+//                 }
 
-            } catch (e) {
-                console.error('Save error:', e);
-                window.showSaveSuccessToast('Save Failed', 'Please try again');
+//             } catch (e) {
+//                 console.error('Save error:', e);
+//                 window.showSaveSuccessToast('Save Failed', 'Please try again');
+//             }
+
+//             window.isSaving = false;
+//             return;
+//         }
+
+//         // ============ ADMIN MODE ============
+//         window.isSaving = true;
+//         try {
+//             const views = ['front', 'back', 'left', 'right'];
+//             const allSvgs = {};
+
+//             function embedFontsInSvg(svgElement) {
+//                 let fontCSS = '';
+//                 if (window.backendFonts) {
+//                     window.backendFonts.forEach(font => {
+//                         fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }`;
+//                     });
+//                 }
+//                 let defs = svgElement.querySelector('defs');
+//                 if (!defs) {
+//                     defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+//                     svgElement.insertBefore(defs, svgElement.firstChild);
+//                 }
+//                 const oldStyle = defs.querySelector('style[data-fonts]');
+//                 if (oldStyle) oldStyle.remove();
+//                 if (fontCSS) {
+//                     const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+//                     style.setAttribute('data-fonts', 'true');
+//                     style.textContent = fontCSS;
+//                     defs.insertBefore(style, defs.firstChild);
+//                 }
+//             }
+
+//             for (const v of views) {
+//                 if (!modelViews[v]?.svg_url) continue;
+//                 if (v === window.currentView) {
+//                     const liveSvg = window.getMainSvg();
+//                     if (liveSvg) {
+//                         const clone = liveSvg.cloneNode(true);
+//                         embedFontsInSvg(clone);
+//                         allSvgs[v] = new XMLSerializer().serializeToString(clone);
+//                         continue;
+//                     }
+//                 }
+//                 const res2 = await fetch(modelViews[v].svg_url);
+//                 const text = await res2.text();
+//                 const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+//                 const svg = doc.querySelector('svg');
+//                 if (!svg) continue;
+//                 svg.setAttribute('width', '100%');
+//                 svg.setAttribute('height', '100%');
+//                 svg.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
+//                     if (!el.id) el.id = `svg-part-${i}`;
+//                     if (gradientChanges?.[v]?.[el.id]) {
+//                         rebuildGradient(svg, el.id, gradientChanges[v][el.id], v);
+//                         el.setAttribute('fill', `url(#gradient-${v}-${el.id})`);
+//                     } else if (colorChanges?.[v]?.[el.id]) {
+//                         el.setAttribute('fill', colorChanges[v][el.id]);
+//                     }
+//                 });
+//                 if (window.applyPatternsToSvg) applyPatternsToSvg(svg, v);
+//                 if (window.applyMascotsToSvg) applyMascotsToSvg(svg, v);
+//                 if (window.applyApplicationsToSvg) applyApplicationsToSvg(svg, v);
+//                 embedFontsInSvg(svg);
+//                 allSvgs[v] = new XMLSerializer().serializeToString(svg);
+//             }
+
+// await fetch(`/admin/models/${MODEL_ID}/save-design`, {
+//                         method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+//                 },
+//                 body: JSON.stringify({
+//                     svgs: allSvgs,
+//                     color_changes: window.colorChanges || {},
+//                     pattern_changes: window.patternsApplied || {},
+//                     mascot_changes: window.mascotsApplied || {},
+//                     applications: window.applicationsApplied || {}
+//                 })
+//             });
+
+//             const liveSvgForThumb = window.getMainSvg();
+//             if (liveSvgForThumb && window.embedFontsInSvg) {
+//                 window.embedFontsInSvg(liveSvgForThumb);
+//             }
+//             await generateAndSaveThumbnail();
+//             window.showSaveSuccessToast('Successfully Saved', 'Design saved successfully');
+
+//         } catch (e) {
+//             console.error(e);
+//             alert(' Save Failed');
+//         }
+
+//         window.isSaving = false;
+//     };
+
+
+
+window.saveDesign = async function () {
+    if (window.isSaving) return;
+
+    // =====================================================
+    // USER MODE
+    // =====================================================
+    if (window.isUserMode) {
+
+        // Existing saved design open hai
+        if (window.DESIGN_ID) {
+            if (typeof window.openSaveDesignPopup === 'function') {
+                window.openSaveDesignPopup();
+            } else {
+                console.error('Save design popup function is missing.');
             }
 
-            window.isSaving = false;
             return;
         }
 
-        // ============ ADMIN MODE ============
-        window.isSaving = true;
-        try {
-            const views = ['front', 'back', 'left', 'right'];
-            const allSvgs = {};
+        // New design hai, direct name step open karo
+        if (typeof window.showSaveAsNewStep === 'function') {
+            window.showSaveAsNewStep();
 
-            function embedFontsInSvg(svgElement) {
-                let fontCSS = '';
-                if (window.backendFonts) {
-                    window.backendFonts.forEach(font => {
-                        fontCSS += `@font-face { font-family: 'font_${font.id}'; src: url('${font.file_url}') format('truetype'); }`;
-                    });
-                }
-                let defs = svgElement.querySelector('defs');
-                if (!defs) {
-                    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-                    svgElement.insertBefore(defs, svgElement.firstChild);
-                }
-                const oldStyle = defs.querySelector('style[data-fonts]');
-                if (oldStyle) oldStyle.remove();
-                if (fontCSS) {
-                    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-                    style.setAttribute('data-fonts', 'true');
-                    style.textContent = fontCSS;
-                    defs.insertBefore(style, defs.firstChild);
-                }
+            const popup = document.getElementById('saveDesignPopup');
+
+            if (popup) {
+                popup.classList.add('show');
+                popup.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
             }
-
-            for (const v of views) {
-                if (!modelViews[v]?.svg_url) continue;
-                if (v === window.currentView) {
-                    const liveSvg = window.getMainSvg();
-                    if (liveSvg) {
-                        const clone = liveSvg.cloneNode(true);
-                        embedFontsInSvg(clone);
-                        allSvgs[v] = new XMLSerializer().serializeToString(clone);
-                        continue;
-                    }
-                }
-                const res2 = await fetch(modelViews[v].svg_url);
-                const text = await res2.text();
-                const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-                const svg = doc.querySelector('svg');
-                if (!svg) continue;
-                svg.setAttribute('width', '100%');
-                svg.setAttribute('height', '100%');
-                svg.querySelectorAll('path,polygon,circle,rect,ellipse').forEach((el, i) => {
-                    if (!el.id) el.id = `svg-part-${i}`;
-                    if (gradientChanges?.[v]?.[el.id]) {
-                        rebuildGradient(svg, el.id, gradientChanges[v][el.id], v);
-                        el.setAttribute('fill', `url(#gradient-${v}-${el.id})`);
-                    } else if (colorChanges?.[v]?.[el.id]) {
-                        el.setAttribute('fill', colorChanges[v][el.id]);
-                    }
-                });
-                if (window.applyPatternsToSvg) applyPatternsToSvg(svg, v);
-                if (window.applyMascotsToSvg) applyMascotsToSvg(svg, v);
-                if (window.applyApplicationsToSvg) applyApplicationsToSvg(svg, v);
-                embedFontsInSvg(svg);
-                allSvgs[v] = new XMLSerializer().serializeToString(svg);
-            }
-
-await fetch(`/admin/models/${MODEL_ID}/save-design`, {
-                        method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    svgs: allSvgs,
-                    color_changes: window.colorChanges || {},
-                    pattern_changes: window.patternsApplied || {},
-                    mascot_changes: window.mascotsApplied || {},
-                    applications: window.applicationsApplied || {}
-                })
-            });
-
-            const liveSvgForThumb = window.getMainSvg();
-            if (liveSvgForThumb && window.embedFontsInSvg) {
-                window.embedFontsInSvg(liveSvgForThumb);
-            }
-            await generateAndSaveThumbnail();
-            window.showSaveSuccessToast('Successfully Saved', 'Design saved successfully');
-
-        } catch (e) {
-            console.error(e);
-            alert(' Save Failed');
         }
 
-        window.isSaving = false;
-    };
+        return;
+    }
 
+    // =====================================================
+    // ADMIN MODE
+    // =====================================================
+    window.isSaving = true;
+
+    try {
+        const views = ['front', 'back', 'left', 'right'];
+        const allSvgs = {};
+
+        function embedFontsInSvg(svgElement) {
+            let fontCSS = '';
+
+            if (window.backendFonts) {
+                window.backendFonts.forEach(font => {
+                    fontCSS += `
+                        @font-face {
+                            font-family: 'font_${font.id}';
+                            src: url('${font.file_url}') format('truetype');
+                        }
+                    `;
+                });
+            }
+
+            let defs = svgElement.querySelector('defs');
+
+            if (!defs) {
+                defs = document.createElementNS(
+                    'http://www.w3.org/2000/svg',
+                    'defs'
+                );
+
+                svgElement.insertBefore(
+                    defs,
+                    svgElement.firstChild
+                );
+            }
+
+            const oldStyle = defs.querySelector(
+                'style[data-fonts]'
+            );
+
+            if (oldStyle) {
+                oldStyle.remove();
+            }
+
+            if (fontCSS) {
+                const style = document.createElementNS(
+                    'http://www.w3.org/2000/svg',
+                    'style'
+                );
+
+                style.setAttribute('data-fonts', 'true');
+                style.textContent = fontCSS;
+
+                defs.insertBefore(
+                    style,
+                    defs.firstChild
+                );
+            }
+        }
+
+        for (const view of views) {
+            if (!modelViews[view]?.svg_url) {
+                continue;
+            }
+
+            // Current live view
+            if (view === window.currentView) {
+                const liveSvg = window.getMainSvg();
+
+                if (liveSvg) {
+                    const clone = liveSvg.cloneNode(true);
+
+                    embedFontsInSvg(clone);
+
+                    allSvgs[view] =
+                        new XMLSerializer().serializeToString(clone);
+
+                    continue;
+                }
+            }
+
+            // Other views
+            const response = await fetch(
+                modelViews[view].svg_url
+            );
+
+            const text = await response.text();
+
+            const documentSvg =
+                new DOMParser().parseFromString(
+                    text,
+                    'image/svg+xml'
+                );
+
+            const svg = documentSvg.querySelector('svg');
+
+            if (!svg) {
+                continue;
+            }
+
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '100%');
+
+            svg.querySelectorAll(
+                'path, polygon, circle, rect, ellipse'
+            ).forEach((element, index) => {
+
+                if (!element.id) {
+                    element.id = `svg-part-${index}`;
+                }
+
+                if (
+                    gradientChanges?.[view]?.[element.id]
+                ) {
+                    rebuildGradient(
+                        svg,
+                        element.id,
+                        gradientChanges[view][element.id],
+                        view
+                    );
+
+                    element.setAttribute(
+                        'fill',
+                        `url(#gradient-${view}-${element.id})`
+                    );
+
+                } else if (
+                    colorChanges?.[view]?.[element.id]
+                ) {
+                    element.setAttribute(
+                        'fill',
+                        colorChanges[view][element.id]
+                    );
+                }
+            });
+
+            if (window.applyPatternsToSvg) {
+                applyPatternsToSvg(svg, view);
+            }
+
+            if (window.applyMascotsToSvg) {
+                applyMascotsToSvg(svg, view);
+            }
+
+            if (window.applyApplicationsToSvg) {
+                applyApplicationsToSvg(svg, view);
+            }
+
+            embedFontsInSvg(svg);
+
+            allSvgs[view] =
+                new XMLSerializer().serializeToString(svg);
+        }
+
+        const saveResponse = await fetch(
+            `/admin/models/${MODEL_ID}/save-design`,
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json',
+
+                    'X-CSRF-TOKEN':
+                        document.querySelector(
+                            'meta[name="csrf-token"]'
+                        )?.content || ''
+                },
+
+                body: JSON.stringify({
+                    svgs: allSvgs,
+
+                    color_changes:
+                        window.colorChanges || {},
+
+                    pattern_changes:
+                        window.patternsApplied || {},
+
+                    mascot_changes:
+                        window.mascotsApplied || {},
+
+                    applications:
+                        window.applicationsApplied || {}
+                })
+            }
+        );
+
+        if (!saveResponse.ok) {
+            throw new Error(
+                'The design could not be saved.'
+            );
+        }
+
+        const liveSvgForThumb =
+            window.getMainSvg();
+
+        if (
+            liveSvgForThumb &&
+            window.embedFontsInSvg
+        ) {
+            window.embedFontsInSvg(
+                liveSvgForThumb
+            );
+        }
+
+        await generateAndSaveThumbnail();
+
+        if (
+            typeof window.showSaveSuccessToast ===
+            'function'
+        ) {
+            window.showSaveSuccessToast(
+                'Design Saved',
+                'Your design was saved successfully.'
+            );
+        }
+
+    } catch (error) {
+        console.error(error);
+
+        alert(
+            error.message ||
+            'The design could not be saved. Please try again.'
+        );
+
+    } finally {
+        window.isSaving = false;
+    }
+};
+window.saveUserDesign = async function (
+    saveType,
+    designName = null
+) {
+    if (window.isSaving) return;
+
+    if (!['new', 'replace'].includes(saveType)) {
+        console.error(
+            'Invalid save type:',
+            saveType
+        );
+
+        return;
+    }
+
+    if (
+        saveType === 'replace' &&
+        !window.DESIGN_ID
+    ) {
+        alert(
+            'No saved design is currently open.'
+        );
+
+        return;
+    }
+
+    if (
+        saveType === 'new' &&
+        !designName?.trim()
+    ) {
+        alert(
+            'Please enter a design name.'
+        );
+
+        return;
+    }
+
+    window.isSaving = true;
+
+    try {
+        const token =
+            localStorage.getItem('auth_token') || '';
+
+        const appToSave = JSON.parse(
+            JSON.stringify(
+                window.applicationsApplied || {}
+            )
+        );
+
+        const payload = {
+            save_type: saveType,
+
+            design_id:
+                saveType === 'replace'
+                    ? window.DESIGN_ID
+                    : null,
+
+            name:
+                saveType === 'new'
+                    ? designName.trim()
+                    : null,
+
+            color_changes:
+                window.colorChanges || {},
+
+            pattern_changes:
+                window.patternsApplied || {},
+
+            mascot_changes:
+                window.mascotsApplied || {},
+
+            applications:
+                appToSave
+        };
+
+        const response = await fetch(
+            `/api/user/save-design/${window.MODEL_ID}`,
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+
+                    'Authorization':
+                        `Bearer ${token}`,
+
+                    'X-CSRF-TOKEN':
+                        document.querySelector(
+                            'meta[name="csrf-token"]'
+                        )?.content || ''
+                },
+
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const data = await response
+            .json()
+            .catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.message ||
+                'The design could not be saved.'
+            );
+        }
+
+        const savedDesignId =
+            data.customization_id;
+
+        if (!savedDesignId) {
+            throw new Error(
+                'Saved design ID was not returned.'
+            );
+        }
+
+        await generateAndSaveThumbnail(
+            savedDesignId
+        );
+
+        // Save as New
+        if (saveType === 'new') {
+            window.DESIGN_ID =
+                savedDesignId;
+
+            const url = new URL(
+                window.location.href
+            );
+
+            url.searchParams.set(
+                'design_id',
+                savedDesignId
+            );
+
+            window.history.replaceState(
+                {},
+                '',
+                url
+            );
+
+            window.showSaveSuccessToast?.(
+                'New Design Saved',
+                `"${designName.trim()}" was created successfully.`
+            );
+
+        } else {
+            // Replace Current Design
+            window.showSaveSuccessToast?.(
+                'Design Updated',
+                'The current design was updated successfully.'
+            );
+        }
+
+    } catch (error) {
+        console.error(error);
+
+        alert(
+            error.message ||
+            'The design could not be saved. Please try again.'
+        );
+
+    } finally {
+        window.isSaving = false;
+    }
+};
     window.showSaveSuccessToast = function (title = 'Successfully Saved', subtitle = 'Your design has been saved') {
         const toast = document.getElementById('saveSuccessToast');
         if (!toast) return;
@@ -3892,8 +4324,8 @@ await fetch(`/admin/models/${MODEL_ID}/save-design`, {
     }
 
 
-    async function generateAndSaveThumbnail() {
-        try {
+async function generateAndSaveThumbnail(customizationId = null) {
+            try {
             const view = window.currentView || 'front';
             const viewData = window.modelViews?.[view];
 
@@ -4008,6 +4440,12 @@ await fetch(`/admin/models/${MODEL_ID}/save-design`, {
                 canvas.toBlob(async (blob) => {
                     const formData = new FormData();
                     formData.append('thumbnail', blob, 'thumbnail.png');
+                    if (window.isUserMode) {
+    formData.append(
+        'customization_id',
+        customizationId || window.DESIGN_ID
+    );
+}
                     const thumbnailUrl = window.isUserMode
                         ? `/api/user/save-thumbnail/${MODEL_ID}`
                         : `/admin/models/${MODEL_ID}/save-thumbnail`;

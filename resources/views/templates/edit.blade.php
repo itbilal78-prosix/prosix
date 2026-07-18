@@ -15,12 +15,63 @@
                 </style>
             @endif
         @endforeach
+                <style>
+                    .app-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:15px 25px;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.back-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 18px;
+    border:none;
+    border-radius:8px;
+    background:#111;
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.back-btn:hover{
+    background:#333;
+    transform:translateX(-2px);
+}
+
+.back-btn i{
+    font-size:16px;
+}
+                </style>
         <div class="app-container">
 
             <!-- Header -->
-            <header class="app-header">
-                <h1>Welcome to Mascot Customizer</h1>
-            </header>
+           <header class="app-header">
+
+    <div class="header-left">
+
+        <button type="button"
+                class="back-btn"
+                onclick="window.history.back()">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </button>
+
+        <h1>Welcome to Mascot Customizer</h1>
+
+    </div>
+
+</header>
 
             <input type="hidden" id="editingTemplateId" value="{{ $template->id ?? '' }}">
 
@@ -164,7 +215,7 @@
                 <aside class="right-sidebar" id="rightSidebar">
                     <div id="layersPanelSection">
                         <h2 class="sidebar-title">MANAGE LAYERS</h2>
-                        <p class="layers-hint">Drag karke up/neechay le jayein — Top = front, Bottom = back</p>
+                        <p class="layers-hint">Drag to rearrange — Top will appear first, Bottom will appear last.</p>
                         <div class="layers-list" id="layersList">
                             <p class="empty-layers-text">No layers yet</p>
                         </div>

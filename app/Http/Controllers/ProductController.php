@@ -11,17 +11,30 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = Product::with(['category', 'subcategory']);
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-        $products    = $query->latest()->paginate(20);
-        $allProducts = Product::with(['category', 'subcategory'])->get();
-        $categories  = Category::whereNull('parent_id')->with('subcategories')->orderBy('position')->get();
-        return view('products.index', compact('products', 'allProducts', 'categories'));
+   public function index(Request $request)
+{
+    $query = Product::with(['category', 'subcategory']);
+
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
     }
+
+    // Pagination removed — all products
+    $products = $query->latest()->get();
+
+    $allProducts = Product::with(['category', 'subcategory'])->get();
+
+    $categories = Category::whereNull('parent_id')
+        ->with('subcategories')
+        ->orderBy('position')
+        ->get();
+
+    return view('products.index', compact(
+        'products',
+        'allProducts',
+        'categories'
+    ));
+}
 
     public function create()
     {

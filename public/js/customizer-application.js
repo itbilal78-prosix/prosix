@@ -913,7 +913,18 @@ if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
         layer._cx = cx;
         layer._cy = cy;
         layer._mascotSize = mascotSize;
-        layer._selectedColorCount = window.selectedMascotColorCount || (window.selectedColors ? window.selectedColors.length : 6);
+if (
+    !layer._selectedColorCount ||
+    layer._selectedColorCount < 1
+) {
+    layer._selectedColorCount =
+        Array.isArray(
+            layer._selectedMascotColors
+        ) &&
+        layer._selectedMascotColors.length
+            ? layer._selectedMascotColors.length
+            : 2;
+}
         layer.flipX = savedFlipX;
         layer.flipY = savedFlipY;
         layer._flipState = savedFlipState;
@@ -1752,46 +1763,117 @@ if (display) display.textContent = layer.rotation || 0;
         setTimeout(() => _showMascotBox(layer.id), 80);
     }
 
-    function _renderDirectMascotColors(layer) {
-        const container = document.getElementById('directMascotColorSwatches');
-        if (!container) return;
+  function _renderDirectMascotColors(layer) {
+    const container = document.getElementById(
+        'directMascotColorSwatches'
+    );
 
-        if (!layer.mascotSvg) {
-            container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
+    if (!container) return;
+
+    if (!layer.mascotSvg) {
+        container.innerHTML =
+            '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
+
+        return;
+    }
+
+    // Popup mein select kiye gaye exact colors use karo
+    if (
+        Array.isArray(layer._selectedMascotColors) &&
+        layer._selectedMascotColors.length
+    ) {
+        const exactCount = Math.max(
+            1,
+            parseInt(layer._selectedColorCount, 10) ||
+            layer._selectedMascotColors.length
+        );
+
+        const exactColors = layer._selectedMascotColors
+            .slice(0, exactCount)
+            .map(_normalizeColor)
+            .filter(Boolean);
+
+        layer._selectedColorCount = exactColors.length;
+        layer._detectedColors = exactColors;
+
+        if (!layer._colorMap) {
+            layer._colorMap = {};
+        }
+
+        _buildColorSwatches(
+            exactColors,
+            layer,
+            container
+        );
+
+        return;
+    }
+
+    // Old mascots ke liye fallback
+    container.innerHTML =
+        '<p style="font-size:12px;color:#aaa;text-align:center;">Detecting colors...</p>';
+
+    const maxColors =
+        layer._selectedColorCount &&
+        layer._selectedColorCount > 0
+            ? layer._selectedColorCount
+            : 2;
+
+    const parser = new DOMParser();
+
+    const doc = parser.parseFromString(
+        layer.mascotSvg,
+        'image/svg+xml'
+    );
+
+    const imgTag = doc.querySelector('image');
+
+    if (imgTag) {
+        const href =
+            imgTag.getAttribute('href') ||
+            imgTag.getAttribute('xlink:href') ||
+            '';
+
+        if (href.startsWith('data:image')) {
+            _detectColorsFromPng(
+                href,
+                layer,
+                container
+            );
+
             return;
         }
-
-        container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Detecting colors...</p>';
-
-        const maxColors = (layer._selectedColorCount && layer._selectedColorCount > 0)
-            ? layer._selectedColorCount
-            : (window.selectedColors ? window.selectedColors.length : 3);
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
-
-        const imgTag = doc.querySelector('image');
-        if (imgTag) {
-            const href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || '';
-            if (href.startsWith('data:image')) {
-                _detectColorsFromPng(href, layer, container);
-                return;
-            }
-        }
-
-        const colorCounts = {};
-        doc.querySelectorAll('[fill]').forEach(el => {
-            const hex = _normalizeColor(el.getAttribute('fill') || '');
-            if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
-        });
-
-        const detected = Object.keys(colorCounts)
-            .sort((a, b) => colorCounts[b] - colorCounts[a])
-            .slice(0, maxColors);
-
-        layer._detectedColors = detected;
-        _buildColorSwatches(detected, layer, container);
     }
+
+    const colorCounts = {};
+
+    doc.querySelectorAll('[fill]').forEach(element => {
+        const hex = _normalizeColor(
+            element.getAttribute('fill') || ''
+        );
+
+        if (hex && hex !== '#ffffff') {
+            colorCounts[hex] =
+                (colorCounts[hex] || 0) + 1;
+        }
+    });
+
+    const detected = Object.keys(colorCounts)
+        .sort(
+            (first, second) =>
+                colorCounts[second] -
+                colorCounts[first]
+        )
+        .slice(0, maxColors);
+
+    layer._detectedColors = detected;
+
+    _buildColorSwatches(
+        detected,
+        layer,
+        container
+    );
+}
 
     function _detectColorsFromPng(dataUrl, layer, container) {
         const canvas = document.createElement('canvas');
@@ -1873,8 +1955,25 @@ if (display) display.textContent = layer.rotation || 0;
 
     function _buildColorSwatches(detectedColors, layer, container) {
         container.innerHTML = '';
-        const maxColors = layer._selectedColorCount || (window.selectedColors ? window.selectedColors.length : 4);
-        detectedColors = detectedColors.slice(0, maxColors);
+    const maxColors = Math.max(
+    1,
+    parseInt(
+        layer._selectedColorCount,
+        10
+    ) ||
+    (
+        Array.isArray(
+            layer._selectedMascotColors
+        )
+            ? layer._selectedMascotColors.length
+            : 2
+    )
+);
+
+detectedColors = detectedColors
+    .map(_normalizeColor)
+    .filter(Boolean)
+    .slice(0, maxColors);
 
         if (!detectedColors.length) {
             container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No colors detected</p>';

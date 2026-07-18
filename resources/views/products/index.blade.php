@@ -50,7 +50,7 @@
         <div class="cat-card active" data-target="block-all" onclick="switchCatBlock(this, 'block-all')">
             <div class="cat-card-icon"><i class="bi bi-grid-3x3-gap-fill"></i></div>
             <div class="cat-card-name">All Products</div>
-            <div class="cat-card-count">{{ $products->total() }} items</div>
+            {{-- <div class="cat-card-count">{{ $products->total() }} items</div> --}}
         </div>
 
         @foreach($categories as $cat)
@@ -161,9 +161,9 @@
                     @endforelse
                 </tbody>
             </table>
-            <div class="d-flex justify-content-end mt-4" id="paginationLinks">
+            {{-- <div class="d-flex justify-content-end mt-4" id="paginationLinks">
                 {{ $products->appends(request()->query())->links('pagination::bootstrap-5') }}
-            </div>
+            </div> --}}
         </div>
     </div>
 

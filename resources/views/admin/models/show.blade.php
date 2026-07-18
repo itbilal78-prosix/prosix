@@ -55,7 +55,7 @@
 
     <div class="customize-container">
         @php
-            $backUrl = isset($isUserMode) && $isUserMode ? url('/dashboard') : route('models.index');
+            $backUrl = isset($isUserMode) && $isUserMode ? url('/dashboard?tab=my-design') : route('models.index');
         @endphp
 
         <!-- HEADER -->
@@ -406,16 +406,253 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
                 <script src="/js/customizer-color.js"></script>
                 <script src="/js/customizer-pattern.js"></script>
                 <script src="/js/customizer-application.js"></script>
+                <!-- ===================================================== -->
+                <!-- USER DESIGN SAVE MODAL -->
+                <!-- ===================================================== -->
+                <div id="saveDesignPopup" class="save-design-popup" aria-hidden="true">
+                    <div class="save-design-box" role="dialog" aria-modal="true"
+                        aria-labelledby="saveDesignPopupTitle">
 
-                <!-- SAVE TOAST -->
-                <div id="saveSuccessToast" class="save-success-toast">
-                    <div class="save-success-toast-inner">
-                        <div class="save-success-icon">✓</div>
-                        <div>
-                            <div class="save-success-title">Successfully Saved</div>
-                            <div class="save-success-subtitle">Your design has been saved</div>
+                        <button type="button" class="save-popup-close"
+                            onclick="closeSaveDesignPopup()" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+
+                        <div id="saveChoiceStep" class="save-popup-step active">
+                            <div class="save-popup-badge">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                            </div>
+
+                            <div class="save-popup-heading">
+                                <span class="save-popup-eyebrow">SAVE OPTIONS</span>
+                                <h2 id="saveDesignPopupTitle">How would you like to save?</h2>
+                                <p>
+                                    Keep the current design and create a new copy, or update the
+                                    design you currently have open.
+                                </p>
+                            </div>
+
+                            <div class="save-popup-buttons">
+                                <button type="button"
+                                    class="save-option-btn save-as-new-btn"
+                                    onclick="showSaveAsNewStep()">
+                                    <span class="save-option-icon">
+                                        <i class="fas fa-copy"></i>
+                                    </span>
+
+                                    <span class="save-option-copy">
+                                        <strong>Save as New</strong>
+                                        <small>Create a separate design and keep the current one unchanged.</small>
+                                    </span>
+
+                                    <span class="save-option-arrow">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </span>
+                                </button>
+
+                                <button type="button"
+                                    class="save-option-btn replace-design-btn"
+                                    onclick="selectDesignSaveType('replace')">
+                                    <span class="save-option-icon">
+                                        <i class="fas fa-rotate"></i>
+                                    </span>
+
+                                    <span class="save-option-copy">
+                                        <strong>Replace Current Design</strong>
+                                        <small>Update only the design that is currently open.</small>
+                                    </span>
+
+                                    <span class="save-option-arrow">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </span>
+                                </button>
+                            </div>
+
+                            <button type="button" class="save-popup-cancel"
+                                onclick="closeSaveDesignPopup()">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <div id="saveNameStep" class="save-popup-step">
+                            <button type="button" class="save-popup-back"
+                                onclick="showSaveChoiceStep()">
+                                <i class="fas fa-arrow-left"></i>
+                                Back
+                            </button>
+
+                            <div class="save-popup-badge">
+                                <i class="fas fa-pen-to-square"></i>
+                            </div>
+
+                            <div class="save-popup-heading">
+                                <span class="save-popup-eyebrow">NEW DESIGN</span>
+                                <h2>Name your design</h2>
+                                <p>Choose a clear name so you can find this design easily later.</p>
+                            </div>
+
+                            <div class="save-name-field">
+                                <label for="newDesignName">Design name</label>
+                                <input type="text" id="newDesignName"
+                                    maxlength="120"
+                                    autocomplete="off"
+                                    placeholder="Example: Blue Football Uniform">
+                                <div id="saveNameError" class="save-name-error"></div>
+                            </div>
+
+                            <button type="button" id="confirmSaveAsNewBtn"
+                                class="save-confirm-btn"
+                                onclick="confirmSaveAsNew()">
+                                <span>Save New Design</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+
+                            <button type="button" class="save-popup-cancel"
+                                onclick="closeSaveDesignPopup()">
+                                Cancel
+                            </button>
                         </div>
                     </div>
+                </div>
+
+                <script>
+                    // =====================================================
+                    // USER DESIGN SAVE MODAL CONTROLS
+                    // =====================================================
+                    window.openSaveDesignPopup = function () {
+                        const popup = document.getElementById('saveDesignPopup');
+
+                        if (!popup) {
+                            console.error('Save design modal was not found.');
+                            return;
+                        }
+
+                        showSaveChoiceStep();
+                        popup.classList.add('show');
+                        popup.setAttribute('aria-hidden', 'false');
+                        document.body.style.overflow = 'hidden';
+                    };
+
+                    window.closeSaveDesignPopup = function () {
+                        const popup = document.getElementById('saveDesignPopup');
+
+                        if (popup) {
+                            popup.classList.remove('show');
+                            popup.setAttribute('aria-hidden', 'true');
+                        }
+
+                        document.body.style.overflow = '';
+
+                        const error = document.getElementById('saveNameError');
+                        if (error) error.textContent = '';
+                    };
+
+                    window.showSaveChoiceStep = function () {
+                        document.getElementById('saveChoiceStep')?.classList.add('active');
+                        document.getElementById('saveNameStep')?.classList.remove('active');
+                    };
+
+                    window.showSaveAsNewStep = function () {
+                        const choiceStep = document.getElementById('saveChoiceStep');
+                        const nameStep = document.getElementById('saveNameStep');
+                        const input = document.getElementById('newDesignName');
+                        const error = document.getElementById('saveNameError');
+
+                        choiceStep?.classList.remove('active');
+                        nameStep?.classList.add('active');
+
+                        if (error) error.textContent = '';
+
+                        if (input) {
+                            if (!input.value.trim()) {
+                                input.value = 'My Design ' + new Date().toLocaleDateString('en-US');
+                            }
+
+                            setTimeout(() => {
+                                input.focus();
+                                input.select();
+                            }, 120);
+                        }
+                    };
+
+                    window.confirmSaveAsNew = async function () {
+                        const input = document.getElementById('newDesignName');
+                        const error = document.getElementById('saveNameError');
+                        const name = input?.value.trim() || '';
+
+                        if (!name) {
+                            if (error) error.textContent = 'Please enter a design name.';
+                            input?.focus();
+                            return;
+                        }
+
+                        if (error) error.textContent = '';
+                        closeSaveDesignPopup();
+
+                        if (typeof window.saveUserDesign !== 'function') {
+                            console.error('window.saveUserDesign function is missing.');
+                            return;
+                        }
+
+                        await window.saveUserDesign('new', name);
+                    };
+
+                    window.selectDesignSaveType = async function (saveType) {
+                        if (saveType !== 'replace') return;
+
+                        closeSaveDesignPopup();
+
+                        if (typeof window.saveUserDesign !== 'function') {
+                            console.error('window.saveUserDesign function is missing.');
+                            return;
+                        }
+
+                        await window.saveUserDesign('replace');
+                    };
+
+                    document.addEventListener('keydown', function (event) {
+                        const popup = document.getElementById('saveDesignPopup');
+
+                        if (event.key === 'Escape' && popup?.classList.contains('show')) {
+                            closeSaveDesignPopup();
+                        }
+
+                        if (
+                            event.key === 'Enter' &&
+                            document.getElementById('saveNameStep')?.classList.contains('active')
+                        ) {
+                            event.preventDefault();
+                            confirmSaveAsNew();
+                        }
+                    });
+
+                    document.addEventListener('click', function (event) {
+                        const popup = document.getElementById('saveDesignPopup');
+
+                        if (popup && event.target === popup) {
+                            closeSaveDesignPopup();
+                        }
+                    });
+                </script>
+
+                <!-- SAVE SUCCESS MODAL -->
+                <div id="saveSuccessToast" class="save-success-toast" aria-hidden="true">
+                    <div class="save-success-toast-inner">
+                        <div class="save-success-ring">
+                            <div class="save-success-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="save-success-copy">
+                            <span class="save-success-eyebrow">PROSIX SPORTS</span>
+                            <div class="save-success-title">Design Saved</div>
+                            <div class="save-success-subtitle">Your changes were saved successfully.</div>
+                        </div>
+
+                        <div class="save-success-progress"></div>
+                    </div>
+                </div>
                 </div>
 
             </div>{{-- end tools-bar --}}
@@ -426,19 +663,27 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
 
 </html>
 
+
+
 <style>
+    /* =====================================================
+       SAVE SUCCESS MODAL — CLEAN BLACK & WHITE
+    ===================================================== */
     .save-success-toast {
         position: fixed;
         inset: 0;
-        z-index: 999999;
+        z-index: 1000002;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, .45);
+        padding: 16px;
+        background: rgba(0, 0, 0, .46);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        transition: all .3s ease;
+        transition: opacity .22s ease, visibility .22s ease;
     }
 
     .save-success-toast.show {
@@ -448,47 +693,432 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
     }
 
     .save-success-toast-inner {
-        min-width: 320px;
-        max-width: 420px;
-        background: #111;
-        color: #fff;
+        position: relative;
+        width: min(100%, 320px);
+        overflow: hidden;
+        padding: 26px 24px 24px;
+        border: 1px solid #e7e7e7;
         border-radius: 18px;
-        padding: 22px 24px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
-        transform: scale(.88) translateY(20px);
-        transition: all .3s ease;
+        background: #ffffff;
+        color: #111111;
+        text-align: center;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, .24);
+        transform: translateY(14px) scale(.96);
+        transition: transform .26s cubic-bezier(.2, .8, .2, 1);
     }
 
     .save-success-toast.show .save-success-toast-inner {
-        transform: scale(1) translateY(0);
+        transform: translateY(0) scale(1);
+    }
+
+    .save-success-ring {
+        width: 62px;
+        height: 62px;
+        margin: 0 auto 15px;
+        padding: 5px;
+        border-radius: 50%;
+        background: #f3f3f3;
+        border: 1px solid #e5e5e5;
     }
 
     .save-success-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        background: #22c55e;
-        color: #fff;
-        font-size: 24px;
-        font-weight: 700;
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        border-radius: 50%;
+        background: #111111;
+        color: #ffffff;
+        font-size: 20px;
+    }
+
+    .save-success-eyebrow {
+        display: inline-block;
+        margin-bottom: 6px;
+        color: #777777;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
     }
 
     .save-success-title {
-        font-size: 18px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 20px;
         font-weight: 700;
         line-height: 1.2;
     }
 
     .save-success-subtitle {
+        max-width: 250px;
+        margin: 7px auto 0;
+        color: #777777;
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .save-success-progress {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 3px;
+        background: #111111;
+        transform-origin: left center;
+    }
+
+    .save-success-toast.show .save-success-progress {
+        animation: saveProgress 2.35s linear forwards;
+    }
+
+    @keyframes saveProgress {
+        from { transform: scaleX(1); }
+        to { transform: scaleX(0); }
+    }
+
+    /* =====================================================
+       SAVE OPTIONS MODAL — SMALL CLEAN BLACK & WHITE
+    ===================================================== */
+    .save-design-popup {
+        position: fixed;
+        inset: 0;
+        z-index: 1000001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(0, 0, 0, .52);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .22s ease, visibility .22s ease;
+    }
+
+    .save-design-popup.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .save-design-box {
+        position: relative;
+        width: min(100%, 430px);
+        min-height: auto;
+        padding: 28px 24px 20px;
+        overflow: hidden;
+        border: 1px solid #e5e5e5;
+        border-radius: 18px;
+        background: #ffffff;
+        box-shadow: 0 26px 80px rgba(0, 0, 0, .28);
+        transform: translateY(16px) scale(.97);
+        transition: transform .25s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .save-design-popup.show .save-design-box {
+        transform: translateY(0) scale(1);
+    }
+
+    .save-popup-step {
+        display: none;
+        animation: saveStepIn .22s ease;
+    }
+
+    .save-popup-step.active {
+        display: block;
+    }
+
+    @keyframes saveStepIn {
+        from { opacity: 0; transform: translateX(8px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .save-popup-close {
+        position: absolute;
+        top: 13px;
+        right: 13px;
+        z-index: 3;
+        width: 32px;
+        height: 32px;
+        border: 1px solid #e7e7e7;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #111111;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+
+    .save-popup-close:hover {
+        background: #111111;
+        color: #ffffff;
+        border-color: #111111;
+    }
+
+    .save-popup-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin: 0 0 10px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #666666;
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .save-popup-back:hover {
+        color: #111111;
+    }
+
+    .save-popup-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 14px;
+        border: 1px solid #e5e5e5;
+        border-radius: 15px;
+        background: #111111;
+        color: #ffffff;
+        font-size: 18px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, .12);
+    }
+
+    .save-popup-heading {
+        text-align: center;
+    }
+
+    .save-popup-eyebrow {
+        display: inline-block;
+        margin-bottom: 6px;
+        color: #777777;
+        font-family: 'Poppins', sans-serif;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+    }
+
+    .save-popup-heading h2 {
+        margin: 0;
+        color: #111111;
+        font-family: 'Poppins', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -.3px;
+    }
+
+    .save-popup-heading p {
+        max-width: 350px;
+        margin: 8px auto 18px;
+        color: #777777;
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .save-popup-buttons {
+        display: grid;
+        gap: 10px;
+    }
+
+    .save-option-btn {
+        display: grid;
+        grid-template-columns: 42px 1fr 20px;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 13px;
+        border: 1px solid #e5e5e5;
+        border-radius: 13px;
+        background: #ffffff;
+        color: #111111;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(0, 0, 0, .03);
+        transition: all .18s ease;
+    }
+
+    .save-option-btn:hover {
+        border-color: #111111;
+        background: #fafafa;
+        box-shadow: 0 9px 20px rgba(0, 0, 0, .07);
+        transform: translateY(-1px);
+    }
+
+    .save-option-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        background: #111111;
+        color: #ffffff;
+        font-size: 14px;
+    }
+
+    .replace-design-btn .save-option-icon {
+        background: #f2f2f2;
+        color: #111111;
+        border: 1px solid #dddddd;
+    }
+
+    .save-option-copy {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .save-option-copy strong {
+        font-family: 'Poppins', sans-serif;
         font-size: 13px;
-        color: rgba(255, 255, 255, .72);
+        font-weight: 700;
+    }
+
+    .save-option-copy small {
+        color: #7a7a7a;
+        font-family: 'Poppins', sans-serif;
+        font-size: 10.5px;
+        line-height: 1.45;
+    }
+
+    .save-option-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #555555;
+        font-size: 11px;
+        transition: transform .18s ease;
+    }
+
+    .save-option-btn:hover .save-option-arrow {
+        transform: translateX(2px);
+    }
+
+    .save-name-field {
         margin-top: 4px;
+    }
+
+    .save-name-field label {
+        display: block;
+        margin-bottom: 7px;
+        color: #222222;
+        font-family: 'Poppins', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .save-name-field input {
+        width: 100%;
+        height: 46px;
+        padding: 0 13px;
+        border: 1px solid #dcdcdc;
+        border-radius: 11px;
+        outline: none;
+        background: #ffffff;
+        color: #111111;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        box-sizing: border-box;
+        transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .save-name-field input:focus {
+        border-color: #111111;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, .08);
+    }
+
+    .save-name-error {
+        min-height: 18px;
+        padding-top: 5px;
+        color: #c53b3b;
+        font-family: 'Poppins', sans-serif;
+        font-size: 10px;
+    }
+
+    .save-confirm-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        width: 100%;
+        height: 46px;
+        margin-top: 5px;
+        border: 0;
+        border-radius: 11px;
+        background: #111111;
+        color: #ffffff;
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, .14);
+        transition: all .18s ease;
+    }
+
+    .save-confirm-btn:hover {
+        background: #000000;
+        transform: translateY(-1px);
+    }
+
+    .save-popup-cancel {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+        padding: 8px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: #777777;
+        font-family: 'Poppins', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .18s ease, color .18s ease;
+    }
+
+    .save-popup-cancel:hover {
+        background: #f3f3f3;
+        color: #111111;
+    }
+
+    @media (max-width: 576px) {
+        .save-design-popup,
+        .save-success-toast {
+            padding: 12px;
+        }
+
+        .save-design-box {
+            width: min(100%, 390px);
+            padding: 25px 16px 17px;
+            border-radius: 16px;
+        }
+
+        .save-popup-heading h2 {
+            font-size: 20px;
+        }
+
+        .save-option-btn {
+            grid-template-columns: 40px 1fr 18px;
+            padding: 11px;
+        }
+
+        .save-option-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .save-success-toast-inner {
+            width: min(100%, 300px);
+            padding: 24px 18px 22px;
+        }
     }
 </style>
