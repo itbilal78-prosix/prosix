@@ -369,7 +369,7 @@
                                 'name' => $c->name,
                             ]));
                 </script>
-<script>
+{{-- <script>
 // =====================================================
 // PROSIX SECURED — DEVTOOLS PROTECTION
 // =====================================================
@@ -436,7 +436,7 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
     }
     trap();
 })();
-</script>
+</script> --}}
                 <script>
                     // ============================================================
                     // ✅ BACKGROUND CANVAS
