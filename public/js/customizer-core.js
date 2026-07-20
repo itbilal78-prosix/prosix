@@ -1832,9 +1832,9 @@ font-display: swap;
                 text.setAttribute('id', layer.id);
                 text.setAttribute('x', centerX + (layer.x || 0));
                 text.setAttribute('y', centerY + (layer.y || 0));
-     const normalizedFontSize =
+  const normalizedFontSize =
     window.getNormalizedApplicationFontSize(
-        mainSvg,
+        svg,
         layer.fontSize || 500
     );
 
