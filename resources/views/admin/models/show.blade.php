@@ -41,6 +41,73 @@
 </head>
 
 <body>
+
+    {{-- =========================================================
+         USER-ONLY CUSTOMIZER VIDEO GUIDE POPUP
+         Video file:
+         public/assets/videos/customizer-guide.mp4
+    ========================================================== --}}
+    @if (isset($isUserMode) && $isUserMode)
+        <div id="customizerGuidePopup"
+            class="customizer-guide-popup"
+            aria-hidden="true">
+
+            <div class="customizer-guide-box"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="customizerGuideTitle">
+
+                <button type="button"
+                    class="customizer-guide-close"
+                    onclick="closeCustomizerGuidePopup()"
+                    aria-label="Close tutorial">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="customizer-guide-icon">
+                    <i class="fas fa-circle-play"></i>
+                </div>
+
+                <div class="customizer-guide-heading">
+                    <span class="customizer-guide-eyebrow">
+                        PROSIX SPORTS CUSTOMIZER
+                    </span>
+
+                    <h2 id="customizerGuideTitle">
+                        Need Help Using the Customizer?
+                    </h2>
+
+                    <p>
+                        If you are not familiar with the customizer,
+                        watch this short tutorial video to learn how
+                        to customize your design.
+                    </p>
+                </div>
+
+                <div class="customizer-guide-video-wrap">
+                    <video id="customizerGuideVideo"
+                        controls
+                        preload="metadata"
+                        playsinline>
+                        <source
+                            src="{{ asset('assets/videos/customizer-guide.mp4') }}"
+                            type="video/mp4">
+
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+
+                <button type="button"
+                    class="customizer-guide-start"
+                    onclick="closeCustomizerGuidePopup()">
+                    <span>Start Customizing</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    @endif
+
+
     @foreach (\App\Models\Font::all() as $font)
         @if ($font->file)
             <style>
@@ -659,6 +726,89 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
         </div>{{-- end main-content --}}
     </div>{{-- end customize-container --}}
 
+
+    {{-- =========================================================
+         USER-ONLY CUSTOMIZER VIDEO GUIDE POPUP SCRIPT
+    ========================================================== --}}
+    @if (isset($isUserMode) && $isUserMode)
+        <script>
+            window.openCustomizerGuidePopup = function () {
+                const popup = document.getElementById(
+                    'customizerGuidePopup'
+                );
+
+                if (!popup) return;
+
+                popup.classList.add('show');
+                popup.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            };
+
+            window.closeCustomizerGuidePopup = function () {
+                const popup = document.getElementById(
+                    'customizerGuidePopup'
+                );
+
+                const video = document.getElementById(
+                    'customizerGuideVideo'
+                );
+
+                if (popup) {
+                    popup.classList.remove('show');
+                    popup.setAttribute('aria-hidden', 'true');
+                }
+
+                if (video) {
+                    video.pause();
+                }
+
+                document.body.style.overflow = '';
+            };
+
+            document.addEventListener(
+                'DOMContentLoaded',
+                function () {
+                    setTimeout(function () {
+                        window.openCustomizerGuidePopup();
+                    }, 500);
+                }
+            );
+
+            document.addEventListener(
+                'keydown',
+                function (event) {
+                    const popup = document.getElementById(
+                        'customizerGuidePopup'
+                    );
+
+                    if (
+                        event.key === 'Escape' &&
+                        popup?.classList.contains('show')
+                    ) {
+                        window.closeCustomizerGuidePopup();
+                    }
+                }
+            );
+
+            document.addEventListener(
+                'click',
+                function (event) {
+                    const popup = document.getElementById(
+                        'customizerGuidePopup'
+                    );
+
+                    if (
+                        popup &&
+                        event.target === popup
+                    ) {
+                        window.closeCustomizerGuidePopup();
+                    }
+                }
+            );
+        </script>
+    @endif
+
+
 </body>
 
 </html>
@@ -1121,4 +1271,183 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
             padding: 24px 18px 22px;
         }
     }
+
+    /* =====================================================
+       USER CUSTOMIZER VIDEO GUIDE POPUP
+    ===================================================== */
+    .customizer-guide-popup {
+        position: fixed;
+        inset: 0;
+        z-index: 1000010;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(0, 0, 0, .66);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .24s ease, visibility .24s ease;
+    }
+
+    .customizer-guide-popup.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .customizer-guide-box {
+        position: relative;
+        width: min(100%, 640px);
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 28px;
+        border: 1px solid #e5e5e5;
+        border-radius: 20px;
+        background: #ffffff;
+        color: #111111;
+        text-align: center;
+        box-shadow: 0 30px 90px rgba(0, 0, 0, .38);
+        transform: translateY(18px) scale(.97);
+        transition: transform .26s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .customizer-guide-popup.show .customizer-guide-box {
+        transform: translateY(0) scale(1);
+    }
+
+    .customizer-guide-close {
+        position: absolute;
+        top: 13px;
+        right: 13px;
+        z-index: 3;
+        width: 34px;
+        height: 34px;
+        border: 1px solid #dddddd;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #111111;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+
+    .customizer-guide-close:hover {
+        border-color: #111111;
+        background: #111111;
+        color: #ffffff;
+    }
+
+    .customizer-guide-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 14px;
+        border-radius: 16px;
+        background: #111111;
+        color: #ffffff;
+        font-size: 22px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, .14);
+    }
+
+    .customizer-guide-heading {
+        text-align: center;
+    }
+
+    .customizer-guide-eyebrow {
+        display: inline-block;
+        margin-bottom: 7px;
+        color: #777777;
+        font-family: 'Poppins', sans-serif;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.7px;
+    }
+
+    .customizer-guide-heading h2 {
+        margin: 0;
+        color: #111111;
+        font-family: 'Poppins', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.25;
+    }
+
+    .customizer-guide-heading p {
+        max-width: 510px;
+        margin: 9px auto 20px;
+        color: #666666;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    .customizer-guide-video-wrap {
+        width: 100%;
+        overflow: hidden;
+        border: 1px solid #dddddd;
+        border-radius: 15px;
+        background: #000000;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .10);
+    }
+
+    .customizer-guide-video-wrap video {
+        display: block;
+        width: 100%;
+        max-height: 360px;
+        background: #000000;
+    }
+
+    .customizer-guide-start {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        width: 100%;
+        height: 48px;
+        margin-top: 18px;
+        border: 0;
+        border-radius: 11px;
+        background: #111111;
+        color: #ffffff;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, .14);
+        transition: all .18s ease;
+    }
+
+    .customizer-guide-start:hover {
+        background: #000000;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 576px) {
+        .customizer-guide-popup {
+            padding: 12px;
+        }
+
+        .customizer-guide-box {
+            padding: 25px 15px 17px;
+            border-radius: 17px;
+        }
+
+        .customizer-guide-heading h2 {
+            font-size: 20px;
+        }
+
+        .customizer-guide-heading p {
+            font-size: 12px;
+        }
+
+        .customizer-guide-video-wrap video {
+            max-height: 260px;
+        }
+    }
+
 </style>

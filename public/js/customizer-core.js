@@ -1832,7 +1832,17 @@ font-display: swap;
                 text.setAttribute('id', layer.id);
                 text.setAttribute('x', centerX + (layer.x || 0));
                 text.setAttribute('y', centerY + (layer.y || 0));
-                text.setAttribute('font-size', layer.fontSize || 2000);
+                const normalizedFontSize =
+    window.getNormalizedApplicationFontSize(
+        svgEl || mainSvg,
+        layer.fontSize || 500
+    );
+
+text.setAttribute(
+    'font-size',
+    normalizedFontSize
+);
+
                 text.style.fontFamily = layer.fontFamily || 'Arial Black';
                 text.setAttribute('fill', layer.fill || '#FFFFFF');
                 text.setAttribute('stroke', layer.stroke || '#000000');
@@ -3905,7 +3915,16 @@ window.saveUserDesign = async function (
                             const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                             t.setAttribute('x', textX);
                             t.setAttribute('y', textY);
-                            t.setAttribute('font-size', layer.fontSize || 500);
+const normalizedFontSize =
+    window.getNormalizedApplicationFontSize(
+        svgEl,
+        layer.fontSize || 500
+    );
+
+t.setAttribute(
+    'font-size',
+    normalizedFontSize
+);
                             t.style.fontFamily = layer.fontFamily || 'Arial Black';
                             t.setAttribute('fill', fill);
                             t.setAttribute('text-anchor', 'middle');

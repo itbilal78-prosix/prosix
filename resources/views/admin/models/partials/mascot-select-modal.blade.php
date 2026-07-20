@@ -432,7 +432,7 @@
     // ============================================================
     // MASCOT SELECT MODAL — All functions
     // ============================================================
-
+    
     window._mascotState = {
         allMascots: [],
         filteredMascots: [],
@@ -444,7 +444,7 @@
 
     // ===== MC (Mascot Customize) State =====
     window._mc = {
-        originalSvg: null, 
+        originalSvg: null,
         currentSvg: null,
         canvas: null,
         undoStack: [],

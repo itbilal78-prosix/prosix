@@ -373,7 +373,10 @@ window.applyUploadedPattern = function () {
     pattern.setAttribute('height', bbox.height);
     patternSvg.setAttribute('width', bbox.width);
     patternSvg.setAttribute('height', bbox.height);
-    patternSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+patternSvg.setAttribute(
+    'preserveAspectRatio',
+    'none'
+);
     pattern.appendChild(patternSvg);
     defs.appendChild(pattern);
 
@@ -408,15 +411,24 @@ window.applyUploadedPattern = function () {
     // State save karo
     if (!window.patternsApplied) window.patternsApplied = {};
     if (!window.patternsApplied[view]) window.patternsApplied[view] = {};
-    window.patternsApplied[view][partId] = {
-        patternId,
-        svgContent: window.uploadedSvgContent,
-        bbox: bbox,
-        size: 50,
-        opacity: 100,
-        angle: 0,
-        replacements: {}
-    };
+   window.patternsApplied[view][partId] = {
+    patternId: patternId,
+    svgContent: window.uploadedSvgContent,
+
+    bbox: {
+        x: bbox.x,
+        y: bbox.y,
+        width: bbox.width,
+        height: bbox.height
+    },
+
+    size: 50,
+    opacity: 100,
+    angle: 0,
+    offsetX: 0,
+    offsetY: 0,
+    replacements: {}
+};
 
     targetPart.dataset.hasPattern = 'true';
     targetPart.dataset.patternId = patternId;
@@ -650,7 +662,10 @@ window.recreatePatternAndOverlayWithNewColors = function () {
         g.setAttribute("opacity", opacity);
         content.setAttribute("width", bbox.width);
         content.setAttribute("height", bbox.height);
-        content.setAttribute("preserveAspectRatio", "xMidYMid slice");
+content.setAttribute(
+    "preserveAspectRatio",
+    "none"
+);
         g.appendChild(content);
         pattern.appendChild(g);
     }
@@ -696,48 +711,129 @@ window.recreatePatternAndOverlayWithNewColors = function () {
 };
 
     // =================== PATTERN CONTROLS ===================
-    window.updatePatternSize = function (value) {
-        if (!window.selectedSvgElement?.dataset.patternId) return;
+  window.updatePatternSize = function (value) {
+    if (!window.selectedSvgElement?.dataset.patternId) {
+        return;
+    }
 
-        const view = window.currentView;
-        const partId = window.selectedSvgElement.id;
-        const patternData = window.patternsApplied[view]?.[partId];
+    const view = window.currentView;
+    const partId = window.selectedSvgElement.id;
 
-        if (!patternData) return;
+    const patternData =
+        window.patternsApplied?.[view]?.[partId];
 
-        const pid = window.selectedSvgElement.dataset.patternId;
-        const pattern = document.querySelector(`#${pid}`);
-        if (!pattern) return;
+    if (!patternData) {
+        return;
+    }
 
-        let g = pattern.querySelector('g');
-        if (!g) {
-            g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            while (pattern.firstChild) {
-                g.appendChild(pattern.firstChild);
-            }
-            pattern.appendChild(g);
-        }
+    const pattern = document.querySelector(
+        `#${window.selectedSvgElement.dataset.patternId}`
+    );
 
-        const minSize = 50;
-        const safeValue = Math.max(value, minSize);
-        const scale = safeValue / 50;
+    if (!pattern) {
+        return;
+    }
 
-        const angle = patternData.angle || 0;
-        const opacity = (patternData.opacity || 100) / 100;
+    const bbox =
+        patternData.bbox ||
+        window.selectedSvgElement.getBBox();
 
-        g.setAttribute("transform", `scale(${scale}) rotate(${angle})`);
-        g.setAttribute("opacity", opacity);
+const numericValue =
+    Math.max(50, parseFloat(value) || 50);
 
-        window.patternsApplied[view][partId].size = safeValue;
-        if (window.saveCustomizations) window.saveCustomizations();
+    /*
+     * 50 = selected part ko exactly full cover karega.
+     * Size kam/zyada karne par center se zoom hoga.
+     */
+    const scale = numericValue / 50;
 
-        const slider = document.getElementById('patternSize');
-        if (slider) slider.value = safeValue;
-        const sizeValue = document.getElementById('sizeValue');
-        if (sizeValue) sizeValue.textContent = safeValue;
+    const scaledWidth =
+        bbox.width * scale;
 
-        console.log(`Pattern size updated: ${safeValue}`);
-    };
+    const scaledHeight =
+        bbox.height * scale;
+
+    const centerX =
+        bbox.x + bbox.width / 2;
+
+    const centerY =
+        bbox.y + bbox.height / 2;
+
+    pattern.setAttribute(
+        'x',
+        centerX - scaledWidth / 2
+    );
+
+    pattern.setAttribute(
+        'y',
+        centerY - scaledHeight / 2
+    );
+
+    pattern.setAttribute(
+        'width',
+        scaledWidth
+    );
+
+    pattern.setAttribute(
+        'height',
+        scaledHeight
+    );
+
+    const patternSvg =
+        pattern.querySelector('svg');
+
+    if (patternSvg) {
+        patternSvg.setAttribute(
+            'width',
+            scaledWidth
+        );
+
+        patternSvg.setAttribute(
+            'height',
+            scaledHeight
+        );
+
+        /*
+         * Poora pattern har part mein visible rahe.
+         * Koi top/bottom crop nahi hoga.
+         */
+        patternSvg.setAttribute(
+            'preserveAspectRatio',
+            'none'
+        );
+    }
+
+    /*
+     * Purana group scaling remove karo.
+     */
+    const group =
+        pattern.querySelector('g');
+
+    if (group) {
+        group.removeAttribute('transform');
+    }
+
+    patternData.size = numericValue;
+
+    const slider =
+        document.getElementById('patternSize');
+
+    if (slider) {
+        slider.value = numericValue;
+    }
+
+    const sizeValue =
+        document.getElementById('sizeValue');
+
+    if (sizeValue) {
+        sizeValue.textContent =
+            numericValue;
+    }
+
+    if (window.saveCustomizations) {
+        window.saveCustomizations();
+    }
+};
 
     window.updatePatternOpacity = function (value) {
         const opacity = value / 100;
@@ -953,7 +1049,10 @@ window.applyPatternsToSvg = function (svg, view, isPreview = false) {
 
             psvg.setAttribute('width', bbox.width);
             psvg.setAttribute('height', bbox.height);
-            psvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+psvg.setAttribute(
+    'preserveAspectRatio',
+    'none'
+);
             g.setAttribute('transform', `scale(${scale}) rotate(${angle})`);
             g.setAttribute('opacity', opacity);
             g.appendChild(psvg.cloneNode(true));

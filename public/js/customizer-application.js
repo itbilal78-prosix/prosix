@@ -762,7 +762,16 @@ window.confirmAddApplication = function () {
 
     text.setAttribute('x', cx + (layer.x || 0));
     text.setAttribute('y', cy + (layer.y || 0));
-    text.setAttribute('font-size', layer.fontSize || 500);
+const normalizedFontSize =
+    window.getNormalizedApplicationFontSize(
+        mainSvg,
+        layer.fontSize || 500
+    );
+
+text.setAttribute(
+    'font-size',
+    normalizedFontSize
+);
 
     text.style.fontFamily = layer.fontFamily || 'Arial Black'; // UI font fix
 
@@ -2352,21 +2361,117 @@ detectedColors = detectedColors
         if (window.setWheelAngle) window.setWheelAngle(layer.rotation || 0);
     };
 
-    window.updateFontSize = function (value) {
-        if (!window.currentApplicationLayer) return;
-        const layer = findLayerById(window.currentApplicationLayer);
-        if (!layer) return;
-        layer.fontSize = parseInt(value);
-        const textEl = document.getElementById(layer.id);
-        if (textEl) textEl.setAttribute('font-size', value);
-        document.querySelectorAll(`[data-outline-for="${layer.id}"]`).forEach(o => o.setAttribute('font-size', value));
-        document.getElementById('fontSizeValue').textContent = value;
-        if (layer.hasPattern && layer.patternId) setTimeout(() => _updatePatternPosition(layer), 50);
-        if (layer.hasMascot && layer.mascotId) setTimeout(() => _updateMascotPatternPosition(layer), 50);
-        if (window.saveCustomizations) window.saveCustomizations();
-        setTimeout(() => _showPlusIcon(layer.id), 80);
-    };
+   window.updateFontSize = function (value) {
+    if (!window.currentApplicationLayer) {
+        return;
+    }
 
+    const layer = findLayerById(
+        window.currentApplicationLayer
+    );
+
+    if (!layer) {
+        return;
+    }
+
+    /*
+     * User ki selected size hamesha raw/reference size mein save hogi.
+     * Example: har view mein layer.fontSize = 500.
+     */
+    const savedFontSize =
+        parseFloat(value) || 500;
+
+    layer.fontSize =
+        savedFontSize;
+
+    const textEl =
+        document.getElementById(layer.id);
+
+    if (textEl) {
+        const svg =
+            textEl.ownerSVGElement ||
+            window.getMainSvg?.();
+
+        const normalizedFontSize =
+            window.getNormalizedApplicationFontSize(
+                svg,
+                savedFontSize
+            );
+
+        textEl.setAttribute(
+            'font-size',
+            normalizedFontSize
+        );
+
+        document
+            .querySelectorAll(
+                `[data-outline-for="${layer.id}"]`
+            )
+            .forEach(function (outline) {
+                outline.setAttribute(
+                    'font-size',
+                    normalizedFontSize
+                );
+            });
+    }
+
+    const valueDisplay =
+        document.getElementById(
+            'fontSizeValue'
+        );
+
+    if (valueDisplay) {
+        /*
+         * Sidebar par wohi number show hoga
+         * jo user ne select kiya.
+         */
+        valueDisplay.textContent =
+            savedFontSize;
+    }
+
+    if (
+        layer.hasPattern &&
+        layer.patternId
+    ) {
+        setTimeout(function () {
+            if (
+                typeof _updatePatternPosition ===
+                'function'
+            ) {
+                _updatePatternPosition(layer);
+            }
+        }, 50);
+    }
+
+    if (
+        layer.hasMascot &&
+        layer.mascotId
+    ) {
+        setTimeout(function () {
+            if (
+                typeof _updateMascotPatternPosition ===
+                'function'
+            ) {
+                _updateMascotPatternPosition(
+                    layer
+                );
+            }
+        }, 50);
+    }
+
+    if (window.saveCustomizations) {
+        window.saveCustomizations();
+    }
+
+    setTimeout(function () {
+        if (
+            typeof _showPlusIcon ===
+            'function'
+        ) {
+            _showPlusIcon(layer.id);
+        }
+    }, 80);
+};
 window.updateApplicationText = function (value) {
     if (!window.currentApplicationLayer) return;
 
@@ -3711,4 +3816,64 @@ if (document.readyState === 'loading') {
     setTimeout(initMascotRotationWheel, 600);
 }
 
+/*
+ * Har front/back/left/right view ke text size ko
+ * common 800x800 reference ke mutabiq normalize karta hai.
+ */
+window.getNormalizedApplicationFontSize = function (
+    svg,
+    savedFontSize
+) {
+    const referenceSize = 800;
+
+    let viewBoxWidth = referenceSize;
+    let viewBoxHeight = referenceSize;
+
+    if (svg) {
+        const viewBox =
+            svg.getAttribute('viewBox');
+
+        if (viewBox) {
+            const values = viewBox
+                .trim()
+                .split(/[\s,]+/)
+                .map(Number);
+
+            if (
+                values.length >= 4 &&
+                values[2] > 0 &&
+                values[3] > 0
+            ) {
+                viewBoxWidth = values[2];
+                viewBoxHeight = values[3];
+            }
+        } else {
+            const width =
+                parseFloat(svg.getAttribute('width'));
+
+            const height =
+                parseFloat(svg.getAttribute('height'));
+
+            if (width > 0) {
+                viewBoxWidth = width;
+            }
+
+            if (height > 0) {
+                viewBoxHeight = height;
+            }
+        }
+    }
+
+    /*
+     * Height ko reference banaya gaya hai,
+     * kyun ke user chahta hai sab views ki height same lage.
+     */
+    const normalizationScale =
+        viewBoxHeight / referenceSize;
+
+    return (
+        (parseFloat(savedFontSize) || 500) *
+        normalizationScale
+    );
+};
 })();
