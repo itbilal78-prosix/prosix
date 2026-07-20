@@ -3557,15 +3557,17 @@ window.renderFontGrid = renderFontGrid;
             return a;
         }
 
-        function updateArc(a) {
-            const progress = (a / 360) * circumference;
-            arc.setAttribute('stroke-dasharray', progress + ' ' + circumference);
-            const rad = (a - 90) * Math.PI / 180;
-            const dx = cx + r * Math.cos(rad);
-            const dy = cy + r * Math.sin(rad);
-            dot.setAttribute('cx', dx);
-            dot.setAttribute('cy', dy);
-        }
+       function updateArc(a) {
+    const progress = (a / 360) * circumference;
+    arc.setAttribute('stroke-dasharray', progress + ' ' + circumference);
+
+    const rad = (a - 90) * Math.PI / 180;
+    const dx = cx + r * Math.cos(rad);
+    const dy = cy + r * Math.sin(rad);
+
+    dot.setAttribute('x', dx - 9);
+    dot.setAttribute('y', dy - 9);
+}
 
         window.setWheelAngle = function (a) {
             angle = ((a % 360) + 360) % 360;
@@ -3744,8 +3746,8 @@ function initMascotRotationWheel() {
         const rad = (a - 90) * Math.PI / 180;
         const dx = cx + r * Math.cos(rad);
         const dy = cy + r * Math.sin(rad);
-        dot.setAttribute('cx', dx);
-        dot.setAttribute('cy', dy);
+       dot.setAttribute('x', dx - 9);
+dot.setAttribute('y', dy - 9);
     }
 
     window.setMascotWheelAngle = function (a) {
@@ -3876,4 +3878,7 @@ window.getNormalizedApplicationFontSize = function (
         normalizationScale
     );
 };
+document.querySelectorAll('.app-slider').forEach(function(slider){
+    appFillSlider(slider);
+});
 })();

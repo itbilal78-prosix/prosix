@@ -50,7 +50,6 @@
               <li>Clear communication</li>
             </ul>
           </div>
-
           <!-- RIGHT VIDEO BOX -->
           <div class="col-lg-6">
             <div class="video-box">

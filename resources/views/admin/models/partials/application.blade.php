@@ -179,8 +179,18 @@ gap:6px;
                                 stroke="#333" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 427.26"
                                 transform="rotate(-90 80 80)" style="transition:none;" />
                             <circle cx="80" cy="80" r="52" fill="#888" />
-                            <circle id="mascotRotationDot" cx="80" cy="12" r="9" fill="#222"
-                                stroke="#fff" stroke-width="2.5" />
+                            <rect
+    id="mascotRotationDot"
+    x="71"
+    y="3"
+    width="18"
+    height="18"
+    rx="2"
+    ry="2"
+    fill="#222"
+    stroke="#fff"
+    stroke-width="2.5"
+/>
                         </svg>
                         <div
                             style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
@@ -316,14 +326,16 @@ gap:6px;
                             class="app-slider"
                             style="width:100%; cursor:pointer; box-sizing:border-box;
                    background:linear-gradient(to right, #000 0%, #ddd 0%);"
-                            oninput="
-                updateFontSize(this.value);
+                           oninput="
+updateFontSize(this.value);
+appFillSlider(this);
                 document.getElementById('fontSizeValue').textContent = this.value;
                 appMoveBub(this, 'fontSizeBubble');
                 appFillSlider(this);
                 appHideBub('posXBubble');
                 appHideBub('posYBubble');
             ">
+
                         <span id="fontSizeValue" style="display:none;">50</span>
                     </div>
                 </div>
@@ -353,8 +365,9 @@ gap:6px;
                                 class="app-slider"
                                 style="width:100%; cursor:pointer; box-sizing:border-box;
                        background:linear-gradient(to right, #000 50%, #ddd 50%);"
-                                oninput="
-                    updatePosition(this.value, null);
+                              oninput="
+updatePosition(this.value, null);
+appFillSlider(this);
                     document.getElementById('posXValue').textContent = this.value;
                     appMoveBub(this, 'posXBubble');
                     appFillSlider(this);
@@ -383,8 +396,9 @@ gap:6px;
                                 class="app-slider"
                                 style="width:100%; cursor:pointer; box-sizing:border-box;
                        background:linear-gradient(to right, #000 50%, #ddd 50%);"
-                                oninput="
-                    updatePosition(null, this.value);
+                               oninput="
+updatePosition(null, this.value);
+appFillSlider(this);
                     document.getElementById('posYValue').textContent = this.value;
                     appMoveBub(this, 'posYBubble');
                     appFillSlider(this);
@@ -458,8 +472,18 @@ gap:6px;
                             {{-- Inner circle --}}
                             <circle cx="80" cy="80" r="52" fill="#888" />
                             {{-- Dot at top (cy = 80 - 68 = 12) --}}
-                            <circle id="rotationDot" cx="80" cy="12" r="9" fill="#222"
-                                stroke="#fff" stroke-width="2.5" />
+                         <rect
+    id="rotationDot"
+    x="71"
+    y="3"
+    width="18"
+    height="18"
+    rx="2"
+    ry="2"
+    fill="#222"
+    stroke="#fff"
+    stroke-width="2.5"
+/>
                         </svg>
 
                         {{-- Center input --}}
@@ -990,7 +1014,27 @@ gap:6px;
         -moz-user-select: none;
         -ms-user-select: none;
     }
+.app-slider::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 18px !important;
+    height: 18px !important;
+    background: #000 !important;
+    border: 2px solid #fff !important;
+    border-radius: 3px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.35) !important;
+    cursor: pointer !important;
+}
 
+.app-slider::-moz-range-thumb {
+    width: 18px !important;
+    height: 18px !important;
+    background: #000 !important;
+    border: 2px solid #fff !important;
+    border-radius: 3px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.35) !important;
+    cursor: pointer !important;
+}
     /* ===== SQUARE SLIDER THUMB ===== */
     /* ===== SQUARE FILLED SLIDER ===== */
     .app-slider {

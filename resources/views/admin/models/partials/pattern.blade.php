@@ -132,9 +132,8 @@ font-weight:600;
             <div style="text-align:right; font-size:12px;"><span id="mascotOpacityValue">100</span>%</div>
         </div>
 
-        <!-- Count Slider (تعداد) -->
         <div style="margin-bottom:12px;">
-            <label style="font-weight:600; font-size:14px;">COUNT (تعداد)</label>
+            <label style="font-weight:600; font-size:14px;">COUNT</label>
             <input type="range" min="1" max="10" value="4" id="mascotCount"
                 oninput="updateMascotCount(this.value)" style="width:100%;">
             <div style="text-align:right; font-size:12px;"><span id="mascotCountValue">4</span></div>
