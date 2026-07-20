@@ -3917,7 +3917,7 @@ window.saveUserDesign = async function (
                             t.setAttribute('y', textY);
 const normalizedFontSize =
     window.getNormalizedApplicationFontSize(
-        svgEl,
+        mainSvg,
         layer.fontSize || 500
     );
 
