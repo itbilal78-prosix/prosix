@@ -92,11 +92,12 @@ const blog = ref(null)
 const fetchBlog = async () => {
   try {
     const res = await axios.get(
-      `http://127.0.0.1:8000/api/blogs/${route.params.slug}`
+      `/api/blogs/${route.params.slug}`
     )
+
     blog.value = res.data
   } catch (error) {
-    console.error('Blog not found')
+    console.error('Blog not found', error)
   }
 }
 
@@ -116,9 +117,8 @@ const formatBlogBody = (body) => {
 }
 
 const imageUrl = (path) => {
-  return `http://127.0.0.1:8000/storage/${path}`
+  return `/storage/${path}`
 }
-
 const goBlogs = () => {
   router.push('/blogs')
 }
