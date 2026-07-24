@@ -2060,37 +2060,64 @@ function updateStatus() {
         button.innerHTML =
             'Update Status';
     });
-    function deleteOrder(id)
-{
-    if (!confirm('Are you sure you want to delete this order?')) {
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| Delete Order
+|--------------------------------------------------------------------------
+*/
+
+function deleteOrder(id) {
+    if (!id) {
+        return;
+    }
+
+    const confirmed = confirm(
+        'Are you sure you want to delete this order?'
+    );
+
+    if (!confirmed) {
         return;
     }
 
     fetch('/admin/place-orders/' + id, {
         method: 'DELETE',
+
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(async function (response) {
+        const data = await response.json();
 
-        if (!data.success) {
-            throw new Error(data.message || 'Delete failed.');
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message || 'Order delete failed.'
+            );
         }
 
-        alert(data.message);
-
-        location.reload();
-
+        return data;
     })
-    .catch(error => {
-        alert(error.message);
+    .then(function (data) {
+        alert(data.message || 'Order deleted successfully.');
+        window.location.reload();
+    })
+    .catch(function (error) {
+        console.error('Delete order error:', error);
+
+        alert(
+            error.message ||
+            'Server error. Please try again.'
+        );
     });
 }
-}
+
+
+
 </script>
 
 
