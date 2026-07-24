@@ -285,6 +285,13 @@
                                     <i class="bi bi-eye"></i>
                                     View
                                 </button>
+                                <button
+    type="button"
+    class="btn btn-sm btn-danger delete-order-btn"
+    onclick="deleteOrder({{ $order->id }})">
+    <i class="bi bi-trash"></i>
+    Delete
+</button>
                             </td>
                         </tr>
                     @empty
@@ -2053,6 +2060,36 @@ function updateStatus() {
         button.innerHTML =
             'Update Status';
     });
+    function deleteOrder(id)
+{
+    if (!confirm('Are you sure you want to delete this order?')) {
+        return;
+    }
+
+    fetch('/admin/place-orders/' + id, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (!data.success) {
+            throw new Error(data.message || 'Delete failed.');
+        }
+
+        alert(data.message);
+
+        location.reload();
+
+    })
+    .catch(error => {
+        alert(error.message);
+    });
+}
 }
 </script>
 

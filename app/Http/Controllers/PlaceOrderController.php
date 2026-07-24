@@ -304,4 +304,52 @@ public function markAllRead()
         'success' => true
     ]);
 }
+public function destroy($id)
+{
+    $order = PlaceOrder::findOrFail($id);
+
+    // Delete uploaded files
+    $folders = [
+        'mockup_files' => 'uploads/orders/mockup/',
+        'roster_files' => 'uploads/orders/roster/',
+        'quote_files'  => 'uploads/orders/quote/',
+    ];
+
+    foreach ($folders as $column => $folder) {
+
+        $files = $order->$column;
+
+        if (is_string($files)) {
+            $files = json_decode($files, true);
+        }
+
+        if (!is_array($files)) {
+            continue;
+        }
+
+        foreach ($files as $file) {
+
+            $filename = is_array($file)
+                ? ($file['filename'] ?? null)
+                : $file;
+
+            if (!$filename) {
+                continue;
+            }
+
+            $path = public_path($folder . basename($filename));
+
+            if (file_exists($path)) {
+                @unlink($path);
+            }
+        }
+    }
+
+    $order->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Order deleted successfully.'
+    ]);
+}
 }

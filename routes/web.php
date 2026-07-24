@@ -101,7 +101,7 @@ Route::middleware(['auth:admin'])->prefix('admin')->group(function () {
     Route::post('products/bulk-category', [ProductController::class, 'bulkCategory'])->name('products.bulkCategory');
 Route::post('products/duplicate-category', [ProductController::class, 'duplicateCategory'])
     ->name('products.duplicateCategory');
-    
+
 
     Route::middleware(['auth:admin', 'admin.permission:can_products'])
         ->resource('products', ProductController::class);
@@ -253,7 +253,7 @@ Route::get('/admin/place-orders', [PlaceOrderController::class, 'index'])
     ->name('admin.placeorder');
 Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSinglePdf'])
     ->name('order.download.single');
-
+Route::delete('/admin/place-orders/{id}', [PlaceOrderController::class, 'destroy']);
 
 // Route::get('/customize/{id}', function ($id) {
 
