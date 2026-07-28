@@ -652,7 +652,8 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @keyframes pulse {
   0%, 100% { opacity: 0.4; }
   50%       { opacity: 1; }
-}
+}      
+
 .scroll-top-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px) scale(0.8); z-index: 9997; width: 52px; height: 52px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); opacity: 0; pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s; }
 .scroll-top-btn.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
 .scroll-top-btn:hover { background: #fff; color: #000; transform: translateX(-50%) translateY(-3px) scale(1.08); }
@@ -725,7 +726,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 
 .left-ribbon { position: relative; display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; text-align: center; }
 .left-ribbon span { position: relative; z-index: 2; display: block; text-align: center; }
-.left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 14px 40px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
+.left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 10px 12px; font-weight: 800; font-size: 1.2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
 .deals-section { background-color: #e0e0e0; }
 .deals-layout { display: flex; gap: 50px; align-items: stretch; }
 .deals-banner-col { flex: 0 0 42%; max-width: 42%; }
@@ -831,8 +832,24 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .testimonials-carousel-inner { flex: 1; overflow: hidden; padding-top: 46px; }
 .testimonials-carousel { display: flex; will-change: transform; }
 .testimonial-item { flex: 0 0 33.333%; padding: 0 12px; box-sizing: border-box; }
-.t-card-wrapper { position: relative; padding-top: 38px; }
-.quote-float { position: absolute; top: -38px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 8rem; line-height: 1; color: #000; pointer-events: none; }
+.t-card-wrapper { position: relative; padding-top: 45px; }
+.quote-float{
+    position: absolute;
+    top: 15px;              /* Card ke upar center */
+    left: 50%;
+    transform: translateX(-50%);
+    color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.quote-float i{
+    font-size: 2.3rem;       /* Quote ka size bada */
+    line-height: 1;
+}
+
 .testimonial-card { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; min-height: auto; position: relative; transition: all 0.35s; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
 .testimonial-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); border-color: #333; }
 .stars-rating { font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 12px; text-align: left; }

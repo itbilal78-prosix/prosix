@@ -102,11 +102,11 @@
       </div>
 
       <!-- Bottom Copyright -->
-      <div class="footer-bottom py-3 text-center border-top border-white">
+      <!-- <div class="footer-bottom py-3 text-center border-top border-white">
         <p class="mb-0 copyright-text">
           Copyright © 2009 - 2024, All rights reserved by <strong>Prosix Sports</strong>
         </p>
-      </div>
+      </div> -->
     </div>
   </footer>
 </template>
