@@ -826,184 +826,32 @@ const loadProduct=async()=>{
   }
 }
 
-const extractItems = (response, key) => {
-  const body = response?.data
-
-  const possibleLists = [
-    body?.[key],
-    body?.data?.[key],
-    body?.data?.data,
-    body?.data,
-    body
-  ]
-
-  for (const list of possibleLists) {
-    if (Array.isArray(list)) {
-      return list
+const fetchRelated=async()=>{
+  relatedLoading.value=true;relatedItems.value=[]
+  try{
+    if(isModel.value){
+      const currentId=product.value.id;let models=[]
+      const subId=product.value.subcategory_id,catId=product.value.category_id
+      if(subId){try{const r=await axios.get(`/api/subcategories/${subId}/models`);models=r.data?.models||r.data||[]}catch{}}
+      if(!models.length&&catId){try{const r=await axios.get(`/api/categories/${catId}/models`);models=r.data?.models||r.data||[]}catch{}}
+      if(!models.length){try{const r=await axios.get('/api/models');models=r.data?.models||r.data||[]}catch{}}
+      relatedItems.value=models.filter(m=>String(m.id)!==String(currentId))
+      // Build colored SVGs for related models if design applied
+      if(appliedPreview.value.hasDesign){
+        await buildRelatedColoredSvgs(relatedItems.value)
+      }
+    }else{
+      const currentId=product.value.id;let products=[]
+      const subId=product.value.subcategory_id,catId=product.value.category_id
+      if(subId){try{const r=await axios.get(`/api/subcategories/${subId}/products`);products=r.data?.products||r.data||[]}catch{}}
+      if(!products.length&&catId){try{const r=await axios.get(`/api/categories/${catId}/products`);products=r.data?.products||r.data||[]}catch{}}
+      if(!products.length){try{const r=await axios.get('/api/products');products=r.data?.products||r.data||[]}catch{}}
+      relatedItems.value=products.filter(p=>String(p.id)!==String(currentId)&&!p.views&&p.type!=='model')
     }
-  }
-
-  return []
+  }catch(err){console.error('Related fetch error:',err)}
+  relatedLoading.value=false
 }
 
-const fetchRelated = async () => {
-  relatedLoading.value = true
-  relatedItems.value = []
-  relatedPage.value = 0
-
-  try {
-    const currentId = product.value.id
-
-    const subId =
-      product.value.subcategory_id ||
-      product.value.subcategory?.id ||
-      null
-
-    const catId =
-      product.value.category_id ||
-      product.value.category?.id ||
-      null
-
-    console.log('Current product category details:', {
-      currentId,
-      catId,
-      subId,
-      product: product.value
-    })
-
-    /*
-    |--------------------------------------------------------------------------
-    | CUSTOMIZER MODEL
-    |--------------------------------------------------------------------------
-    */
-    if (isModel.value) {
-      let models = []
-
-      if (subId) {
-        try {
-          const response = await axios.get(
-            `/api/subcategories/${subId}/models`
-          )
-
-          console.log(
-            'Subcategory models response:',
-            response.data
-          )
-
-          models = extractItems(response, 'models')
-        } catch (error) {
-          console.error(
-            'Subcategory models request failed:',
-            error.response?.data || error
-          )
-        }
-      }
-
-      if (!models.length && catId) {
-        try {
-          const response = await axios.get(
-            `/api/categories/${catId}/models`
-          )
-
-          console.log(
-            'Category models response:',
-            response.data
-          )
-
-          models = extractItems(response, 'models')
-        } catch (error) {
-          console.error(
-            'Category models request failed:',
-            error.response?.data || error
-          )
-        }
-      }
-
-      relatedItems.value = models.filter(model => {
-        return String(model.id) !== String(currentId)
-      })
-
-      if (
-        appliedPreview.value.hasDesign &&
-        relatedItems.value.length
-      ) {
-        await buildRelatedColoredSvgs(
-          relatedItems.value
-        )
-      }
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-       | NORMAL PRODUCT
-    |--------------------------------------------------------------------------
-    */
-    else {
-      let products = []
-
-      if (subId) {
-        try {
-          const response = await axios.get(
-            `/api/subcategories/${subId}/products`
-          )
-
-          console.log(
-            'Subcategory products response:',
-            response.data
-          )
-
-          products = extractItems(response, 'products')
-        } catch (error) {
-          console.error(
-            'Subcategory products request failed:',
-            error.response?.data || error
-          )
-        }
-      }
-
-      if (!products.length && catId) {
-        try {
-          const response = await axios.get(
-            `/api/categories/${catId}/products`
-          )
-
-          console.log(
-            'Category products response:',
-            response.data
-          )
-
-          products = extractItems(response, 'products')
-        } catch (error) {
-          console.error(
-            'Category products request failed:',
-            error.response?.data || error
-          )
-        }
-      }
-
-      relatedItems.value = products.filter(item => {
-        return (
-          String(item.id) !== String(currentId) &&
-          item.type !== 'model'
-        )
-      })
-    }
-
-    console.log(
-      'Final related items:',
-      relatedItems.value
-    )
-  } catch (error) {
-    console.error(
-      'Related products main error:',
-      error
-    )
-
-    relatedItems.value = []
-  } finally {
-    relatedLoading.value = false
-  }
-}
 const toggleLike = () => {
   const key = 'favorite_designs'
   let saved = JSON.parse(localStorage.getItem(key) || '[]')
