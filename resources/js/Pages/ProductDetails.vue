@@ -826,6 +826,26 @@ const loadProduct=async()=>{
   }
 }
 
+const extractItems = (response, key) => {
+  const body = response?.data
+
+  const possibleLists = [
+    body?.[key],
+    body?.data?.[key],
+    body?.data?.data,
+    body?.data,
+    body
+  ]
+
+  for (const list of possibleLists) {
+    if (Array.isArray(list)) {
+      return list
+    }
+  }
+
+  return []
+}
+
 const fetchRelated = async () => {
   relatedLoading.value = true
   relatedItems.value = []
@@ -833,59 +853,75 @@ const fetchRelated = async () => {
 
   try {
     const currentId = product.value.id
-    const subId = product.value.subcategory_id
-    const catId = product.value.category_id
+
+    const subId =
+      product.value.subcategory_id ||
+      product.value.subcategory?.id ||
+      null
+
+    const catId =
+      product.value.category_id ||
+      product.value.category?.id ||
+      null
+
+    console.log('Current product category details:', {
+      currentId,
+      catId,
+      subId,
+      product: product.value
+    })
 
     /*
     |--------------------------------------------------------------------------
-    | CUSTOMIZER MODELS
+    | CUSTOMIZER MODEL
     |--------------------------------------------------------------------------
     */
     if (isModel.value) {
       let models = []
 
-      // Pehle same subcategory ke models
       if (subId) {
         try {
           const response = await axios.get(
             `/api/subcategories/${subId}/models`
           )
 
-          models =
-            response.data?.models ||
-            response.data?.data ||
-            response.data ||
-            []
+          console.log(
+            'Subcategory models response:',
+            response.data
+          )
+
+          models = extractItems(response, 'models')
         } catch (error) {
-          console.error('Subcategory models error:', error)
+          console.error(
+            'Subcategory models request failed:',
+            error.response?.data || error
+          )
         }
       }
 
-      // Subcategory mein kuch na mile to same main category
-      if (
-        (!Array.isArray(models) || models.length === 0) &&
-        catId
-      ) {
+      if (!models.length && catId) {
         try {
           const response = await axios.get(
             `/api/categories/${catId}/models`
           )
 
-          models =
-            response.data?.models ||
-            response.data?.data ||
-            response.data ||
-            []
+          console.log(
+            'Category models response:',
+            response.data
+          )
+
+          models = extractItems(response, 'models')
         } catch (error) {
-          console.error('Category models error:', error)
+          console.error(
+            'Category models request failed:',
+            error.response?.data || error
+          )
         }
       }
 
-      relatedItems.value = Array.isArray(models)
-        ? models.filter(model =>
-            String(model.id) !== String(currentId)
-          )
-        : []
+      relatedItems.value = models.filter(model => {
+        return String(model.id) !== String(currentId)
+      })
 
       if (
         appliedPreview.value.hasDesign &&
@@ -899,65 +935,75 @@ const fetchRelated = async () => {
 
     /*
     |--------------------------------------------------------------------------
-    | NORMAL PRODUCTS
+       | NORMAL PRODUCT
     |--------------------------------------------------------------------------
     */
     else {
       let products = []
 
-      // Pehle same subcategory ke products
       if (subId) {
         try {
           const response = await axios.get(
             `/api/subcategories/${subId}/products`
           )
 
-          products =
-            response.data?.products ||
-            response.data?.data ||
-            response.data ||
-            []
+          console.log(
+            'Subcategory products response:',
+            response.data
+          )
+
+          products = extractItems(response, 'products')
         } catch (error) {
-          console.error('Subcategory products error:', error)
+          console.error(
+            'Subcategory products request failed:',
+            error.response?.data || error
+          )
         }
       }
 
-      // Subcategory mein kuch na mile to same main category
-      if (
-        (!Array.isArray(products) || products.length === 0) &&
-        catId
-      ) {
+      if (!products.length && catId) {
         try {
           const response = await axios.get(
             `/api/categories/${catId}/products`
           )
 
-          products =
-            response.data?.products ||
-            response.data?.data ||
-            response.data ||
-            []
+          console.log(
+            'Category products response:',
+            response.data
+          )
+
+          products = extractItems(response, 'products')
         } catch (error) {
-          console.error('Category products error:', error)
+          console.error(
+            'Category products request failed:',
+            error.response?.data || error
+          )
         }
       }
 
-      relatedItems.value = Array.isArray(products)
-        ? products.filter(item =>
-            String(item.id) !== String(currentId) &&
-            !item.views &&
-            item.type !== 'model'
-          )
-        : []
+      relatedItems.value = products.filter(item => {
+        return (
+          String(item.id) !== String(currentId) &&
+          item.type !== 'model'
+        )
+      })
     }
+
+    console.log(
+      'Final related items:',
+      relatedItems.value
+    )
   } catch (error) {
-    console.error('Related fetch error:', error)
+    console.error(
+      'Related products main error:',
+      error
+    )
+
     relatedItems.value = []
   } finally {
     relatedLoading.value = false
   }
 }
-
 const toggleLike = () => {
   const key = 'favorite_designs'
   let saved = JSON.parse(localStorage.getItem(key) || '[]')
