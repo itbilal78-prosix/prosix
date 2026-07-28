@@ -2,116 +2,99 @@
   <nav-component />
   <breadcrumb-component />
 
-  <main class="jacket-page">
-    <!-- Sticky scroll area -->
-    <section ref="scrollSection" class="jacket-scroll-section">
+  <main class="product-page">
+    <section ref="showcase" class="scroll-showcase">
       <div
-        class="jacket-sticky"
+        class="single-banner"
         :style="{
-          background: currentProduct.background,
-          color: currentProduct.textColor
+          background: currentItem.background,
+          color: currentItem.textColor
         }"
       >
-        <!-- Decorative glow -->
         <div
-          class="hero-glow"
-          :style="{ background: currentProduct.glow }"
+          class="banner-glow"
+          :style="{ background: currentItem.glow }"
         ></div>
 
-        <!-- Navbar inside hero -->
-        <header class="hero-navbar">
+        <header class="banner-nav">
           <div class="brand">
-            <span class="brand-icon">MM</span>
+            <span class="brand-box">MM</span>
             <span>MOUNT MASTERS</span>
           </div>
 
-          <nav class="hero-links">
+          <div class="nav-links">
             <button class="active">PUFFER JACKET</button>
             <button>ALL PRODUCTS</button>
             <button>ABOUT US</button>
             <button>CONTACT</button>
-          </nav>
+          </div>
 
-          <div class="hero-actions">
-            <button aria-label="Cart">🛒</button>
-            <button aria-label="Favourite">♡</button>
+          <div class="nav-icons">
+            <button>♡</button>
+            <button>🛒</button>
           </div>
         </header>
 
-        <div class="hero-content">
-          <!-- Left content -->
-          <div class="hero-copy">
-            <div class="arrow-buttons">
-              <button @click="previousProduct">‹</button>
-              <button @click="nextProduct">›</button>
+        <div class="banner-grid">
+          <div class="banner-copy">
+            <div class="small-arrows">
+              <button @click="goPrevious">‹</button>
+              <button @click="goNext">›</button>
             </div>
 
-            <p class="product-number">
-              0{{ activeIndex + 1 }} / 0{{ products.length }}
-            </p>
-
-            <h1 :key="`title-${activeIndex}`" class="hero-title">
+            <h1>
               Stand out
               <span>Without trying</span>
             </h1>
 
-            <p class="hero-description">
+            <p>
               It’s not just about staying warm. It’s about stepping outside
               and instantly feeling confident, comfortable and completely
-              yourself. Designed to elevate even the simplest outfit.
+              yourself.
             </p>
 
-            <button class="look-button">
+            <button class="cta-button">
               Get the look
               <span>›</span>
             </button>
 
-            <div class="social-links">
-              <a href="#">◎</a>
-              <a href="#">f</a>
-              <a href="#">p</a>
-              <a href="#">in</a>
+            <div class="socials">
+              <span>◎</span>
+              <span>f</span>
+              <span>p</span>
+              <span>in</span>
             </div>
           </div>
 
-          <!-- Main jacket -->
-          <div class="product-visual">
-            <div class="floating-label">
-              {{ currentProduct.name }}
-            </div>
-
-            <transition name="jacket-change" mode="out-in">
-              <div
-                :key="currentProduct.id"
-                class="main-jacket-wrapper"
-              >
+          <div class="jacket-stage">
+            <transition name="jacket-slide" mode="out-in">
+              <div :key="currentItem.id" class="jacket-holder">
                 <img
-                  :src="currentProduct.image"
-                  :alt="currentProduct.name"
-                  class="main-jacket"
-                  :class="currentProduct.filterClass"
+                  :src="currentItem.image"
+                  :alt="currentItem.name"
+                  class="jacket-image"
+                  :class="currentItem.className"
                 />
 
-                <div class="product-shadow"></div>
+                <div class="jacket-shadow"></div>
               </div>
             </transition>
 
-            <p class="confidence-text">
+            <div class="center-caption">
               Confidence,<br />
               wrapped in warmth
-            </p>
+            </div>
           </div>
 
-          <!-- Right content -->
-          <div class="product-details">
-            <div class="price-area">
-              <strong>${{ currentProduct.price }}</strong>
-              <del>${{ currentProduct.oldPrice }}</del>
+          <div class="banner-details">
+            <div class="price">
+              <strong>${{ currentItem.price }}</strong>
+              <del>${{ currentItem.oldPrice }}</del>
             </div>
 
-            <p class="size-title">Choose your size</p>
+            <p>Choose your size</p>
 
-            <div class="size-buttons">
+            <div class="sizes">
               <button
                 v-for="size in sizes"
                 :key="size"
@@ -122,44 +105,23 @@
               </button>
             </div>
 
-            <div class="product-thumbnails">
-              <button
-                v-for="(product, index) in products"
-                :key="product.id"
-                :class="{ active: activeIndex === index }"
-                @click="setProduct(index)"
-              >
-                <img
-                  :src="product.image"
-                  :alt="product.name"
-                  :class="product.filterClass"
-                />
-              </button>
+            <div class="mini-preview">
+              <img
+                :src="nextItem.image"
+                :alt="nextItem.name"
+                :class="nextItem.className"
+              />
             </div>
           </div>
         </div>
 
-        <!-- Bottom progress -->
-        <div class="scroll-progress">
-          <div class="progress-track">
-            <div
-              class="progress-fill"
-              :style="{ width: `${scrollProgress}%` }"
-            ></div>
+        <div class="scroll-line">
+          <div class="track">
+            <span :style="{ width: `${progress}%` }"></span>
           </div>
-
-          <span>Scroll to explore</span>
+          <small>Scroll to change jacket</small>
         </div>
       </div>
-    </section>
-
-    <!-- Content after scroll section -->
-    <section class="after-section">
-      <p>Premium Collection</p>
-      <h2>Designed for every season.</h2>
-      <span>
-        Scroll animation complete. Your next website section can start here.
-      </span>
     </section>
   </main>
 
@@ -168,75 +130,74 @@
 
 <script>
 export default {
-  name: 'JacketScrollShowcase',
+  name: 'SingleBannerJackets',
 
   data() {
     return {
       activeIndex: 0,
       selectedSize: 36,
-      scrollProgress: 0,
-
+      progress: 0,
       sizes: [36, 38, 40],
 
-      products: [
+      items: [
         {
           id: 1,
-          name: 'Midnight Black',
+          name: 'Black Jacket',
           price: 149,
           oldPrice: 199,
           textColor: '#ffffff',
           background:
-            'radial-gradient(circle at 52% 46%, #4d2412 0%, #191413 28%, #0a0a0a 72%)',
+            'radial-gradient(circle at 52% 45%, #482512 0%, #191312 30%, #090909 72%)',
           glow:
-            'radial-gradient(circle, rgba(255,108,28,.48) 0%, rgba(255,108,28,.10) 42%, transparent 72%)',
-
-          /*
-            Testing ke liye online PNG use ho rahi hai.
-            Baad mein is URL ko:
-            /images/jackets/jacket-black.png
-            se replace kar dena.
-          */
+            'radial-gradient(circle, rgba(255,112,35,.48) 0%, rgba(255,112,35,.12) 42%, transparent 72%)',
           image: 'https://pngimg.com/d/jacket_PNG8058.png',
-          filterClass: 'jacket-black'
+          className: 'black-jacket'
         },
         {
           id: 2,
-          name: 'Sunset Orange',
+          name: 'Orange Jacket',
           price: 149,
           oldPrice: 199,
           textColor: '#ffffff',
           background:
-            'radial-gradient(circle at 52% 45%, #f46516 0%, #9a3511 35%, #35170d 100%)',
+            'radial-gradient(circle at 52% 45%, #ee6417 0%, #9d3b12 38%, #42200f 100%)',
           glow:
-            'radial-gradient(circle, rgba(255,151,67,.75) 0%, rgba(255,91,0,.22) 45%, transparent 72%)',
+            'radial-gradient(circle, rgba(255,154,77,.78) 0%, rgba(255,92,10,.22) 45%, transparent 72%)',
           image: 'https://pngimg.com/d/jacket_PNG8058.png',
-          filterClass: 'jacket-orange'
+          className: 'orange-jacket'
         },
         {
           id: 3,
-          name: 'Arctic White',
+          name: 'White Jacket',
           price: 149,
           oldPrice: 199,
           textColor: '#ffffff',
           background:
-            'radial-gradient(circle at 52% 45%, #eef1f3 0%, #aeb4b8 40%, #777e83 100%)',
+            'radial-gradient(circle at 52% 45%, #eef1f3 0%, #b6bdc2 43%, #777f84 100%)',
           glow:
-            'radial-gradient(circle, rgba(255,255,255,.92) 0%, rgba(255,255,255,.25) 45%, transparent 72%)',
+            'radial-gradient(circle, rgba(255,255,255,.98) 0%, rgba(255,255,255,.24) 48%, transparent 72%)',
           image: 'https://pngimg.com/d/jacket_PNG8058.png',
-          filterClass: 'jacket-white'
+          className: 'white-jacket'
         }
       ]
     }
   },
 
   computed: {
-    currentProduct() {
-      return this.products[this.activeIndex]
+    currentItem() {
+      return this.items[this.activeIndex]
+    },
+
+    nextItem() {
+      return this.items[(this.activeIndex + 1) % this.items.length]
     }
   },
 
   mounted() {
-    window.addEventListener('scroll', this.handleScroll, { passive: true })
+    window.addEventListener('scroll', this.handleScroll, {
+      passive: true
+    })
+
     this.handleScroll()
   },
 
@@ -246,27 +207,29 @@ export default {
 
   methods: {
     handleScroll() {
-      const section = this.$refs.scrollSection
+      const section = this.$refs.showcase
 
       if (!section) return
 
       const rect = section.getBoundingClientRect()
-      const scrollableDistance = section.offsetHeight - window.innerHeight
+      const scrollDistance = section.offsetHeight - window.innerHeight
 
-      let passedDistance = -rect.top
-      passedDistance = Math.max(0, Math.min(passedDistance, scrollableDistance))
+      let travelled = -rect.top
+      travelled = Math.max(0, Math.min(travelled, scrollDistance))
 
-      const progress =
-        scrollableDistance > 0
-          ? passedDistance / scrollableDistance
-          : 0
+      const ratio = scrollDistance > 0
+        ? travelled / scrollDistance
+        : 0
 
-      this.scrollProgress = Math.round(progress * 100)
+      this.progress = Math.round(ratio * 100)
 
-      const newIndex = Math.min(
-        this.products.length - 1,
-        Math.floor(progress * this.products.length)
-      )
+      let newIndex = 0
+
+      if (ratio >= 0.66) {
+        newIndex = 2
+      } else if (ratio >= 0.33) {
+        newIndex = 1
+      }
 
       if (newIndex !== this.activeIndex) {
         this.activeIndex = newIndex
@@ -274,94 +237,86 @@ export default {
       }
     },
 
-    setProduct(index) {
-      this.activeIndex = index
-      this.selectedSize = 36
-
-      const section = this.$refs.scrollSection
+    moveToIndex(index) {
+      const section = this.$refs.showcase
 
       if (!section) return
 
-      const sectionTop = window.scrollY + section.getBoundingClientRect().top
-      const availableScroll = section.offsetHeight - window.innerHeight
+      this.activeIndex = index
 
-      const targetProgress =
-        index / Math.max(this.products.length - 1, 1)
+      const sectionTop =
+        window.scrollY + section.getBoundingClientRect().top
+
+      const available =
+        section.offsetHeight - window.innerHeight
+
+      const ratios = [0, 0.5, 1]
 
       window.scrollTo({
-        top: sectionTop + availableScroll * targetProgress,
+        top: sectionTop + available * ratios[index],
         behavior: 'smooth'
       })
     },
 
-    previousProduct() {
+    goPrevious() {
       const index =
         this.activeIndex === 0
-          ? this.products.length - 1
+          ? this.items.length - 1
           : this.activeIndex - 1
 
-      this.setProduct(index)
+      this.moveToIndex(index)
     },
 
-    nextProduct() {
+    goNext() {
       const index =
-        this.activeIndex === this.products.length - 1
+        this.activeIndex === this.items.length - 1
           ? 0
           : this.activeIndex + 1
 
-      this.setProduct(index)
+      this.moveToIndex(index)
     }
   }
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
 
 * {
   box-sizing: border-box;
 }
 
-.jacket-page {
-  width: 100%;
-  overflow: clip;
-  background: #f1a51f;
+.product-page {
+  background: #f29d16;
   font-family: 'DM Sans', sans-serif;
 }
 
-/*
-  Is section ki height scrolling duration control karti hai.
-  360vh ka matlab 3 product stages ke liye extra scrolling.
-*/
-.jacket-scroll-section {
+.scroll-showcase {
   position: relative;
-  height: 360vh;
-  padding: 30px;
+  height: 300vh;
+  padding: 22px;
   background:
     linear-gradient(
       180deg,
-      #f9a514 0%,
-      #cf7810 100%
+      #f3a01b 0%,
+      #d67910 100%
     );
 }
 
-.jacket-sticky {
+.single-banner {
   position: sticky;
-  top: 20px;
-  width: 100%;
-  height: calc(100vh - 40px);
+  top: 18px;
+  height: calc(100vh - 36px);
   min-height: 650px;
   border-radius: 28px;
   overflow: hidden;
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.34);
   transition:
     background 0.8s cubic-bezier(.22, 1, .36, 1),
-    color 0.4s ease;
-  box-shadow:
-    0 35px 80px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    color 0.45s ease;
 }
 
-.jacket-sticky::before {
+.single-banner::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -371,45 +326,29 @@ export default {
     linear-gradient(
       90deg,
       rgba(0, 0, 0, 0.38) 0%,
-      transparent 34%,
+      transparent 36%,
       transparent 68%,
-      rgba(0, 0, 0, 0.3) 100%
+      rgba(0, 0, 0, 0.28) 100%
     );
 }
 
-.jacket-sticky::after {
-  content: '';
+.banner-glow {
   position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(
-      rgba(255, 255, 255, 0.12) 0.7px,
-      transparent 0.7px
-    );
-  background-size: 5px 5px;
-  opacity: 0.06;
-}
-
-.hero-glow {
-  position: absolute;
+  z-index: 0;
   width: 850px;
   height: 850px;
-  left: 50%;
+  left: 52%;
   top: 48%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  filter: blur(12px);
   transition: background 0.8s ease;
-  pointer-events: none;
 }
 
-.hero-navbar {
+.banner-nav {
   position: relative;
-  z-index: 10;
-  height: 100px;
-  padding: 24px 40px;
+  z-index: 5;
+  height: 95px;
+  padding: 24px 38px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: start;
@@ -418,655 +357,492 @@ export default {
 .brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 1px;
 }
 
-.brand-icon {
+.brand-box {
   width: 30px;
-  height: 25px;
+  height: 24px;
   display: grid;
   place-items: center;
-  background: #ffffff;
-  color: #111111;
+  background: white;
+  color: #111;
   font-size: 8px;
   font-weight: 800;
 }
 
-.hero-links {
-  padding: 6px;
+.nav-links {
+  padding: 5px;
   display: flex;
-  gap: 4px;
   border-radius: 50px;
-  background: rgba(0, 0, 0, 0.26);
+  background: rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(18px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.hero-links button {
-  height: 37px;
-  padding: 0 20px;
-  border: 0;
+.nav-links button {
+  height: 36px;
+  padding: 0 19px;
+  border: none;
   border-radius: 40px;
   background: transparent;
   color: inherit;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   cursor: pointer;
-  opacity: 0.78;
-  transition: 0.25s ease;
 }
 
-.hero-links button:hover {
-  opacity: 1;
+.nav-links button.active {
+  background: white;
+  color: #111;
 }
 
-.hero-links button.active {
-  background: #ffffff;
-  color: #111111;
-  opacity: 1;
-}
-
-.hero-actions {
+.nav-icons {
   justify-self: end;
   display: flex;
-  gap: 14px;
+  gap: 12px;
 }
 
-.hero-actions button {
-  padding: 5px;
-  border: 0;
+.nav-icons button {
+  border: none;
   background: transparent;
   color: inherit;
-  font-size: 22px;
+  font-size: 21px;
   cursor: pointer;
 }
 
-.hero-content {
+.banner-grid {
   position: relative;
-  z-index: 5;
-  height: calc(100% - 155px);
-  padding: 10px 54px 25px;
+  z-index: 3;
+  height: calc(100% - 145px);
+  padding: 5px 50px 25px;
   display: grid;
-  grid-template-columns: minmax(250px, 1fr) minmax(380px, 1.35fr) minmax(220px, .75fr);
+  grid-template-columns:
+    minmax(260px, 1fr)
+    minmax(390px, 1.35fr)
+    minmax(210px, .72fr);
   align-items: center;
   gap: 28px;
 }
 
-.hero-copy {
-  align-self: center;
-  max-width: 450px;
+.banner-copy {
+  max-width: 440px;
 }
 
-.arrow-buttons {
+.small-arrows {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 17px;
 }
 
-.arrow-buttons button {
-  width: 31px;
-  height: 31px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+.small-arrows button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255,255,255,.14);
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.22);
-  color: #ffffff;
+  background: rgba(0,0,0,.2);
+  color: white;
   font-size: 22px;
-  line-height: 1;
   cursor: pointer;
-  backdrop-filter: blur(8px);
-  transition: 0.25s ease;
 }
 
-.arrow-buttons button:hover {
-  transform: scale(1.08);
-  background: #ffffff;
-  color: #111111;
-}
-
-.product-number {
-  margin: 0 0 8px;
-  font-size: 10px;
-  letter-spacing: 3px;
-  opacity: 0.55;
-}
-
-.hero-title {
+.banner-copy h1 {
   margin: 0;
   font-family: 'Montserrat', sans-serif;
   font-size: clamp(42px, 4.2vw, 72px);
-  font-weight: 700;
-  line-height: 0.95;
+  line-height: .95;
   letter-spacing: -3px;
-  animation: titleReveal 0.75s cubic-bezier(.22, 1, .36, 1);
 }
 
-.hero-title span {
+.banner-copy h1 span {
   display: block;
 }
 
-.hero-description {
-  max-width: 415px;
-  margin: 22px 0 25px;
+.banner-copy p {
+  max-width: 400px;
+  margin: 21px 0 25px;
   font-size: 13px;
   line-height: 1.65;
-  opacity: 0.78;
+  opacity: .78;
 }
 
-.look-button {
-  height: 45px;
-  padding: 0 18px 0 22px;
+.cta-button {
+  height: 44px;
+  padding: 0 17px 0 21px;
   display: inline-flex;
   align-items: center;
-  gap: 28px;
-  border: 0;
+  gap: 27px;
+  border: none;
   border-radius: 50px;
-  background: #ffffff;
-  color: #111111;
-  font-family: inherit;
+  background: white;
+  color: #111;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
-  transition: 0.25s ease;
 }
 
-.look-button:hover {
-  transform: translateY(-3px);
-}
-
-.look-button span {
+.cta-button span {
   font-size: 22px;
-  line-height: 1;
 }
 
-.social-links {
+.socials {
   margin-top: 48px;
   display: flex;
-  gap: 23px;
-}
-
-.social-links a {
-  color: inherit;
-  text-decoration: none;
+  gap: 22px;
   font-size: 12px;
   font-weight: 700;
-  opacity: 0.7;
+  opacity: .72;
 }
 
-.product-visual {
+.jacket-stage {
   position: relative;
   height: 100%;
-  min-height: 460px;
+  min-height: 480px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
-.floating-label {
-  position: absolute;
-  top: 7%;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 40px;
-  background: rgba(0, 0, 0, 0.15);
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  opacity: 0.7;
-  backdrop-filter: blur(10px);
-}
-
-.main-jacket-wrapper {
+.jacket-holder {
   position: relative;
-  width: min(590px, 42vw);
+  width: min(590px, 43vw);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
-.main-jacket {
+.jacket-image {
   position: relative;
   z-index: 2;
-  display: block;
   width: 100%;
-  max-height: 510px;
+  max-height: 520px;
   object-fit: contain;
   user-select: none;
   pointer-events: none;
-  animation: jacketFloat 4s ease-in-out infinite;
-  filter:
-    drop-shadow(0 35px 30px rgba(0, 0, 0, 0.45));
+  animation: floatJacket 4s ease-in-out infinite;
 }
 
-.product-shadow {
+.jacket-shadow {
   position: absolute;
-  z-index: 1;
   left: 50%;
-  bottom: 3%;
-  width: 52%;
-  height: 35px;
+  bottom: 1%;
+  width: 50%;
+  height: 36px;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, .38);
   filter: blur(18px);
 }
 
-.confidence-text {
+.center-caption {
   position: absolute;
   bottom: 1%;
-  margin: 0;
   text-align: center;
   font-size: 11px;
-  line-height: 1.15;
-  opacity: 0.65;
+  line-height: 1.2;
+  opacity: .66;
 }
 
-.product-details {
+.banner-details {
   justify-self: end;
-  align-self: center;
   min-width: 210px;
 }
 
-.price-area {
+.price {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-bottom: 28px;
+  margin-bottom: 27px;
 }
 
-.price-area strong {
+.price strong {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(34px, 3vw, 53px);
+  font-size: clamp(35px, 3vw, 52px);
   line-height: 1;
 }
 
-.price-area del {
+.price del {
   margin-top: 7px;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 26px;
-  opacity: 0.52;
+  font-size: 25px;
+  opacity: .5;
 }
 
-.size-title {
+.banner-details p {
   margin: 0 0 13px;
   font-size: 11px;
-  opacity: 0.72;
+  opacity: .72;
 }
 
-.size-buttons {
+.sizes {
   display: flex;
   gap: 9px;
 }
 
-.size-buttons button {
+.sizes button {
   width: 42px;
   height: 42px;
-  border: 0;
+  border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.22);
-  color: #ffffff;
+  background: rgba(0, 0, 0, .22);
+  color: white;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: 0.25s ease;
-  backdrop-filter: blur(8px);
 }
 
-.size-buttons button:hover {
-  transform: translateY(-3px);
+.sizes button.selected {
+  background: white;
+  color: #111;
 }
 
-.size-buttons button.selected {
-  background: #ffffff;
-  color: #111111;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
-}
-
-.product-thumbnails {
-  margin-top: 65px;
+.mini-preview {
+  width: 100px;
+  height: 115px;
+  margin-top: 64px;
+  margin-left: auto;
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
 }
 
-.product-thumbnails button {
-  width: 60px;
-  height: 65px;
-  padding: 4px;
-  border: 1px solid transparent;
-  border-radius: 15px;
-  background: rgba(0, 0, 0, 0.13);
-  opacity: 0.48;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.product-thumbnails button:hover,
-.product-thumbnails button.active {
-  opacity: 1;
-  transform: translateY(-7px);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.product-thumbnails img {
+.mini-preview img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  opacity: .7;
 }
 
-.scroll-progress {
+.scroll-line {
   position: absolute;
-  z-index: 10;
+  z-index: 6;
   left: 50%;
-  bottom: 22px;
-  width: 220px;
+  bottom: 18px;
+  width: 210px;
   transform: translateX(-50%);
   text-align: center;
 }
 
-.progress-track {
-  width: 100%;
+.track {
   height: 2px;
   overflow: hidden;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255,255,255,.25);
 }
 
-.progress-fill {
+.track span {
+  display: block;
   height: 100%;
-  border-radius: inherit;
-  background: #ffffff;
-  transition: width 0.12s linear;
+  background: white;
+  transition: width .08s linear;
 }
 
-.scroll-progress span {
+.scroll-line small {
   display: block;
   margin-top: 8px;
   font-size: 8px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  opacity: 0.5;
+  opacity: .52;
 }
 
-/* Jacket recoloring */
-.jacket-black {
+/*
+  Important animation:
+  Purani jacket upar nikalti hai.
+  Nayi jacket neeche se aati hai.
+*/
+.jacket-slide-enter-active,
+.jacket-slide-leave-active {
+  transition:
+    transform .72s cubic-bezier(.22, 1, .36, 1),
+    opacity .55s ease;
+}
+
+.jacket-slide-enter-from {
+  opacity: 0;
+  transform: translateY(115%);
+}
+
+.jacket-slide-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.jacket-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.jacket-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-115%);
+}
+
+.black-jacket {
   filter:
     grayscale(1)
-    brightness(0.45)
-    contrast(1.45)
-    drop-shadow(0 35px 30px rgba(0, 0, 0, 0.5));
+    brightness(.42)
+    contrast(1.5)
+    drop-shadow(0 35px 30px rgba(0,0,0,.5));
 }
 
-.jacket-orange {
+.orange-jacket {
   filter:
     sepia(1)
     saturate(7)
     hue-rotate(335deg)
     brightness(1.13)
     contrast(1.05)
-    drop-shadow(0 35px 30px rgba(70, 15, 0, 0.45));
+    drop-shadow(0 35px 30px rgba(65,15,0,.45));
 }
 
-.jacket-white {
+.white-jacket {
   filter:
     grayscale(1)
     brightness(2.1)
-    contrast(0.7)
-    drop-shadow(0 35px 30px rgba(0, 0, 0, 0.26));
+    contrast(.72)
+    drop-shadow(0 35px 30px rgba(0,0,0,.25));
 }
 
-/* Vue transition */
-.jacket-change-enter-active,
-.jacket-change-leave-active {
-  transition:
-    opacity 0.45s ease,
-    transform 0.55s cubic-bezier(.22, 1, .36, 1),
-    filter 0.45s ease;
-}
-
-.jacket-change-enter-from {
-  opacity: 0;
-  transform: translateY(90px) scale(0.76) rotate(7deg);
-}
-
-.jacket-change-leave-to {
-  opacity: 0;
-  transform: translateY(-80px) scale(0.78) rotate(-7deg);
-}
-
-.after-section {
-  min-height: 75vh;
-  padding: 120px 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff;
-  color: #111111;
-  text-align: center;
-}
-
-.after-section p {
-  margin: 0 0 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-}
-
-.after-section h2 {
-  max-width: 850px;
-  margin: 0;
-  font-family: 'Montserrat', sans-serif;
-  font-size: clamp(42px, 7vw, 94px);
-  line-height: 0.95;
-  letter-spacing: -5px;
-}
-
-.after-section span {
-  margin-top: 28px;
-  color: #777777;
-}
-
-@keyframes jacketFloat {
+@keyframes floatJacket {
   0%,
   100% {
-    transform: translateY(0) rotate(-1deg);
+    transform: translateY(0);
   }
 
   50% {
-    transform: translateY(-18px) rotate(1deg);
+    transform: translateY(-14px);
   }
 }
 
-@keyframes titleReveal {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Tablet */
-@media (max-width: 1050px) {
-  .hero-navbar {
-    grid-template-columns: 1fr auto;
-  }
-
-  .hero-links {
+@media (max-width: 1000px) {
+  .nav-links {
     display: none;
   }
 
-  .hero-content {
-    grid-template-columns: 1fr 1.2fr;
+  .banner-nav {
+    grid-template-columns: 1fr auto;
   }
 
-  .product-details {
+  .banner-grid {
+    grid-template-columns: 1fr 1.25fr;
+  }
+
+  .banner-details {
     position: absolute;
-    right: 40px;
+    right: 35px;
     top: 28%;
-  }
-
-  .main-jacket-wrapper {
-    width: min(500px, 48vw);
   }
 }
 
-/* Mobile */
 @media (max-width: 700px) {
-  .jacket-scroll-section {
-    height: 330vh;
-    padding: 10px;
+  .scroll-showcase {
+    height: 300vh;
+    padding: 9px;
   }
 
-  .jacket-sticky {
+  .single-banner {
     top: 8px;
     height: calc(100vh - 16px);
     min-height: 690px;
     border-radius: 20px;
   }
 
-  .hero-navbar {
-    height: 70px;
-    padding: 18px 18px;
+  .banner-nav {
+    height: 68px;
+    padding: 17px;
   }
 
   .brand {
     font-size: 10px;
   }
 
-  .brand-icon {
-    width: 25px;
-    height: 22px;
+  .banner-grid {
+    height: calc(100% - 95px);
+    padding: 0 20px 20px;
+    display: block;
   }
 
-  .hero-actions button {
-    font-size: 18px;
-  }
-
-  .hero-content {
-    height: calc(100% - 100px);
-    padding: 0 22px 25px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 0;
-  }
-
-  .hero-copy {
-    position: relative;
-    z-index: 4;
-    width: 100%;
-    padding-top: 5px;
-  }
-
-  .arrow-buttons {
-    margin-bottom: 8px;
-  }
-
-  .product-number {
-    display: none;
-  }
-
-  .hero-title {
+  .banner-copy h1 {
     font-size: 39px;
     letter-spacing: -2px;
   }
 
-  .hero-description {
-    max-width: 295px;
+  .banner-copy p {
+    max-width: 285px;
     margin: 12px 0 14px;
     font-size: 10px;
-    line-height: 1.5;
   }
 
-  .look-button {
-    height: 37px;
-    padding: 0 14px;
-    gap: 18px;
-    font-size: 10px;
-  }
-
-  .social-links {
+  .socials {
     display: none;
   }
 
-  .product-visual {
+  .jacket-stage {
     position: absolute;
     left: 50%;
-    bottom: 70px;
+    bottom: 67px;
     width: 100%;
     height: 48%;
-    min-height: unset;
+    min-height: 0;
     transform: translateX(-50%);
   }
 
-  .main-jacket-wrapper {
+  .jacket-holder {
     width: 78vw;
     max-width: 390px;
   }
 
-  .main-jacket {
-    max-height: 320px;
+  .jacket-image {
+    max-height: 330px;
   }
 
-  .floating-label,
-  .confidence-text {
+  .center-caption {
     display: none;
   }
 
-  .product-details {
+  .banner-details {
     position: absolute;
     z-index: 5;
-    top: 48%;
-    right: 18px;
+    top: 47%;
+    right: 17px;
     min-width: auto;
     text-align: right;
   }
 
-  .price-area {
+  .price {
     align-items: flex-end;
     margin-bottom: 12px;
   }
 
-  .price-area strong {
+  .price strong {
     font-size: 26px;
   }
 
-  .price-area del {
+  .price del {
     font-size: 17px;
   }
 
-  .size-title {
-    font-size: 8px;
-  }
-
-  .size-buttons {
+  .sizes {
     justify-content: flex-end;
   }
 
-  .size-buttons button {
+  .sizes button {
     width: 31px;
     height: 31px;
     font-size: 8px;
   }
 
-  .product-thumbnails {
+  .mini-preview {
     display: none;
   }
 
-  .scroll-progress {
-    bottom: 15px;
+  .scroll-line {
     width: 150px;
+    bottom: 14px;
   }
 }
 </style>
