@@ -833,35 +833,29 @@ const fetchRelated = async () => {
 
   try {
     const currentId = product.value.id
-    const categoryId = product.value.category_id
-    const subcategoryId = product.value.subcategory_id
 
-    /*
-    |--------------------------------------------------------------------------
-    | Models
-    |--------------------------------------------------------------------------
-    */
     if (isModel.value) {
       let models = []
 
-      if (subcategoryId) {
+      const subId = product.value.subcategory_id
+      const catId = product.value.category_id
+
+      if (subId) {
         const response = await axios.get(
-          `/api/subcategories/${subcategoryId}/models`
+          `/api/subcategories/${subId}/models`
         )
 
         models =
           response.data?.models ||
-          response.data?.data ||
           response.data ||
           []
-      } else if (categoryId) {
+      } else if (catId) {
         const response = await axios.get(
-          `/api/categories/${categoryId}/models`
+          `/api/categories/${catId}/models`
         )
 
         models =
           response.data?.models ||
-          response.data?.data ||
           response.data ||
           []
       }
@@ -880,45 +874,20 @@ const fetchRelated = async () => {
           relatedItems.value
         )
       }
-
-      return
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Normal Products
-    |--------------------------------------------------------------------------
-    */
-    let products = []
-
-    if (subcategoryId) {
+    } else {
       const response = await axios.get(
-        `/api/subcategories/${subcategoryId}/products`
+        `/api/products/${currentId}/related`
       )
 
-      products =
-        response.data?.products ||
-        response.data?.data ||
-        response.data ||
-        []
-    } else if (categoryId) {
-      const response = await axios.get(
-        `/api/categories/${categoryId}/products`
-      )
+      const products =
+        response.data?.products || []
 
-      products =
-        response.data?.products ||
-        response.data?.data ||
-        response.data ||
-        []
+      relatedItems.value = Array.isArray(products)
+        ? products.filter(item =>
+            String(item.id) !== String(currentId)
+          )
+        : []
     }
-
-    relatedItems.value = Array.isArray(products)
-      ? products.filter(item =>
-          String(item.id) !== String(currentId)
-        )
-      : []
-
   } catch (error) {
     console.error(
       'Related products error:',

@@ -468,4 +468,36 @@ public function duplicateCategory(Request $request)
             'type'  => 'model',
         ];
     }
+    public function relatedProducts($id)
+{
+    $product = Product::findOrFail($id);
+
+    $query = Product::query()
+        ->where('id', '!=', $product->id)
+        ->where('show_in_category', true)
+        ->where('category_id', $product->category_id);
+
+    // Current product ki subcategory null hai
+    // isliye sirf same category ke null-subcategory products
+    if ($product->subcategory_id) {
+        $query->where(
+            'subcategory_id',
+            $product->subcategory_id
+        );
+    } else {
+        $query->whereNull('subcategory_id');
+    }
+
+    $products = $query
+        ->latest()
+        ->get()
+        ->map(fn ($p) => $this->mapProduct($p));
+
+    return response()->json([
+        'success' => true,
+        'category_id' => $product->category_id,
+        'subcategory_id' => $product->subcategory_id,
+        'products' => $products,
+    ]);
+}
 }

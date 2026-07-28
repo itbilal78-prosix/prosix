@@ -110,6 +110,7 @@ Route::get('/featured-products', [ProductController::class, 'apiFeaturedProducts
 Route::get('/apparel-products',  [ProductController::class, 'apiApparelProducts']);
 Route::get('/products',          [ProductController::class, 'indexApi']);
 Route::get('/products/{id}',     [ProductController::class, 'showApi']);
+Route::get('/products/{id}/related', [ProductController::class, 'relatedProducts']);
 
 // -----------------------------------------------
 // DEALS, VIDEOS, BLOGS (Public)
