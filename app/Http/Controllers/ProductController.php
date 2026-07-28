@@ -300,8 +300,13 @@ class ProductController extends Controller
             'name'                => $p->name,
             'description'         => $p->description,
             'price'               => (float) $p->price,
-            'type'                => 'product',
-            'is_new'              => false,
+           'type'                => 'product',
+
+'category_id'         => $p->category_id,
+'subcategory_id'      => $p->subcategory_id,
+
+'is_new'              => false,
+
             'image'               => $p->image ? asset('storage/' . $p->image) : null,
             'gallery_images'      => $gallery,
             'sizes'               => $p->sizes ?? [],
