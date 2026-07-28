@@ -838,13 +838,13 @@ const fetchRelated = async () => {
 
     /*
     |--------------------------------------------------------------------------
-    | MODEL RELATED ITEMS
+    | CUSTOMIZER MODELS
     |--------------------------------------------------------------------------
     */
     if (isModel.value) {
       let models = []
 
-      // Pehle exact subcategory
+      // Pehle same subcategory ke models
       if (subId) {
         try {
           const response = await axios.get(
@@ -857,15 +857,15 @@ const fetchRelated = async () => {
             response.data ||
             []
         } catch (error) {
-          console.error(
-            'Subcategory models load error:',
-            error
-          )
+          console.error('Subcategory models error:', error)
         }
       }
 
-      // Subcategory na ho to same main category
-      else if (catId) {
+      // Subcategory mein kuch na mile to same main category
+      if (
+        (!Array.isArray(models) || models.length === 0) &&
+        catId
+      ) {
         try {
           const response = await axios.get(
             `/api/categories/${catId}/models`
@@ -877,26 +877,14 @@ const fetchRelated = async () => {
             response.data ||
             []
         } catch (error) {
-          console.error(
-            'Category models load error:',
-            error
-          )
+          console.error('Category models error:', error)
         }
       }
 
       relatedItems.value = Array.isArray(models)
-        ? models.filter(model => {
-            return (
-              String(model.id) !== String(currentId) &&
-              String(model.category_id ?? '') ===
-                String(catId ?? '') &&
-              (
-                !subId ||
-                String(model.subcategory_id ?? '') ===
-                  String(subId)
-              )
-            )
-          })
+        ? models.filter(model =>
+            String(model.id) !== String(currentId)
+          )
         : []
 
       if (
@@ -911,13 +899,13 @@ const fetchRelated = async () => {
 
     /*
     |--------------------------------------------------------------------------
-    | NORMAL PRODUCT RELATED ITEMS
+    | NORMAL PRODUCTS
     |--------------------------------------------------------------------------
     */
     else {
       let products = []
 
-      // Pehle exact subcategory
+      // Pehle same subcategory ke products
       if (subId) {
         try {
           const response = await axios.get(
@@ -930,15 +918,15 @@ const fetchRelated = async () => {
             response.data ||
             []
         } catch (error) {
-          console.error(
-            'Subcategory products load error:',
-            error
-          )
+          console.error('Subcategory products error:', error)
         }
       }
 
-      // Subcategory na ho to same main category
-      else if (catId) {
+      // Subcategory mein kuch na mile to same main category
+      if (
+        (!Array.isArray(products) || products.length === 0) &&
+        catId
+      ) {
         try {
           const response = await axios.get(
             `/api/categories/${catId}/products`
@@ -950,32 +938,16 @@ const fetchRelated = async () => {
             response.data ||
             []
         } catch (error) {
-          console.error(
-            'Category products load error:',
-            error
-          )
+          console.error('Category products error:', error)
         }
       }
 
       relatedItems.value = Array.isArray(products)
-        ? products.filter(item => {
-            const sameCategory =
-              String(item.category_id ?? '') ===
-              String(catId ?? '')
-
-            const sameSubcategory =
-              !subId ||
-              String(item.subcategory_id ?? '') ===
-                String(subId)
-
-            return (
-              String(item.id) !== String(currentId) &&
-              sameCategory &&
-              sameSubcategory &&
-              !item.views &&
-              item.type !== 'model'
-            )
-          })
+        ? products.filter(item =>
+            String(item.id) !== String(currentId) &&
+            !item.views &&
+            item.type !== 'model'
+          )
         : []
     }
   } catch (error) {
