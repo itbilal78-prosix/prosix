@@ -16,7 +16,7 @@
 </div>
 
 <!-- Compact New Order Card -->
-<div class="po-new-order-wrap">
+<!-- <div class="po-new-order-wrap">
   <div class="po-new-order-card">
     <div class="po-new-order-card-top">
       <div class="po-new-order-icon">
@@ -64,7 +64,7 @@
       </svg>
     </a>
   </div>
-</div>
+</div> -->
 
 <!-- Loading -->
 <div v-if="isLoading" class="po-loading">
