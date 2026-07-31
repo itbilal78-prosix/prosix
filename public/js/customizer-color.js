@@ -7,6 +7,130 @@ console.log('FILE B LOADED');
     window.defaultModelColors = window.defaultModelColors || [];
     window.hasCustomPalette = window.hasCustomPalette || false;
 
+
+
+/* =========================================================
+   SAVE COLOR WHEEL PALETTE PER MODEL
+========================================================= */
+
+function getColorPaletteStorageKey() {
+    /*
+     * Current URL:
+     * /admin/models/7
+     *
+     * Har model ki separate palette save hogi.
+     */
+    return 'prosix_color_palette_' + window.location.pathname;
+}
+
+function saveColorWheelPalette() {
+    try {
+        var data = {
+            selectedColors: Array.isArray(window.selectedColors)
+                ? window.selectedColors
+                    .map(function(color) {
+                        return String(color).toUpperCase();
+                    })
+                    .filter(Boolean)
+                : [],
+
+            hasCustomPalette:
+                window.hasCustomPalette === true,
+
+            customColorNames:
+                window.customColorNames || {}
+        };
+
+        localStorage.setItem(
+            getColorPaletteStorageKey(),
+            JSON.stringify(data)
+        );
+
+        console.log(
+            '✅ Color palette saved:',
+            data
+        );
+    } catch (error) {
+        console.error(
+            'Color palette save error:',
+            error
+        );
+    }
+}
+
+function loadColorWheelPalette() {
+    try {
+        var saved = localStorage.getItem(
+            getColorPaletteStorageKey()
+        );
+
+        if (!saved) {
+            return false;
+        }
+
+        var data = JSON.parse(saved);
+
+        if (
+            !data ||
+            !Array.isArray(data.selectedColors) ||
+            data.selectedColors.length === 0
+        ) {
+            return false;
+        }
+
+        window.selectedColors =
+            data.selectedColors
+                .map(function(color) {
+                    return String(color).toUpperCase();
+                })
+                .filter(Boolean);
+
+        /*
+         * File ke andar selectedColors direct bhi use ho raha hai.
+         */
+        selectedColors = [
+            ...window.selectedColors
+        ];
+
+        window.paletteSelectedColors = [
+            ...window.selectedColors
+        ];
+
+        paletteSelectedColors = [
+            ...window.selectedColors
+        ];
+
+        window.hasCustomPalette = true;
+
+        window.customColorNames =
+            data.customColorNames &&
+            typeof data.customColorNames === 'object'
+                ? data.customColorNames
+                : {};
+
+        console.log(
+            '✅ Saved color palette loaded:',
+            window.selectedColors
+        );
+
+        return true;
+    } catch (error) {
+        console.error(
+            'Color palette load error:',
+            error
+        );
+
+        return false;
+    }
+}
+
+window.saveColorWheelPalette =
+    saveColorWheelPalette;
+
+window.loadColorWheelPalette =
+    loadColorWheelPalette;
+
+
     let currentFillType = 'solid';
     let currentGradientType = 'linear';
 
@@ -503,17 +627,36 @@ window.applySelectedColors = function () {
         return;
     }
 
-    selectedColors = paletteSelectedColors.map(c => c.toUpperCase());
-    window.selectedColors = [...selectedColors];
-    window.hasCustomPalette = true;
+    selectedColors =
+        paletteSelectedColors
+            .map(function(color) {
+                return String(color)
+                    .toUpperCase();
+            });
 
     if (selectedColors.length > 24) {
-        selectedColors = selectedColors.slice(0, 24);
-        window.selectedColors = [...selectedColors];
+        selectedColors =
+            selectedColors.slice(0, 24);
     }
+
+    window.selectedColors = [
+        ...selectedColors
+    ];
+
+    window.paletteSelectedColors = [
+        ...selectedColors
+    ];
+
+    window.hasCustomPalette = true;
 
     updateColorWheel();
     initGradientFromWheel();
+
+    /*
+     * ✅ Palette permanently save
+     */
+    saveColorWheelPalette();
+
     closeColorPalette();
 };
 
@@ -1043,15 +1186,44 @@ window.renderGradientStops = function () {
         } : null;
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        setTimeout(() => {
+  document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+        setTimeout(function () {
+            /*
+             * Pehle saved palette load karo.
+             */
+            var paletteLoaded =
+                loadColorWheelPalette();
+
+            /*
+             * Saved palette ho to model ke default colors
+             * selected palette ko overwrite na karein.
+             */
+            if (paletteLoaded) {
+                window.hasCustomPalette = true;
+
+                updateColorWheel();
+                initGradientFromWheel();
+            } else {
+                window.extractDefaultColors();
+            }
+
             renderGradientStops();
             updateGradientPreview();
-            window.extractDefaultColors();
             initAngleWheel();
-            updateAngleWheelKnob(parseInt(document.getElementById('gradAngle')?.value || 90, 10));
+
+            updateAngleWheelKnob(
+                parseInt(
+                    document
+                        .getElementById('gradAngle')
+                        ?.value || 90,
+                    10
+                )
+            );
         }, 500);
-    });
+    }
+);
 
     function isColorUsedInWheel(color) {
     return (selectedColors || []).some(c => c.toUpperCase() === color.toUpperCase());
@@ -1122,5 +1294,22 @@ window.addCustomColorToPalette = function () {
     grid.insertBefore(item, customPanel);
 
     nameInput.value = '';
+
+window.selectedColors = [
+    ...paletteSelectedColors
+];
+
+selectedColors = [
+    ...paletteSelectedColors
+];
+
+window.hasCustomPalette = true;
+
+saveColorWheelPalette();
+
+
+
+
+
 };
 })();

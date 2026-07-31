@@ -557,61 +557,156 @@ function addImageToCanvasFromPending() {
 }
 
 function addImageAsSVGToCanvas(dataUrl) {
-    var isSvg = (dataUrl || '').indexOf('svg') !== -1;
+    var isSvg =
+        String(dataUrl || '').includes('image/svg+xml') ||
+        String(dataUrl || '').trim().startsWith('<svg');
+
+    /*
+     * Fabric.js callback version support
+     */
     if (isSvg) {
-        fabric.loadSVGFromURL(dataUrl).then(function(result) {
-            var objects = result && result.objects;
-            var options = result && result.options;
-            if (!objects || objects.length === 0) {
-                addImageAsRasterFallback(dataUrl);
-                return;
-            }
-            var svgGroup = fabric.util.groupSVGElements(objects, options);
-            placeAndAddToCanvas(svgGroup, true);
-        }).catch(function() { addImageAsRasterFallback(dataUrl); });
-        return;
-    }
-    var img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-        try {
-            if (typeof ImageTracer !== 'undefined' && ImageTracer.imagedataToSVG) {
-                var w = img.width, h = img.height;
-                if (w > MAX_PROCESSING_SIZE || h > MAX_PROCESSING_SIZE) {
-                    var scale = Math.min(MAX_PROCESSING_SIZE / w, MAX_PROCESSING_SIZE / h);
-                    w = Math.floor(w * scale);
-                    h = Math.floor(h * scale);
-                }
-                var tmpCanvas = document.createElement('canvas');
-                tmpCanvas.width = w;
-                tmpCanvas.height = h;
-                var tmpCtx = tmpCanvas.getContext('2d');
-                tmpCtx.drawImage(img, 0, 0, w, h);
-                var imagedata = tmpCtx.getImageData(0, 0, w, h);
-                var opts = { scale: 1, roundcoord: 1, lcpr: 0, qcpr: 0 };
-                var svgstr = ImageTracer.imagedataToSVG(imagedata, opts);
-                if (svgstr) {
-                    fabric.loadSVGFromString(svgstr).then(function(result) {
-                        var objects = result && result.objects;
-                        var options = result && result.options;
-                        if (!objects || objects.length === 0) {
-                            addImageAsRasterFallback(dataUrl);
-                            return;
-                        }
-                        var svgGroup = fabric.util.groupSVGElements(objects, options);
-                        placeAndAddToCanvas(svgGroup, true);
-                    }).catch(function() { addImageAsRasterFallback(dataUrl); });
-                } else {
+        fabric.loadSVGFromURL(
+            dataUrl,
+
+            function(objects, options) {
+                try {
+                    if (!objects || objects.length === 0) {
+                        addImageAsRasterFallback(dataUrl);
+                        return;
+                    }
+
+                    var svgGroup = fabric.util.groupSVGElements(
+                        objects,
+                        options || {}
+                    );
+
+                    placeAndAddToCanvas(svgGroup, true);
+                } catch (error) {
+                    console.error('SVG URL load error:', error);
                     addImageAsRasterFallback(dataUrl);
                 }
+            }
+        );
+
+        return;
+    }
+
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = function() {
+        try {
+            if (
+                typeof ImageTracer !== 'undefined' &&
+                typeof ImageTracer.imagedataToSVG === 'function'
+            ) {
+                var width = img.width;
+                var height = img.height;
+
+                if (
+                    width > MAX_PROCESSING_SIZE ||
+                    height > MAX_PROCESSING_SIZE
+                ) {
+                    var resizeScale = Math.min(
+                        MAX_PROCESSING_SIZE / width,
+                        MAX_PROCESSING_SIZE / height
+                    );
+
+                    width = Math.floor(width * resizeScale);
+                    height = Math.floor(height * resizeScale);
+                }
+
+                var temporaryCanvas =
+                    document.createElement('canvas');
+
+                temporaryCanvas.width = width;
+                temporaryCanvas.height = height;
+
+                var temporaryContext =
+                    temporaryCanvas.getContext('2d');
+
+                temporaryContext.drawImage(
+                    img,
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+                var imageData =
+                    temporaryContext.getImageData(
+                        0,
+                        0,
+                        width,
+                        height
+                    );
+
+                var tracerOptions = {
+                    scale: 1,
+                    roundcoord: 1,
+                    lcpr: 0,
+                    qcpr: 0
+                };
+
+                var svgString =
+                    ImageTracer.imagedataToSVG(
+                        imageData,
+                        tracerOptions
+                    );
+
+                if (!svgString) {
+                    addImageAsRasterFallback(dataUrl);
+                    return;
+                }
+
+                /*
+                 * Callback syntax — .then() nahi lagana
+                 */
+                fabric.loadSVGFromString(
+                    svgString,
+
+                    function(objects, options) {
+                        try {
+                            if (!objects || objects.length === 0) {
+                                addImageAsRasterFallback(dataUrl);
+                                return;
+                            }
+
+                            var svgGroup =
+                                fabric.util.groupSVGElements(
+                                    objects,
+                                    options || {}
+                                );
+
+                            placeAndAddToCanvas(
+                                svgGroup,
+                                true
+                            );
+                        } catch (error) {
+                            console.error(
+                                'SVG string load error:',
+                                error
+                            );
+
+                            addImageAsRasterFallback(dataUrl);
+                        }
+                    }
+                );
             } else {
                 addImageAsRasterFallback(dataUrl);
             }
-        } catch (e) {
+        } catch (error) {
+            console.error('Image conversion error:', error);
             addImageAsRasterFallback(dataUrl);
         }
     };
-    img.onerror = function() { hideLoading(); addImageAsRasterFallback(dataUrl); };
+
+    img.onerror = function() {
+        console.error('Uploaded image could not be loaded.');
+        hideLoading();
+        addImageAsRasterFallback(dataUrl);
+    };
+
     img.src = dataUrl;
 }
 
@@ -619,11 +714,27 @@ function addImageAsSVGToCanvas(dataUrl) {
 
 
 
-
 function addImageAsRasterFallback(dataUrl) {
-    fabric.Image.fromURL(dataUrl, function(fabricImg) {
-        placeAndAddToCanvas(fabricImg, false);
-    });
+    fabric.Image.fromURL(
+        dataUrl,
+
+        function(fabricImg) {
+            if (!fabricImg) {
+                hideLoading();
+                alert('Image canvas par add nahi ho saki.');
+                return;
+            }
+
+            placeAndAddToCanvas(
+                fabricImg,
+                false
+            );
+        },
+
+        {
+            crossOrigin: 'anonymous'
+        }
+    );
 }
 
 function placeAndAddToCanvas(obj, isSvg) {
@@ -2947,20 +3058,31 @@ function saveDesignToSVG(){
 
  const templateId = document.getElementById('editingTemplateId')?.value;
 
- fetch(templateId ? `/templates/${templateId}` : '/templates/save-from-customizer', {
-   method: 'POST',
-   headers: {
-     'Content-Type': 'application/json',
-     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-   },
-   body: JSON.stringify({
-     _method: templateId ? 'PUT' : 'POST',
-     title: title,
-     category_id: categoryId || null,
-     svg_data: svgData,
-     image_data: imageData
-   })
- })
+fetch(templateId ? `/templates/${templateId}` : '/templates/save-from-customizer', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+        _method: templateId ? 'PUT' : 'POST',
+        title: title,
+        category_id: categoryId || null,
+        svg_data: svgData,
+        image_data: imageData,
+
+        color_count: selectedColorCount,
+
+        selected_colors: selectedColorsForVector.slice(
+            0,
+            selectedColorCount === 8
+                ? selectedColorsForVector.length
+                : selectedColorCount
+        ),
+
+        color_mappings: colorMappings
+    })
+})
  .then(r => r.json())
  .then(data => {
    if(data.success){

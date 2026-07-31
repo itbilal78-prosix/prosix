@@ -44,6 +44,15 @@
 <a href="/membership" style="text-decoration:none;">
     <h1 class="subscribe-title mb-2">SUBSCRIBE</h1>
 </a>
+<router-link
+  to="/website-request"
+  class="website-badge"
+>
+  <i class="bi bi-code-slash"></i>
+  Need a Professional Website?
+</router-link>
+
+
               <p class="subscribe-subtitle mb-3">To our newsletter for latest updates</p>
               <div class="social-icons d-flex justify-content-center gap-3">
                 <a href="https://www.facebook.com/prosixsports/" class="social-link"><i class="bi bi-facebook"></i></a>
@@ -215,6 +224,42 @@
 .contact-item a {
   font-size: 0.9rem;
   line-height: 1.5;
+}
+/* Website Badge */
+.website-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+
+    margin:8px 0 18px;
+
+    padding:7px 16px;
+
+    border:1px solid rgba(255,255,255,.35);
+    border-radius:50px;
+
+    background:rgba(255,255,255,.05);
+
+    color:#fff;
+    text-decoration:none;
+
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.4px;
+
+    transition:.3s;
+}
+
+.website-badge i{
+    font-size:15px;
+}
+
+.website-badge:hover{
+    background:#fff;
+    color:#000;
+    border-color:#fff;
+    transform:translateY(-2px);
+    text-decoration:none;
 }
 /* ── Responsive ── */
 @media (max-width: 767px) {

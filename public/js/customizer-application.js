@@ -828,11 +828,28 @@ text.setAttribute(
         }
 
         const layerId = forcedLayerId || window.currentApplicationLayer;
-        if (!layerId) return;
+        if (!layerId || !svgContent) return;
+
         const layer = findLayerById(layerId);
         if (!layer || layer.type !== 'direct-mascot') return;
+
         const mainSvg = window.getMainSvg();
         if (!mainSvg) return;
+
+        /*
+         * IMPORTANT:
+         * Change Mascot / Apply button se naya mascot aaye to usi ko
+         * recoloring ka permanent ORIGINAL base banao.
+         */
+        if (fromModal === true || !layer._originalMascotSvg) {
+            layer._originalMascotSvg = svgContent;
+        }
+
+        /*
+         * Current visible SVG initially fresh mascot hi hoga.
+         * Color map baad mein original base par apply hoga.
+         */
+        layer.mascotSvg = svgContent;
 
         const savedFlipX = layer.flipX || 1;
         const savedFlipY = layer.flipY || 1;
@@ -845,12 +862,16 @@ text.setAttribute(
         }
 
         const partElement = mainSvg.querySelector(`#${layer.partId}`);
-        if (!partElement) { console.warn('Part not found', layer.partId); return; }
+        if (!partElement) {
+            console.warn('Part not found', layer.partId);
+            return;
+        }
 
         const clipId = `clip-${layerId}`;
         if (!defs.querySelector(`#${clipId}`)) {
             const clip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
             clip.setAttribute('id', clipId);
+
             const clone = partElement.cloneNode(true);
             clone.removeAttribute('id');
             clip.appendChild(clone);
@@ -864,8 +885,6 @@ text.setAttribute(
         layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         layerGroup.setAttribute('id', layerGroupId);
         layerGroup.setAttribute('clip-path', `url(#${clipId})`);
-
-        // ✅ KEY FIX: hamesha LAST mein append karo
         mainSvg.appendChild(layerGroup);
 
         const bbox = partElement.getBBox();
@@ -875,79 +894,131 @@ text.setAttribute(
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgContent, 'image/svg+xml');
         let mascotSvg = doc.documentElement;
-        if (!mascotSvg || mascotSvg.nodeName !== 'svg') { alert('Mascot SVG load failed'); return; }
+
+        if (
+            !mascotSvg ||
+            mascotSvg.nodeName.toLowerCase() !== 'svg' ||
+            doc.querySelector('parsererror')
+        ) {
+            alert('Mascot SVG load failed');
+            return;
+        }
+
         mascotSvg = mascotSvg.cloneNode(true);
 
-        const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100').split(' ').map(Number);
-        mascotSvg.querySelectorAll('rect,polygon,circle,ellipse').forEach(el => {
-            const x = parseFloat(el.getAttribute('x') || 0);
-            const y = parseFloat(el.getAttribute('y') || 0);
-            const w = parseFloat(el.getAttribute('width') || 0);
-            const h = parseFloat(el.getAttribute('height') || 0);
-            if (x <= 1 && y <= 1 && w >= vb[2] * 0.7 && h >= vb[3] * 0.7) el.remove();
-        });
-        mascotSvg.querySelectorAll('*').forEach(el => {
-            const style = el.getAttribute('style') || '';
-            const fill = el.getAttribute('fill') || '';
-            const isWhite = fill === '#fff' || fill === '#ffffff' || fill === 'white' ||
-                style.includes('fill:#fff') || style.includes('fill:white') || style.includes('fill:#ffffff');
-            const tag = el.tagName.toLowerCase();
-            if (isWhite && (tag === 'rect' || tag === 'polygon')) el.remove();
-        });
+        /*
+         * Sirf genuine full-canvas background shape remove karo.
+         * Mascot ke white details ko kabhi remove nahi karna.
+         */
+        const vb = (mascotSvg.getAttribute('viewBox') || '0 0 100 100')
+            .trim()
+            .split(/[\s,]+/)
+            .map(Number);
 
-        if (!mascotSvg.getAttribute('viewBox')) mascotSvg.setAttribute('viewBox', '0 0 100 100');
+        const vbWidth = Number(vb[2]) || 100;
+        const vbHeight = Number(vb[3]) || 100;
+
+        mascotSvg
+            .querySelectorAll('rect,polygon,circle,ellipse')
+            .forEach(function (el) {
+                const tag = el.tagName.toLowerCase();
+
+                if (tag !== 'rect') return;
+
+                const x = parseFloat(el.getAttribute('x') || 0);
+                const y = parseFloat(el.getAttribute('y') || 0);
+                const w = parseFloat(el.getAttribute('width') || 0);
+                const h = parseFloat(el.getAttribute('height') || 0);
+
+                const coversCanvas =
+                    x <= 1 &&
+                    y <= 1 &&
+                    w >= vbWidth * 0.95 &&
+                    h >= vbHeight * 0.95;
+
+                if (coversCanvas) el.remove();
+            });
+
+        if (!mascotSvg.getAttribute('viewBox')) {
+            mascotSvg.setAttribute('viewBox', '0 0 100 100');
+        }
+
         mascotSvg.style.background = 'transparent';
 
-        const mascotSize = Math.min(bbox.width, bbox.height) * (layer.mascotScaleX || 1);
+        const mascotSize =
+            Math.min(bbox.width, bbox.height) *
+            (layer.mascotScaleX || 1);
+
         mascotSvg.setAttribute('width', mascotSize);
         mascotSvg.setAttribute('height', mascotSize);
         mascotSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
         const mascotX = cx - mascotSize / 2 + (layer.x || 0);
         const mascotY = cy - mascotSize / 2 + (layer.y || 0);
+
         mascotSvg.setAttribute('x', mascotX);
         mascotSvg.setAttribute('y', mascotY);
         mascotSvg.setAttribute('id', layerId);
         mascotSvg.style.cursor = 'default';
-        if (layer.mascotOpacity !== undefined) mascotSvg.setAttribute('opacity', layer.mascotOpacity / 100);
+
+        if (layer.mascotOpacity !== undefined) {
+            mascotSvg.setAttribute(
+                'opacity',
+                layer.mascotOpacity / 100
+            );
+        }
 
         layerGroup.appendChild(mascotSvg);
-if (layer._colorMap && Object.keys(layer._colorMap).length > 0) {
-    setTimeout(function () {
-        _applyDirectMascotColorMap(layer);
-    }, 100);
-}
-        layer.mascotSvg = svgContent;
+
         layer.mascotId = layerId;
         layer._cx = cx;
         layer._cy = cy;
         layer._mascotSize = mascotSize;
-if (
-    !layer._selectedColorCount ||
-    layer._selectedColorCount < 1
-) {
-    layer._selectedColorCount =
-        Array.isArray(
-            layer._selectedMascotColors
-        ) &&
-        layer._selectedMascotColors.length
-            ? layer._selectedMascotColors.length
-            : 2;
-}
+
+        if (
+            !layer._selectedColorCount ||
+            layer._selectedColorCount < 1
+        ) {
+            layer._selectedColorCount =
+                Array.isArray(layer._selectedMascotColors) &&
+                layer._selectedMascotColors.length
+                    ? layer._selectedMascotColors.length
+                    : 2;
+        }
+
         layer.flipX = savedFlipX;
         layer.flipY = savedFlipY;
         layer._flipState = savedFlipState;
 
-        setTimeout(() => {
+        /*
+         * Fresh mascot SVG DOM mein lagne ke baad complete saved map apply karo.
+         * Har dafa ORIGINAL base use hota hai, isliye unlimited changes possible.
+         */
+        if (
+            layer._colorMap &&
+            Object.keys(layer._colorMap).length > 0
+        ) {
+            setTimeout(function () {
+                _applyDirectMascotColorMap(layer);
+            }, 0);
+        }
+
+        setTimeout(function () {
             _applyFlipTransform(layer, mainSvg);
         }, 50);
 
-        mascotSvg.addEventListener('click', e => { e.stopPropagation(); selectApplicationLayer(layerId); });
+        mascotSvg.addEventListener('click', function (event) {
+            event.stopPropagation();
+            selectApplicationLayer(layerId);
+        });
 
         window.currentApplicationLayer = layerId;
         updateApplicationLayersList();
         selectApplicationLayer(layerId);
-        if (window.saveCustomizations) window.saveCustomizations();
+
+        if (window.saveCustomizations) {
+            window.saveCustomizations();
+        }
     };
 
 
@@ -1861,7 +1932,7 @@ if (display) display.textContent = layer.rotation || 0;
             element.getAttribute('fill') || ''
         );
 
-        if (hex && hex !== '#ffffff') {
+        if (hex) {
             colorCounts[hex] =
                 (colorCounts[hex] || 0) + 1;
         }
@@ -2035,6 +2106,9 @@ detectedColors = detectedColors
                         ck.style.cssText = `font-size:13px;font-weight:900;line-height:1;color:${_getContrastColor(nHex)};`;
                         b.appendChild(ck);
                         _applyDirectMascotColorMap(layer);
+                        if (window.saveCustomizations) {
+    window.saveCustomizations();
+}
                     };
                 })(detectedHex, hex, box, swatchRow);
 
@@ -2055,67 +2129,557 @@ detectedColors = detectedColors
         return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5 ? '#000000' : '#ffffff';
     }
 
-    function _normalizeColor(color) {
-        if (!color) return null; color = color.trim().toLowerCase();
-        if (color.match(/^#[0-9a-f]{6}$/)) return color;
-        if (color.match(/^#[0-9a-f]{3}$/)) return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
-        return null;
+ function _normalizeColor(color) {
+    if (!color) return null;
+
+    color = String(color)
+        .trim()
+        .toLowerCase();
+
+    // #123456
+    if (/^#[0-9a-f]{6}$/i.test(color)) {
+        return color;
     }
 
-    function _applyDirectMascotColorMap(layer) {
-        if (!layer.mascotSvg || !layer._colorMap) return;
-        const parser = new DOMParser(); const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
-        const imgTag = doc.querySelector('image');
-        if (imgTag) { const href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || ''; if (href.startsWith('data:image/png')) { _applyColorMapToPng(href, layer); return; } }
-        Object.entries(layer._colorMap).forEach(([oldColor, newColor]) => { doc.querySelectorAll('[fill]').forEach(el => { if (_normalizeColor(el.getAttribute('fill')) === oldColor) el.setAttribute('fill', newColor); }); });
-        _replaceElementInSvg(layer, new XMLSerializer().serializeToString(doc.documentElement));
+    // #123
+    if (/^#[0-9a-f]{3}$/i.test(color)) {
+        return (
+            '#' +
+            color[1] + color[1] +
+            color[2] + color[2] +
+            color[3] + color[3]
+        );
     }
 
-    function _applyColorMapToPng(dataUrl, layer) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
+    // rgb(12, 26, 102) / rgba(...)
+    var rgbMatch = color.match(
+        /rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i
+    );
 
-        img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            const colorMap = layer._colorMap || {};
-            const detectedColors = layer._detectedColors || [];
-            if (!Object.keys(colorMap).length) return;
+    if (rgbMatch) {
+        var r = Math.max(
+            0,
+            Math.min(255, parseInt(rgbMatch[1], 10))
+        );
 
-            const detectedRgbs = detectedColors.map(hex => ({ hex: hex.toLowerCase(), rgb: _hexToRgb(hex) })).filter(d => d.rgb);
-            const replacementCache = {};
-            Object.entries(colorMap).forEach(([dHex, rHex]) => { replacementCache[dHex.toLowerCase()] = _hexToRgb(rHex); });
+        var g = Math.max(
+            0,
+            Math.min(255, parseInt(rgbMatch[2], 10))
+        );
 
-            for (let i = 0; i < data.length; i += 4) {
-                if (data[i + 3] < 30) continue;
-                const r = data[i], g = data[i + 1], b = data[i + 2];
-                let nearestHex = null, nearestDist = Infinity;
-                detectedRgbs.forEach(d => {
-                    const dist = Math.sqrt(Math.pow(r - d.rgb.r, 2) + Math.pow(g - d.rgb.g, 2) + Math.pow(b - d.rgb.b, 2));
-                    if (dist < nearestDist) { nearestDist = dist; nearestHex = d.hex; }
-                });
-                if (nearestHex && replacementCache[nearestHex]) {
-                    const newRgb = replacementCache[nearestHex];
-                    data[i] = newRgb.r; data[i + 1] = newRgb.g; data[i + 2] = newRgb.b;
+        var b = Math.max(
+            0,
+            Math.min(255, parseInt(rgbMatch[3], 10))
+        );
+
+        return (
+            '#' +
+            [r, g, b]
+                .map(function(value) {
+                    return value
+                        .toString(16)
+                        .padStart(2, '0');
+                })
+                .join('')
+        );
+    }
+
+    // Basic named colors
+    var namedColors = {
+        black: '#000000',
+        white: '#ffffff',
+        red: '#ff0000',
+        blue: '#0000ff',
+        green: '#008000',
+        yellow: '#ffff00',
+        gray: '#808080',
+        grey: '#808080',
+        transparent: null,
+        none: null
+    };
+
+    return namedColors[color] || null;
+}
+
+  function _applyDirectMascotColorMap(layer) {
+    if (!layer || !layer._colorMap) return;
+
+    /*
+     * Every click starts from the untouched original mascot.
+     * Never recolor an already recolored SVG.
+     */
+    var sourceSvg =
+        layer._originalMascotSvg ||
+        layer.mascotSvg;
+
+    if (!sourceSvg) return;
+
+    if (!layer._originalMascotSvg) {
+        layer._originalMascotSvg = sourceSvg;
+    }
+
+    var normalizedMap = {};
+
+    Object.entries(layer._colorMap).forEach(function (entry) {
+        var sourceColor = _normalizeColor(entry[0]);
+        var targetColor = _normalizeColor(entry[1]);
+
+        if (sourceColor && targetColor) {
+            normalizedMap[sourceColor] = targetColor;
+        }
+    });
+
+    if (!Object.keys(normalizedMap).length) return;
+
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(
+        sourceSvg,
+        'image/svg+xml'
+    );
+
+    if (doc.querySelector('parsererror')) {
+        console.error('Mascot SVG parse failed');
+        return;
+    }
+
+    /*
+     * Embedded raster image mascot.
+     */
+    var imageTag = doc.querySelector('image');
+
+    if (imageTag) {
+        var href =
+            imageTag.getAttribute('href') ||
+            imageTag.getAttribute('xlink:href') ||
+            '';
+
+        if (href.startsWith('data:image/')) {
+            _applyColorMapToPngFromOriginal(
+                href,
+                layer,
+                sourceSvg
+            );
+            return;
+        }
+    }
+
+    /*
+     * Traced SVGs contain dozens/hundreds of nearby shades.
+     * Each actual shade is assigned to its nearest selected source row.
+     * Therefore every row works, not only the first two.
+     */
+    doc.querySelectorAll('*').forEach(function (element) {
+        replaceElementColor(
+            element,
+            'fill',
+            normalizedMap
+        );
+
+        replaceElementColor(
+            element,
+            'stroke',
+            normalizedMap
+        );
+
+        replaceElementColor(
+            element,
+            'stop-color',
+            normalizedMap
+        );
+
+        var styleText =
+            element.getAttribute('style');
+
+        if (!styleText) return;
+
+        var declarations = styleText
+            .split(';')
+            .map(function (item) {
+                return item.trim();
+            })
+            .filter(Boolean)
+            .map(function (declaration) {
+                var separator =
+                    declaration.indexOf(':');
+
+                if (separator === -1) {
+                    return declaration;
                 }
+
+                var property = declaration
+                    .slice(0, separator)
+                    .trim()
+                    .toLowerCase();
+
+                var value = declaration
+                    .slice(separator + 1)
+                    .trim();
+
+                if (
+                    property !== 'fill' &&
+                    property !== 'stroke' &&
+                    property !== 'stop-color'
+                ) {
+                    return declaration;
+                }
+
+                var replacement =
+                    _getNearestMappedMascotColor(
+                        value,
+                        normalizedMap
+                    );
+
+                return replacement
+                    ? property + ':' + replacement
+                    : declaration;
+            });
+
+        element.setAttribute(
+            'style',
+            declarations.join(';')
+        );
+    });
+
+    var modifiedSvg =
+        new XMLSerializer().serializeToString(
+            doc.documentElement
+        );
+
+    layer.mascotSvg = modifiedSvg;
+
+    _replaceElementInSvg(
+        layer,
+        modifiedSvg
+    );
+
+    if (window.saveCustomizations) {
+        window.saveCustomizations();
+    }
+}
+
+
+function replaceElementColor(
+    element,
+    attributeName,
+    colorMap
+) {
+    var currentValue =
+        element.getAttribute(attributeName);
+
+    var replacement =
+        _getNearestMappedMascotColor(
+            currentValue,
+            colorMap
+        );
+
+    if (replacement) {
+        element.setAttribute(
+            attributeName,
+            replacement
+        );
+    }
+}
+
+/*
+ * Return target color for the nearest source-row color.
+ * Exact matches always work. Nearby traced shades also follow that row.
+ */
+function _getNearestMappedMascotColor(
+    rawColor,
+    colorMap
+) {
+    var normalized =
+        _normalizeColor(rawColor);
+
+    if (!normalized) return null;
+
+    if (colorMap[normalized]) {
+        return colorMap[normalized];
+    }
+
+    var currentRgb =
+        _hexToRgb(normalized);
+
+    if (!currentRgb) return null;
+
+    var nearestSource = null;
+    var nearestDistance = Infinity;
+
+    Object.keys(colorMap).forEach(function (sourceHex) {
+        var sourceRgb =
+            _hexToRgb(sourceHex);
+
+        if (!sourceRgb) return;
+
+        var distance = Math.sqrt(
+            Math.pow(currentRgb.r - sourceRgb.r, 2) +
+            Math.pow(currentRgb.g - sourceRgb.g, 2) +
+            Math.pow(currentRgb.b - sourceRgb.b, 2)
+        );
+
+        if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestSource = sourceHex;
+        }
+    });
+
+    /*
+     * 115 is broad enough for ImageTracer shade families,
+     * while still avoiding unrelated distant colors.
+     */
+    if (
+        nearestSource &&
+        nearestDistance <= 115
+    ) {
+        return colorMap[nearestSource];
+    }
+
+    return null;
+}
+    function _applyColorMapToPngFromOriginal(
+    dataUrl,
+    layer,
+    originalSvg
+) {
+    var canvas =
+        document.createElement(
+            'canvas'
+        );
+
+    var context =
+        canvas.getContext('2d');
+
+    var image =
+        new Image();
+
+    image.onload = function() {
+        canvas.width =
+            image.width;
+
+        canvas.height =
+            image.height;
+
+        context.drawImage(
+            image,
+            0,
+            0
+        );
+
+        var imageData =
+            context.getImageData(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+        var pixels =
+            imageData.data;
+
+        var detectedColors =
+            Array.isArray(
+                layer._detectedColors
+            )
+                ? layer._detectedColors
+                : [];
+
+        var detectedRgbs =
+            detectedColors
+                .map(function(hex) {
+                    return {
+                        hex:
+                            _normalizeColor(
+                                hex
+                            ),
+
+                        rgb:
+                            _hexToRgb(hex)
+                    };
+                })
+                .filter(function(item) {
+                    return (
+                        item.hex &&
+                        item.rgb
+                    );
+                });
+
+        var replacementCache = {};
+
+        Object.entries(
+            layer._colorMap || {}
+        ).forEach(function(entry) {
+            var source =
+                _normalizeColor(
+                    entry[0]
+                );
+
+            var target =
+                _hexToRgb(
+                    entry[1]
+                );
+
+            if (
+                source &&
+                target
+            ) {
+                replacementCache[
+                    source
+                ] = target;
+            }
+        });
+
+        for (
+            var index = 0;
+            index < pixels.length;
+            index += 4
+        ) {
+            if (
+                pixels[index + 3] < 30
+            ) {
+                continue;
             }
 
-            ctx.putImageData(imageData, 0, 0);
-            const newPngDataUrl = canvas.toDataURL('image/png', 1.0);
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
-            const imgEl = doc.querySelector('image');
-            if (imgEl) { imgEl.setAttribute('href', newPngDataUrl); if (imgEl.getAttribute('xlink:href')) imgEl.setAttribute('xlink:href', newPngDataUrl); }
-            _replaceElementInSvg(layer, new XMLSerializer().serializeToString(doc.documentElement));
-        };
+            var red =
+                pixels[index];
 
-        img.onerror = () => console.error('PNG load failed');
-        img.src = dataUrl;
-    }
+            var green =
+                pixels[index + 1];
+
+            var blue =
+                pixels[index + 2];
+
+            var nearestHex =
+                null;
+
+            var nearestDistance =
+                Infinity;
+
+            detectedRgbs.forEach(
+                function(item) {
+                    var distance =
+                        Math.sqrt(
+                            Math.pow(
+                                red -
+                                    item.rgb.r,
+                                2
+                            ) +
+                            Math.pow(
+                                green -
+                                    item.rgb.g,
+                                2
+                            ) +
+                            Math.pow(
+                                blue -
+                                    item.rgb.b,
+                                2
+                            )
+                        );
+
+                    if (
+                        distance <
+                        nearestDistance
+                    ) {
+                        nearestDistance =
+                            distance;
+
+                        nearestHex =
+                            item.hex;
+                    }
+                }
+            );
+
+            if (
+                nearestHex &&
+                replacementCache[
+                    nearestHex
+                ]
+            ) {
+                var replacement =
+                    replacementCache[
+                        nearestHex
+                    ];
+
+                pixels[index] =
+                    replacement.r;
+
+                pixels[index + 1] =
+                    replacement.g;
+
+                pixels[index + 2] =
+                    replacement.b;
+            }
+        }
+
+        context.putImageData(
+            imageData,
+            0,
+            0
+        );
+
+        var newImageUrl =
+            canvas.toDataURL(
+                'image/png',
+                1
+            );
+
+        /*
+         * Original SVG ko parse karo,
+         * modified SVG ko nahi.
+         */
+        var parser =
+            new DOMParser();
+
+        var doc =
+            parser.parseFromString(
+                originalSvg,
+                'image/svg+xml'
+            );
+
+        var imageElement =
+            doc.querySelector('image');
+
+        if (imageElement) {
+            imageElement.setAttribute(
+                'href',
+                newImageUrl
+            );
+
+            imageElement.setAttributeNS(
+                'http://www.w3.org/1999/xlink',
+                'xlink:href',
+                newImageUrl
+            );
+        }
+
+        var modifiedSvg =
+            new XMLSerializer()
+                .serializeToString(
+                    doc.documentElement
+                );
+
+        layer.mascotSvg =
+            modifiedSvg;
+
+        _replaceElementInSvg(
+            layer,
+            modifiedSvg
+        );
+
+        if (
+            window.saveCustomizations
+        ) {
+            window.saveCustomizations();
+        }
+    };
+
+    image.onerror = function() {
+        console.error(
+            'Mascot image load failed'
+        );
+    };
+
+    image.src = dataUrl;
+}
 
     function _replaceElementInSvg(layer, modifiedSvg) {
         const mainSvg = window.getMainSvg ? window.getMainSvg() : null; if (!mainSvg) return;
@@ -2126,6 +2690,7 @@ detectedColors = detectedColors
         newSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         newSvg.style.cursor = 'default';
         svgEl.parentNode.replaceChild(newSvg, svgEl);
+        layer.mascotSvg = modifiedSvg;
         newSvg.addEventListener('click', e => { e.stopPropagation(); window.selectApplicationLayer(layer.id); });
         if (window.makeMascotDraggable) window.makeMascotDraggable(newSvg, layer);
         // Re-apply flip+rotation
@@ -3784,7 +4349,20 @@ dot.setAttribute('y', dy - 9);
         dragging = false;
         svg.style.cursor = 'grab';
     });
+function updateSliderFill(slider) {
 
+    const min = Number(slider.min) || 0;
+    const max = Number(slider.max) || 100;
+    const value = Number(slider.value);
+
+    const percent =
+        ((value - min) / (max - min)) * 100;
+
+    slider.style.setProperty(
+        '--fill',
+        percent + '%'
+    );
+}
     svg.addEventListener('touchstart', function (e) {
         if (e.target.tagName === 'INPUT') return;
         dragging = true;

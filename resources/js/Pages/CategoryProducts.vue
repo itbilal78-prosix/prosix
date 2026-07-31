@@ -1546,12 +1546,10 @@ const groupedFilteredModels = computed(() => {
   })
   return groups
 })
-// const handleCardClick = (modelId) => {
-//   alert('This page is coming soon! We are working on it.')
-// }
 const handleCardClick = (modelId) => {
-  router.push(`/product/${modelId}?type=model`)
+  alert('This page is coming soon! We are working on it.')
 }
+
 // working //
 
 
@@ -1836,3 +1834,8 @@ onMounted(async () => {
   .model-card-price {font-size: 10px;}
 }
 </style>
+
+
+
+
+

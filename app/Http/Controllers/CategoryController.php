@@ -313,19 +313,54 @@ class CategoryController extends Controller
         return response()->json(['category' => ['id' => $category->id, 'name' => $category->name], 'products' => $products]);
     }
 
-    public function verifyCategoryPassword(Request $request, $id)
-    {
-        $request->validate(['password' => 'required|string']);
-        $category = Category::findOrFail($id);
+ public function verifyCategoryPassword(Request $request, $id)
+{
+    $request->validate([
+        'password' => 'required|string',
+    ]);
 
-        if (!$category->password) return response()->json(['success' => true]);
+    $category = Category::findOrFail($id);
 
-        if (!\Hash::check($request->password, $category->password)) {
-            return response()->json(['success' => false, 'message' => 'Invalid password'], 401);
+    // Category khud password protected hai
+    $passwordCategory = $category;
+
+    // Subcategory par password nahi, lekin parent par password hai
+    if (
+        empty($category->password) &&
+        $category->parent_id
+    ) {
+        $parent = Category::find($category->parent_id);
+
+        if ($parent && !empty($parent->password)) {
+            $passwordCategory = $parent;
         }
-
-        return response()->json(['success' => true]);
     }
+
+    // Kisi par password nahi
+    if (empty($passwordCategory->password)) {
+        return response()->json([
+            'success' => true,
+            'token' => null,
+        ]);
+    }
+
+    if (!Hash::check($request->password, $passwordCategory->password)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Wrong password',
+        ], 422);
+    }
+
+    $token = encrypt([
+        'category_id' => $passwordCategory->id,
+        'expires_at' => now()->addHours(12)->timestamp,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'token' => $token,
+    ]);
+}
 
     public function reorder(Request $request)
     {

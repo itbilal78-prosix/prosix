@@ -193,19 +193,39 @@ Route::post('/templates/save-from-customizer',
     [TemplateController::class, 'saveFromCustomizer']
 );
 Route::get('/api/mascot-templates', function () {
+
     return \App\Models\Template::with('category')
         ->latest()
         ->get()
         ->map(function ($t) {
+
             return [
-                'id'         => $t->id,
-                'title'      => $t->title,
-                'svg_data'   => $t->svg_data,
+                'id' => $t->id,
+                'title' => $t->title,
+
+                'svg_data' => $t->svg_data,
                 'image_data' => $t->image_data,
-                'category'   => $t->category ? $t->category->name : 'Uncategorized',
-                'category_id'=> $t->category_id,
+
+                'category' => $t->category
+                    ? $t->category->name
+                    : 'Uncategorized',
+
+                'category_id' => $t->category_id,
+
+                // ✅ ADD THESE
+                'color_count' => (int) ($t->color_count ?? 0),
+
+                'selected_colors' => is_array($t->selected_colors)
+                    ? $t->selected_colors
+                    : [],
+
+                'color_mappings' => is_array($t->color_mappings)
+                    ? $t->color_mappings
+                    : [],
             ];
+
         });
+
 });
 
 

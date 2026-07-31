@@ -41,7 +41,7 @@
                         <div class="color-name">{{ $c->name }}</div>
                     </div>
                 @endforeach
-             <div class="custom-color-panel">
+             {{-- <div class="custom-color-panel">
     <div class="custom-title">Other / Custom Color</div>
 
     <div class="custom-picker-row">
@@ -58,7 +58,7 @@
     </button>
 
     <div id="customAddedColors" class="custom-added-colors"></div>
-</div>
+</div> --}}
             </div>
 
             <div class="inline-color-selector-footer">

@@ -432,7 +432,7 @@
     // ============================================================
     // MASCOT SELECT MODAL — All functions
     // ============================================================
-    
+
     window._mascotState = {
         allMascots: [],
         filteredMascots: [],
@@ -701,42 +701,120 @@ window.mcApplyOnly = function () {
     // ❌ _mcSaveToBackend call remove
 };
     function _selectMascotCard(mascot, cardEl) {
-        document.querySelectorAll('.ms-mascot-card').forEach(function(c) {
-            c.classList.remove('ms-selected');
+        document.querySelectorAll('.ms-mascot-card').forEach(function(card) {
+            card.classList.remove('ms-selected');
         });
-        cardEl.classList.add('ms-selected');
+
+        if (cardEl) {
+            cardEl.classList.add('ms-selected');
+        }
+
+        var savedColors = [];
+
+        if (Array.isArray(mascot.selected_colors)) {
+            savedColors = mascot.selected_colors.slice();
+        } else if (typeof mascot.selected_colors === 'string') {
+            try {
+                var parsedColors = JSON.parse(mascot.selected_colors);
+                savedColors = Array.isArray(parsedColors) ? parsedColors : [];
+            } catch (error) {
+                console.warn('selected_colors parse failed:', mascot.selected_colors);
+                savedColors = [];
+            }
+        }
+
+        savedColors = savedColors
+            .map(function(color) {
+                return String(color || '').trim().toLowerCase();
+            })
+            .filter(function(color) {
+                return /^#[0-9a-f]{6}$/i.test(color);
+            });
+
+        var savedColorCount =
+            parseInt(mascot.color_count, 10) ||
+            savedColors.length ||
+            0;
+
+        var savedMappings = {};
+
+        if (
+            mascot.color_mappings &&
+            typeof mascot.color_mappings === 'object'
+        ) {
+            savedMappings = Object.assign({}, mascot.color_mappings);
+        } else if (typeof mascot.color_mappings === 'string') {
+            try {
+                var parsedMappings = JSON.parse(mascot.color_mappings);
+                savedMappings =
+                    parsedMappings &&
+                    typeof parsedMappings === 'object'
+                        ? parsedMappings
+                        : {};
+            } catch (error) {
+                console.warn('color_mappings parse failed:', mascot.color_mappings);
+                savedMappings = {};
+            }
+        }
 
         window._mascotState.selectedMascotData = {
             svg: mascot.svg_data || '',
             imageUrl: mascot.image_data || '',
-            title: mascot.title,
+            title: mascot.title || '',
             source: 'existing',
-            mascotDbId: mascot.id
+            mascotDbId: mascot.id,
+            selectedColors: savedColors.slice(0, savedColorCount),
+            colorCount: savedColorCount,
+            colorMappings: savedMappings
         };
 
+        console.log(
+            '✅ SELECTED MASCOT DATA:',
+            window._mascotState.selectedMascotData
+        );
+
         var previewBox = document.getElementById('mascotSelectPreviewBox');
+
         if (previewBox) {
             previewBox.innerHTML = '';
             previewBox.style.border = '2px solid #1a1a1a';
-            if (mascot.svg_data && mascot.svg_data.trim().startsWith('<')) {
+
+            if (
+                mascot.svg_data &&
+                mascot.svg_data.trim().startsWith('<')
+            ) {
                 previewBox.innerHTML = mascot.svg_data;
+
                 var svg = previewBox.querySelector('svg');
+
                 if (svg) {
                     svg.style.width = '110px';
                     svg.style.height = '110px';
                     svg.style.display = 'block';
                 }
             } else if (mascot.image_data) {
-                previewBox.innerHTML = '<img src="' + mascot.image_data +
+                previewBox.innerHTML =
+                    '<img src="' +
+                    mascot.image_data +
                     '" style="width:110px;height:110px;object-fit:contain;">';
             } else {
-                previewBox.innerHTML = '<span style="color:#ccc;font-size:11px;">No preview</span>';
+                previewBox.innerHTML =
+                    '<span style="color:#ccc;font-size:11px;">No preview</span>';
             }
         }
-        var nameEl = document.getElementById('mascotSelectPreviewName');
-        if (nameEl) nameEl.textContent = mascot.title || '';
-        var editBtn = document.getElementById('mascotEditBtn');
-        if (editBtn) editBtn.style.display = 'block';
+
+        var nameElement =
+            document.getElementById('mascotSelectPreviewName');
+
+        if (nameElement) {
+            nameElement.textContent = mascot.title || '';
+        }
+
+        var editButton = document.getElementById('mascotEditBtn');
+
+        if (editButton) {
+            editButton.style.display = 'block';
+        }
     }
 
     window.editSelectedMascot = function() {
@@ -761,34 +839,88 @@ window.mcApplyOnly = function () {
 
  // ======= APPLY BUTTON in main modal =======
 window.applySelectedMascotToApplication = function() {
-    var state = window._mascotState;
-    var mascotData = state.selectedMascotData;
+        var state = window._mascotState;
+        var mascotData = state.selectedMascotData;
 
-    if (!mascotData) {
-        alert('Please select a mascot first.');
-        return;
-    }
-
-    var layerId = state.pendingLayerId || window.currentApplicationLayer;
-    if (!layerId) {
-        alert('No application layer found.');
-        return;
-    }
-
-    closeMascotSelectModal();
-
-    // ✅ KEY FIX: Sirf upload pe customize modal dikhao
-    // Existing ya creator mascot directly apply ho
-    if (mascotData.source === 'upload') {
-        // Upload ke liye customize modal dikhao
-        openMascotCustomizeModal(mascotData, layerId);
-    } else {
-        // Existing / creator — seedha apply karo, no popup
-        if (window.applyDirectMascotToLayer) {
-            window.applyDirectMascotToLayer(mascotData.svg || mascotData.imageUrl, layerId, true);
+        if (!mascotData) {
+            alert('Please select a mascot first.');
+            return;
         }
-    }
-};
+
+        var layerId =
+            state.pendingLayerId ||
+            window.currentApplicationLayer;
+
+        if (!layerId) {
+            alert('No application layer found.');
+            return;
+        }
+
+        closeMascotSelectModal();
+
+        if (mascotData.source === 'upload') {
+            openMascotCustomizeModal(mascotData, layerId);
+            return;
+        }
+
+        var layer =
+            window.findLayerById
+                ? window.findLayerById(layerId)
+                : null;
+
+        if (layer) {
+            var savedColors =
+                Array.isArray(mascotData.selectedColors)
+                    ? mascotData.selectedColors.filter(Boolean)
+                    : [];
+
+            var savedCount =
+                parseInt(mascotData.colorCount, 10) ||
+                savedColors.length ||
+                0;
+
+            layer.mascotTitle = mascotData.title || '';
+            layer._selectedMascotColors =
+                savedColors.slice(0, savedCount);
+            layer._selectedColorCount = savedCount;
+            layer._detectedColors =
+                savedColors.slice(0, savedCount);
+            layer._colorMap =
+                mascotData.colorMappings &&
+                typeof mascotData.colorMappings === 'object'
+                    ? Object.assign({}, mascotData.colorMappings)
+                    : {};
+        }
+
+        if (window.applyDirectMascotToLayer) {
+            window.applyDirectMascotToLayer(
+                mascotData.svg || mascotData.imageUrl,
+                layerId,
+                true
+            );
+        }
+
+        setTimeout(function() {
+            var updatedLayer =
+                window.findLayerById
+                    ? window.findLayerById(layerId)
+                    : null;
+
+            if (!updatedLayer) return;
+
+            if (window.selectApplicationLayer) {
+                window.selectApplicationLayer(layerId);
+            }
+
+            if (window._renderDirectMascotColors) {
+                window._renderDirectMascotColors(updatedLayer);
+            }
+
+            if (window.saveCustomizations) {
+                window.saveCustomizations();
+            }
+        }, 200);
+    };
 
     // ============================================================
     // =================== MASCOT CUSTOMIZE MODAL =================
@@ -1595,7 +1727,7 @@ layer._selectedColorCount =
     savedColorCount;
 
 layer._detectedColors =
-    layer._selectedMascotColors.slice();
+    finalPopupColors.slice();
 
 layer._colorMap = {};
 
@@ -1633,134 +1765,178 @@ updatedLayer._detectedColors =
     }
 }, 500);
 
-    if (doSave) _mcSaveToBackend(name, dataUrl, finalSvg);
-};
-
-// function _renderDirectMascotColors ke saath saath:
-window._renderDirectMascotColors = function(layer) {
-    const container = document.getElementById('directMascotColorSwatches');
-    if (!container) return;
-
-    if (!layer.mascotSvg) {
-        container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">No mascot selected</p>';
-        return;
-    }
-
-    container.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;">Detecting colors...</p>';
-
-    const maxColors = (layer._selectedColorCount && layer._selectedColorCount > 0)
-                      ? layer._selectedColorCount
-                      : (window.selectedColors ? window.selectedColors.length : 3);
-
-    console.log('🎨 maxColors:', maxColors, '| _selectedColorCount:', layer._selectedColorCount);
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(layer.mascotSvg, 'image/svg+xml');
-
-    const imgTag = doc.querySelector('image');
-    if (imgTag) {
-        const href = imgTag.getAttribute('href') || imgTag.getAttribute('xlink:href') || '';
-        if (href.startsWith('data:image')) {
-            _detectColorsFromPng(href, layer, container);
-            return;
-        }
-    }
-
-    const colorCounts = {};
-    doc.querySelectorAll('[fill]').forEach(el => {
-        const hex = _normalizeColor(el.getAttribute('fill') || '');
-        if (hex && hex !== '#ffffff') colorCounts[hex] = (colorCounts[hex] || 0) + 1;
-    });
-
-    const detected = Object.keys(colorCounts)
-                           .sort((a, b) => colorCounts[b] - colorCounts[a])
-                           .slice(0, maxColors);
-
-    layer._detectedColors = detected;
-    _buildColorSwatches(detected, layer, container);
-};
-
-// Private reference bhi rakho
-function _renderDirectMascotColors(layer) {
-    window._renderDirectMascotColors(layer);
+if (doSave) {
+    _mcSaveToBackend(
+        name,
+        dataUrl,
+        finalSvg,
+        finalPopupColors,
+        savedColorCount
+    );
 }
+};
+
+
 // showDirectMascotControls function ko window pe lagao:
 window.showDirectMascotControls = function(layer) {
-    const appControls = document.getElementById('applicationLayerControls');
+    const appControls =
+        document.getElementById('applicationLayerControls');
+
     if (appControls) {
-        Array.from(appControls.children).forEach(child => {
-            child.style.display = child.id !== 'directMascotControls' ? 'none' : 'block';
+        Array.from(appControls.children).forEach(function(child) {
+            child.style.display =
+                child.id !== 'directMascotControls'
+                    ? 'none'
+                    : 'block';
         });
     }
 
-    const preview = document.getElementById('directMascotPreview');
-    if (preview && layer.mascotSvg) {
-        preview.innerHTML = layer.mascotSvg;
-        const svg = preview.querySelector('svg');
-        if (svg) {
-            svg.style.maxWidth = '80px';
-            svg.style.maxHeight = '80px';
-            svg.style.transform = layer.flipX === -1 ? 'scaleX(-1)' : '';
-        }
-    } else if (preview) {
-        preview.innerHTML = '<span style="color:#aaa;font-size:12px;">No mascot selected</span>';
-    }
+    const sync = function(id, valueId, value) {
+        const slider = document.getElementById(id);
+        const valueElement = document.getElementById(valueId);
 
-    const sync = (id, valId, val) => {
-        const el = document.getElementById(id);
-        const ve = document.getElementById(valId);
-        if (el) el.value = val;
-        if (ve) ve.textContent = val;
+        if (slider) {
+            slider.value = value;
+        }
+
+        if (valueElement) {
+            valueElement.textContent = value;
+        }
     };
 
-    sync('directMascotScale',    'directMascotScaleValue',    Math.round((layer.mascotScaleX || 1) * 100));
-    sync('directMascotOpacity',  'directMascotOpacityValue',  layer.mascotOpacity ?? 100);
-    sync('directMascotRotation', 'directMascotRotationValue', layer.rotation || 0);
-    sync('mascotDirectPosX',     'mascotDirectPosXValue',     layer.x || 0);
-    sync('mascotDirectPosY',     'mascotDirectPosYValue',     layer.y || 0);
+    sync(
+        'directMascotScale',
+        'directMascotScaleValue',
+        Math.round((layer.mascotScaleX || 1) * 100)
+    );
 
-    setTimeout(() => {
-        // ✅ window pe expose karo
-        if (window._renderDirectMascotColors) {
-            window._renderDirectMascotColors(layer);
+    sync(
+        'directMascotOpacity',
+        'directMascotOpacityValue',
+        layer.mascotOpacity ?? 100
+    );
+
+    sync(
+        'mascotDirectPosX',
+        'mascotDirectPosXValue',
+        layer.x || 0
+    );
+
+    sync(
+        'mascotDirectPosY',
+        'mascotDirectPosYValue',
+        layer.y || 0
+    );
+
+    // ✅ YAHAN PASTE KARNA HAI
+    [
+        'directMascotScale',
+        'directMascotOpacity',
+        'mascotDirectPosX',
+        'mascotDirectPosY'
+    ].forEach(function(id) {
+        var slider = document.getElementById(id);
+
+        if (slider) {
+            appFillSlider(slider);
         }
-    }, 100);
+    });
 
-    setTimeout(() => _showMascotBox(layer.id), 80);
+    // baqi function same rahega
 };
-    function _mcSaveToBackend(name, dataUrl, svgData) {
-        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+function _mcSaveToBackend(
+        name,
+        dataUrl,
+        svgData,
+        selectedColors,
+        colorCount
+    ) {
+        var csrfMeta =
+            document.querySelector('meta[name="csrf-token"]');
+
         var csrf = csrfMeta ? csrfMeta.content : '';
 
-        fetch('/api/mascot-templates', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrf
-                },
-                body: JSON.stringify({
-                    title: name,
-                    svg_data: svgData,
-                    image_data: dataUrl,
-                    category: 'Custom'
+        var finalColors = Array.isArray(selectedColors)
+            ? selectedColors
+                .map(function(color) {
+                    return String(color || '').trim().toLowerCase();
                 })
+                .filter(function(color) {
+                    return /^#[0-9a-f]{6}$/i.test(color);
+                })
+            : [];
+
+        var finalCount =
+            parseInt(colorCount, 10) ||
+            finalColors.length ||
+            0;
+
+        if (finalColors.length > 0) {
+            finalCount = Math.min(finalCount, finalColors.length);
+            finalColors = finalColors.slice(0, finalCount);
+        }
+
+        var finalMappings =
+            window._mc &&
+            window._mc.colorMap &&
+            typeof window._mc.colorMap === 'object'
+                ? window._mc.colorMap
+                : {};
+
+        console.log('✅ MASCOT SAVE DATA:', {
+            title: name,
+            color_count: finalCount,
+            selected_colors: finalColors,
+            color_mappings: finalMappings
+        });
+
+        fetch('/api/mascot-templates', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf
+            },
+            body: JSON.stringify({
+                title: name,
+                svg_data: svgData,
+                image_data: dataUrl,
+                category: 'Custom',
+                color_count: finalCount,
+                selected_colors: finalColors,
+                color_mappings: finalMappings
             })
-            .then(function(r) {
-                return r.json();
-            })
-            .then(function(res) {
-                console.log('✅ Mascot saved:', res);
-                // Reload mascot list silently
-                fetch('/api/mascot-templates').then(function(r) {
-                    return r.json();
-                }).then(function(data) {
-                    window._mascotState.allMascots = data;
-                    window._mascotState.filteredMascots = data;
-                });
-            })
-            .catch(function(err) {
-                console.error('Save error:', err);
+        })
+        .then(function(response) {
+            return response.json().then(function(result) {
+                if (!response.ok) {
+                    console.error('❌ Mascot validation error:', result);
+                    throw new Error(result.message || 'Mascot save failed');
+                }
+
+                return result;
             });
+        })
+        .then(function(result) {
+            console.log('✅ Mascot saved successfully:', result);
+
+            return fetch('/api/mascot-templates', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            window._mascotState.allMascots = data;
+            window._mascotState.filteredMascots = data;
+        })
+        .catch(function(error) {
+            console.error('❌ Mascot save error:', error);
+            alert('Mascot save nahi hua. Console check karein.');
+        });
     }
 
     // ------- Helpers -------

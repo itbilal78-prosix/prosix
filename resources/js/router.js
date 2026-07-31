@@ -5,136 +5,199 @@ const routes = [
     path: '/',
     name: 'Home',
     component: () => import('@/Pages/Home.vue'),
-    meta: { public: true, title: 'Home', breadcrumb: 'Home' }
+    meta: {
+      public: true,
+      title: 'Home',
+      breadcrumb: 'Home'
+    }
   },
+
   {
     path: '/checkout',
     name: 'Checkout',
-    component: () => import('./Pages/CheckoutPage.vue'),
-    meta: { breadcrumb: 'Checkout' }
+    component: () => import('@/Pages/CheckoutPage.vue'),
+    meta: {
+      breadcrumb: 'Checkout'
+    }
   },
+
   {
     path: '/user-login',
     name: 'Login',
     component: () => import('@/user-authentication/AuthPage.vue'),
-    meta: { guest: true, breadcrumb: 'Login' }
+    meta: {
+      guest: true,
+      breadcrumb: 'Login'
+    }
   },
+
   {
     path: '/register',
     name: 'Register',
     component: () => import('@/user-authentication/AuthPage.vue'),
-    meta: { guest: true, breadcrumb: 'Register' }
+    meta: {
+      guest: true,
+      breadcrumb: 'Register'
+    }
   },
+
   {
     path: '/otp-verification',
     name: 'OTPVerification',
     component: () => import('@/user-authentication/OTPVerification.vue'),
-    meta: { guest: true, breadcrumb: 'OTP Verification' }
+    meta: {
+      guest: true,
+      breadcrumb: 'OTP Verification'
+    }
   },
-{
-  path: '/catalogue',
-  name: 'Catalogue',
-component: () => import('@/Pages/Flipbookpage.vue'),
-  meta: { breadcrumb: 'Catalogue' }
-},
-{
-  path: '/catalogue/:id',
-  name: 'CatalogueView',
-  component: () => import('@/Pages/FlipbookView.vue'),
-  meta: { breadcrumb: 'Catalogue View' }
-},
+
+  {
+    path: '/catalogue',
+    name: 'Catalogue',
+    component: () => import('@/Pages/Flipbookpage.vue'),
+    meta: {
+      breadcrumb: 'Catalogue'
+    }
+  },
+
+  {
+    path: '/catalogue/:id',
+    name: 'CatalogueView',
+    component: () => import('@/Pages/FlipbookView.vue'),
+    meta: {
+      breadcrumb: 'Catalogue View'
+    }
+  },
+
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/user-dashboard/dashboard.vue'),
-    meta: { requiresAuth: true, breadcrumb: 'Dashboard' }
+    meta: {
+      requiresAuth: true,
+      breadcrumb: 'Dashboard'
+    }
   },
+
   {
     path: '/models/:id',
     name: 'CustomizerModel',
     component: () => import('@/Pages/CustomizerModel.vue'),
-    meta: { requiresAuth: true, breadcrumb: 'Model Customizer' }
+    meta: {
+      requiresAuth: true,
+      breadcrumb: 'Model Customizer'
+    }
   },
+
   {
     path: '/menu/:slug',
     name: 'MenuCategories',
     component: () => import('@/Pages/MenuCategories.vue'),
-    meta: { breadcrumb: 'Menu' }
+    meta: {
+      breadcrumb: 'Menu'
+    }
   },
+
   {
     path: '/category/:id/products',
     name: 'CategoryProducts',
     component: () => import('@/Pages/CategoryProducts.vue'),
-    meta: { breadcrumb: 'Products' }
+    meta: {
+      breadcrumb: 'Products'
+    }
   },
+
   {
     path: '/category/:id/subcategories',
     name: 'Subcategories',
     component: () => import('@/Pages/Subcategories.vue'),
-    meta: { breadcrumb: 'Subcategories' }
+    meta: {
+      breadcrumb: 'Subcategories'
+    }
   },
+
   {
     path: '/product/:id',
     name: 'ProductDetails',
     component: () => import('@/Pages/ProductDetails.vue'),
-    meta: { breadcrumb: 'Product Details' }
+    meta: {
+      breadcrumb: 'Product Details'
+    }
   },
+
   {
     path: '/blog/:slug',
     name: 'BlogDetail',
     component: () => import('@/Pages/BlogDetail.vue'),
-    meta: { breadcrumb: 'Blog Detail' }
+    meta: {
+      breadcrumb: 'Blog Detail'
+    }
   },
+
   {
     path: '/membership',
     name: 'Membership',
     component: () => import('@/Pages/MembershipForm.vue'),
-    meta: { breadcrumb: 'Membership' }
+    meta: {
+      breadcrumb: 'Membership'
+    }
   },
+
   {
     path: '/artwork',
     name: 'Artworkform',
     component: () => import('@/Pages/Artworkform.vue'),
-    meta: { breadcrumb: 'Artwork' }
+    meta: {
+      breadcrumb: 'Artwork'
+    }
   },
+
   {
     path: '/placeorder',
     name: 'PlaceOrder',
     component: () => import('@/Pages/PlaceOrder.vue'),
-    meta: { breadcrumb: 'PlaceOrder' }
+    meta: {
+      breadcrumb: 'Place Order'
+    }
   },
+
   {
-  path: '/track',
-  name: 'TrackOrder',
-  component: () => import('@/Pages/TrackingPage.vue'),
-  meta: { public: true, breadcrumb: 'Track Order' }
-},
+    path: '/track',
+    name: 'TrackOrder',
+    component: () => import('@/Pages/TrackingPage.vue'),
+    meta: {
+      public: true,
+      breadcrumb: 'Track Order'
+    }
+  },
+
+  // ✅ NEW WEBSITE REQUEST PAGE
+  {
+    path: '/website-request',
+    name: 'WebsiteRequest',
+    component: () => import('@/Pages/WebsiteRequest.vue'),
+    meta: {
+      public: true,
+      title: 'Website Request',
+      breadcrumb: 'Website Request'
+    }
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+
   scrollBehavior() {
-    return { top: 0 }
+    return {
+      top: 0,
+      behavior: 'smooth'
+    }
   }
 })
 
-// router.beforeEach((to, from, next) => {
-//   const token = localStorage.getItem('auth_token')
-
-//   if (to.meta.guest && token) return next('/dashboard')
-
-//   if (to.meta.requiresAuth && !token) {
-//     return next({
-//       path: '/user-login',
-//       query: { redirect: to.fullPath }
-//     })
-//   }
-
-//   next()
-// })
 router.beforeEach((to, from, next) => {
-  // ✅ pehle URL se token lo
+  // URL se token mile to localStorage mein save karo
   const urlToken = to.query.token
 
   if (urlToken) {
@@ -143,15 +206,22 @@ router.beforeEach((to, from, next) => {
 
   const token = localStorage.getItem('auth_token')
 
-  if (to.meta.guest && token) return next('/dashboard')
+  // Logged-in user ko guest pages se dashboard bhejo
+  if (to.meta.guest && token) {
+    return next('/dashboard')
+  }
 
+  // Protected page aur token na ho
   if (to.meta.requiresAuth && !token) {
     return next({
       path: '/user-login',
-      query: { redirect: to.fullPath }
+      query: {
+        redirect: to.fullPath
+      }
     })
   }
 
   next()
 })
+
 export default router

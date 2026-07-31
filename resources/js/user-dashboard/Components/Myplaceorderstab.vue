@@ -2,12 +2,68 @@
   <div class="po-tab-root">
     <!-- Page Header -->
     <div class="po-tab-header">
-      <h2 class="po-tab-title">My Place Orders</h2>
+      <div>
+        <span class="po-eyebrow">Order History</span>
+        <h2 class="po-tab-title">Active Place Orders</h2>
+        <p class="po-tab-subtitle">
+          View pending and in-progress orders below or place a new order.
+        </p>
+      </div>
 
       <span class="po-tab-count">
-        {{ orders.length }}
-        order{{ orders.length !== 1 ? 's' : '' }}
+        {{ activeOrders.length }} {{ activeOrders.length === 1 ? 'order' : 'orders' }}
       </span>
+    </div>
+
+    <!-- Compact New Order Card -->
+    <div class="po-new-order-wrap">
+      <div class="po-new-order-card">
+        <div class="po-new-order-card-top">
+          <div class="po-new-order-icon">
+            <svg
+              width="21"
+              height="21"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+          </div>
+
+          <div>
+            <span class="po-new-order-label">New Order</span>
+            <h3>Place a New Order</h3>
+          </div>
+        </div>
+
+        <p>
+          Start a fresh custom order and upload your mockups, roster and quote files.
+        </p>
+
+        <a
+          href="https://prosix.com/placeorder"
+          class="po-new-order-btn"
+        >
+          Place New Order
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12h14" />
+            <path d="m13 6 6 6-6 6" />
+          </svg>
+        </a>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -20,7 +76,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="orders.length === 0" class="po-empty">
+    <div v-else-if="activeOrders.length === 0" class="po-empty">
       <div class="po-empty-icon">
         <svg
           viewBox="0 0 64 64"
@@ -47,21 +103,21 @@
         </svg>
       </div>
 
-      <h4>No Orders Yet</h4>
+      <h4>No Active Orders</h4>
 
       <p>
-        You haven't placed any orders. Start by placing your first order!
+        Completed orders are moved automatically to My Orders.
       </p>
 
-      <router-link to="/placeorder" class="po-place-btn">
+      <a href="https://prosix.com/placeorder" class="po-place-btn">
         Place an Order
-      </router-link>
+      </a>
     </div>
 
     <!-- Orders -->
     <div v-else class="po-orders-grid">
       <div
-        v-for="order in orders"
+        v-for="order in activeOrders"
         :key="order.id"
         class="po-order-card"
       >
@@ -493,10 +549,31 @@
         </div>
       </div>
     </div>
+
+    <!-- Bottom New Order Button -->
+    <div v-if="!isLoading && activeOrders.length > 0" class="po-bottom-order-action">
+      <a href="https://prosix.com/placeorder" class="po-bottom-order-btn">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M12 5v14" />
+          <path d="M5 12h14" />
+        </svg>
+        Place Another Order
+      </a>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   orders: {
     type: Array,
@@ -507,6 +584,14 @@ const props = defineProps({
     type: Boolean,
     default: false
   }
+})
+
+const activeOrders = computed(() => {
+  return props.orders.filter(order => {
+    return String(order.status || '')
+      .trim()
+      .toLowerCase() !== 'completed'
+  })
 })
 
 /*
@@ -737,6 +822,120 @@ const handleImageError = (event) => {
   font-weight: 650;
 }
 
+/* Header supporting text */
+.po-eyebrow {
+  display: inline-block;
+  margin-bottom: 5px;
+  color: #6b7280;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.po-tab-subtitle {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+/* Compact New Order Card */
+.po-new-order-wrap {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 22px;
+}
+
+.po-new-order-card {
+  width: 100%;
+  max-width: 390px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(17, 24, 39, 0.06);
+}
+
+.po-new-order-card-top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.po-new-order-icon {
+  display: inline-flex;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #111827;
+  color: #ffffff;
+}
+
+.po-new-order-label {
+  display: block;
+  margin-bottom: 2px;
+  color: #9ca3af;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.65px;
+  text-transform: uppercase;
+}
+
+.po-new-order-card h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.po-new-order-card > p {
+  margin: 13px 0 14px;
+  color: #6b7280;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.po-new-order-btn,
+.po-bottom-order-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px 15px;
+  border-radius: 9px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 0.79rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.po-new-order-btn {
+  width: 100%;
+}
+
+.po-new-order-btn:hover,
+.po-bottom-order-btn:hover {
+  transform: translateY(-1px);
+  background: #000000;
+}
+
+.po-bottom-order-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.po-bottom-order-btn {
+  border: 1px solid #111827;
+}
+
 /* Loading */
 .po-loading {
   display: flex;
@@ -827,12 +1026,15 @@ const handleImageError = (event) => {
 
 /* Orders */
 .po-orders-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 390px));
+  align-items: start;
+  justify-content: start;
+  gap: 18px;
 }
 
 .po-order-card {
+  width: 100%;
   overflow: hidden;
   border: 1px solid #e5e7eb;
   border-radius: 15px;
@@ -853,8 +1055,8 @@ const handleImageError = (event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 15px;
-  padding: 15px 20px;
+  gap: 12px;
+  padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
   background: #f9fafb;
 }
@@ -921,14 +1123,14 @@ const handleImageError = (event) => {
 
 /* Card Body */
 .po-card-body {
-  padding: 20px;
+  padding: 16px;
 }
 
 .po-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
-  gap: 17px 22px;
-  margin-bottom: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+  margin-bottom: 16px;
 }
 
 .po-info-item {
@@ -995,7 +1197,7 @@ const handleImageError = (event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 16px;
+  padding: 12px 13px;
   border-bottom: 1px solid #e5e7eb;
   background: #f9fafb;
 }
@@ -1015,7 +1217,7 @@ const handleImageError = (event) => {
 
 /* File Group */
 .po-file-group {
-  padding: 16px;
+  padding: 13px;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -1062,8 +1264,8 @@ const handleImageError = (event) => {
 /* File Gallery */
 .po-file-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .po-file-card {
@@ -1076,7 +1278,7 @@ const handleImageError = (event) => {
 .po-thumbnail {
   position: relative;
   width: 100%;
-  height: 115px;
+  height: 112px;
   overflow: hidden;
   border: 1px solid #e5e7eb;
   border-radius: 9px;
@@ -1153,7 +1355,7 @@ const handleImageError = (event) => {
   flex-direction: column;
   gap: 7px;
   width: 100%;
-  height: 115px;
+  height: 112px;
   border: 1px solid #e5e7eb;
   border-radius: 9px;
   background: #f9fafb;
@@ -1209,13 +1411,13 @@ const handleImageError = (event) => {
 }
 
 /* Tablet */
-@media (max-width: 768px) {
-  .po-info-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 900px) {
+  .po-orders-grid {
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   }
 
   .po-file-gallery {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1227,6 +1429,14 @@ const handleImageError = (event) => {
 
   .po-tab-title {
     font-size: 1.2rem;
+  }
+
+  .po-new-order-card {
+    max-width: none;
+  }
+
+  .po-orders-grid {
+    grid-template-columns: 1fr;
   }
 
   .po-card-header {

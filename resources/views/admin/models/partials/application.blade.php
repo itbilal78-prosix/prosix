@@ -95,7 +95,7 @@ gap:6px;
             <div style="display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;">
 
                 <!-- LEFT: Mascot Preview -->
-                <div style="padding:16px;  border-radius:10px; text-align:center;">
+                <div style="padding:12px;  border-radius:10px; text-align:center;">
 
                     <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
                         MASCOT PREVIEW
@@ -126,7 +126,7 @@ gap:6px;
 
 
                 <!-- RIGHT: Mascot Colors -->
-                <div id="directMascotColorSection" style="flex:1; padding:16px;  border-radius:10px;">
+                <div id="directMascotColorSection" style="flex:1; padding:12px;  border-radius:10px;">
 
                     <div style="font-size:11px; font-weight:700; color:#999; letter-spacing:1px; margin-bottom:10px;">
                         MASCOT COLORS
@@ -147,10 +147,25 @@ gap:6px;
                 <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
                     Scale: <span id="directMascotScaleValue">100</span>%
                 </label>
-                <input type="range" id="directMascotScale" min="1" max="400" value="100"
- step="1"
-                    oninput="updateDirectMascotScale(this.value)" class="app-slider"
-                    style="width:100%; cursor:pointer;">
+               <input
+    type="range"
+    id="directMascotScale"
+    min="1"
+    max="400"
+    value="100"
+    step="1"
+    class="app-slider"
+    oninput="
+        updateDirectMascotScale(this.value);
+        document.getElementById('directMascotScaleValue').textContent = this.value;
+        appFillSlider(this);
+    "
+    style="
+        width:100%;
+        cursor:pointer;
+        background:linear-gradient(to right,#000 24.8%,#ddd 24.8%);
+    "
+>
             </div>
 
             {{-- Opacity --}}
@@ -158,10 +173,79 @@ gap:6px;
                 <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
                     Opacity: <span id="directMascotOpacityValue">100</span>%
                 </label>
-                <input type="range" id="directMascotOpacity" min="0" max="100" value="100"
-                    oninput="updateDirectMascotOpacity(this.value); document.getElementById('directMascotOpacityValue').textContent=this.value;"
-                    class="app-slider" style="width:100%; cursor:pointer;">
+              <input
+    type="range"
+    id="directMascotOpacity"
+    min="0"
+    max="100"
+    value="100"
+    class="app-slider"
+    oninput="
+        updateDirectMascotOpacity(this.value);
+        document.getElementById('directMascotOpacityValue').textContent = this.value;
+        appFillSlider(this);
+    "
+    style="
+        width:100%;
+        cursor:pointer;
+        background:linear-gradient(to right,#000 100%,#ddd 100%);
+    "
+>
             </div>
+
+
+
+            {{-- Position --}}
+            <div class="control-group" style="margin-bottom:15px;">
+                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
+                    Position
+                </label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div>
+                        <label style="font-size:12px; color:#666;">X: <span
+                                id="mascotDirectPosXValue">0</span></label>
+                       <input
+    type="range"
+    id="mascotDirectPosX"
+    min="-500"
+    max="500"
+    value="0"
+    class="app-slider"
+    oninput="
+        updateDirectMascotPosition('x', this.value);
+        appFillSlider(this);
+    "
+    style="
+        width:100%;
+        cursor:pointer;
+        background:linear-gradient(to right,#000 50%,#ddd 50%);
+    "
+>
+                    </div>
+                    <div>
+                        <label style="font-size:12px; color:#666;">Y: <span
+                                id="mascotDirectPosYValue">0</span></label>
+                     <input
+    type="range"
+    id="mascotDirectPosY"
+    min="-500"
+    max="500"
+    value="0"
+    class="app-slider"
+    oninput="
+        updateDirectMascotPosition('y', this.value);
+        appFillSlider(this);
+    "
+    style="
+        width:100%;
+        cursor:pointer;
+        background:linear-gradient(to right,#000 50%,#ddd 50%);
+    "
+>
+                    </div>
+                </div>
+            </div>
+
 
             {{-- Rotation --}}
             {{-- Rotation --}}
@@ -208,29 +292,6 @@ gap:6px;
                         updateDirectMascotRotation(v);
                     ">
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Position --}}
-            <div class="control-group" style="margin-bottom:15px;">
-                <label style="display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:#333;">
-                    Position
-                </label>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div>
-                        <label style="font-size:12px; color:#666;">X: <span
-                                id="mascotDirectPosXValue">0</span></label>
-                        <input type="range" id="mascotDirectPosX" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('x', this.value)" class="app-slider"
-                            style="width:100%; cursor:pointer;">
-                    </div>
-                    <div>
-                        <label style="font-size:12px; color:#666;">Y: <span
-                                id="mascotDirectPosYValue">0</span></label>
-                        <input type="range" id="mascotDirectPosY" min="-500" max="500" value="0"
-                            oninput="updateDirectMascotPosition('y', this.value)" class="app-slider"
-                            style="width:100%; cursor:pointer;">
                     </div>
                 </div>
             </div>
