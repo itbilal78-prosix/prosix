@@ -10,552 +10,19 @@
         </p>
       </div>
 
-      <span class="po-tab-count">
-        {{ activeOrders.length }} {{ activeOrders.length === 1 ? 'order' : 'orders' }}
-      </span>
-    </div>
+  <span class="po-tab-count">
+    {{ activeOrders.length }} {{ activeOrders.length === 1 ? 'order' : 'orders' }}
+  </span>
+</div>
 
-    <!-- Compact New Order Card -->
-    <div class="po-new-order-wrap">
-      <div class="po-new-order-card">
-        <div class="po-new-order-card-top">
-          <div class="po-new-order-icon">
-            <svg
-              width="21"
-              height="21"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            >
-              <path d="M12 5v14" />
-              <path d="M5 12h14" />
-            </svg>
-          </div>
-
-          <div>
-            <span class="po-new-order-label">New Order</span>
-            <h3>Place a New Order</h3>
-          </div>
-        </div>
-
-        <p>
-          Start a fresh custom order and upload your mockups, roster and quote files.
-        </p>
-
-        <a
-          href="https://prosix.com/placeorder"
-          class="po-new-order-btn"
-        >
-          Place New Order
-          <svg
-            width="17"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M5 12h14" />
-            <path d="m13 6 6 6-6 6" />
-          </svg>
-        </a>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="isLoading" class="po-loading">
-      <div class="po-spinner-wrap">
-        <div class="po-spin"></div>
-      </div>
-
-      <p>Loading your orders...</p>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="activeOrders.length === 0" class="po-empty">
-      <div class="po-empty-icon">
+<!-- Compact New Order Card -->
+<div class="po-new-order-wrap">
+  <div class="po-new-order-card">
+    <div class="po-new-order-card-top">
+      <div class="po-new-order-icon">
         <svg
-          viewBox="0 0 64 64"
-          fill="none"
-          width="64"
-          height="64"
-        >
-          <rect
-            x="10"
-            y="8"
-            width="44"
-            height="50"
-            rx="4"
-            stroke="#d1d5db"
-            stroke-width="2.5"
-          />
-
-          <path
-            d="M20 22h24M20 31h24M20 40h14"
-            stroke="#d1d5db"
-            stroke-width="2.5"
-            stroke-linecap="round"
-          />
-        </svg>
-      </div>
-
-      <h4>No Active Orders</h4>
-
-      <p>
-        Completed orders are moved automatically to My Orders.
-      </p>
-
-      <a href="https://prosix.com/placeorder" class="po-place-btn">
-        Place an Order
-      </a>
-    </div>
-
-    <!-- Orders -->
-    <div v-else class="po-orders-grid">
-      <div
-        v-for="order in activeOrders"
-        :key="order.id"
-        class="po-order-card"
-      >
-        <!-- Order Header -->
-        <div class="po-card-header">
-          <div class="po-order-num">
-            <span class="po-label-sm">Order #</span>
-
-            <span class="po-num-val">
-              {{ order.order_number }}
-            </span>
-          </div>
-
-          <span
-            class="po-status-badge"
-            :class="'status-' + normalizeStatus(order.status)"
-          >
-            {{ capitalize(order.status) }}
-          </span>
-        </div>
-
-        <!-- Order Body -->
-        <div class="po-card-body">
-          <!-- Information -->
-          <div class="po-info-grid">
-            <div class="po-info-item">
-              <span class="po-info-label">Name</span>
-              <span class="po-info-val">
-                {{ order.full_name || '—' }}
-              </span>
-            </div>
-
-            <div class="po-info-item">
-              <span class="po-info-label">Email</span>
-              <span class="po-info-val po-break-text">
-                {{ order.email || '—' }}
-              </span>
-            </div>
-
-            <div class="po-info-item">
-              <span class="po-info-label">Order Date</span>
-              <span class="po-info-val">
-                {{ order.order_date || '—' }}
-              </span>
-            </div>
-
-            <div class="po-info-item">
-              <span class="po-info-label">Delivery Date</span>
-              <span class="po-info-val">
-                {{ order.delivery_date || '—' }}
-              </span>
-            </div>
-
-            <div class="po-info-item">
-              <span class="po-info-label">Sales Rep</span>
-              <span class="po-info-val">
-                {{ order.sales_rep || '—' }}
-              </span>
-            </div>
-
-            <div class="po-info-item">
-              <span class="po-info-label">Team Colors</span>
-              <span class="po-info-val">
-                {{ order.team_colors || '—' }}
-              </span>
-            </div>
-
-            <div class="po-info-item">
-              <span class="po-info-label">Submitted</span>
-              <span class="po-info-val">
-                {{ order.created_at || '—' }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Notes -->
-          <div v-if="order.notes" class="po-notes-section">
-            <span class="po-info-label">Notes</span>
-
-            <div
-              class="po-notes-text"
-              v-html="order.notes"
-            ></div>
-          </div>
-
-          <!-- Files Section -->
-          <div
-            v-if="hasAnyFiles(order)"
-            class="po-files-section"
-          >
-            <div class="po-files-heading">
-              <div>
-                <h4>Order Files</h4>
-                <p>Click an image to open the full-size file.</p>
-              </div>
-            </div>
-
-            <!-- Mockup Files -->
-            <div
-              v-if="hasFiles(order.mockup_files)"
-              class="po-file-group"
-            >
-              <div class="po-file-label-row">
-                <span class="po-file-icon">
-                  <svg
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
-                    />
-                    <polyline points="13 2 13 9 20 9" />
-                  </svg>
-                </span>
-
-                <span class="po-file-label">
-                  Mockups
-                </span>
-
-                <span class="po-file-count">
-                  {{ order.mockup_files.length }}
-                </span>
-              </div>
-
-              <div class="po-file-gallery">
-                <a
-                  v-for="(file, index) in order.mockup_files"
-                  :key="'mockup-' + order.id + '-' + index"
-                  :href="getFileUrl(file, 'mockup')"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="po-file-card"
-                  :title="getOriginalName(file)"
-                >
-                  <!-- Image Thumbnail -->
-                  <template v-if="isImage(file)">
-                    <div class="po-thumbnail">
-                      <img
-                        :src="getFileUrl(file, 'mockup')"
-                        :alt="getOriginalName(file)"
-                        loading="lazy"
-                        @error="handleImageError"
-                      />
-
-                      <div class="po-thumbnail-overlay">
-                        <svg
-                          width="23"
-                          height="23"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="m21 21-4.35-4.35" />
-                          <path d="M11 8v6M8 11h6" />
-                        </svg>
-
-                        <span>Open Image</span>
-                      </div>
-                    </div>
-
-                    <div class="po-file-name">
-                      {{ getDisplayName(file) }}
-                    </div>
-                  </template>
-
-                  <!-- Non Image File -->
-                  <template v-else>
-                    <div class="po-document-card">
-                      <div class="po-document-icon">
-                        <svg
-                          width="30"
-                          height="30"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.8"
-                        >
-                          <path
-                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                          />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-
-                      <span class="po-document-extension">
-                        {{ getExt(file) }}
-                      </span>
-                    </div>
-
-                    <div class="po-file-name">
-                      {{ getDisplayName(file) }}
-                    </div>
-                  </template>
-                </a>
-              </div>
-            </div>
-
-            <!-- Roster Files -->
-            <div
-              v-if="hasFiles(order.roster_files)"
-              class="po-file-group"
-            >
-              <div class="po-file-label-row">
-                <span class="po-file-icon">
-                  <svg
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
-                    />
-                    <circle cx="9" cy="7" r="4" />
-                    <path
-                      d="M23 21v-2a4 4 0 0 0-3-3.87"
-                    />
-                    <path
-                      d="M16 3.13a4 4 0 0 1 0 7.75"
-                    />
-                  </svg>
-                </span>
-
-                <span class="po-file-label">
-                  Roster
-                </span>
-
-                <span class="po-file-count">
-                  {{ order.roster_files.length }}
-                </span>
-              </div>
-
-              <div class="po-file-gallery">
-                <a
-                  v-for="(file, index) in order.roster_files"
-                  :key="'roster-' + order.id + '-' + index"
-                  :href="getFileUrl(file, 'roster')"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="po-file-card"
-                  :title="getOriginalName(file)"
-                >
-                  <!-- Image Thumbnail -->
-                  <template v-if="isImage(file)">
-                    <div class="po-thumbnail">
-                      <img
-                        :src="getFileUrl(file, 'roster')"
-                        :alt="getOriginalName(file)"
-                        loading="lazy"
-                        @error="handleImageError"
-                      />
-
-                      <div class="po-thumbnail-overlay">
-                        <svg
-                          width="23"
-                          height="23"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="m21 21-4.35-4.35" />
-                          <path d="M11 8v6M8 11h6" />
-                        </svg>
-
-                        <span>Open Image</span>
-                      </div>
-                    </div>
-
-                    <div class="po-file-name">
-                      {{ getDisplayName(file) }}
-                    </div>
-                  </template>
-
-                  <!-- Non Image File -->
-                  <template v-else>
-                    <div class="po-document-card">
-                      <div class="po-document-icon">
-                        <svg
-                          width="30"
-                          height="30"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.8"
-                        >
-                          <path
-                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                          />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-
-                      <span class="po-document-extension">
-                        {{ getExt(file) }}
-                      </span>
-                    </div>
-
-                    <div class="po-file-name">
-                      {{ getDisplayName(file) }}
-                    </div>
-                  </template>
-                </a>
-              </div>
-            </div>
-
-            <!-- Quote Files -->
-            <div
-              v-if="hasFiles(order.quote_files)"
-              class="po-file-group"
-            >
-              <div class="po-file-label-row">
-                <span class="po-file-icon">
-                  <svg
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                    />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                  </svg>
-                </span>
-
-                <span class="po-file-label">
-                  Quote / Invoice
-                </span>
-
-                <span class="po-file-count">
-                  {{ order.quote_files.length }}
-                </span>
-              </div>
-
-              <div class="po-file-gallery">
-                <a
-                  v-for="(file, index) in order.quote_files"
-                  :key="'quote-' + order.id + '-' + index"
-                  :href="getFileUrl(file, 'quote')"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="po-file-card"
-                  :title="getOriginalName(file)"
-                >
-                  <!-- Image Thumbnail -->
-                  <template v-if="isImage(file)">
-                    <div class="po-thumbnail">
-                      <img
-                        :src="getFileUrl(file, 'quote')"
-                        :alt="getOriginalName(file)"
-                        loading="lazy"
-                        @error="handleImageError"
-                      />
-
-                      <div class="po-thumbnail-overlay">
-                        <svg
-                          width="23"
-                          height="23"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="m21 21-4.35-4.35" />
-                          <path d="M11 8v6M8 11h6" />
-                        </svg>
-
-                        <span>Open Image</span>
-                      </div>
-                    </div>
-
-                    <div class="po-file-name">
-                      {{ getDisplayName(file) }}
-                    </div>
-                  </template>
-
-                  <!-- Non Image File -->
-                  <template v-else>
-                    <div class="po-document-card">
-                      <div class="po-document-icon">
-                        <svg
-                          width="30"
-                          height="30"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.8"
-                        >
-                          <path
-                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                          />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-
-                      <span class="po-document-extension">
-                        {{ getExt(file) }}
-                      </span>
-                    </div>
-
-                    <div class="po-file-name">
-                      {{ getDisplayName(file) }}
-                    </div>
-                  </template>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- No Files -->
-          <div v-else class="po-no-files">
-            No files attached with this order.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bottom New Order Button -->
-    <div v-if="!isLoading && activeOrders.length > 0" class="po-bottom-order-action">
-      <a href="https://prosix.com/placeorder" class="po-bottom-order-btn">
-        <svg
-          width="18"
-          height="18"
+          width="21"
+          height="21"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -565,9 +32,543 @@
           <path d="M12 5v14" />
           <path d="M5 12h14" />
         </svg>
-        Place Another Order
-      </a>
+      </div>
+
+      <div>
+        <span class="po-new-order-label">New Order</span>
+        <h3>Place a New Order</h3>
+      </div>
     </div>
+
+    <p>
+      Start a fresh custom order and upload your mockups, roster and quote files.
+    </p>
+
+    <a
+      href="https://prosix.com/placeorder"
+      class="po-new-order-btn"
+    >
+      Place New Order
+      <svg
+        width="17"
+        height="17"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    </a>
+  </div>
+</div>
+
+<!-- Loading -->
+<div v-if="isLoading" class="po-loading">
+  <div class="po-spinner-wrap">
+    <div class="po-spin"></div>
+  </div>
+
+  <p>Loading your orders...</p>
+</div>
+
+<!-- Empty State -->
+<div v-else-if="activeOrders.length === 0" class="po-empty">
+  <div class="po-empty-icon">
+    <svg
+      viewBox="0 0 64 64"
+      fill="none"
+      width="64"
+      height="64"
+    >
+      <rect
+        x="10"
+        y="8"
+        width="44"
+        height="50"
+        rx="4"
+        stroke="#d1d5db"
+        stroke-width="2.5"
+      />
+
+      <path
+        d="M20 22h24M20 31h24M20 40h14"
+        stroke="#d1d5db"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      />
+    </svg>
+  </div>
+
+  <h4>No Active Orders</h4>
+
+  <p>
+    Completed orders are moved automatically to My Orders.
+  </p>
+
+  <a href="https://prosix.com/placeorder" class="po-place-btn">
+    Place an Order
+  </a>
+</div>
+
+<!-- Orders -->
+<div v-else class="po-orders-grid">
+  <div
+    v-for="order in activeOrders"
+    :key="order.id"
+    class="po-order-card"
+  >
+    <!-- Order Header -->
+    <div class="po-card-header">
+      <div class="po-order-num">
+        <span class="po-label-sm">Order #</span>
+
+        <span class="po-num-val">
+          {{ order.order_number }}
+        </span>
+      </div>
+
+      <span
+        class="po-status-badge"
+        :class="'status-' + normalizeStatus(order.status)"
+      >
+        {{ capitalize(order.status) }}
+      </span>
+    </div>
+
+    <!-- Order Body -->
+    <div class="po-card-body">
+      <!-- Information -->
+      <div class="po-info-grid">
+        <div class="po-info-item">
+          <span class="po-info-label">Name</span>
+          <span class="po-info-val">
+            {{ order.full_name || '—' }}
+          </span>
+        </div>
+
+        <div class="po-info-item">
+          <span class="po-info-label">Email</span>
+          <span class="po-info-val po-break-text">
+            {{ order.email || '—' }}
+          </span>
+        </div>
+
+        <div class="po-info-item">
+          <span class="po-info-label">Order Date</span>
+          <span class="po-info-val">
+            {{ order.order_date || '—' }}
+          </span>
+        </div>
+
+        <div class="po-info-item">
+          <span class="po-info-label">Delivery Date</span>
+          <span class="po-info-val">
+            {{ order.delivery_date || '—' }}
+          </span>
+        </div>
+
+        <div class="po-info-item">
+          <span class="po-info-label">Sales Rep</span>
+          <span class="po-info-val">
+            {{ order.sales_rep || '—' }}
+          </span>
+        </div>
+
+        <div class="po-info-item">
+          <span class="po-info-label">Team Colors</span>
+          <span class="po-info-val">
+            {{ order.team_colors || '—' }}
+          </span>
+        </div>
+
+        <div class="po-info-item">
+          <span class="po-info-label">Submitted</span>
+          <span class="po-info-val">
+            {{ order.created_at || '—' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div v-if="order.notes" class="po-notes-section">
+        <span class="po-info-label">Notes</span>
+
+        <div
+          class="po-notes-text"
+          v-html="order.notes"
+        ></div>
+      </div>
+
+      <!-- Files Section -->
+      <div
+        v-if="hasAnyFiles(order)"
+        class="po-files-section"
+      >
+        <div class="po-files-heading">
+          <div>
+            <h4>Order Files</h4>
+            <p>Click an image to open the full-size file.</p>
+          </div>
+        </div>
+
+        <!-- Mockup Files -->
+        <div
+          v-if="hasFiles(order.mockup_files)"
+          class="po-file-group"
+        >
+          <div class="po-file-label-row">
+            <span class="po-file-icon">
+              <svg
+                width="15"
+                height="15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+                />
+                <polyline points="13 2 13 9 20 9" />
+              </svg>
+            </span>
+
+            <span class="po-file-label">
+              Mockups
+            </span>
+
+            <span class="po-file-count">
+              {{ order.mockup_files.length }}
+            </span>
+          </div>
+
+          <div class="po-file-gallery">
+            <a
+              v-for="(file, index) in order.mockup_files"
+              :key="'mockup-' + order.id + '-' + index"
+              :href="getFileUrl(file, 'mockup')"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="po-file-card"
+              :title="getOriginalName(file)"
+            >
+              <!-- Image Thumbnail -->
+              <template v-if="isImage(file)">
+                <div class="po-thumbnail">
+                  <img
+                    :src="getFileUrl(file, 'mockup')"
+                    :alt="getOriginalName(file)"
+                    loading="lazy"
+                    @error="handleImageError"
+                  />
+
+                  <div class="po-thumbnail-overlay">
+                    <svg
+                      width="23"
+                      height="23"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                      <path d="M11 8v6M8 11h6" />
+                    </svg>
+
+                    <span>Open Image</span>
+                  </div>
+                </div>
+
+                <div class="po-file-name">
+                  {{ getDisplayName(file) }}
+                </div>
+              </template>
+
+              <!-- Non Image File -->
+              <template v-else>
+                <div class="po-document-card">
+                  <div class="po-document-icon">
+                    <svg
+                      width="30"
+                      height="30"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <path
+                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                      />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+
+                  <span class="po-document-extension">
+                    {{ getExt(file) }}
+                  </span>
+                </div>
+
+                <div class="po-file-name">
+                  {{ getDisplayName(file) }}
+                </div>
+              </template>
+            </a>
+          </div>
+        </div>
+
+        <!-- Roster Files -->
+        <div
+          v-if="hasFiles(order.roster_files)"
+          class="po-file-group"
+        >
+          <div class="po-file-label-row">
+            <span class="po-file-icon">
+              <svg
+                width="15"
+                height="15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                />
+                <circle cx="9" cy="7" r="4" />
+                <path
+                  d="M23 21v-2a4 4 0 0 0-3-3.87"
+                />
+                <path
+                  d="M16 3.13a4 4 0 0 1 0 7.75"
+                />
+              </svg>
+            </span>
+
+            <span class="po-file-label">
+              Roster
+            </span>
+
+            <span class="po-file-count">
+              {{ order.roster_files.length }}
+            </span>
+          </div>
+
+          <div class="po-file-gallery">
+            <a
+              v-for="(file, index) in order.roster_files"
+              :key="'roster-' + order.id + '-' + index"
+              :href="getFileUrl(file, 'roster')"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="po-file-card"
+              :title="getOriginalName(file)"
+            >
+              <!-- Image Thumbnail -->
+              <template v-if="isImage(file)">
+                <div class="po-thumbnail">
+                  <img
+                    :src="getFileUrl(file, 'roster')"
+                    :alt="getOriginalName(file)"
+                    loading="lazy"
+                    @error="handleImageError"
+                  />
+
+                  <div class="po-thumbnail-overlay">
+                    <svg
+                      width="23"
+                      height="23"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                      <path d="M11 8v6M8 11h6" />
+                    </svg>
+
+                    <span>Open Image</span>
+                  </div>
+                </div>
+
+                <div class="po-file-name">
+                  {{ getDisplayName(file) }}
+                </div>
+              </template>
+
+              <!-- Non Image File -->
+              <template v-else>
+                <div class="po-document-card">
+                  <div class="po-document-icon">
+                    <svg
+                      width="30"
+                      height="30"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <path
+                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                      />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+
+                  <span class="po-document-extension">
+                    {{ getExt(file) }}
+                  </span>
+                </div>
+
+                <div class="po-file-name">
+                  {{ getDisplayName(file) }}
+                </div>
+              </template>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quote Files -->
+        <div
+          v-if="hasFiles(order.quote_files)"
+          class="po-file-group"
+        >
+          <div class="po-file-label-row">
+            <span class="po-file-icon">
+              <svg
+                width="15"
+                height="15"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+            </span>
+
+            <span class="po-file-label">
+              Quote / Invoice
+            </span>
+
+            <span class="po-file-count">
+              {{ order.quote_files.length }}
+            </span>
+          </div>
+
+          <div class="po-file-gallery">
+            <a
+              v-for="(file, index) in order.quote_files"
+              :key="'quote-' + order.id + '-' + index"
+              :href="getFileUrl(file, 'quote')"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="po-file-card"
+              :title="getOriginalName(file)"
+            >
+              <!-- Image Thumbnail -->
+              <template v-if="isImage(file)">
+                <div class="po-thumbnail">
+                  <img
+                    :src="getFileUrl(file, 'quote')"
+                    :alt="getOriginalName(file)"
+                    loading="lazy"
+                    @error="handleImageError"
+                  />
+
+                  <div class="po-thumbnail-overlay">
+                    <svg
+                      width="23"
+                      height="23"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                      <path d="M11 8v6M8 11h6" />
+                    </svg>
+
+                    <span>Open Image</span>
+                  </div>
+                </div>
+
+                <div class="po-file-name">
+                  {{ getDisplayName(file) }}
+                </div>
+              </template>
+
+              <!-- Non Image File -->
+              <template v-else>
+                <div class="po-document-card">
+                  <div class="po-document-icon">
+                    <svg
+                      width="30"
+                      height="30"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <path
+                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                      />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+
+                  <span class="po-document-extension">
+                    {{ getExt(file) }}
+                  </span>
+                </div>
+
+                <div class="po-file-name">
+                  {{ getDisplayName(file) }}
+                </div>
+              </template>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Files -->
+      <div v-else class="po-no-files">
+        No files attached with this order.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom New Order Button -->
+<div v-if="!isLoading && activeOrders.length > 0" class="po-bottom-order-action">
+  <a href="https://prosix.com/placeorder" class="po-bottom-order-btn">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+    Place Another Order
+  </a>
+</div>
+
   </div>
 </template>
 
