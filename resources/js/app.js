@@ -44,7 +44,7 @@ app.use(router);
 // Global components
 import MyRequestsTab from './user-dashboard/Components/Myrequeststab.vue'
 app.component('my-requests-tab', MyRequestsTab)
-import MyPlaceOrdersTab from './user-dashboard/Components/MyplaceordersTab.vue'
+import MyPlaceOrdersTab from './user-dashboard/Components/MyPlaceOrdersTab.vue'
 app.component('my-place-orders-tab', MyPlaceOrdersTab)
 import nav from './Component/nav.vue';
 app.component('nav-component', nav);
