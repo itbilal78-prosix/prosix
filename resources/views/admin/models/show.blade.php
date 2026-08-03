@@ -231,13 +231,6 @@
                     <i class="fas fa-chevron-up"></i>
                 </button>
 
-                <!-- PATTERN MODAL -->
-                <div id="patternLibraryModal" class="color-modal" style="display:none;">
-                    <div class="color-modal-content">
-                        <div id="patternList"></div>
-                    </div>
-                </div>
-
                 <!-- ===================== PREVIEW PANEL ===================== -->
            <div id="previewPanel"
     style="position:fixed;top:0;right:-100vw;width:100vw;height:100vh;transition:.4s;z-index:9999;overflow:hidden;display:flex;">
@@ -1949,3 +1942,89 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
     }
 }
 </style>
+
+<style>
+/* =============================================================
+   FINAL MOBILE MODAL STACKING FIX
+   Pattern/Mascot popup always above Select Part. Desktop untouched.
+============================================================= */
+@media screen and (max-width: 1024px) {
+    .tools-bar .part-selection {
+        z-index: 5 !important;
+    }
+
+    .tools-bar .color-wheel-section {
+        position: relative !important;
+        z-index: 20 !important;
+    }
+
+    #patternLibraryModal,
+    #mascotTemplateModal,
+    #mascotUploaderModal,
+    #applicationModal {
+        z-index: 999999 !important;
+    }
+
+    #patternLibraryModal .color-modal-content,
+    #mascotTemplateModal .color-modal-content {
+        width: min(82%, 620px) !important;
+        height: min(76%, 285px) !important;
+        max-height: calc(100% - 24px) !important;
+    }
+
+    #mascotUploaderModal .color-modal-content {
+        width: min(74%, 480px) !important;
+        height: min(76%, 285px) !important;
+    }
+
+    body.mobile-library-open .part-selection,
+    body.mobile-library-open .mobile-toolbar-toggle {
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+}
+</style>
+
+<script>
+(function () {
+    const modalIds = [
+        'patternLibraryModal',
+        'mascotTemplateModal',
+        'mascotUploaderModal',
+        'applicationModal'
+    ];
+
+    function modalVisible(modal) {
+        if (!modal) return false;
+        const style = window.getComputedStyle(modal);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+    }
+
+    function syncMobileModalState() {
+        if (!window.matchMedia('(max-width: 1024px)').matches) {
+            document.body.classList.remove('mobile-library-open');
+            return;
+        }
+
+        const isOpen = modalIds.some(id => modalVisible(document.getElementById(id)));
+        document.body.classList.toggle('mobile-library-open', isOpen);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const observer = new MutationObserver(syncMobileModalState);
+
+        modalIds.forEach(function (id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                observer.observe(modal, {
+                    attributes: true,
+                    attributeFilter: ['style', 'class']
+                });
+            }
+        });
+
+        syncMobileModalState();
+        window.addEventListener('resize', syncMobileModalState);
+    });
+})();
+</script>

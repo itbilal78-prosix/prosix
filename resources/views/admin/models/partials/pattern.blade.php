@@ -507,3 +507,28 @@
     }
 }
 </style>
+
+<style>
+/* Final responsive modal sizing and scrolling */
+@media screen and (max-width: 1024px) {
+    #patternLibraryModal .color-modal-content,
+    #mascotTemplateModal .color-modal-content {
+        width: min(82%, 620px) !important;
+        height: min(76%, 285px) !important;
+    }
+
+    #mascotUploaderModal .color-modal-content {
+        width: min(74%, 480px) !important;
+        height: min(76%, 285px) !important;
+    }
+
+    .pattern-modal-body,
+    .mascot-template-body,
+    .mascot-uploader-body {
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        touch-action: pan-y !important;
+    }
+}
+</style>
