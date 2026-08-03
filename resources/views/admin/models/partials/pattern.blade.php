@@ -532,3 +532,291 @@
     }
 }
 </style>
+
+<!-- =========================================================
+     FINAL MOBILE-ONLY PATTERN FIX
+     1) Pattern colors thumbnail ke neeche
+     2) Pattern rotate wheel touch/pointer par kaam kare
+     Desktop layout bilkul same rahega.
+========================================================== -->
+<style>
+@media screen and (max-width: 1024px) {
+    /* Pattern thumbnail top par, colors us ke neeche */
+    #patternControls .pattern-preview-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    #patternControls .pattern-preview-box {
+        width: 100px !important;
+        height: 82px !important;
+        flex: 0 0 82px !important;
+        align-self: center !important;
+        margin: 0 auto !important;
+    }
+
+    #patternControls .pattern-color-palette {
+        width: 100% !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        gap: 7px !important;
+    }
+
+    /* Dynamic palette items bhi responsive rahen */
+    #patternControls .pattern-color-palette > * {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Rotate wheel ko mobile touch receive karne dein */
+    #patternControls .circular-slider {
+        position: relative !important;
+        touch-action: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        cursor: grab !important;
+    }
+
+    #patternControls .circular-slider:active {
+        cursor: grabbing !important;
+    }
+
+    #patternControls #rotateKnob {
+        pointer-events: none !important;
+        z-index: 5 !important;
+    }
+
+    #patternControls .circle-inner,
+    #patternControls .circle-inner input {
+        position: relative !important;
+        z-index: 7 !important;
+    }
+
+    #patternControls .circle-inner input {
+        touch-action: manipulation !important;
+    }
+}
+</style>
+
+<script>
+(function () {
+    'use strict';
+
+    function isMobilePatternLayout() {
+        return window.matchMedia('(max-width: 1024px)').matches;
+    }
+
+    function normalizePatternAngle(value) {
+        let angle = Math.round(Number(value) || 0) % 360;
+        return angle < 0 ? angle + 360 : angle;
+    }
+
+    function placePatternRotateKnob(angle) {
+        const slider = document.getElementById('circularSlider');
+        const knob = document.getElementById('rotateKnob');
+
+        if (!slider || !knob) return;
+
+        const normalized = normalizePatternAngle(angle);
+        const sliderWidth = slider.clientWidth;
+        const sliderHeight = slider.clientHeight;
+
+        if (!sliderWidth || !sliderHeight) return;
+
+        const centerX = sliderWidth / 2;
+        const centerY = sliderHeight / 2;
+
+        /*
+         * Knob ko circle ke edge ke andar rakha jata hai.
+         * Top = 0°, Right = 90°, Bottom = 180°, Left = 270°.
+         */
+        const knobWidth = knob.offsetWidth || 16;
+        const knobHeight = knob.offsetHeight || 16;
+        const radius = Math.max(
+            8,
+            Math.min(sliderWidth, sliderHeight) / 2 -
+            Math.max(knobWidth, knobHeight) / 2 -
+            3
+        );
+
+        const radians = (normalized - 90) * Math.PI / 180;
+        const x = centerX + Math.cos(radians) * radius;
+        const y = centerY + Math.sin(radians) * radius;
+
+        knob.style.left = x + 'px';
+        knob.style.top = y + 'px';
+        knob.style.right = 'auto';
+        knob.style.bottom = 'auto';
+        knob.style.transform = 'translate(-50%, -50%)';
+    }
+
+    function applyPatternAngleFromMobile(angle) {
+        const normalized = normalizePatternAngle(angle);
+        const input = document.getElementById('angleValue');
+
+        if (input) {
+            input.value = normalized;
+        }
+
+        placePatternRotateKnob(normalized);
+
+        if (typeof window.updatePatternAngle === 'function') {
+            window.updatePatternAngle(normalized);
+        } else if (input) {
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
+    function angleFromPatternPointer(slider, clientX, clientY) {
+        const rect = slider.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const radians = Math.atan2(clientY - centerY, clientX - centerX);
+        return normalizePatternAngle((radians * 180 / Math.PI) + 90);
+    }
+
+    function bindMobilePatternRotate() {
+        const slider = document.getElementById('circularSlider');
+        const input = document.getElementById('angleValue');
+
+        if (!slider || slider.dataset.mobilePatternRotateBound === '1') {
+            return;
+        }
+
+        slider.dataset.mobilePatternRotateBound = '1';
+
+        let dragging = false;
+        let activePointerId = null;
+
+        function updateFromPointer(event) {
+            if (!dragging || !isMobilePatternLayout()) return;
+
+            event.preventDefault();
+
+            applyPatternAngleFromMobile(
+                angleFromPatternPointer(slider, event.clientX, event.clientY)
+            );
+        }
+
+        slider.addEventListener('pointerdown', function (event) {
+            if (!isMobilePatternLayout()) return;
+
+            /*
+             * Center number input ko normal keyboard/input behavior milta rahe.
+             */
+            if (event.target.closest('.circle-inner')) return;
+
+            dragging = true;
+            activePointerId = event.pointerId;
+
+            try {
+                slider.setPointerCapture(activePointerId);
+            } catch (error) {
+                // Pointer capture har browser mein zaroori nahi.
+            }
+
+            event.preventDefault();
+
+            applyPatternAngleFromMobile(
+                angleFromPatternPointer(slider, event.clientX, event.clientY)
+            );
+        }, { passive: false });
+
+        slider.addEventListener('pointermove', updateFromPointer, {
+            passive: false
+        });
+
+        function stopDragging(event) {
+            if (!dragging) return;
+
+            dragging = false;
+
+            try {
+                if (
+                    activePointerId !== null &&
+                    slider.hasPointerCapture(activePointerId)
+                ) {
+                    slider.releasePointerCapture(activePointerId);
+                }
+            } catch (error) {
+                // Ignore release errors.
+            }
+
+            activePointerId = null;
+
+            if (event && event.cancelable) {
+                event.preventDefault();
+            }
+        }
+
+        slider.addEventListener('pointerup', stopDragging, { passive: false });
+        slider.addEventListener('pointercancel', stopDragging, { passive: false });
+        slider.addEventListener('lostpointercapture', function () {
+            dragging = false;
+            activePointerId = null;
+        });
+
+        if (input && input.dataset.mobilePatternAngleBound !== '1') {
+            input.dataset.mobilePatternAngleBound = '1';
+
+            function updateFromInput() {
+                const angle = normalizePatternAngle(input.value);
+                input.value = angle;
+                placePatternRotateKnob(angle);
+
+                if (typeof window.updatePatternAngle === 'function') {
+                    window.updatePatternAngle(angle);
+                }
+            }
+
+            input.addEventListener('input', updateFromInput);
+            input.addEventListener('change', updateFromInput);
+        }
+
+        placePatternRotateKnob(input ? input.value : 0);
+    }
+
+    function initializePatternMobileFix() {
+        bindMobilePatternRotate();
+
+        const input = document.getElementById('angleValue');
+        placePatternRotateKnob(input ? input.value : 0);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializePatternMobileFix);
+    } else {
+        initializePatternMobileFix();
+    }
+
+    /*
+     * Pattern tab/control dynamically open hone ke baad dimensions available
+     * hoti hain, is liye knob ko dobara position kiya jata hai.
+     */
+    document.addEventListener('click', function (event) {
+        if (
+            event.target.closest('#patternBtn') ||
+            event.target.closest('[onclick*="openPatternLibrary"]') ||
+            event.target.closest('#patternList') ||
+            event.target.closest('.pattern-library-grid')
+        ) {
+            setTimeout(initializePatternMobileFix, 80);
+            setTimeout(initializePatternMobileFix, 250);
+        }
+    });
+
+    window.addEventListener('resize', function () {
+        const input = document.getElementById('angleValue');
+        placePatternRotateKnob(input ? input.value : 0);
+    });
+})();
+</script>
+
