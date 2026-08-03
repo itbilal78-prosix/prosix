@@ -786,4 +786,235 @@
             padding-bottom: 34px !important;
         }
     }
+
+    /* =====================================================
+       FINAL MOBILE FIX
+       1) Apply / Cancel color list ke bilkul end mein normal flow mein aate hain
+       2) Footer sticky/fixed nahi rehta
+       3) Gradient angle wheel supports touch/pointer dragging
+       Desktop layout remains unchanged.
+    ====================================================== */
+    @media screen and (max-width: 1024px),
+           screen and (orientation: landscape) and (max-height: 600px) {
+
+        #colorPage,
+        #solidPanel {
+            min-height: 0 !important;
+        }
+
+        .inline-color-selector.open {
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        .inline-color-selector-header {
+            flex: 0 0 auto !important;
+            position: relative !important;
+            z-index: 2 !important;
+            background: #eeeeee !important;
+        }
+
+        .inline-color-grid {
+            flex: 0 0 auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            padding: 10px !important;
+            align-content: start !important;
+        }
+
+        /*
+         * Apply / Cancel sticky nahi rahenge.
+         * Tamam colors ke baad normal flow mein aayenge, is liye user
+         * scroll karke bilkul end par ja kar buttons click karega.
+         */
+        .inline-color-selector-footer {
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            z-index: auto !important;
+            flex: 0 0 auto !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            margin: 4px 0 34px !important;
+            padding: 4px 6px !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .inline-color-selector-footer .apply-btn,
+        .inline-color-selector-footer .cancel-btn {
+            min-height: 38px !important;
+            padding: 4px 10px !important;
+        }
+
+        /* Mobile gradient layout */
+        #gradientPanel {
+            touch-action: pan-y !important;
+        }
+
+        .angle-wheel {
+            touch-action: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+        }
+
+        .angle-wheel-knob {
+            pointer-events: none !important;
+        }
+
+        .angle-wheel-center {
+            z-index: 6 !important;
+        }
+
+        .angle-wheel-center input {
+            touch-action: manipulation !important;
+        }
+    }
 </style>
+
+
+<script>
+/* =========================================================
+   MOBILE GRADIENT ANGLE TOUCH FIX
+   Pointer drag se angle update hota hai. Existing desktop
+   mouse behavior ko replace nahi karta.
+========================================================= */
+(function () {
+    function normalizeAngle(value) {
+        value = Math.round(Number(value) || 0) % 360;
+        return value < 0 ? value + 360 : value;
+    }
+
+    function applyMobileGradientAngle(angle) {
+        angle = normalizeAngle(angle);
+
+        const input = document.getElementById('gradAngle');
+        const display = document.getElementById('angleDisplay');
+
+        if (input) input.value = angle;
+        if (display) display.textContent = angle + '°';
+
+        if (typeof window.updateGradientAngle === 'function') {
+            window.updateGradientAngle(angle);
+        } else if (input) {
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
+    function angleFromPointer(wheel, clientX, clientY) {
+        const rect = wheel.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        /*
+         * Top = 0°, right = 90°, bottom = 180°, left = 270°
+         * Existing wheel knob bhi top se start hota hai.
+         */
+        const radians = Math.atan2(clientY - centerY, clientX - centerX);
+        return normalizeAngle((radians * 180 / Math.PI) + 90);
+    }
+
+    function bindMobileAngleWheel() {
+        const wheel = document.getElementById('angleWheel');
+        const input = document.getElementById('gradAngle');
+
+        if (!wheel || wheel.dataset.mobileTouchBound === '1') return;
+        wheel.dataset.mobileTouchBound = '1';
+
+        let dragging = false;
+        let activePointerId = null;
+
+        const updateFromEvent = function (event) {
+            if (!dragging) return;
+            event.preventDefault();
+            applyMobileGradientAngle(
+                angleFromPointer(wheel, event.clientX, event.clientY)
+            );
+        };
+
+        wheel.addEventListener('pointerdown', function (event) {
+            /*
+             * Number input par tap ho to keyboard/input ko normal kaam karne dein.
+             */
+            if (event.target.closest('.angle-wheel-center')) return;
+
+            dragging = true;
+            activePointerId = event.pointerId;
+
+            try {
+                wheel.setPointerCapture(activePointerId);
+            } catch (error) {}
+
+            event.preventDefault();
+            applyMobileGradientAngle(
+                angleFromPointer(wheel, event.clientX, event.clientY)
+            );
+        }, { passive: false });
+
+        wheel.addEventListener('pointermove', updateFromEvent, { passive: false });
+
+        const stopDragging = function (event) {
+            if (!dragging) return;
+
+            dragging = false;
+
+            try {
+                if (
+                    activePointerId !== null &&
+                    wheel.hasPointerCapture(activePointerId)
+                ) {
+                    wheel.releasePointerCapture(activePointerId);
+                }
+            } catch (error) {}
+
+            activePointerId = null;
+
+            if (event) event.preventDefault();
+        };
+
+        wheel.addEventListener('pointerup', stopDragging, { passive: false });
+        wheel.addEventListener('pointercancel', stopDragging, { passive: false });
+        wheel.addEventListener('lostpointercapture', function () {
+            dragging = false;
+            activePointerId = null;
+        });
+
+        if (input && input.dataset.mobileAngleBound !== '1') {
+            input.dataset.mobileAngleBound = '1';
+
+            const updateFromInput = function () {
+                applyMobileGradientAngle(input.value);
+            };
+
+            input.addEventListener('input', updateFromInput);
+            input.addEventListener('change', updateFromInput);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindMobileAngleWheel);
+    } else {
+        bindMobileAngleWheel();
+    }
+
+    /*
+     * Gradient panel dynamic tab switching ke baad bhi binding confirm kar dein.
+     */
+    document.addEventListener('click', function (event) {
+        if (
+            event.target.closest('#gradientBtn') ||
+            event.target.closest('#linearBtn') ||
+            event.target.closest('#radialBtn')
+        ) {
+            setTimeout(bindMobileAngleWheel, 50);
+        }
+    });
+})();
+</script>
+
