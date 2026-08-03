@@ -652,7 +652,7 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 @keyframes pulse {
   0%, 100% { opacity: 0.4; }
   50%       { opacity: 1; }
-}      
+}
 
 .scroll-top-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px) scale(0.8); z-index: 9997; width: 52px; height: 52px; border-radius: 50%; background: #000; color: #fff; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); opacity: 0; pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease, background 0.25s; }
 .scroll-top-btn.visible { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
@@ -1074,4 +1074,137 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 img { max-width: 100%; height: auto; }
 *:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
 #tawk-bubble-container, .tawk-min-container, iframe[title="chat widget"] { display: none !important; }
+
+/* ==================================================
+   FEATURED HEADER — TABLET & MOBILE RESPONSIVE FIX
+================================================== */
+
+@media (max-width: 768px) {
+  .featured-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  /* Trending Now ribbon center */
+  .featured-header .featured-ribbon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto !important;
+    padding: 10px 28px;
+
+    border-radius: 25px;
+    font-size: 1rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  /* All 3 tabs center */
+  .featured-header .tabs {
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 7px;
+    margin: 0 auto;
+  }
+
+  .featured-header .tab-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 115px;
+
+    padding: 10px 5px;
+    font-size: 0.76rem;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+
+/* Extra-small mobiles */
+@media (max-width: 390px) {
+  .featured-header {
+    gap: 14px;
+  }
+
+  .featured-header .featured-ribbon {
+    padding: 9px 24px;
+    font-size: 0.92rem;
+  }
+
+  .featured-header .tabs {
+    gap: 5px;
+  }
+
+  .featured-header .tab-btn {
+    padding: 9px 3px;
+    font-size: 0.78rem;
+    border-width: 1.5px;
+  }
+}
+/* ==========================================
+   MOBILE SECTION TITLES
+========================================== */
+
+@media (max-width: 768px) {
+
+  .left-ribbon,
+  .left2-ribbon,
+  .featured-ribbon {
+
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+
+    margin: -10px auto 28px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    padding: 10px 26px !important;
+
+    width: fit-content;
+    max-width: 90%;
+
+    border-radius: 30px;
+    text-align: center;
+  }
+
+  .left-ribbon span,
+  .left2-ribbon,
+  .featured-ribbon span{
+    width:100%;
+    text-align:center;
+  }
+
+}
+
+
+/* Small phones */
+
+@media (max-width:480px){
+
+  .left-ribbon,
+  .left2-ribbon,
+  .featured-ribbon{
+
+      margin-top:-18px !important;
+      margin-bottom:22px !important;
+
+      padding:4px 22px !important;
+
+      font-size:15px !important;
+      font-weight:700;
+      letter-spacing:.3px;
+  }
+
+}
 </style>

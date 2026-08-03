@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         window.MODEL_ID = {{ $model->id }};
@@ -329,39 +329,6 @@
                     </div>
                 </div>
 
-                <!-- ROTATE POPUP -->
-                <div id="rotateOverlay"
-                    style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;pointer-events:none;transition:opacity 0.3s ease;">
-                    <div id="rotateCard"
-                        style="background:#1a1a1a;border-radius:20px;padding:40px 48px;display:flex;flex-direction:column;align-items:center;gap:20px;transform:scale(0.7);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);">
-                        <div id="phoneIcon" style="font-size:52px;">📱</div>
-                        <div style="color:#fff;font-size:18px;font-weight:600;">Rotate your phone</div>
-                        <div style="color:#999;font-size:13px;text-align:center;">
-                            Best experience in<br>landscape mode
-                        </div>
-                    </div>
-                </div>
-
-                <style>
-                    @keyframes phoneRotate {
-                        0% {
-                            transform: rotate(0deg);
-                        }
-
-                        40% {
-                            transform: rotate(-15deg);
-                        }
-
-                        100% {
-                            transform: rotate(90deg);
-                        }
-                    }
-
-                    #phoneIcon.rotating {
-                        animation: phoneRotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-                    }
-                </style>
-
                 <script>
                     window.backendColors = @json(
                         $colors->map(fn($c) => [
@@ -437,35 +404,184 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
     trap();
 })();
 </script>
-                <script>
-                    // ============================================================
-                    // ✅ BACKGROUND CANVAS
-                    // Pattern: P [gap] Prosix [gap] P [gap] Prosix — ek hi row
-                    // Brick offset: har doosri row half-tile shift
-                    // ============================================================
+                <style>
+                    /* =========================================================
+                       MOBILE AUTO LANDSCAPE / FULL VIEW
+                       Phone ko physically rotate karne ki zaroorat nahi.
+                       Portrait mobile par customizer khud 90 degree rotate hoga.
+                    ========================================================== */
+                    html,
+                    body {
+                        width: 100%;
+                        min-height: 100%;
+                        margin: 0;
+                        overscroll-behavior: none;
+                    }
 
+                    body {
+                        overflow: hidden;
+                    }
 
-                    // ✅ ORIENTATION CHECK
-                    function checkOrientation() {
-                        const isPortrait = window.innerHeight > window.innerWidth;
-                        const isMobile = window.innerWidth <= 1024 || window.innerHeight <= 600;
-                        const overlay = document.getElementById('rotateOverlay');
-                        const icon = document.getElementById('phoneIcon');
-                        if (!overlay) return;
-                        if (isMobile && isPortrait) {
-                            overlay.style.opacity = '1';
-                            overlay.style.pointerEvents = 'all';
-                            document.getElementById('rotateCard').style.transform = 'scale(1)';
-                            if (icon) icon.classList.add('rotating');
-                        } else {
-                            overlay.style.opacity = '0';
-                            overlay.style.pointerEvents = 'none';
-                            if (icon) icon.classList.remove('rotating');
+                    .customize-container {
+                        width: 100%;
+                        min-height: 100dvh;
+                    }
+
+                    @media screen and (max-width: 1024px) and (orientation: portrait) {
+                        html,
+                        body {
+                            position: fixed;
+                            inset: 0;
+                            width: 100vw;
+                            height: 100dvh;
+                            min-height: 100dvh;
+                            overflow: hidden !important;
+                            background: #ffffff;
+                        }
+
+                        /*
+                         * Original landscape canvas:
+                         * width  = mobile portrait height
+                         * height = mobile portrait width
+                         */
+                        .customize-container {
+                            position: fixed !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100dvh !important;
+                            height: 100vw !important;
+                            min-width: 100dvh !important;
+                            min-height: 100vw !important;
+                            max-width: none !important;
+                            max-height: none !important;
+                            overflow: hidden !important;
+                            transform-origin: top left !important;
+                            transform: translateX(100vw) rotate(90deg) !important;
+                            z-index: 1;
+                        }
+
+                        /*
+                         * Guide popup body ka direct child hai, is liye isay bhi
+                         * customizer ke sath landscape mein rotate karna zaroori hai.
+                         */
+                        body > .customizer-guide-popup {
+                            position: fixed !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            right: auto !important;
+                            bottom: auto !important;
+                            width: 100dvh !important;
+                            height: 100vw !important;
+                            min-width: 100dvh !important;
+                            min-height: 100vw !important;
+                            padding: 10px !important;
+                            box-sizing: border-box;
+                            transform-origin: top left !important;
+                            transform: translateX(100vw) rotate(90deg) !important;
+                        }
+
+                        body > .customizer-guide-popup .customizer-guide-box {
+                            width: min(100%, 650px);
+                            max-height: calc(100vw - 20px);
+                        }
+
+                        .header-bar,
+                        .main-content {
+                            width: 100%;
                         }
                     }
-                    window.addEventListener('resize', checkOrientation);
-                    window.addEventListener('orientationchange', checkOrientation);
-                    document.addEventListener('DOMContentLoaded', checkOrientation);
+
+                    @media screen and (max-width: 1024px) and (orientation: landscape) {
+                        html,
+                        body {
+                            width: 100vw;
+                            height: 100dvh;
+                            min-height: 100dvh;
+                            overflow: hidden !important;
+                        }
+
+                        .customize-container {
+                            width: 100vw !important;
+                            height: 100dvh !important;
+                            min-height: 100dvh !important;
+                            overflow: hidden !important;
+                            transform: none !important;
+                        }
+                    }
+                </style>
+
+                <script>
+                    // ============================================================
+                    // MOBILE FULL-VIEW HANDLING
+                    // ============================================================
+                    (function () {
+                        function setViewportVariables() {
+                            const viewport = window.visualViewport;
+                            const width = viewport ? viewport.width : window.innerWidth;
+                            const height = viewport ? viewport.height : window.innerHeight;
+
+                            document.documentElement.style.setProperty('--app-vw', width + 'px');
+                            document.documentElement.style.setProperty('--app-vh', height + 'px');
+                        }
+
+                        /*
+                         * Mobile browsers automatic fullscreen ko page-load par
+                         * allow nahi karte. User ke pehle tap par silently request
+                         * ki jati hai; fail ho to page phir bhi full viewport mein rahega.
+                         */
+                        async function requestBrowserFullscreen() {
+                            const root = document.documentElement;
+
+                            if (document.fullscreenElement || !root.requestFullscreen) {
+                                return;
+                            }
+
+                            try {
+                                await root.requestFullscreen({ navigationUI: 'hide' });
+                            } catch (error) {
+                                // Browser ne fullscreen deny kiya; normal full viewport active rahega.
+                            }
+                        }
+
+                        function enableFullscreenOnFirstInteraction() {
+                            const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+
+                            if (!isMobile) return;
+
+                            const startFullscreen = function () {
+                                requestBrowserFullscreen();
+
+                                document.removeEventListener('pointerdown', startFullscreen);
+                                document.removeEventListener('touchstart', startFullscreen);
+                            };
+
+                            document.addEventListener('pointerdown', startFullscreen, {
+                                once: true,
+                                passive: true
+                            });
+
+                            document.addEventListener('touchstart', startFullscreen, {
+                                once: true,
+                                passive: true
+                            });
+                        }
+
+                        setViewportVariables();
+
+                        window.addEventListener('resize', setViewportVariables);
+                        window.addEventListener('orientationchange', function () {
+                            setTimeout(setViewportVariables, 120);
+                        });
+
+                        if (window.visualViewport) {
+                            window.visualViewport.addEventListener('resize', setViewportVariables);
+                        }
+
+                        document.addEventListener('DOMContentLoaded', function () {
+                            setViewportVariables();
+                            enableFullscreenOnFirstInteraction();
+                        });
+                    })();
                 </script>
 
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
