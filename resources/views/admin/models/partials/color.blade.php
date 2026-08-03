@@ -701,4 +701,89 @@
             margin-top: 0 !important;
         }
     }
+
+
+    /* =====================================================
+       MOBILE / SHORT LANDSCAPE RESPONSIVE FIXES
+       - Right panel parent handles vertical scrolling
+       - Gradient color stops appear first
+       - Angle wheel appears underneath
+    ====================================================== */
+    @media screen and (max-width: 1024px),
+           screen and (orientation: landscape) and (max-height: 600px) {
+        #gradientPanel {
+            padding: 10px 10px 36px !important;
+            overflow: visible !important;
+        }
+
+        .gradient-preview-box {
+            margin-bottom: 10px !important;
+        }
+
+        .gradient-display {
+            height: 38px !important;
+        }
+
+        .gradient-slider-track {
+            height: 34px !important;
+        }
+
+        .grad-row {
+            margin-bottom: 10px !important;
+            gap: 6px !important;
+        }
+
+        .gradient-main-row {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+        }
+
+        /* Add/Color Stops controls top par */
+        .stops-section {
+            order: 1 !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+
+        /* Angle wheel color stops ke neeche */
+        .angle-section {
+            order: 2 !important;
+            width: 100% !important;
+            text-align: center !important;
+        }
+
+        #gradientStopsContainer {
+            max-height: none !important;
+            overflow: visible !important;
+            padding-right: 0 !important;
+        }
+
+        .gradient-stop-single-row {
+            flex-wrap: wrap !important;
+            row-gap: 7px !important;
+        }
+
+        .angle-wheel-wrap {
+            margin: 8px 0 12px !important;
+        }
+
+        .inline-color-selector {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        .inline-color-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            overflow: visible !important;
+            padding: 10px !important;
+        }
+
+        .inline-color-selector-footer {
+            padding-bottom: 34px !important;
+        }
+    }
 </style>

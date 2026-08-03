@@ -221,6 +221,16 @@
                     </div>
                 </div>
 
+                <!-- MOBILE TOOLBAR TOGGLE -->
+                <button type="button"
+                    id="mobileToolbarToggle"
+                    class="mobile-toolbar-toggle"
+                    aria-label="Show customization tools"
+                    aria-expanded="false"
+                    onclick="toggleMobileToolbar()">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+
                 <!-- PATTERN MODAL -->
                 <div id="patternLibraryModal" class="color-modal" style="display:none;">
                     <div class="color-modal-content">
@@ -582,6 +592,257 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
                             enableFullscreenOnFirstInteraction();
                         });
                     })();
+                </script>
+
+
+
+                <!-- =========================================================
+                     MOBILE SCROLLABLE RIGHT PANEL + SLIDE-UP TOOLBAR
+                ========================================================== -->
+                <style>
+                    .mobile-toolbar-toggle { display: none; }
+
+                    @media screen and (max-width: 1024px) {
+                        /* Right panel viewport ki poori available height use kare */
+                        .tools-bar {
+                            position: relative !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            min-height: 0 !important;
+                            height: 100% !important;
+                            overflow: hidden !important;
+                            background: #eeeeee !important;
+                            box-shadow: none !important;
+                        }
+
+                        /* Select Part hamesha top par visible */
+                        .tools-bar .part-selection {
+                            position: relative !important;
+                            z-index: 25 !important;
+                            flex: 0 0 auto !important;
+                            background: #eeeeee !important;
+                        }
+
+                        /* Asal scrolling sirf tool content mein hogi */
+                        .tools-bar .color-wheel-section {
+                            position: relative !important;
+                            z-index: 2 !important;
+                            flex: 1 1 auto !important;
+                            min-height: 0 !important;
+                            height: auto !important;
+                            max-height: none !important;
+                            overflow-x: hidden !important;
+                            overflow-y: auto !important;
+                            overscroll-behavior: contain;
+                            -webkit-overflow-scrolling: touch;
+                            scrollbar-width: thin;
+                            background: #eeeeee !important;
+                            padding-bottom: 34px !important;
+                            margin: 0 !important;
+                            touch-action: pan-y;
+                        }
+
+                        .tools-bar .color-wheel-section::-webkit-scrollbar {
+                            width: 4px;
+                        }
+
+                        .tools-bar .color-wheel-section::-webkit-scrollbar-thumb {
+                            background: rgba(0,0,0,.35);
+                            border-radius: 20px;
+                        }
+
+                        /* Inner pages apni natural total height rakhein */
+                        .tools-bar .tool-page,
+                        .tools-bar #colorPage,
+                        .tools-bar #solidPanel,
+                        .tools-bar #gradientPanel,
+                        .tools-bar .color-wheel-container {
+                            min-height: 0 !important;
+                            height: auto !important;
+                            max-height: none !important;
+                            overflow: visible !important;
+                        }
+
+                        /* Color selector bhi main right-panel scroll ke sath end tak jaye */
+                        .tools-bar .inline-color-selector,
+                        .tools-bar .inline-color-selector.open {
+                            height: auto !important;
+                            min-height: 0 !important;
+                            max-height: none !important;
+                            overflow: visible !important;
+                        }
+
+                        .tools-bar .inline-color-grid {
+                            overflow: visible !important;
+                            min-height: 0 !important;
+                            padding-bottom: 14px !important;
+                        }
+
+                        .tools-bar .inline-color-selector-footer {
+                            position: sticky;
+                            bottom: 0;
+                            z-index: 8;
+                            background: #eeeeee;
+                            border-top: 1px solid #d6d6d6;
+                        }
+
+                        /* Closed toolbar layout mein koi height reserve na kare */
+                        .tabs-container {
+                            display: none !important;
+                            position: absolute !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            bottom: 0 !important;
+                            z-index: 90 !important;
+                            margin: 0 !important;
+                            background: #ffffff !important;
+                            border-top: 1px solid #cfcfcf !important;
+                            box-shadow: 0 -8px 22px rgba(0, 0, 0, .16) !important;
+                        }
+
+                        .tools-bar.mobile-toolbar-open .tabs-container {
+                            display: block !important;
+                            animation: mobileToolbarUp .2s ease both;
+                        }
+
+                        @keyframes mobileToolbarUp {
+                            from { opacity: 0; transform: translateY(100%); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+
+                        /* Bottom center arrow */
+                        .mobile-toolbar-toggle {
+                            position: absolute !important;
+                            left: 50% !important;
+                            bottom: 3px !important;
+                            z-index: 100 !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            width: 32px !important;
+                            height: 21px !important;
+                            padding: 0 !important;
+                            border: 0 !important;
+                            border-radius: 11px 11px 3px 3px !important;
+                            background: rgba(17,17,17,.94) !important;
+                            color: #fff !important;
+                            font-size: 10px !important;
+                            cursor: pointer !important;
+                            transform: translateX(-50%) !important;
+                            box-shadow: 0 3px 9px rgba(0,0,0,.24) !important;
+                            -webkit-tap-highlight-color: transparent;
+                        }
+
+                        .tools-bar.mobile-toolbar-open .mobile-toolbar-toggle {
+                            bottom: 82px !important;
+                            border-radius: 3px 3px 11px 11px !important;
+                        }
+
+                        .mobile-toolbar-toggle i {
+                            transition: transform .2s ease;
+                            pointer-events: none;
+                        }
+
+                        .tools-bar.mobile-toolbar-open .mobile-toolbar-toggle i {
+                            transform: rotate(180deg);
+                        }
+
+                        .tabs-container .tab-row1,
+                        .tabs-container .tab-row2 {
+                            min-height: 40px !important;
+                            height: 40px !important;
+                        }
+
+                        .tabs-container .tab-btn {
+                            min-height: 40px !important;
+                            padding: 3px 1px !important;
+                            font-size: 9px !important;
+                        }
+
+                        .tabs-container .tab-btn i {
+                            font-size: 12px !important;
+                            margin-bottom: 1px !important;
+                        }
+
+                        .tabs-container .tab-btn span {
+                            font-size: 8px !important;
+                            line-height: 1 !important;
+                        }
+
+                        /* Pattern/Application aur tamam color modals end tak scroll hon */
+                        .color-modal {
+                            position: fixed !important;
+                            inset: 0 !important;
+                            z-index: 1000005 !important;
+                            overflow-y: auto !important;
+                            overscroll-behavior: contain;
+                            -webkit-overflow-scrolling: touch;
+                            padding: 10px !important;
+                            box-sizing: border-box !important;
+                        }
+
+                        .color-modal-content {
+                            width: min(100%, 720px) !important;
+                            max-height: calc(100dvh - 20px) !important;
+                            overflow-x: hidden !important;
+                            overflow-y: auto !important;
+                            -webkit-overflow-scrolling: touch;
+                            margin: auto !important;
+                            box-sizing: border-box !important;
+                        }
+
+                        .save-design-box,
+                        .customizer-guide-box,
+                        #previewPanel {
+                            overscroll-behavior: contain;
+                            -webkit-overflow-scrolling: touch;
+                        }
+
+                        .save-design-box,
+                        .customizer-guide-box {
+                            overflow-y: auto !important;
+                        }
+                    }
+                </style>
+
+                <script>
+                    window.toggleMobileToolbar = function (forceState = null) {
+                        const toolsBar = document.querySelector('.tools-bar');
+                        const toggle = document.getElementById('mobileToolbarToggle');
+                        if (!toolsBar || !toggle) return;
+
+                        const shouldOpen = forceState === null
+                            ? !toolsBar.classList.contains('mobile-toolbar-open')
+                            : Boolean(forceState);
+
+                        toolsBar.classList.toggle('mobile-toolbar-open', shouldOpen);
+                        toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+                        toggle.setAttribute('aria-label', shouldOpen
+                            ? 'Hide customization tools'
+                            : 'Show customization tools');
+                    };
+
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const toolsBar = document.querySelector('.tools-bar');
+                        const tabs = document.querySelector('.tabs-container');
+                        if (!toolsBar || !tabs) return;
+
+                        if (window.matchMedia('(max-width: 1024px)').matches) {
+                            window.toggleMobileToolbar(false);
+                        }
+
+                        tabs.addEventListener('click', function (event) {
+                            const tab = event.target.closest('.tab-btn');
+                            if (!tab || !window.matchMedia('(max-width: 1024px)').matches) return;
+                            setTimeout(function () { window.toggleMobileToolbar(false); }, 120);
+                        });
+
+                        window.addEventListener('resize', function () {
+                            if (!window.matchMedia('(max-width: 1024px)').matches) {
+                                toolsBar.classList.remove('mobile-toolbar-open');
+                            }
+                        });
+                    });
                 </script>
 
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1566,4 +1827,125 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
         }
     }
 
+</style>
+
+
+<style>
+/* =============================================================
+   MOBILE MODAL + RIGHT PANEL FIXES
+   Desktop remains unchanged.
+============================================================= */
+@media screen and (max-width: 1024px) {
+    /* Select Part must stay inside the right panel and below popups */
+    .tools-bar .part-selection {
+        position: sticky !important;
+        top: 0 !important;
+        left: auto !important;
+        right: auto !important;
+        width: 100% !important;
+        z-index: 25 !important;
+        flex: 0 0 auto !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Right panel content scrolls to the very end */
+    .tools-bar {
+        min-height: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    .tools-bar .color-wheel-section {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior: contain !important;
+        padding-bottom: 44px !important;
+        scrollbar-width: thin;
+    }
+
+    /* All library/upload/template modals must sit above Select Part */
+    .tools-bar .color-modal,
+    #patternLibraryModal,
+    #mascotTemplateModal,
+    #mascotUploaderModal,
+    #applicationModal {
+        position: fixed !important;
+        inset: 8px !important;
+        width: auto !important;
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
+        z-index: 10020 !important;
+        padding: 8px !important;
+        box-sizing: border-box !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+    }
+
+    .tools-bar .color-modal-content,
+    #patternLibraryModal .color-modal-content,
+    #mascotTemplateModal .color-modal-content,
+    #mascotUploaderModal .color-modal-content,
+    #applicationModal .color-modal-content {
+        width: min(94%, 680px) !important;
+        height: auto !important;
+        max-width: 680px !important;
+        max-height: calc(100% - 12px) !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        border-radius: 10px !important;
+    }
+
+    .tools-bar .color-modal-header,
+    #patternLibraryModal .color-modal-header,
+    #mascotTemplateModal .color-modal-header,
+    #mascotUploaderModal .color-modal-header {
+        position: relative !important;
+        flex: 0 0 auto !important;
+        min-height: 42px !important;
+        padding: 10px 14px !important;
+        z-index: 2 !important;
+    }
+
+    /* Modal body, grids and settings scroll fully */
+    #patternLibraryModal .pattern-modal-body,
+    #mascotTemplateModal .mascot-template-body,
+    #mascotUploaderModal .mascot-uploader-body,
+    #patternLibraryModal .color-modal-content > div:last-child,
+    #mascotTemplateModal .color-modal-content > div:last-child,
+    #mascotUploaderModal .color-modal-content > div:last-child {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #patternList,
+    #mascotTemplateGrid {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* Keep toolbar arrow above normal panel, but below modal */
+    .mobile-toolbar-toggle {
+        z-index: 110 !important;
+    }
+
+    .color-modal[style*="display: block"] ~ .mobile-toolbar-toggle,
+    .color-modal[style*="display:flex"] ~ .mobile-toolbar-toggle {
+        visibility: hidden !important;
+    }
+}
 </style>
