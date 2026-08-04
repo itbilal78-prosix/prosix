@@ -1,4 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" width="100%" height="100%" version="1.1" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 598 784"><defs/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" width="100%" height="100%" version="1.1" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 598 784"><defs><style data-fonts="true">
+                        @font-face {
+                            font-family: 'font_1';
+                            src: url('http://127.0.0.1:8000/storage/fonts/ItjUij9bTDfywznopiruVXCAsbY2rAq8zSeDhcae') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_2';
+                            src: url('http://127.0.0.1:8000/storage/fonts/5jycOirlLmlBhFCXL2MDaHUP4rged3kf2Smt216A') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_3';
+                            src: url('http://127.0.0.1:8000/storage/fonts/rqJPEFUVLnBO1w0pcHBmAalw4zQxrENQAvQdGMKg') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_4';
+                            src: url('http://127.0.0.1:8000/storage/fonts/Ds634rSYcNxLJZtVJMA6BAmG11svfsYHSbqhwxd7') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_5';
+                            src: url('http://127.0.0.1:8000/storage/fonts/O7q5V549YEkgv4h8gnDE5emS6Q3aUAZuMpeGeJQw') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_6';
+                            src: url('http://127.0.0.1:8000/storage/fonts/JHMaNalXAjCWNhp9KYrN6DQxAyPRSHvOdK5RkfuF') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_7';
+                            src: url('http://127.0.0.1:8000/storage/fonts/YQmxQRCe58mc9zvFAALOLPC6VoXX5r09nvqhPQd2') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_8';
+                            src: url('http://127.0.0.1:8000/storage/fonts/b87QXPSqGPqzln9XgEaDatu46Ow93fdwxL5hDAe6') format('truetype');
+                        }
+                    
+                        @font-face {
+                            font-family: 'font_9';
+                            src: url('http://127.0.0.1:8000/storage/fonts/O93qQu7crOgUUcquxvnvbla0ojq598Yzqa04HYrW') format('truetype');
+                        }
+                    </style></defs>
  <g id="Layer_x0020_1">
   <metadata id="CorelCorpID_0Corel-Layer"/>
   <g id="_2272912153136">

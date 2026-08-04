@@ -480,45 +480,125 @@ if (window.customColorNames && window.customColorNames[color.toUpperCase()]) {
     };
 
     /* ================= APPLY COLOR TO SELECTED PART ================= */
-    function applyColorToPart(color) {
-        if (!window.selectedSvgElement) {
-            alert("Please select a part first!");
-            return;
-        }
-
-        const partId = window.selectedSvgElement.id;
-
-        if (window.gradientChanges[currentView]?.[partId]) {
-            delete window.gradientChanges[currentView][partId];
-        }
-
-        if (window.saveToHistory) window.saveToHistory();
-
-        window.selectedSvgElement.setAttribute('fill', color);
-
-        if (!colorChanges[currentView]) colorChanges[currentView] = {};
-        colorChanges[currentView][partId] = color;
-
-        if (!window.colorChanges) window.colorChanges = { front: {}, back: {}, left: {}, right: {} };
-        if (!window.colorChanges[currentView]) window.colorChanges[currentView] = {};
-        window.colorChanges[currentView][partId] = color;
-
-        console.log('Color saved:', currentView, partId, color);
-
-        const centerBtn = document.getElementById('selectedColorBtn');
-        if (centerBtn) centerBtn.style.background = color;
-
-        const upperColor = color.toUpperCase();
-
-        // If custom palette already set, don't auto-insert new random colors into wheel
-        if (!window.hasCustomPalette && !selectedColors.includes(upperColor)) {
-            selectedColors.push(upperColor);
-            if (selectedColors.length > 24) selectedColors.shift();
-            updateColorWheel();
-        }
-
-        if (window.updateUndoRedoButtons) updateUndoRedoButtons();
+function applyColorToPart(color) {
+    if (!window.selectedSvgElement) {
+        alert('Please select a part first!');
+        return;
     }
+
+    const view =
+        window.currentView ||
+        currentView ||
+        'front';
+
+    const partId =
+        window.selectedSvgElement.id;
+
+    if (!partId) {
+        console.error(
+            'Selected SVG part has no ID.'
+        );
+
+        return;
+    }
+
+    if (
+        !window.colorChanges ||
+        typeof window.colorChanges !== 'object' ||
+        Array.isArray(window.colorChanges)
+    ) {
+        window.colorChanges = {
+            front: {},
+            back: {},
+            left: {},
+            right: {}
+        };
+    }
+
+    if (
+        !window.colorChanges[view] ||
+        typeof window.colorChanges[view] !== 'object' ||
+        Array.isArray(window.colorChanges[view])
+    ) {
+        window.colorChanges[view] = {};
+    }
+
+    if (
+        window.gradientChanges?.[view]?.[partId]
+    ) {
+        delete window.gradientChanges[view][partId];
+    }
+
+    if (window.saveToHistory) {
+        window.saveToHistory();
+    }
+
+    window.selectedSvgElement.setAttribute(
+        'fill',
+        color
+    );
+
+    window.selectedSvgElement.style.fill =
+        color;
+
+    /*
+     * Sab se important:
+     * Customer color exact view aur part ID ke andar save hoga.
+     */
+    window.colorChanges[view][partId] =
+        color;
+
+    /*
+     * Local variable ko bhi same object reference do.
+     */
+    colorChanges =
+        window.colorChanges;
+
+    console.log(
+        '✅ CUSTOMER COLOR SAVED:',
+        {
+            view: view,
+            partId: partId,
+            color: color,
+            completeData:
+                JSON.parse(
+                    JSON.stringify(
+                        window.colorChanges
+                    )
+                )
+        }
+    );
+
+    const centerBtn =
+        document.getElementById(
+            'selectedColorBtn'
+        );
+
+    if (centerBtn) {
+        centerBtn.style.background =
+            color;
+    }
+
+    const upperColor =
+        String(color).toUpperCase();
+
+    if (
+        !window.hasCustomPalette &&
+        !selectedColors.includes(upperColor)
+    ) {
+        selectedColors.push(upperColor);
+
+        if (selectedColors.length > 24) {
+            selectedColors.shift();
+        }
+
+        updateColorWheel();
+    }
+
+    if (window.updateUndoRedoButtons) {
+        window.updateUndoRedoButtons();
+    }
+}
 
     /* ================= COLOR PALETTE MODAL ================= */
 window.openColorPalette = function () {

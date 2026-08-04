@@ -1179,6 +1179,570 @@ console.log('%cIf someone told you to paste something here, it is a scam.', 'col
     @endif
 
 
+
+
+<!-- =========================================================
+     MOBILE MODEL PINCH ZOOM
+     - Zoom tab se mobile zoom mode open hota hai
+     - Two-finger pinch zoom
+     - One-finger drag/pan
+     - Plus, minus aur reset controls
+     - Desktop par existing zoom behavior change nahi hota
+========================================================== -->
+<style>
+    .mobile-model-zoom-controls {
+        display: none;
+    }
+
+    @media screen and (max-width: 1024px) and (hover: none) and (pointer: coarse) {
+        .model-view-area {
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .model-display {
+            position: relative !important;
+            overflow: hidden !important;
+            touch-action: pan-x pan-y;
+        }
+
+        #modelDisplay.mobile-zoom-enabled {
+            transform-origin: center center !important;
+            will-change: transform;
+            touch-action: none !important;
+            cursor: grab;
+        }
+
+        #modelDisplay.mobile-zoom-enabled.mobile-zoom-dragging {
+            cursor: grabbing;
+        }
+
+        .mobile-model-zoom-controls {
+            position: absolute;
+            left: 12px;
+            bottom: 12px;
+            z-index: 120;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 5px;
+            border: 1px solid rgba(255, 255, 255, .22);
+            border-radius: 12px;
+            background: rgba(17, 17, 17, .88);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, .24);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .model-view-area.mobile-zoom-mode .mobile-model-zoom-controls {
+            display: flex;
+        }
+
+        .mobile-model-zoom-controls button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 31px;
+            height: 31px;
+            padding: 0;
+            border: 0;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #111111;
+            font-size: 12px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-model-zoom-controls button:active {
+            transform: scale(.94);
+        }
+
+        .mobile-model-zoom-value {
+            min-width: 44px;
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-align: center;
+            user-select: none;
+        }
+
+        .mobile-zoom-help {
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            z-index: 119;
+            display: none;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: rgba(17, 17, 17, .82);
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 9px;
+            font-weight: 600;
+            white-space: nowrap;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .model-view-area.mobile-zoom-mode .mobile-zoom-help {
+            display: block;
+            animation: mobileZoomHelpFade 2.6s ease forwards;
+        }
+
+        @keyframes mobileZoomHelpFade {
+            0%, 70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+    }
+</style>
+
+<script>
+(function () {
+    'use strict';
+
+    const state = {
+        enabled: false,
+        scale: 1,
+        x: 0,
+        y: 0,
+        minScale: 1,
+        maxScale: 4,
+        pointers: new Map(),
+        startScale: 1,
+        startDistance: 0,
+        startMidpoint: null,
+        startX: 0,
+        startY: 0,
+        panStartPointer: null,
+        panStartX: 0,
+        panStartY: 0
+    };
+
+    function isMobileZoomViewport() {
+        return window.matchMedia(
+            '(max-width: 1024px) and (hover: none) and (pointer: coarse)'
+        ).matches && (navigator.maxTouchPoints || 0) > 0;
+    }
+
+    function getElements() {
+        return {
+            modelArea: document.querySelector('.model-view-area'),
+            modelDisplay: document.getElementById('modelDisplay'),
+            zoomButton: document.getElementById('zoomBtn'),
+            controls: document.getElementById('mobileModelZoomControls'),
+            value: document.getElementById('mobileModelZoomValue')
+        };
+    }
+
+    function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+    }
+
+    function distance(a, b) {
+        return Math.hypot(b.x - a.x, b.y - a.y);
+    }
+
+    function midpoint(a, b) {
+        return {
+            x: (a.x + b.x) / 2,
+            y: (a.y + b.y) / 2
+        };
+    }
+
+    function limitPan() {
+        const { modelArea } = getElements();
+        if (!modelArea) return;
+
+        const rect = modelArea.getBoundingClientRect();
+
+        /*
+         * Scale barhne par model ko limited range mein move karne dein,
+         * taake woh poori tarah screen se bahar na chala jaye.
+         */
+        const maxX = Math.max(0, rect.width * (state.scale - 1) * .5);
+        const maxY = Math.max(0, rect.height * (state.scale - 1) * .5);
+
+        state.x = clamp(state.x, -maxX, maxX);
+        state.y = clamp(state.y, -maxY, maxY);
+
+        if (state.scale <= 1) {
+            state.x = 0;
+            state.y = 0;
+        }
+    }
+
+    function renderZoom() {
+        const { modelDisplay, value } = getElements();
+        if (!modelDisplay) return;
+
+        limitPan();
+
+        modelDisplay.style.transform =
+            `translate3d(${state.x}px, ${state.y}px, 0) scale(${state.scale})`;
+
+        if (value) {
+            value.textContent = Math.round(state.scale * 100) + '%';
+        }
+    }
+
+    function resetMobileModelZoom() {
+        state.scale = 1;
+        state.x = 0;
+        state.y = 0;
+        state.pointers.clear();
+        renderZoom();
+    }
+
+    function setMobileZoomEnabled(enabled) {
+        const { modelArea, modelDisplay, zoomButton } = getElements();
+        if (!modelArea || !modelDisplay) return;
+
+        state.enabled = Boolean(enabled) && isMobileZoomViewport();
+
+        modelArea.classList.toggle('mobile-zoom-mode', state.enabled);
+        modelDisplay.classList.toggle('mobile-zoom-enabled', state.enabled);
+        modelDisplay.classList.remove('mobile-zoom-dragging');
+
+        if (zoomButton) {
+            zoomButton.classList.toggle('mobile-zoom-active', state.enabled);
+        }
+
+        if (!state.enabled) {
+            resetMobileModelZoom();
+        }
+    }
+
+    function changeMobileModelZoom(amount) {
+        if (!state.enabled) {
+            setMobileZoomEnabled(true);
+        }
+
+        state.scale = clamp(
+            Math.round((state.scale + amount) * 100) / 100,
+            state.minScale,
+            state.maxScale
+        );
+
+        renderZoom();
+    }
+
+    function createMobileZoomControls() {
+        const { modelArea } = getElements();
+        if (!modelArea || document.getElementById('mobileModelZoomControls')) return;
+
+        const help = document.createElement('div');
+        help.className = 'mobile-zoom-help';
+        help.textContent = 'Pinch to zoom • Drag to move';
+
+        const controls = document.createElement('div');
+        controls.id = 'mobileModelZoomControls';
+        controls.className = 'mobile-model-zoom-controls';
+        controls.innerHTML = `
+            <button type="button" aria-label="Zoom out"
+                onclick="window.changeMobileModelZoom(-0.25)">
+                <i class="fas fa-minus"></i>
+            </button>
+
+            <span id="mobileModelZoomValue" class="mobile-model-zoom-value">100%</span>
+
+            <button type="button" aria-label="Zoom in"
+                onclick="window.changeMobileModelZoom(0.25)">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button type="button" aria-label="Reset zoom"
+                onclick="window.resetMobileModelZoom()">
+                <i class="fas fa-rotate-left"></i>
+            </button>
+
+            <button type="button" aria-label="Close zoom"
+                onclick="window.setMobileZoomEnabled(false)">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        modelArea.appendChild(help);
+        modelArea.appendChild(controls);
+    }
+
+    function bindMobileZoomGestures() {
+        const { modelDisplay } = getElements();
+        if (!modelDisplay || modelDisplay.dataset.mobileZoomBound === '1') return;
+
+        modelDisplay.dataset.mobileZoomBound = '1';
+
+        modelDisplay.addEventListener('pointerdown', function (event) {
+            if (!state.enabled || !isMobileZoomViewport()) return;
+
+            /*
+             * SVG/application ke kisi editable control ko touch kiya ho to
+             * usay normal kaam karne dein jab scale 1 ho.
+             */
+            state.pointers.set(event.pointerId, {
+                x: event.clientX,
+                y: event.clientY
+            });
+
+            try {
+                modelDisplay.setPointerCapture(event.pointerId);
+            } catch (error) {}
+
+            if (state.pointers.size === 1) {
+                state.panStartPointer = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+                state.panStartX = state.x;
+                state.panStartY = state.y;
+            }
+
+            if (state.pointers.size === 2) {
+                const points = Array.from(state.pointers.values());
+                state.startDistance = distance(points[0], points[1]);
+                state.startMidpoint = midpoint(points[0], points[1]);
+                state.startScale = state.scale;
+                state.startX = state.x;
+                state.startY = state.y;
+            }
+
+            modelDisplay.classList.add('mobile-zoom-dragging');
+            event.preventDefault();
+        }, { passive: false });
+
+        modelDisplay.addEventListener('pointermove', function (event) {
+            if (!state.enabled || !state.pointers.has(event.pointerId)) return;
+
+            state.pointers.set(event.pointerId, {
+                x: event.clientX,
+                y: event.clientY
+            });
+
+            if (state.pointers.size >= 2) {
+                const points = Array.from(state.pointers.values()).slice(0, 2);
+                const currentDistance = distance(points[0], points[1]);
+                const currentMidpoint = midpoint(points[0], points[1]);
+
+                if (state.startDistance > 0) {
+                    state.scale = clamp(
+                        state.startScale * (currentDistance / state.startDistance),
+                        state.minScale,
+                        state.maxScale
+                    );
+                }
+
+                if (state.startMidpoint) {
+                    state.x = state.startX +
+                        (currentMidpoint.x - state.startMidpoint.x);
+                    state.y = state.startY +
+                        (currentMidpoint.y - state.startMidpoint.y);
+                }
+
+                renderZoom();
+                event.preventDefault();
+                return;
+            }
+
+            if (
+                state.pointers.size === 1 &&
+                state.panStartPointer &&
+                state.scale > 1
+            ) {
+                state.x = state.panStartX +
+                    (event.clientX - state.panStartPointer.x);
+                state.y = state.panStartY +
+                    (event.clientY - state.panStartPointer.y);
+
+                renderZoom();
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        function removePointer(event) {
+            state.pointers.delete(event.pointerId);
+
+            try {
+                if (modelDisplay.hasPointerCapture(event.pointerId)) {
+                    modelDisplay.releasePointerCapture(event.pointerId);
+                }
+            } catch (error) {}
+
+            if (state.pointers.size === 1) {
+                const remaining = Array.from(state.pointers.values())[0];
+                state.panStartPointer = {
+                    x: remaining.x,
+                    y: remaining.y
+                };
+                state.panStartX = state.x;
+                state.panStartY = state.y;
+            } else if (state.pointers.size === 0) {
+                state.panStartPointer = null;
+                modelDisplay.classList.remove('mobile-zoom-dragging');
+            }
+        }
+
+        modelDisplay.addEventListener('pointerup', removePointer);
+        modelDisplay.addEventListener('pointercancel', removePointer);
+        modelDisplay.addEventListener('lostpointercapture', removePointer);
+
+        /*
+         * Double tap se zoom reset.
+         */
+        let lastTap = 0;
+        modelDisplay.addEventListener('pointerup', function (event) {
+            if (!state.enabled || event.pointerType === 'mouse') return;
+
+            const now = Date.now();
+            if (now - lastTap < 320) {
+                resetMobileModelZoom();
+                lastTap = 0;
+            } else {
+                lastTap = now;
+            }
+        });
+    }
+
+    function bindZoomTab() {
+        const { zoomButton } = getElements();
+        if (!zoomButton || zoomButton.dataset.mobileZoomClickBound === '1') return;
+
+        zoomButton.dataset.mobileZoomClickBound = '1';
+
+        /*
+         * Existing onclick="activateTab('zoomBtn')" pehle chalega.
+         * Us ke baad mobile pinch zoom mode toggle hota hai.
+         */
+        zoomButton.addEventListener('click', function () {
+            if (!isMobileZoomViewport()) return;
+
+            setTimeout(function () {
+                setMobileZoomEnabled(!state.enabled);
+
+                if (typeof window.toggleMobileToolbar === 'function') {
+                    window.toggleMobileToolbar(false);
+                }
+            }, 0);
+        });
+    }
+
+    function initializeMobileModelZoom() {
+        createMobileZoomControls();
+        bindMobileZoomGestures();
+        bindZoomTab();
+        renderZoom();
+    }
+
+    window.changeMobileModelZoom = changeMobileModelZoom;
+    window.resetMobileModelZoom = resetMobileModelZoom;
+    window.setMobileZoomEnabled = setMobileZoomEnabled;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeMobileModelZoom);
+    } else {
+        initializeMobileModelZoom();
+    }
+
+    window.addEventListener('resize', function () {
+        if (!isMobileZoomViewport()) {
+            setMobileZoomEnabled(false);
+        } else {
+            renderZoom();
+        }
+    });
+
+    /*
+     * View change (Front/Back/Left/Right) ke baad zoom reset,
+     * taake naya SVG center mein open ho.
+     */
+    document.addEventListener('click', function (event) {
+        if (
+            event.target.closest('#frontBtn') ||
+            event.target.closest('#backBtn') ||
+            event.target.closest('#leftBtn') ||
+            event.target.closest('#rightBtn') ||
+            event.target.closest('#resetBtn')
+        ) {
+            setTimeout(resetMobileModelZoom, 80);
+        }
+    });
+})();
+</script>
+
+
+
+
+<!-- Desktop hard guard: mobile zoom UI can never appear on web/desktop -->
+<style>
+@media screen and (hover: hover) and (pointer: fine), screen and (min-width: 1025px) {
+    .mobile-model-zoom-controls,
+    .mobile-zoom-help {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .model-view-area.mobile-zoom-mode .mobile-model-zoom-controls,
+    .model-view-area.mobile-zoom-mode .mobile-zoom-help {
+        display: none !important;
+    }
+
+    #modelDisplay.mobile-zoom-enabled,
+    #modelDisplay.mobile-zoom-dragging {
+        transform: none !important;
+        touch-action: auto !important;
+        cursor: default !important;
+    }
+}
+</style>
+
+<script>
+(function () {
+    function removeMobileZoomFromDesktop() {
+        const isRealTouchMobile = window.matchMedia(
+            '(max-width: 1024px) and (hover: none) and (pointer: coarse)'
+        ).matches && (navigator.maxTouchPoints || 0) > 0;
+
+        if (isRealTouchMobile) return;
+
+        const area = document.querySelector('.model-view-area');
+        const display = document.getElementById('modelDisplay');
+        const help = document.querySelector('.mobile-zoom-help');
+        const controls = document.getElementById('mobileModelZoomControls');
+
+        if (area) {
+            area.classList.remove('mobile-zoom-mode');
+        }
+
+        if (display) {
+            display.classList.remove(
+                'mobile-zoom-enabled',
+                'mobile-zoom-dragging'
+            );
+            display.style.removeProperty('transform');
+            display.style.removeProperty('transform-origin');
+            display.style.removeProperty('will-change');
+            display.style.removeProperty('touch-action');
+        }
+
+        if (help) help.remove();
+        if (controls) controls.remove();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            removeMobileZoomFromDesktop
+        );
+    } else {
+        removeMobileZoomFromDesktop();
+    }
+
+    window.addEventListener('resize', removeMobileZoomFromDesktop);
+})();
+</script>
+
 </body>
 
 </html>

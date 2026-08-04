@@ -2067,3 +2067,431 @@ function _mcSaveToBackend(
         openMascotCustomizeModal(data, layerId);
     };
 </script>
+
+
+{{-- ============================================================
+     FINAL MOBILE MASCOT MODALS
+     - Small popup
+     - Internal scroll
+     - Existing/category/grid/preview responsive
+     - Customize canvas + controls scrollable
+     - Desktop unchanged
+============================================================ --}}
+<style>
+@media screen and (max-width:1024px) {
+    #mascotSelectModal,
+    #mascotCustomizeModal {
+        position: fixed !important;
+        inset: 5px !important;
+        padding: 5px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        z-index: 100100 !important;
+    }
+
+    #mascotSelectModal > div {
+        width: min(82vw, 640px) !important;
+        max-width: 640px !important;
+        height: calc(100dvh - 16px) !important;
+        max-height: 315px !important;
+        margin: auto !important;
+        border-radius: 9px !important;
+        overflow: hidden !important;
+    }
+
+    #mascotSelectModal > div > div:first-child {
+        min-height: 34px !important;
+        padding: 6px 10px !important;
+    }
+
+    #mascotSelectModal > div > div:first-child h3 {
+        font-size: 12px !important;
+    }
+
+    #mascotSelectModal > div > div:nth-child(2) {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #mascotSelectModal > div > div:nth-child(2) button {
+        flex: 0 0 auto !important;
+        padding: 7px 11px !important;
+        font-size: 9px !important;
+    }
+
+    #mascotSelectModal > div > div:nth-child(3) {
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #msContent1 {
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #msContent1 > div:first-child {
+        width: 115px !important;
+        min-width: 115px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #msContent1 > div:first-child > div:first-child {
+        padding: 6px 7px !important;
+        font-size: 8px !important;
+    }
+
+    #mascotCategoryList {
+        padding: 3px 0 !important;
+    }
+
+    .ms-cat-item {
+        padding: 6px 7px !important;
+        font-size: 9px !important;
+    }
+
+    #msContent1 > div:first-child > div:last-child {
+        padding: 5px !important;
+    }
+
+    #msContent1 > div:first-child button {
+        padding: 6px 3px !important;
+        font-size: 8px !important;
+    }
+
+    #msContent1 > div:nth-child(2) {
+        min-width: 0 !important;
+        min-height: 0 !important;
+    }
+
+    #msContent1 > div:nth-child(2) > div:first-child {
+        padding: 5px 7px !important;
+    }
+
+    #mascotSearchInput {
+        height: 29px !important;
+        padding: 5px 25px 5px 7px !important;
+        font-size: 9px !important;
+    }
+
+    #mascotSelectGrid {
+        min-height: 0 !important;
+        grid-template-columns: repeat(auto-fill,minmax(70px,1fr)) !important;
+        gap: 5px !important;
+        padding: 6px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+    }
+
+    .ms-mascot-card {
+        padding: 5px !important;
+        border-width: 1px !important;
+    }
+
+    .ms-mascot-card img,
+    .ms-mascot-card > div {
+        height: 52px !important;
+    }
+
+    .ms-mascot-card p {
+        margin-top: 3px !important;
+        font-size: 8px !important;
+    }
+
+    #msContent1 > div:last-child {
+        width: 120px !important;
+        min-width: 120px !important;
+    }
+
+    #msContent1 > div:last-child > div:first-child {
+        padding: 6px !important;
+        font-size: 8px !important;
+    }
+
+    #msContent1 > div:last-child > div:last-child {
+        padding: 7px !important;
+        gap: 5px !important;
+    }
+
+    #mascotSelectPreviewBox {
+        width: 78px !important;
+        height: 78px !important;
+    }
+
+    #mascotSelectPreviewBox svg,
+    #mascotSelectPreviewBox img {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    #mascotSelectPreviewName {
+        font-size: 9px !important;
+    }
+
+    #mascotEditBtn {
+        padding: 6px !important;
+        font-size: 8px !important;
+    }
+
+    #msContent2,
+    #msContent3 {
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #msContent2 h2 {
+        font-size: 16px !important;
+    }
+
+    #msContent2 p {
+        font-size: 10px !important;
+    }
+
+    #msContent3 {
+        padding: 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    #msContent3 h4 {
+        font-size: 13px !important;
+    }
+
+    #msContent3 p {
+        margin-bottom: 10px !important;
+        font-size: 9px !important;
+    }
+
+    #mascotDropZone {
+        padding: 12px 8px !important;
+    }
+
+    #mascotDropZone > div:first-child {
+        margin-bottom: 5px !important;
+        font-size: 25px !important;
+    }
+
+    #mascotUploadPreview {
+        margin-top: 8px !important;
+        padding: 8px !important;
+    }
+
+    #mascotUploadThumb {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    #mascotSelectModal > div > div:last-child {
+        min-height: 38px !important;
+        padding: 5px 9px !important;
+        gap: 6px !important;
+    }
+
+    #mascotSelectModal > div > div:last-child button {
+        padding: 7px 13px !important;
+        font-size: 9px !important;
+    }
+
+    /* Customize mascot popup */
+    #mascotCustomizeModal > div {
+        width: min(84vw, 650px) !important;
+        max-width: 650px !important;
+        height: calc(100dvh - 16px) !important;
+        max-height: 320px !important;
+        margin: auto !important;
+        border-radius: 9px !important;
+        overflow: hidden !important;
+    }
+
+    #mascotCustomizeModal > div > div:first-child {
+        min-height: 34px !important;
+        padding: 6px 10px !important;
+    }
+
+    #mascotCustomizeModal > div > div:first-child h3 {
+        font-size: 11px !important;
+    }
+
+    #mascotCustomizeModal > div > div:nth-child(2) {
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #mascotCustomizeModal > div > div:nth-child(2) > div:first-child {
+        min-width: 0 !important;
+    }
+
+    #mascotCustomizeModal > div > div:nth-child(2) > div:first-child > div:first-child {
+        min-height: 35px !important;
+        padding: 5px 7px !important;
+        gap: 4px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #mascotCustomizeModal > div > div:nth-child(2) > div:first-child > div:first-child button {
+        flex: 0 0 auto !important;
+        padding: 5px 7px !important;
+        font-size: 8px !important;
+    }
+
+    #mascotCustomizeModal #mcEraserSizeWrap {
+        flex: 0 0 auto !important;
+    }
+
+    #mcCanvas {
+        max-width: 100% !important;
+        max-height: 190px !important;
+        width: auto !important;
+        height: auto !important;
+        touch-action: none !important;
+    }
+
+    #mascotCustomizeModal > div > div:nth-child(2) > div:last-child {
+        width: 190px !important;
+        min-width: 190px !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+    }
+
+    #mascotCustomizeModal > div > div:nth-child(2) > div:last-child > div {
+        padding: 7px !important;
+    }
+
+    #mcMascotName {
+        padding: 6px 7px !important;
+        font-size: 9px !important;
+    }
+
+    #mcColorCountBtns {
+        gap: 3px !important;
+    }
+
+    #mcColorCountBtns button {
+        padding: 3px 6px !important;
+        font-size: 8px !important;
+    }
+
+    #mcColorSwatches {
+        gap: 5px !important;
+    }
+
+    #mascotCustomizeModal > div > div:last-child {
+        min-height: 38px !important;
+        padding: 5px 9px !important;
+    }
+
+    #mascotCustomizeModal > div > div:last-child button {
+        padding: 7px 13px !important;
+        font-size: 9px !important;
+    }
+}
+</style>
+
+<script>
+(function () {
+    function resetMascotModalScroll() {
+        if (!window.matchMedia('(max-width:1024px)').matches) return;
+
+        [
+            document.getElementById('mascotSelectGrid'),
+            document.getElementById('msContent3'),
+            document.querySelector('#mascotCustomizeModal > div > div:nth-child(2) > div:last-child')
+        ].forEach(function (element) {
+            if (element) element.scrollTop = 0;
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        if (
+            event.target.closest('[onclick*="openMascotSelectModal"]') ||
+            event.target.closest('[onclick*="changeDirectMascot"]') ||
+            event.target.closest('[onclick*="openTextMascotLibrary"]')
+        ) {
+            setTimeout(resetMascotModalScroll, 80);
+        }
+    });
+
+    /*
+     * Canvas eraser ko mouse ke sath mobile pointer/touch support bhi deta hai.
+     * Existing mouse handlers desktop ke liye unchanged rahenge.
+     */
+    function bindMobileMascotCanvas() {
+        const canvas = document.getElementById('mcCanvas');
+        if (!canvas || canvas.dataset.mobilePointerBound === '1') return;
+
+        canvas.dataset.mobilePointerBound = '1';
+
+        let drawing = false;
+
+        canvas.addEventListener('pointerdown', function (event) {
+            if (
+                !window.matchMedia('(max-width:1024px)').matches ||
+                !window._mc ||
+                window._mc.tool !== 'eraser'
+            ) return;
+
+            drawing = true;
+
+            try {
+                canvas.setPointerCapture(event.pointerId);
+            } catch (error) {}
+
+            event.preventDefault();
+
+            /*
+             * Existing mousedown handler ko compatible synthetic event.
+             */
+            if (typeof canvas.onmousedown === 'function') {
+                canvas.onmousedown(event);
+            }
+        }, { passive:false });
+
+        canvas.addEventListener('pointermove', function (event) {
+            if (!drawing || !window._mc || window._mc.tool !== 'eraser') return;
+
+            event.preventDefault();
+
+            if (typeof canvas.onmousemove === 'function') {
+                canvas.onmousemove(event);
+            }
+        }, { passive:false });
+
+        function stop(event) {
+            if (!drawing) return;
+            drawing = false;
+
+            if (typeof canvas.onmouseup === 'function') {
+                canvas.onmouseup(event);
+            }
+        }
+
+        canvas.addEventListener('pointerup', stop);
+        canvas.addEventListener('pointercancel', stop);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindMobileMascotCanvas);
+    } else {
+        bindMobileMascotCanvas();
+    }
+
+    document.addEventListener('click', function (event) {
+        if (
+            event.target.closest('[onclick*="openMascotCustomizeModal"]') ||
+            event.target.closest('[onclick*="applyUploadedMascotFile"]')
+        ) {
+            setTimeout(bindMobileMascotCanvas, 150);
+        }
+    });
+})();
+</script>
+
