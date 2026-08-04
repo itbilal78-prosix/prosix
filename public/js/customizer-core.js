@@ -13,10 +13,19 @@
             window.applicationsApplied = window.USER_DESIGN.applications;
         }
 
-        // restore colors
-        if (window.USER_DESIGN.color_changes) {
-            window.selectedColors = window.USER_DESIGN.color_changes;
-        }
+      // Restore saved design colors
+if (
+    window.USER_DESIGN &&
+    window.USER_DESIGN.color_changes
+) {
+    window.colorChanges =
+        window.USER_DESIGN.color_changes;
+
+    console.log(
+        'Saved user colors loaded:',
+        window.colorChanges
+    );
+}
 
         // restore patterns
         if (window.USER_DESIGN.pattern_changes &&
@@ -2070,22 +2079,72 @@ window.isDraggingKnob = false;
     window.MODEL_ID = window.MODEL_ID;
     window.API_URL = window.API_URL;
 
-    window.currentView = 'front';
-    window.selectedSvgElement = null;
-    window.allSvgParts = [];
-    if (window.USER_DESIGN && window.USER_DESIGN.color_changes &&
-        typeof window.USER_DESIGN.color_changes === 'object' &&
-        !Array.isArray(window.USER_DESIGN.color_changes) &&
-        Object.keys(window.USER_DESIGN.color_changes).length > 0) {
-        window.colorChanges = window.USER_DESIGN.color_changes;
-    } else {
-        window.colorChanges = { front: {}, back: {}, left: {}, right: {} };
-    }
-    window.gradientChanges = { front: {}, back: {}, left: {}, right: {} };
+window.currentView = 'front';
+window.selectedSvgElement = null;
+window.allSvgParts = [];
 
-    window.patternsApplied = { front: {}, back: {}, left: {}, right: {} };
-    window.mascotsApplied = { front: {}, back: {}, left: {}, right: {} };   // ⭐ ADD THIS
-    window.originalColors = { front: {}, back: {}, left: {}, right: {} };
+window.colorChanges = {
+    front: {},
+    back: {},
+    left: {},
+    right: {}
+};
+
+if (
+    window.USER_DESIGN &&
+    window.USER_DESIGN.color_changes &&
+    typeof window.USER_DESIGN.color_changes === 'object' &&
+    !Array.isArray(window.USER_DESIGN.color_changes)
+) {
+    window.colorChanges = {
+        front:
+            window.USER_DESIGN.color_changes.front || {},
+
+        back:
+            window.USER_DESIGN.color_changes.back || {},
+
+        left:
+            window.USER_DESIGN.color_changes.left || {},
+
+        right:
+            window.USER_DESIGN.color_changes.right || {}
+    };
+}
+
+let colorChanges = window.colorChanges;
+
+window.gradientChanges = {
+    front: {},
+    back: {},
+    left: {},
+    right: {}
+};
+
+window.patternsApplied = {
+    front: {},
+    back: {},
+    left: {},
+    right: {}
+};
+
+window.mascotsApplied = {
+    front: {},
+    back: {},
+    left: {},
+    right: {}
+};
+
+window.originalColors = {
+    front: {},
+    back: {},
+    left: {},
+    right: {}
+};
+
+console.log(
+    'Final saved colors:',
+    window.colorChanges
+);
 
 
     window.modelDataByView = {
@@ -2215,15 +2274,62 @@ window.isDraggingKnob = false;
 
             console.log('=== LOAD MODEL DATA ===', data); // DEBUG
 
-            // ✅ Color changes load karo
-            if (data.color_changes && typeof data.color_changes === 'object' && !Array.isArray(data.color_changes)) {
-                colorChanges = data.color_changes;
-                window.colorChanges = data.color_changes; // ✅ window pe bhi set karo
-                console.log('Colors loaded:', colorChanges);
-            } else {
-                colorChanges = { front: {}, back: {}, left: {}, right: {} };
-                window.colorChanges = colorChanges;
-            }
+          /*
+ * Saved customer design open hai to customer colors rakho.
+ * Normal customizer hai to model ke default colors rakho.
+ */
+if (
+    window.USER_DESIGN &&
+    window.USER_DESIGN.color_changes &&
+    typeof window.USER_DESIGN.color_changes === 'object' &&
+    !Array.isArray(window.USER_DESIGN.color_changes)
+) {
+    window.colorChanges = {
+        front:
+            window.USER_DESIGN.color_changes.front || {},
+
+        back:
+            window.USER_DESIGN.color_changes.back || {},
+
+        left:
+            window.USER_DESIGN.color_changes.left || {},
+
+        right:
+            window.USER_DESIGN.color_changes.right || {}
+    };
+} else if (
+    data.color_changes &&
+    typeof data.color_changes === 'object' &&
+    !Array.isArray(data.color_changes)
+) {
+    window.colorChanges = {
+        front:
+            data.color_changes.front || {},
+
+        back:
+            data.color_changes.back || {},
+
+        left:
+            data.color_changes.left || {},
+
+        right:
+            data.color_changes.right || {}
+    };
+} else {
+    window.colorChanges = {
+        front: {},
+        back: {},
+        left: {},
+        right: {}
+    };
+}
+
+colorChanges = window.colorChanges;
+
+console.log(
+    'Colors used in customizer:',
+    colorChanges
+);
 
             // Pattern changes
             if (data.pattern_changes && typeof data.pattern_changes === 'object' && !Array.isArray(data.pattern_changes)) {
