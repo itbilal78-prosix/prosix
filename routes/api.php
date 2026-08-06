@@ -202,6 +202,27 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
+
+// -----------------------------------------------
+// CRM PLACE ORDERS API
+// -----------------------------------------------
+Route::prefix('crm/place-orders')->group(function () {
+    Route::get(
+        '/',
+        [PlaceOrderController::class, 'crmIndex']
+    );
+
+    Route::get(
+        '/unread-count',
+        [PlaceOrderController::class, 'crmUnreadCount']
+    );
+
+    Route::post(
+        '/{id}/mark-read',
+        [PlaceOrderController::class, 'crmMarkRead']
+    );
+});
+
 // -----------------------------------------------
 // FALLBACK
 // -----------------------------------------------

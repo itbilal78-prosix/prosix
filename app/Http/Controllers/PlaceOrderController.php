@@ -287,6 +287,210 @@ public function trackOrder(Request $request)
         'created_at'    => $order->created_at,
     ]);
 }
+
+    /**
+     * CRM API: return all Prosix Place Orders.
+     */
+    public function crmIndex(Request $request)
+    {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        $orders = PlaceOrder::query()
+            ->latest()
+            ->get()
+            ->map(function (PlaceOrder $order) {
+                return [
+                    'id'            => $order->id,
+                    'user_id'       => $order->user_id,
+                    'full_name'     => $order->full_name,
+                    'email'         => $order->email,
+                    'phone'         => $order->phone,
+                    'order_number'  => $order->order_number,
+                    'order_date'    => $order->order_date,
+                    'delivery_date' => $order->delivery_date,
+                    'sales_rep'     => $order->sales_rep,
+                    'team_colors'   => $order->team_colors,
+                    'notes'         => $order->notes,
+                    'status'        => $order->status,
+                    'is_read'       => (bool) $order->is_read,
+
+                    'mockup_files' => $this->crmFiles(
+                        $order->mockup_files,
+                        'mockup'
+                    ),
+
+                    'roster_files' => $this->crmFiles(
+                        $order->roster_files,
+                        'roster'
+                    ),
+
+                    'quote_files' => $this->crmFiles(
+                        $order->quote_files,
+                        'quote'
+                    ),
+
+                    'created_at' => optional(
+                        $order->created_at
+                    )->toISOString(),
+
+                    'updated_at' => optional(
+                        $order->updated_at
+                    )->toISOString(),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $orders,
+        ]);
+    }
+
+    /**
+     * CRM API: unread Place Orders count.
+     */
+    public function crmUnreadCount(Request $request)
+    {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+                'count'   => 0,
+            ], 401);
+        }
+
+        return response()->json([
+            'success' => true,
+            'count'   => PlaceOrder::query()
+                ->where('is_read', false)
+                ->count(),
+        ]);
+    }
+
+    /**
+     * CRM API: mark one Place Order as read.
+     */
+    public function crmMarkRead(Request $request, int $id)
+    {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        $order = PlaceOrder::query()->findOrFail($id);
+
+        if (!$order->is_read) {
+            $order->update([
+                'is_read' => true,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Place Order marked as read.',
+            'data'    => [
+                'id'      => $order->id,
+                'is_read' => true,
+            ],
+        ]);
+    }
+
+    /**
+     * CRM bearer token verification.
+     */
+    private function crmAuthorized(Request $request): bool
+    {
+        $expectedToken = (string) config(
+            'services.crm.token',
+            env('PROSIX_CRM_TOKEN')
+        );
+
+        $providedToken = (string) $request->bearerToken();
+
+        return $expectedToken !== ''
+            && $providedToken !== ''
+            && hash_equals(
+                $expectedToken,
+                $providedToken
+            );
+    }
+
+    /**
+     * Prepare uploaded files for CRM.
+     */
+    private function crmFiles(
+        $files,
+        string $folder
+    ): array {
+        if (is_string($files)) {
+            $files = json_decode($files, true);
+        }
+
+        if (!is_array($files)) {
+            return [];
+        }
+
+        return collect($files)
+            ->map(function ($file) use ($folder) {
+                if (is_string($file)) {
+                    $filename = basename($file);
+
+                    return [
+                        'filename' => $filename,
+                        'original' => $filename,
+                        'url'      => asset(
+                            "uploads/orders/{$folder}/{$filename}"
+                        ),
+                    ];
+                }
+
+                $filename =
+                    $file['filename'] ??
+                    $file['file_name'] ??
+                    $file['name'] ??
+                    null;
+
+                if (!$filename) {
+                    return null;
+                }
+
+                return [
+                    'filename' => basename($filename),
+
+                    'original' =>
+                        $file['original'] ??
+                        $file['original_name'] ??
+                        basename($filename),
+
+                    'ext' =>
+                        $file['ext'] ??
+                        strtolower(
+                            pathinfo(
+                                $filename,
+                                PATHINFO_EXTENSION
+                            )
+                        ),
+
+                    'url' => asset(
+                        'uploads/orders/' .
+                        $folder . '/' .
+                        basename($filename)
+                    ),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+
 public function unreadCount()
 {
     return response()->json([

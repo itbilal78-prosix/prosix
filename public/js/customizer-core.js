@@ -4678,6 +4678,4 @@ async function generateAndSaveThumbnail(customizationId = null) {
         setTimeout(checkOrientation, 200);
     });
 
-
-
 })();

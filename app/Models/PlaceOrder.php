@@ -7,10 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class PlaceOrder extends Model
 {
     protected $fillable = [
-        'user_id', 'full_name', 'email', 'phone',
-        'order_number', 'order_date', 'delivery_date',
-        'sales_rep', 'team_colors', 'notes',
-        'mockup_files', 'roster_files', 'quote_files','is_read',
+        'user_id',
+        'full_name',
+        'email',
+        'phone',
+        'order_number',
+        'order_date',
+        'delivery_date',
+        'sales_rep',
+        'team_colors',
+        'notes',
+        'mockup_files',
+        'roster_files',
+        'quote_files',
+        'is_read',
         'status',
     ];
 
@@ -18,6 +28,7 @@ class PlaceOrder extends Model
         'mockup_files' => 'array',
         'roster_files' => 'array',
         'quote_files'  => 'array',
+        'is_read'      => 'boolean',
     ];
 
     public function user()
