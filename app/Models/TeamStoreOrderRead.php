@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class TeamStoreOrderRead extends Model
 {
+    protected $table = 'teamstore_order_reads';
+
     protected $fillable = [
         'order_id',
         'viewer_id',
