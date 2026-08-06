@@ -10,30 +10,58 @@ use Illuminate\Http\Request;
 class CRMTeamStoreController extends Controller
 {
     /**
-     * Verify CRM Token
+     * Verify CRM bearer token safely.
      */
-    private function authorized(Request $request): bool
-    {
-        return hash_equals(
-            config('services.prosix.crm_token'),
-            (string) $request->bearerToken()
-        );
+ private function authorized(Request $request): bool
+{
+    $expectedToken = (string) config(
+        'services.crm.token',
+        env('PROSIX_CRM_TOKEN', '')
+    );
+
+    $providedToken = (string) $request->bearerToken();
+
+    if (
+        $expectedToken === '' ||
+        $providedToken === ''
+    ) {
+        return false;
     }
 
+    return hash_equals(
+        $expectedToken,
+        $providedToken
+    );
+}
+
     /**
-     * Current CRM User
+     * Current CRM user details from request headers.
      */
     private function viewer(Request $request): array
     {
         return [
-            'id'    => $request->header('X-CRM-User-ID'),
-            'name'  => $request->header('X-CRM-User-Name'),
-            'email' => $request->header('X-CRM-User-Email'),
+            'id' => trim(
+                (string) $request->header(
+                    'X-CRM-User-ID'
+                )
+            ),
+
+            'name' => trim(
+                (string) $request->header(
+                    'X-CRM-User-Name'
+                )
+            ),
+
+            'email' => trim(
+                (string) $request->header(
+                    'X-CRM-User-Email'
+                )
+            ),
         ];
     }
 
     /**
-     * All TeamStore Orders
+     * Return all TeamStore orders for CRM.
      */
     public function index(Request $request)
     {
@@ -46,65 +74,127 @@ class CRMTeamStoreController extends Controller
 
         $viewer = $this->viewer($request);
 
-        $orders = Order::with([
-            'user',
-            'teamStoreReads' => function ($q) use ($viewer) {
-                $q->where('viewer_id', $viewer['id']);
-            },
-        ])
-        ->latest()
-        ->get()
-        ->map(function ($order) {
+        if ($viewer['id'] === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'CRM viewer ID is required.',
+            ], 422);
+        }
 
-            return [
+        $orders = Order::query()
+            ->with([
+                'user',
 
-                'id' => $order->id,
+                'teamStoreReads' => function ($query) use (
+                    $viewer
+                ) {
+                    $query->where(
+                        'viewer_id',
+                        $viewer['id']
+                    );
+                },
+            ])
+            ->latest()
+            ->get()
+            ->map(function (Order $order) {
+                return [
+                    'id' => $order->id,
 
-                'order_number' => $order->order_number,
+                    'order_number' =>
+                        $order->order_number,
 
-                'customer_name' => $order->shipping_name,
+                    'customer_name' =>
+                        $order->shipping_name,
 
-                'email' => $order->shipping_email,
+                    'email' =>
+                        $order->shipping_email,
 
-                'phone' => $order->shipping_phone,
+                    'phone' =>
+                        $order->shipping_phone,
 
-                'status' => $order->status,
+                    'status' =>
+                        $order->status,
 
-                'payment_status' => $order->payment_status,
+                    'payment_status' =>
+                        $order->payment_status,
 
-                'payment_method' => $order->payment_method,
+                    'payment_method' =>
+                        $order->payment_method,
 
-                'currency' => $order->currency,
+                    'currency' =>
+                        $order->currency,
 
-                'total' => $order->total,
+                    'total' =>
+                        $order->total,
 
-                'tracking_number' => $order->tracking_number,
+                    'paid_amount' =>
+                        $order->paid_amount,
 
-                'courier_name' => $order->courier_name,
+                    'transaction_date' =>
+                        optional(
+                            $order->transaction_date
+                        )->toISOString(),
 
-                'delivery_days' => $order->delivery_days,
+                    'tracking_number' =>
+                        $order->tracking_number,
 
-                'shipping_address' => $order->shipping_address,
+                    'courier_name' =>
+                        $order->courier_name,
 
-                'shipping_city' => $order->shipping_city,
+                    'dispatch_date' =>
+                        optional(
+                            $order->dispatch_date
+                        )->toISOString(),
 
-                'shipping_province' => $order->shipping_province,
+                    'delivered_date' =>
+                        optional(
+                            $order->delivered_date
+                        )->toISOString(),
 
-                'shipping_postal_code' => $order->shipping_postal_code,
+                    'delivery_days' =>
+                        $order->delivery_days,
 
-                'items' => $order->items,
+                    'shipping_address' =>
+                        $order->shipping_address,
 
-                'admin_notes' => $order->admin_notes,
+                    'shipping_city' =>
+                        $order->shipping_city,
 
-                'created_at' => $order->created_at,
+                    'shipping_province' =>
+                        $order->shipping_province,
 
-                'updated_at' => $order->updated_at,
+                    'shipping_postal_code' =>
+                        $order->shipping_postal_code,
 
-                'is_read' => $order->teamStoreReads->isNotEmpty(),
+                    'items' =>
+                        is_array($order->items)
+                            ? $order->items
+                            : [],
 
-            ];
+                    'admin_notes' =>
+                        $order->admin_notes,
 
-        });
+                    /*
+                     * Current CRM user ka personal
+                     * read status.
+                     */
+                    'is_read' =>
+                        $order
+                            ->teamStoreReads
+                            ->isNotEmpty(),
+
+                    'created_at' =>
+                        optional(
+                            $order->created_at
+                        )->toISOString(),
+
+                    'updated_at' =>
+                        optional(
+                            $order->updated_at
+                        )->toISOString(),
+                ];
+            })
+            ->values();
 
         return response()->json([
             'success' => true,
@@ -113,77 +203,90 @@ class CRMTeamStoreController extends Controller
     }
 
     /**
-     * Unread Count
+     * Current CRM user ka unread count.
      */
     public function unreadCount(Request $request)
     {
         if (!$this->authorized($request)) {
-
             return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
                 'count' => 0,
-            ]);
-
+            ], 401);
         }
 
         $viewer = $this->viewer($request);
 
-        $count = Order::whereDoesntHave(
-            'teamStoreReads',
-            function ($q) use ($viewer) {
+        if ($viewer['id'] === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'CRM viewer ID is required.',
+                'count' => 0,
+            ], 422);
+        }
 
-                $q->where(
-                    'viewer_id',
-                    $viewer['id']
-                );
-
-            }
-        )->count();
+        $count = Order::query()
+            ->whereDoesntHave(
+                'teamStoreReads',
+                function ($query) use ($viewer) {
+                    $query->where(
+                        'viewer_id',
+                        $viewer['id']
+                    );
+                }
+            )
+            ->count();
 
         return response()->json([
+            'success' => true,
             'count' => $count,
         ]);
     }
 
     /**
-     * Mark Read
+     * Current CRM user ke liye order read mark karo.
      */
-    public function markRead(Request $request, Order $order)
-    {
+    public function markRead(
+        Request $request,
+        Order $order
+    ) {
         if (!$this->authorized($request)) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized CRM request.',
             ], 401);
-
         }
 
         $viewer = $this->viewer($request);
 
+        if ($viewer['id'] === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'CRM viewer ID is required.',
+            ], 422);
+        }
+
         TeamStoreOrderRead::updateOrCreate(
-
             [
-
                 'order_id' => $order->id,
-
                 'viewer_id' => $viewer['id'],
-
             ],
-
             [
-
                 'viewer_name' => $viewer['name'],
-
                 'viewer_email' => $viewer['email'],
-
                 'read_at' => now(),
-
             ]
-
         );
 
         return response()->json([
             'success' => true,
+            'message' =>
+                'TeamStore order marked as read.',
+
+            'data' => [
+                'id' => $order->id,
+                'is_read' => true,
+            ],
         ]);
     }
 }
