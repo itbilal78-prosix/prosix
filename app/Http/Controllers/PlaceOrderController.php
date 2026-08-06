@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\PlaceOrder;
+use App\Models\PlaceOrderRead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;   // ← YEH NAYA HAI
@@ -300,7 +301,23 @@ public function trackOrder(Request $request)
             ], 401);
         }
 
+        $viewer = $this->crmViewer($request);
+
+        if ($viewer['id'] === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'CRM viewer ID is required.',
+            ], 422);
+        }
+
         $orders = PlaceOrder::query()
+            ->with([
+                'reads' => function ($query) use ($viewer) {
+                    $query
+                        ->where('source', 'crm')
+                        ->where('viewer_id', $viewer['id']);
+                },
+            ])
             ->latest()
             ->get()
             ->map(function (PlaceOrder $order) {
@@ -317,7 +334,11 @@ public function trackOrder(Request $request)
                     'team_colors'   => $order->team_colors,
                     'notes'         => $order->notes,
                     'status'        => $order->status,
-                    'is_read'       => (bool) $order->is_read,
+
+                    /*
+                     * Current CRM user ka personal read status.
+                     */
+                    'is_read' => $order->reads->isNotEmpty(),
 
                     'mockup_files' => $this->crmFiles(
                         $order->mockup_files,
@@ -364,11 +385,30 @@ public function trackOrder(Request $request)
             ], 401);
         }
 
+        $viewer = $this->crmViewer($request);
+
+        if ($viewer['id'] === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'CRM viewer ID is required.',
+                'count'   => 0,
+            ], 422);
+        }
+
+        $count = PlaceOrder::query()
+            ->whereDoesntHave(
+                'reads',
+                function ($query) use ($viewer) {
+                    $query
+                        ->where('source', 'crm')
+                        ->where('viewer_id', $viewer['id']);
+                }
+            )
+            ->count();
+
         return response()->json([
             'success' => true,
-            'count'   => PlaceOrder::query()
-                ->where('is_read', false)
-                ->count(),
+            'count'   => $count,
         ]);
     }
 
@@ -384,13 +424,29 @@ public function trackOrder(Request $request)
             ], 401);
         }
 
+        $viewer = $this->crmViewer($request);
+
+        if ($viewer['id'] === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'CRM viewer ID is required.',
+            ], 422);
+        }
+
         $order = PlaceOrder::query()->findOrFail($id);
 
-        if (!$order->is_read) {
-            $order->update([
-                'is_read' => true,
-            ]);
-        }
+        PlaceOrderRead::updateOrCreate(
+            [
+                'place_order_id' => $order->id,
+                'source'         => 'crm',
+                'viewer_id'      => $viewer['id'],
+            ],
+            [
+                'viewer_name'  => $viewer['name'],
+                'viewer_email' => $viewer['email'],
+                'read_at'      => now(),
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -405,6 +461,27 @@ public function trackOrder(Request $request)
     /**
      * CRM bearer token verification.
      */
+
+    /**
+     * Logged-in CRM user details from request headers.
+     */
+    private function crmViewer(Request $request): array
+    {
+        return [
+            'id' => trim(
+                (string) $request->header('X-CRM-User-ID')
+            ),
+
+            'name' => trim(
+                (string) $request->header('X-CRM-User-Name')
+            ),
+
+            'email' => trim(
+                (string) $request->header('X-CRM-User-Email')
+            ),
+        ];
+    }
+
     private function crmAuthorized(Request $request): bool
     {
         $expectedToken = (string) config(
