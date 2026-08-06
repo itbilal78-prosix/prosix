@@ -3,67 +3,41 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\TeamStoreOrderRead;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CRMTeamStoreController extends Controller
 {
-    /**
-     * Verify CRM bearer token safely.
-     */
- private function authorized(Request $request): bool
-{
-    $expectedToken = (string) config(
-        'services.crm.token',
-        env('PROSIX_CRM_TOKEN', '')
-    );
+    private function authorized(Request $request): bool
+    {
+        $expectedToken = (string) config(
+            'services.crm.token',
+            env('PROSIX_CRM_TOKEN', '')
+        );
 
-    $providedToken = (string) $request->bearerToken();
+        $providedToken = (string) $request->bearerToken();
 
-    if (
-        $expectedToken === '' ||
-        $providedToken === ''
-    ) {
-        return false;
+        if ($expectedToken === '' || $providedToken === '') {
+            return false;
+        }
+
+        return hash_equals($expectedToken, $providedToken);
     }
 
-    return hash_equals(
-        $expectedToken,
-        $providedToken
-    );
-}
-
-    /**
-     * Current CRM user details from request headers.
-     */
     private function viewer(Request $request): array
     {
         return [
-            'id' => trim(
-                (string) $request->header(
-                    'X-CRM-User-ID'
-                )
-            ),
-
-            'name' => trim(
-                (string) $request->header(
-                    'X-CRM-User-Name'
-                )
-            ),
-
-            'email' => trim(
-                (string) $request->header(
-                    'X-CRM-User-Email'
-                )
-            ),
+            'id' => trim((string) $request->header('X-CRM-User-ID')),
+            'name' => trim((string) $request->header('X-CRM-User-Name')),
+            'email' => trim((string) $request->header('X-CRM-User-Email')),
         ];
     }
 
-    /**
-     * Return all TeamStore orders for CRM.
-     */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         if (!$this->authorized($request)) {
             return response()->json([
@@ -84,128 +58,121 @@ class CRMTeamStoreController extends Controller
         $orders = Order::query()
             ->with([
                 'user',
-
-                'teamStoreReads' => function ($query) use (
-                    $viewer
-                ) {
-                    $query->where(
-                        'viewer_id',
-                        $viewer['id']
-                    );
+                'teamStoreReads' => function ($query) use ($viewer) {
+                    $query->where('viewer_id', $viewer['id']);
                 },
             ])
             ->latest()
+            ->get();
+
+        /*
+         * TeamStore item payload mein aksar sirf product ID hoti hai.
+         * Is liye products aur categories database se load karke
+         * item ke andar category data attach kar rahe hain.
+         */
+        $productIds = $orders
+            ->flatMap(function (Order $order) {
+                return collect($this->normalizeItems($order->items))
+                    ->pluck('id');
+            })
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $products = Product::query()
+            ->whereIn('id', $productIds)
             ->get()
-            ->map(function (Order $order) {
+            ->keyBy('id');
+
+        $categoryIds = $products
+            ->pluck('category_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $categories = Category::query()
+            ->whereIn('id', $categoryIds)
+            ->get()
+            ->keyBy('id');
+
+        $data = $orders
+            ->map(function (Order $order) use ($products, $categories) {
+                $items = collect($this->normalizeItems($order->items))
+                    ->map(function (array $item) use ($products, $categories) {
+                        $productId = isset($item['id'])
+                            ? (int) $item['id']
+                            : null;
+
+                        $product = $productId
+                            ? $products->get($productId)
+                            : null;
+
+                        $category = $product?->category_id
+                            ? $categories->get((int) $product->category_id)
+                            : null;
+
+                        return array_merge($item, [
+                            'product_id' => $productId,
+                            'name' => $item['name']
+                                ?? $product?->name
+                                ?? 'TeamStore Product',
+
+                            'image' => $item['image']
+                                ?? $product?->thumbnail
+                                ?? null,
+
+                            'category_id' => $category?->id,
+                            'category_name' => $category?->name ?? 'Other',
+                            'category_icon_image' => $category?->icon_image,
+                        ]);
+                    })
+                    ->values()
+                    ->all();
+
                 return [
                     'id' => $order->id,
-
-                    'order_number' =>
-                        $order->order_number,
-
-                    'customer_name' =>
-                        $order->shipping_name,
-
-                    'email' =>
-                        $order->shipping_email,
-
-                    'phone' =>
-                        $order->shipping_phone,
-
-                    'status' =>
-                        $order->status,
-
-                    'payment_status' =>
-                        $order->payment_status,
-
-                    'payment_method' =>
-                        $order->payment_method,
-
-                    'currency' =>
-                        $order->currency,
-
-                    'total' =>
-                        $order->total,
-
-                    'paid_amount' =>
-                        $order->paid_amount,
-
-                    'transaction_date' =>
-                        optional(
-                            $order->transaction_date
-                        )->toISOString(),
-
-                    'tracking_number' =>
-                        $order->tracking_number,
-
-                    'courier_name' =>
-                        $order->courier_name,
-
-                    'dispatch_date' =>
-                        optional(
-                            $order->dispatch_date
-                        )->toISOString(),
-
-                    'delivered_date' =>
-                        optional(
-                            $order->delivered_date
-                        )->toISOString(),
-
-                    'delivery_days' =>
-                        $order->delivery_days,
-
-                    'shipping_address' =>
-                        $order->shipping_address,
-
-                    'shipping_city' =>
-                        $order->shipping_city,
-
-                    'shipping_province' =>
-                        $order->shipping_province,
-
-                    'shipping_postal_code' =>
-                        $order->shipping_postal_code,
-
-                    'items' =>
-                        is_array($order->items)
-                            ? $order->items
-                            : [],
-
-                    'admin_notes' =>
-                        $order->admin_notes,
-
-                    /*
-                     * Current CRM user ka personal
-                     * read status.
-                     */
-                    'is_read' =>
-                        $order
-                            ->teamStoreReads
-                            ->isNotEmpty(),
-
-                    'created_at' =>
-                        optional(
-                            $order->created_at
-                        )->toISOString(),
-
-                    'updated_at' =>
-                        optional(
-                            $order->updated_at
-                        )->toISOString(),
+                    'order_number' => $order->order_number,
+                    'customer_name' => $order->shipping_name,
+                    'email' => $order->shipping_email,
+                    'phone' => $order->shipping_phone,
+                    'status' => $order->status,
+                    'payment_status' => $order->payment_status,
+                    'payment_method' => $order->payment_method,
+                    'tracking_number' => $order->tracking_number,
+                    'courier_name' => $order->courier_name,
+                    'delivery_days' => $order->delivery_days,
+                    'shipping_address' => $order->shipping_address,
+                    'shipping_city' => $order->shipping_city,
+                    'shipping_province' => $order->shipping_province,
+                    'shipping_postal_code' => $order->shipping_postal_code,
+                    'dispatch_date' => optional(
+                        $order->dispatch_date
+                    )->toISOString(),
+                    'delivered_date' => optional(
+                        $order->delivered_date
+                    )->toISOString(),
+                    'items' => $items,
+                    'admin_notes' => $order->admin_notes,
+                    'is_read' => $order->teamStoreReads->isNotEmpty(),
+                    'created_at' => optional(
+                        $order->created_at
+                    )->toISOString(),
+                    'updated_at' => optional(
+                        $order->updated_at
+                    )->toISOString(),
                 ];
             })
             ->values();
 
         return response()->json([
             'success' => true,
-            'data' => $orders,
+            'data' => $data,
         ]);
     }
 
-    /**
-     * Current CRM user ka unread count.
-     */
-    public function unreadCount(Request $request)
+    public function unreadCount(Request $request): JsonResponse
     {
         if (!$this->authorized($request)) {
             return response()->json([
@@ -229,10 +196,7 @@ class CRMTeamStoreController extends Controller
             ->whereDoesntHave(
                 'teamStoreReads',
                 function ($query) use ($viewer) {
-                    $query->where(
-                        'viewer_id',
-                        $viewer['id']
-                    );
+                    $query->where('viewer_id', $viewer['id']);
                 }
             )
             ->count();
@@ -243,13 +207,10 @@ class CRMTeamStoreController extends Controller
         ]);
     }
 
-    /**
-     * Current CRM user ke liye order read mark karo.
-     */
     public function markRead(
         Request $request,
         Order $order
-    ) {
+    ): JsonResponse {
         if (!$this->authorized($request)) {
             return response()->json([
                 'success' => false,
@@ -280,13 +241,28 @@ class CRMTeamStoreController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'TeamStore order marked as read.',
-
+            'message' => 'TeamStore order marked as read.',
             'data' => [
                 'id' => $order->id,
                 'is_read' => true,
             ],
         ]);
+    }
+
+    private function normalizeItems(mixed $items): array
+    {
+        if (is_array($items)) {
+            return $items;
+        }
+
+        if (is_string($items)) {
+            $decoded = json_decode($items, true);
+
+            return is_array($decoded)
+                ? $decoded
+                : [];
+        }
+
+        return [];
     }
 }
