@@ -25,6 +25,7 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserCustomizationController;
+use App\Http\Controllers\Api\CRMTeamStoreController;
 
 /*
 |--------------------------------------------------------------------------
@@ -220,6 +221,29 @@ Route::prefix('crm/place-orders')->group(function () {
     Route::post(
         '/{id}/mark-read',
         [PlaceOrderController::class, 'crmMarkRead']
+    );
+});
+
+
+
+// -----------------------------------------------
+// CRM TEAMSTORE ORDERS API
+// -----------------------------------------------
+Route::prefix('crm/teamstore-orders')->group(function () {
+
+    Route::get(
+        '/',
+        [CRMTeamStoreController::class, 'index']
+    );
+
+    Route::get(
+        '/unread-count',
+        [CRMTeamStoreController::class, 'unreadCount']
+    );
+
+    Route::post(
+        '/{order}/mark-read',
+        [CRMTeamStoreController::class, 'markRead']
     );
 });
 

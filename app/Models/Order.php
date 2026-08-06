@@ -84,4 +84,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderStatusLog::class);
     }
+
+    public function reads()
+{
+    return $this->hasMany(TeamStoreOrderRead::class);
+}
 }
