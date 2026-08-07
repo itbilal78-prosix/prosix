@@ -86,6 +86,10 @@ Route::prefix('admin')
 
         Route::post('/orders/{id}/notes', [OrderController::class,'updateNotes'])
             ->name('orders.updateNotes');
+
+Route::post('/orders/{id}/remark', [OrderController::class, 'updateRemark'])
+    ->name('orders.updateRemark');
+
             Route::post('/orders/download-pdf', [OrderController::class, 'downloadPdf'])
     ->name('orders.downloadPdf');
     });
