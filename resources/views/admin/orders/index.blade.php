@@ -49,7 +49,7 @@
   {{-- ─── BULK ACTION BAR ─── --}}
   <div id="bulkBar" style="display:none; position:sticky; top:70px; z-index:999; background:#0a0a0a; color:#fff; border-radius:12px; padding:14px 20px; margin-bottom:16px; align-items:center; gap:16px; flex-wrap:wrap; box-shadow:0 4px 20px rgba(0,0,0,.2);">
     <span id="bulkCount" style="font-size:14px; font-weight:600;">0 selected</span>
-    <select id="bulkStatus" style="padding:8px 14px; border-radius:8px; border:none; font-size:14px; font-weight:600; background:#fff; color:#111; cursor:pointer;">
+    <select id="bulkStatus" onchange="toggleBulkCustomStatus(this)" style="padding:8px 14px; border-radius:8px; border:none; font-size:14px; font-weight:600; background:#fff; color:#111; cursor:pointer;">
       <option value="">— Change Status —</option>
       <option value="new">New</option>
       <option value="confirmed">Confirmed</option>
@@ -57,7 +57,15 @@
       <option value="shipped">Shipped</option>
       <option value="delivered">Delivered</option>
       <option value="cancelled">Cancelled</option>
+      <option value="__custom__">Custom Status...</option>
     </select>
+
+    <input
+      type="text"
+      id="bulkCustomStatus"
+      placeholder="Type custom status"
+      style="display:none;padding:8px 12px;border-radius:8px;border:none;min-width:180px;"
+    >
     <button onclick="applyBulkStatus()" style="padding:8px 20px; background:#fff; color:#111; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">
       ✓ Apply
     </button>
@@ -69,52 +77,56 @@
     </button>
   </div>
 
-  {{-- ─── STATUS FILTER TABS ─── --}}
-  <div class="order-status-tabs mb-4">
-    @php
-      $statuses = [
-        'all'        => 'All',
-        'new'        => 'New',
-        'confirmed'  => 'Confirmed',
-        'production' => 'Production',
-        'shipped'    => 'Shipped',
-        'delivered'  => 'Delivered',
-        'cancelled'  => 'Cancelled',
-      ];
-      $statusColors = [
-        'all'        => '#6c757d',
-        'new'        => '#8b5cf6',
-        'confirmed'  => '#3b82f6',
-        'production' => '#f59e0b',
-        'shipped'    => '#0ea5e9',
-        'delivered'  => '#10b981',
-        'cancelled'  => '#ef4444',
-      ];
-      $tabData = [
-        'all'        => ['count' => $orders->count(),                              'total' => $orders->sum('total')],
-        'new'        => ['count' => $orders->where('status','new')->count(),        'total' => $orders->where('status','new')->sum('total')],
-        'confirmed'  => ['count' => $orders->where('status','confirmed')->count(),  'total' => $orders->where('status','confirmed')->sum('total')],
-        'production' => ['count' => $orders->where('status','production')->count(), 'total' => $orders->where('status','production')->sum('total')],
-        'shipped'    => ['count' => $orders->where('status','shipped')->count(),    'total' => $orders->where('status','shipped')->sum('total')],
-        'delivered'  => ['count' => $orders->where('status','delivered')->count(),  'total' => $orders->where('status','delivered')->sum('total')],
-        'cancelled'  => ['count' => $orders->where('status','cancelled')->count(),  'total' => $orders->where('status','cancelled')->sum('total')],
-      ];
-    @endphp
+  {{-- ─── STATUS FILTER TABS — COUNTS CHANGE WITH SELECTED CATEGORY ─── --}}
+  @php
+    $standardStatuses = [
+      'new'        => 'New',
+      'confirmed'  => 'Confirmed',
+      'production' => 'Production',
+      'shipped'    => 'Shipped',
+      'delivered'  => 'Delivered',
+      'cancelled'  => 'Cancelled',
+    ];
 
+    $customStatuses = $orders
+      ->pluck('status')
+      ->filter()
+      ->map(fn($s) => strtolower(trim($s)))
+      ->reject(fn($s) => array_key_exists($s, $standardStatuses))
+      ->unique()
+      ->values();
+
+    $statuses = ['all' => 'All'] + $standardStatuses;
+
+    foreach ($customStatuses as $customStatus) {
+      $statuses[$customStatus] = ucwords(str_replace(['_', '-'], ' ', $customStatus));
+    }
+
+    $statusColors = [
+      'all'        => '#6c757d',
+      'new'        => '#8b5cf6',
+      'confirmed'  => '#3b82f6',
+      'production' => '#f59e0b',
+      'shipped'    => '#0ea5e9',
+      'delivered'  => '#10b981',
+      'cancelled'  => '#ef4444',
+    ];
+  @endphp
+
+  <div class="order-status-tabs mb-4">
     @foreach($statuses as $key => $label)
-    <button
-      class="status-tab {{ $key === 'all' ? 'active' : '' }}"
-      data-filter="{{ $key }}"
-      style="--tab-color: {{ $statusColors[$key] }}"
-      onclick="filterByStatus('{{ $key }}')"
-    >
-      <span class="tab-dot"></span>
-      <span class="tab-label">{{ $label }}</span>
-      <span class="tab-right">
-        <span class="tab-count">{{ $tabData[$key]['count'] }} orders</span>
-        <span class="tab-amount">${{ number_format($tabData[$key]['total'], 2) }}</span>
-      </span>
-    </button>
+      <button
+        class="status-tab {{ $key === 'all' ? 'active' : '' }}"
+        data-filter="{{ $key }}"
+        style="--tab-color: {{ $statusColors[$key] ?? '#111827' }}"
+        onclick="filterByStatus('{{ $key }}')"
+      >
+        <span class="tab-dot"></span>
+        <span class="tab-label">{{ $label }}</span>
+        <span class="tab-right">
+          <span class="tab-count" data-status-count="{{ $key }}">0 orders</span>
+        </span>
+      </button>
     @endforeach
   </div>
 
@@ -139,6 +151,7 @@
               <th>Total</th>
               <th>Payment</th>
               <th>Status</th>
+              <th>Remark</th>
               <th>Customer</th>
               <th>Phone</th>
               <th>City</th>
@@ -203,17 +216,82 @@
 
               <td>
                 @php
-                  $sc = match($order->status) {
-                    'new'        => 'status-new',
-                    'confirmed'  => 'status-confirmed',
-                    'production' => 'status-production',
-                    'shipped'    => 'status-shipped',
-                    'delivered'  => 'status-delivered',
-                    'cancelled'  => 'status-cancelled',
-                    default      => 'status-default',
-                  };
+                  $normalizedStatus = strtolower(trim($order->status));
+                  $standard = ['new','confirmed','production','shipped','delivered','cancelled'];
+                  $isCustomStatus = !in_array($normalizedStatus, $standard, true);
                 @endphp
-                <span class="order-status-badge {{ $sc }}">{{ ucfirst($order->status) }}</span>
+
+                <form
+                  id="statusForm{{ $order->id }}"
+                  method="POST"
+                  action="{{ route('admin.orders.updateStatus', $order->id) }}"
+                  class="status-inline-form"
+                >
+                  @csrf
+
+                  <select
+                    class="status-inline-select"
+                    onchange="handleRowStatusChange(this, {{ $order->id }})"
+                  >
+                    <option value="new" {{ $normalizedStatus === 'new' ? 'selected' : '' }}>New</option>
+                    <option value="confirmed" {{ $normalizedStatus === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                    <option value="production" {{ $normalizedStatus === 'production' ? 'selected' : '' }}>Production</option>
+                    <option value="shipped" {{ $normalizedStatus === 'shipped' ? 'selected' : '' }}>Shipped</option>
+                    <option value="delivered" {{ $normalizedStatus === 'delivered' ? 'selected' : '' }}>Delivered</option>
+                    <option value="cancelled" {{ $normalizedStatus === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <option value="__custom__" {{ $isCustomStatus ? 'selected' : '' }}>Custom...</option>
+                  </select>
+
+                  <input
+                    type="hidden"
+                    name="status"
+                    id="statusValue{{ $order->id }}"
+                    value="{{ $order->status }}"
+                  >
+
+                  <div
+                    id="customStatusWrap{{ $order->id }}"
+                    class="custom-status-wrap"
+                    style="{{ $isCustomStatus ? 'display:flex;' : 'display:none;' }}"
+                  >
+                    <input
+                      type="text"
+                      id="customStatusInput{{ $order->id }}"
+                      class="custom-status-input"
+                      value="{{ $isCustomStatus ? $order->status : '' }}"
+                      placeholder="Type status"
+                    >
+
+                    <button
+                      type="button"
+                      class="mini-save-btn"
+                      onclick="saveCustomRowStatus({{ $order->id }})"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+              </td>
+
+              <td>
+                <form
+                  method="POST"
+                  action="{{ route('admin.orders.updateRemark', $order->id) }}"
+                  class="remark-inline-form"
+                >
+                  @csrf
+
+                  <textarea
+                    name="remark"
+                    rows="2"
+                    class="remark-input"
+                    placeholder="Write remark..."
+                  >{{ $order->remark }}</textarea>
+
+                  <button type="submit" class="remark-save-btn">
+                    Save
+                  </button>
+                </form>
               </td>
 
               <td>{{ $order->shipping_name }}</td>
@@ -341,6 +419,37 @@ tr.selected-row { background:#f0f4ff !important; }
 /* ── View Button ── */
 .btn-view { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; font-size:14px; font-weight:600; color:#111; border:1.5px solid #d1d5db; border-radius:7px; background:#fff; text-decoration:none; transition:all .15s; white-space:nowrap; }
 .btn-view:hover { background:#111; color:#fff; border-color:#111; }
+
+/* ── Editable Status + Remark ── */
+.status-inline-form { min-width:150px; }
+.status-inline-select {
+  width:100%; max-width:170px; padding:7px 9px;
+  border:1.5px solid #d1d5db; border-radius:7px;
+  background:#fff; color:#111; font-size:12px; font-weight:700;
+  cursor:pointer; outline:none;
+}
+.status-inline-select:focus { border-color:#111; }
+.custom-status-wrap { margin-top:6px; align-items:center; gap:5px; }
+.custom-status-input {
+  width:115px; padding:6px 7px; border:1px solid #d1d5db;
+  border-radius:6px; font-size:11px;
+}
+.mini-save-btn {
+  padding:6px 8px; border:none; border-radius:6px;
+  background:#111; color:#fff; font-size:10px; font-weight:800; cursor:pointer;
+}
+.remark-inline-form { min-width:205px; }
+.remark-input {
+  width:100%; min-width:180px; resize:vertical; padding:7px 8px;
+  border:1px solid #d1d5db; border-radius:7px; background:#fff;
+  color:#111; font-size:11px; line-height:1.35; outline:none;
+}
+.remark-input:focus { border-color:#111; }
+.remark-save-btn {
+  margin-top:5px; padding:5px 10px; border:none; border-radius:6px;
+  background:#111827; color:#fff; font-size:10px; font-weight:800; cursor:pointer;
+}
+
 </style>
 
 {{-- ── JAVASCRIPT ── --}}
@@ -348,13 +457,44 @@ tr.selected-row { background:#f0f4ff !important; }
   let activeCat    = 'all';
   let activeStatus = 'all';
 
+  function normalizedStatus(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function updateStatusCountsForActiveCategory() {
+    const rows = Array.from(document.querySelectorAll('.order-row'));
+
+    document.querySelectorAll('[data-status-count]').forEach(counter => {
+      const status = counter.dataset.statusCount;
+
+      const count = rows.filter(row => {
+        const rowCats = row.dataset.cats ? row.dataset.cats.split(',') : [];
+        const catOk = activeCat === 'all' || rowCats.includes(String(activeCat));
+        const statusOk =
+          status === 'all' ||
+          normalizedStatus(row.dataset.status) === normalizedStatus(status);
+
+        return catOk && statusOk;
+      }).length;
+
+      counter.textContent = count + (count === 1 ? ' order' : ' orders');
+    });
+  }
+
   function applyFilters() {
     document.querySelectorAll('.order-row').forEach(row => {
-      const statusOk = activeStatus === 'all' || row.dataset.status === activeStatus;
-      const rowCats  = row.dataset.cats ? row.dataset.cats.split(',') : [];
-      const catOk    = activeCat === 'all' || rowCats.includes(String(activeCat));
+      const statusOk =
+        activeStatus === 'all' ||
+        normalizedStatus(row.dataset.status) === normalizedStatus(activeStatus);
+
+      const rowCats = row.dataset.cats ? row.dataset.cats.split(',') : [];
+      const catOk = activeCat === 'all' || rowCats.includes(String(activeCat));
+
       row.style.display = (statusOk && catOk) ? '' : 'none';
     });
+
+    updateStatusCountsForActiveCategory();
+    updateBulkBar();
   }
 
   function filterByStatus(status) {
@@ -410,11 +550,51 @@ tr.selected-row { background:#f0f4ff !important; }
     updateBulkBar();
   }
 
+  function handleRowStatusChange(select, orderId) {
+    const wrap = document.getElementById('customStatusWrap' + orderId);
+
+    if (select.value === '__custom__') {
+      wrap.style.display = 'flex';
+      document.getElementById('customStatusInput' + orderId).focus();
+      return;
+    }
+
+    wrap.style.display = 'none';
+    document.getElementById('statusValue' + orderId).value = select.value;
+    document.getElementById('statusForm' + orderId).submit();
+  }
+
+  function saveCustomRowStatus(orderId) {
+    const value = document.getElementById('customStatusInput' + orderId).value.trim();
+
+    if (!value) {
+      showToast('⚠ Type a custom status first!', '#f59e0b');
+      return;
+    }
+
+    document.getElementById('statusValue' + orderId).value = value;
+    document.getElementById('statusForm' + orderId).submit();
+  }
+
+  function toggleBulkCustomStatus(select) {
+    const input = document.getElementById('bulkCustomStatus');
+    input.style.display = select.value === '__custom__' ? 'block' : 'none';
+
+    if (select.value === '__custom__') {
+      input.focus();
+    }
+  }
+
   async function applyBulkStatus() {
     const ids    = getChecked();
-    const status = document.getElementById('bulkStatus').value;
-    if (!ids.length)  { showToast('⚠ No orders selected!', '#f59e0b'); return; }
-    if (!status)      { showToast('⚠ Please select a status!', '#f59e0b'); return; }
+    let status = document.getElementById('bulkStatus').value;
+
+    if (status === '__custom__') {
+      status = document.getElementById('bulkCustomStatus').value.trim();
+    }
+
+    if (!ids.length) { showToast('⚠ No orders selected!', '#f59e0b'); return; }
+    if (!status) { showToast('⚠ Please select/type a status!', '#f59e0b'); return; }
     if (!confirm('Are you sure you want to change ' + ids.length + ' order(s) status to "' + status + '"?')) return;
 
     try {
@@ -482,6 +662,8 @@ tr.selected-row { background:#f0f4ff !important; }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    updateStatusCountsForActiveCategory();
+
     document.querySelectorAll('.order-cb').forEach(cb => {
       cb.addEventListener('change', function() {
         this.closest('tr').classList.toggle('selected-row', this.checked);

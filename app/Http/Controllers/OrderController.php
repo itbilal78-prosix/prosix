@@ -198,7 +198,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:new,confirmed,production,shipped,delivered,cancelled',
+            'status' => 'required|string|max:100',
         ]);
 
         $order = Order::findOrFail($id);
@@ -330,6 +330,38 @@ class OrderController extends Controller
         return back()->with('success', 'Notes updated + email sent');
     }
 
+
+    public function updateRemark(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'remark' => 'nullable|string|max:5000',
+        ]);
+
+        $order = Order::findOrFail($id);
+
+        $order->update([
+            'remark' => $validated['remark'] ?? null,
+        ]);
+
+        ActivityLogger::log(
+            action: 'updated',
+            module: 'Order',
+            targetName: 'Order #' . $order->order_number,
+            targetId: $order->id,
+            changes: ['remark' => $validated['remark'] ?? null]
+        );
+
+        OrderStatusLog::create([
+            'order_id' => $order->id,
+            'status' => 'remark_updated',
+            'changed_by' => 'admin',
+            'note' => 'Internal remark updated by admin',
+        ]);
+
+        // Remark internal hai; customer ko email intentionally nahi bhejte.
+        return back()->with('success', 'Remark updated successfully.');
+    }
+
     public function cancel($id)
     {
         $order = Order::findOrFail($id);
@@ -375,7 +407,7 @@ class OrderController extends Controller
     $request->validate([
         'ids'    => 'required|array|min:1',
         'ids.*'  => 'integer|exists:orders,id',
-        'status' => 'required|in:new,confirmed,production,shipped,delivered,cancelled',
+        'status' => 'required|string|max:100',
     ]);
 
     Order::whereIn('id', $request->ids)->update(['status' => $request->status]);

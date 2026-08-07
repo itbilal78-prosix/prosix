@@ -245,8 +245,14 @@ Route::prefix('crm/teamstore-orders')->group(function () {
         '/{order}/mark-read',
         [CRMTeamStoreController::class, 'markRead']
     );
-});
 
+    // ✅ CRM se status + remark update
+    Route::put(
+        '/{order}',
+        [CRMTeamStoreController::class, 'update']
+    );
+
+});
 // -----------------------------------------------
 // FALLBACK
 // -----------------------------------------------

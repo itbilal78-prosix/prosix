@@ -154,8 +154,10 @@ class CRMTeamStoreController extends Controller
                         $order->delivered_date
                     )->toISOString(),
                     'items' => $items,
-                    'admin_notes' => $order->admin_notes,
-                    'is_read' => $order->teamStoreReads->isNotEmpty(),
+                  'admin_notes' => $order->admin_notes,
+'remark' => $order->remark,
+'is_read' => $order->teamStoreReads->isNotEmpty(),
+
                     'created_at' => optional(
                         $order->created_at
                     )->toISOString(),
@@ -248,6 +250,152 @@ class CRMTeamStoreController extends Controller
             ],
         ]);
     }
+
+
+
+public function update(Request $request, Order $order): JsonResponse
+{
+    if (!$this->authorized($request)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized CRM request.',
+        ], 401);
+    }
+
+    $validated = $request->validate([
+        'status' => 'nullable|string|max:100',
+        'remark' => 'nullable|string|max:5000',
+    ]);
+
+    $oldStatus = $order->status;
+
+    $newStatus = array_key_exists('status', $validated)
+        ? trim((string) $validated['status'])
+        : $order->status;
+
+    $remark = array_key_exists('remark', $validated)
+        ? $validated['remark']
+        : $order->remark;
+
+    if ($newStatus === '') {
+        return response()->json([
+            'success' => false,
+            'message' => 'Status cannot be empty.',
+        ], 422);
+    }
+
+    $order->update([
+        'status' => $newStatus,
+        'remark' => $remark,
+    ]);
+
+    /*
+     * Status actually change hua ho to history + email.
+     */
+    if ($oldStatus !== $newStatus) {
+
+        \App\Models\OrderStatusLog::create([
+            'order_id' => $order->id,
+            'status' => $newStatus,
+            'changed_by' => 'crm',
+            'note' => 'Status updated from CRM TeamStore',
+        ]);
+
+        try {
+            \App\Helpers\ActivityLogger::log(
+                action: 'status_changed',
+                module: 'Order',
+                targetName: 'Order #' . $order->order_number,
+                targetId: $order->id,
+                changes: [
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'source' => 'CRM TeamStore',
+                ]
+            );
+        } catch (\Throwable $exception) {
+            \Illuminate\Support\Facades\Log::warning(
+                'CRM TeamStore activity log failed',
+                [
+                    'order_id' => $order->id,
+                    'message' => $exception->getMessage(),
+                ]
+            );
+        }
+
+        /*
+         * Customer email.
+         * Tumhara existing OrderController bhi Brevo
+         * aur emails.order-update view use kar raha hai.
+         */
+        if ($order->shipping_email) {
+            try {
+                $config =
+                    \SendinBlue\Client\Configuration::getDefaultConfiguration()
+                        ->setApiKey(
+                            'api-key',
+                            env('BREVO_API_KEY')
+                        );
+
+                $apiInstance =
+                    new \SendinBlue\Client\Api\TransactionalEmailsApi(
+                        new \GuzzleHttp\Client(),
+                        $config
+                    );
+
+                $htmlContent = view(
+                    'emails.order-update',
+                    [
+                        'order' => $order->fresh(),
+                    ]
+                )->render();
+
+                $email =
+                    new \SendinBlue\Client\Model\SendSmtpEmail([
+                        'subject' =>
+                            'Order Status Updated - #' .
+                            $order->order_number,
+
+                        'sender' => [
+                            'name' => 'Prosix Sports',
+                            'email' => 'prosixsports@gmail.com',
+                        ],
+
+                        'to' => [
+                            [
+                                'email' =>
+                                    $order->shipping_email,
+                            ],
+                        ],
+
+                        'htmlContent' => $htmlContent,
+                    ]);
+
+                $apiInstance->sendTransacEmail($email);
+
+            } catch (\Throwable $exception) {
+                \Illuminate\Support\Facades\Log::error(
+                    'CRM TeamStore status email failed',
+                    [
+                        'order_id' => $order->id,
+                        'message' =>
+                            $exception->getMessage(),
+                    ]
+                );
+            }
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'TeamStore order updated successfully.',
+        'data' => [
+            'id' => $order->id,
+            'status' => $order->fresh()->status,
+            'remark' => $order->fresh()->remark,
+        ],
+    ]);
+}
 
     private function normalizeItems(mixed $items): array
     {

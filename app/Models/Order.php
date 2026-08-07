@@ -33,6 +33,7 @@ class Order extends Model
         'dispatch_date',
         'delivered_date',
         'admin_notes',
+        'remark',
             'is_read',
 
     ];
@@ -85,7 +86,7 @@ class Order extends Model
         return $this->hasMany(OrderStatusLog::class);
     }
 
-  
+
 public function teamStoreReads()
 {
     return $this->hasMany(\App\Models\TeamStoreOrderRead::class);
