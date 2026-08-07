@@ -246,7 +246,7 @@ Route::prefix('crm/teamstore-orders')->group(function () {
         [CRMTeamStoreController::class, 'markRead']
     );
 
-    // ✅ CRM se status + remark update
+    // ✅ CRM se status + remark + tracking update
     Route::put(
         '/{order}',
         [CRMTeamStoreController::class, 'update']
