@@ -285,13 +285,13 @@
                                     <i class="bi bi-eye"></i>
                                     View
                                 </button>
-                                <button
+                                {{-- <button
     type="button"
     class="btn btn-sm btn-danger delete-order-btn"
     onclick="deleteOrder({{ $order->id }})">
     <i class="bi bi-trash"></i>
     Delete
-</button>
+</button> --}}
                             </td>
                         </tr>
                     @empty
