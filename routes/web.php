@@ -275,6 +275,46 @@ Route::get('/admin/payments', [PaymentController::class, 'index'])
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 Route::get('/admin/place-orders', [PlaceOrderController::class, 'index'])
     ->name('admin.placeorder');
+
+Route::middleware(['auth:admin'])
+    ->prefix('admin/place-orders')
+    ->name('admin.place-orders.')
+    ->group(function () {
+        Route::get(
+            '/sync-data',
+            [PlaceOrderController::class, 'adminSyncData']
+        )->name('sync-data');
+
+        Route::get(
+            '/statuses',
+            [PlaceOrderController::class, 'adminStatuses']
+        )->name('statuses.index');
+
+        Route::post(
+            '/statuses',
+            [PlaceOrderController::class, 'adminStoreStatus']
+        )->name('statuses.store');
+
+        Route::put(
+            '/statuses/{id}',
+            [PlaceOrderController::class, 'adminUpdateStatusDefinition']
+        )->name('statuses.update');
+
+        Route::delete(
+            '/statuses/{id}',
+            [PlaceOrderController::class, 'adminDestroyStatus']
+        )->name('statuses.destroy');
+
+        Route::post(
+            '/{id}/status',
+            [PlaceOrderController::class, 'adminUpdateStatus']
+        )->name('status.update');
+
+        Route::post(
+            '/{id}/remark',
+            [PlaceOrderController::class, 'adminUpdateRemark']
+        )->name('remark.update');
+    });
 Route::get('/order/download/{id}', [PlaceOrderController::class, 'downloadSinglePdf'])
     ->name('order.download.single');
 Route::delete('/admin/place-orders/{id}', [PlaceOrderController::class, 'destroy']);

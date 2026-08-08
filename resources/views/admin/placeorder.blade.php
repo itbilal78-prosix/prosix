@@ -37,6 +37,7 @@
                         <th>Phone</th>
                         <th>Order #</th>
                         <th>Status</th>
+                        <th>Remark</th>
                         <th>Files</th>
                         <th>Action</th>
                     </tr>
@@ -237,13 +238,74 @@
                                 </strong>
                             </td>
 
-                            <td>
-                                <span
-                                    class="badge bg-{{ $color }} status-badge"
-                                    id="status-badge-{{ $order->id }}"
+                            <td class="admin-po-status-cell">
+                                <div
+                                    class="admin-po-status-wrap"
+                                    data-order-id="{{ $order->id }}"
                                 >
-                                    {{ ucfirst($order->status ?? 'pending') }}
-                                </span>
+                                    <button
+                                        type="button"
+                                        class="admin-po-status-trigger"
+                                        data-value="{{ $order->status ?? 'pending' }}"
+                                        onclick="toggleAdminPlaceOrderStatusMenu(event, {{ $order->id }})"
+                                    >
+                                        <span
+                                            class="admin-po-status-dot"
+                                            id="admin-status-dot-{{ $order->id }}"
+                                        ></span>
+
+                                        <span id="admin-status-label-{{ $order->id }}">
+                                            {{ ucfirst($order->status ?? 'pending') }}
+                                        </span>
+
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+
+                                    <div
+                                        class="admin-po-status-menu d-none"
+                                        id="admin-status-menu-{{ $order->id }}"
+                                    >
+                                        <div
+                                            class="admin-po-status-options"
+                                            id="admin-status-options-{{ $order->id }}"
+                                        ></div>
+
+                                        <button
+                                            type="button"
+                                            class="admin-manage-status-btn"
+                                            onclick="openAdminStatusManager({{ $order->id }})"
+                                        >
+                                            <i class="bi bi-plus-circle"></i>
+                                            Add / Edit Status
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="admin-po-remark-cell">
+                                <div class="admin-po-remark-wrap">
+                                    <input
+                                        type="text"
+                                        class="admin-po-remark-input"
+                                        id="admin-remark-{{ $order->id }}"
+                                        value="{{ $order->remark ?? '' }}"
+                                        placeholder="Write remark..."
+                                        oninput="queueAdminRemarkSave({{ $order->id }})"
+                                        onblur="saveAdminRemark({{ $order->id }})"
+                                        onkeydown="
+                                            if (event.key === 'Enter') {
+                                                this.blur();
+                                            }
+                                        "
+                                    >
+
+                                    <small
+                                        class="admin-po-remark-saved d-none"
+                                        id="admin-remark-saved-{{ $order->id }}"
+                                    >
+                                        Saved
+                                    </small>
+                                </div>
                             </td>
 
                             <td>
@@ -276,6 +338,7 @@
                                     data-sales="{{ $order->sales_rep ?? '' }}"
                                     data-colors="{{ $order->team_colors ?? '' }}"
                                     data-status="{{ $order->status ?? 'pending' }}"
+                                    data-remark="{{ $order->remark ?? '' }}"
 
                                     data-notes="{{ base64_encode($order->notes ?? '') }}"
                                     data-mockup="{{ base64_encode(json_encode($mockup)) }}"
@@ -296,7 +359,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11">
+                            <td colspan="12">
                                 <div class="empty-orders-state">
                                     <i class="bi bi-inbox"></i>
                                     <h6>No place orders found</h6>
@@ -1298,6 +1361,333 @@
 </style>
 
 
+
+<!-- =========================================================
+     PLACE ORDER STATUS MANAGER
+========================================================= -->
+<div
+    class="modal fade"
+    id="placeOrderStatusManager"
+    tabindex="-1"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content admin-status-manager-modal">
+            <div class="admin-status-manager-head">
+                <div>
+                    <span>PLACE ORDER SETTINGS</span>
+                    <h5>Manage Statuses</h5>
+                    <p>
+                        Add custom statuses, edit names and change colors.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+
+            <div class="admin-status-manager-body">
+                <div class="admin-new-status-row">
+                    <input
+                        type="text"
+                        id="admin-new-status-name"
+                        placeholder="e.g. Artwork Pending"
+                    >
+
+                    <input
+                        type="color"
+                        id="admin-new-status-color"
+                        value="#7c3aed"
+                    >
+
+                    <button
+                        type="button"
+                        onclick="createAdminPlaceOrderStatus()"
+                    >
+                        <i class="bi bi-plus"></i>
+                        Add Status
+                    </button>
+                </div>
+
+                <div
+                    id="admin-status-definition-list"
+                    class="admin-status-definition-list"
+                ></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.admin-po-status-cell {
+    min-width: 170px;
+    position: relative;
+}
+
+.admin-po-status-wrap {
+    width: 160px;
+    position: relative;
+}
+
+.admin-po-status-trigger {
+    width: 160px;
+    min-height: 38px;
+    padding: 0 11px;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: #212529;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-po-status-trigger > span:nth-child(2) {
+    flex: 1;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-po-status-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #6c757d;
+}
+
+.admin-po-status-menu {
+    width: 240px;
+    padding: 7px;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 1060;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .14);
+}
+
+.admin-po-status-option,
+.admin-manage-status-btn {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 9px;
+    border: 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: #343a40;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-po-status-option:hover,
+.admin-manage-status-btn:hover {
+    background: #f8f9fa;
+}
+
+.admin-manage-status-btn {
+    margin-top: 5px;
+    border-top: 1px solid #f0f0f0;
+    color: #111827;
+    font-weight: 700;
+}
+
+.admin-po-remark-cell {
+    min-width: 210px;
+}
+
+.admin-po-remark-wrap {
+    width: 195px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.admin-po-remark-input {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 3px;
+    border: 0;
+    border-bottom: 1px solid #ced4da;
+    outline: 0;
+    background: transparent;
+    color: #212529;
+    font-size: 12px;
+}
+
+.admin-po-remark-input:focus {
+    border-bottom-color: #111827;
+}
+
+.admin-po-remark-saved {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    color: #198754;
+    font-size: 9px;
+}
+
+.admin-modal-controls {
+    position: relative;
+}
+
+.admin-modal-status-row {
+    width: 100%;
+    position: relative;
+}
+
+.admin-modal-status-row .admin-po-status-trigger {
+    width: 100%;
+}
+
+.admin-modal-status-menu {
+    width: 270px;
+}
+
+.admin-modal-remark-wrap {
+    margin-top: 12px;
+}
+
+.admin-modal-remark-wrap small {
+    display: block;
+    margin-top: 4px;
+    color: #8a8f98;
+    font-size: 10px;
+}
+
+.admin-status-manager-modal {
+    overflow: hidden;
+    border: 0;
+    border-radius: 16px;
+}
+
+.admin-status-manager-head {
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    background: #111827;
+    color: #fff;
+}
+
+.admin-status-manager-head span {
+    color: #9ca3af;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+
+.admin-status-manager-head h5 {
+    margin: 3px 0 0;
+    font-weight: 800;
+}
+
+.admin-status-manager-head p {
+    margin: 5px 0 0;
+    color: #c7ccd4;
+    font-size: 11px;
+}
+
+.admin-status-manager-body {
+    padding: 16px;
+    background: #f7f8fa;
+}
+
+.admin-new-status-row {
+    padding: 12px;
+    border: 1px solid #e4e7ec;
+    border-radius: 11px;
+    display: grid;
+    grid-template-columns: 1fr 55px 120px;
+    gap: 8px;
+    background: #fff;
+}
+
+.admin-new-status-row input[type="text"] {
+    height: 39px;
+    padding: 0 10px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+}
+
+.admin-new-status-row input[type="color"] {
+    width: 50px;
+    height: 39px;
+    border: 0;
+    background: transparent;
+}
+
+.admin-new-status-row button {
+    border: 0;
+    border-radius: 8px;
+    background: #111827;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.admin-status-definition-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.admin-status-definition-row {
+    padding: 10px;
+    border: 1px solid #e4e7ec;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: 1fr 55px 70px 38px;
+    gap: 7px;
+    background: #fff;
+}
+
+.admin-status-definition-row input[type="text"] {
+    height: 37px;
+    padding: 0 9px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+}
+
+.admin-status-definition-row input[type="color"] {
+    width: 48px;
+    height: 37px;
+    border: 0;
+}
+
+.admin-status-definition-row button {
+    height: 37px;
+    border: 0;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.admin-status-definition-row .save {
+    background: #111827;
+    color: #fff;
+}
+
+.admin-status-definition-row .delete {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+</style>
 <script>
 let currentOrderId = null;
 
@@ -2175,6 +2565,593 @@ document.addEventListener(
         }, 1000);
     }
 );
+</script>
+
+
+<script>
+let adminPlaceOrderStatuses = [];
+let adminRemarkTimers = {};
+let adminStatusTargetOrderId = null;
+
+function adminCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content ||
+        '{{ csrf_token() }}';
+}
+
+function adminStatusSlug(value) {
+    return String(value || 'pending')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+function hexToRgbaAdmin(hex, alpha) {
+    let clean = String(hex || '#667085').replace('#', '');
+
+    if (clean.length === 3) {
+        clean = clean.split('').map(c => c + c).join('');
+    }
+
+    const n = parseInt(clean.slice(0, 6), 16);
+    const r = (n >> 16) & 255;
+    const g = (n >> 8) & 255;
+    const b = n & 255;
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function adminStatusByValue(value) {
+    const normalized = adminStatusSlug(value);
+
+    return adminPlaceOrderStatuses.find(
+        item => item.value === normalized
+    ) || null;
+}
+
+function styleAdminStatusTrigger(orderId, value) {
+    const status = adminStatusByValue(value);
+    const color = status?.color || '#667085';
+    const name = status?.name ||
+        String(value || 'pending')
+            .replace(/[-_]+/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+
+    const trigger = document.querySelector(
+        `.admin-po-status-wrap[data-order-id="${orderId}"] .admin-po-status-trigger`
+    );
+
+    const label = document.getElementById(`admin-status-label-${orderId}`);
+    const dot = document.getElementById(`admin-status-dot-${orderId}`);
+
+    if (trigger) {
+        trigger.dataset.value = value;
+        trigger.style.color = color;
+        trigger.style.backgroundColor = hexToRgbaAdmin(color, .12);
+        trigger.style.borderColor = hexToRgbaAdmin(color, .28);
+    }
+
+    if (label) label.textContent = name;
+    if (dot) dot.style.backgroundColor = color;
+}
+
+function renderAdminPlaceOrderStatuses() {
+    document.querySelectorAll('.admin-po-status-wrap').forEach(wrap => {
+        const orderId = wrap.dataset.orderId;
+        const trigger = wrap.querySelector('.admin-po-status-trigger');
+        const current = trigger?.dataset.value || 'pending';
+        const container = document.getElementById(
+            `admin-status-options-${orderId}`
+        );
+
+        if (container) {
+            container.innerHTML = adminPlaceOrderStatuses.map(status => `
+                <button
+                    type="button"
+                    class="admin-po-status-option"
+                    onclick="changeAdminPlaceOrderStatus(${Number(orderId)}, '${status.value}')"
+                >
+                    <span
+                        class="admin-po-status-dot"
+                        style="background:${status.color}"
+                    ></span>
+                    <span>${escapeAdminHtml(status.name)}</span>
+                </button>
+            `).join('');
+        }
+
+        styleAdminStatusTrigger(orderId, current);
+    });
+
+    if (window.currentPlaceOrderId) {
+        renderModalAdminStatus();
+    }
+}
+
+function escapeAdminHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+async function loadAdminPlaceOrderStatuses() {
+    try {
+        const response = await fetch('/admin/place-orders/statuses', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+
+        adminPlaceOrderStatuses = Array.isArray(data.data)
+            ? data.data
+            : [];
+
+        renderAdminPlaceOrderStatuses();
+        renderAdminStatusManagerList();
+    } catch (error) {
+        console.error('PlaceOrder statuses load error:', error);
+    }
+}
+
+function toggleAdminPlaceOrderStatusMenu(event, orderId) {
+    event.stopPropagation();
+
+    document.querySelectorAll('.admin-po-status-menu').forEach(menu => {
+        if (menu.id !== `admin-status-menu-${orderId}`) {
+            menu.classList.add('d-none');
+        }
+    });
+
+    document
+        .getElementById(`admin-status-menu-${orderId}`)
+        ?.classList.toggle('d-none');
+}
+
+async function changeAdminPlaceOrderStatus(orderId, status) {
+    try {
+        const response = await fetch(
+            `/admin/place-orders/${orderId}/status`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': adminCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ status })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Status update failed.');
+        }
+
+        styleAdminStatusTrigger(orderId, data.data.status);
+
+        document
+            .getElementById(`admin-status-menu-${orderId}`)
+            ?.classList.add('d-none');
+
+        if (Number(window.currentPlaceOrderId) === Number(orderId)) {
+            renderModalAdminStatus(data.data.status);
+        }
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function queueAdminRemarkSave(orderId, explicitValue = null) {
+    if (adminRemarkTimers[orderId]) {
+        clearTimeout(adminRemarkTimers[orderId]);
+    }
+
+    adminRemarkTimers[orderId] = setTimeout(() => {
+        saveAdminRemark(orderId, explicitValue);
+    }, 800);
+}
+
+async function saveAdminRemark(orderId, explicitValue = null) {
+    if (adminRemarkTimers[orderId]) {
+        clearTimeout(adminRemarkTimers[orderId]);
+        delete adminRemarkTimers[orderId];
+    }
+
+    const input = document.getElementById(`admin-remark-${orderId}`);
+    const value = explicitValue !== null
+        ? explicitValue
+        : (input?.value ?? '');
+
+    try {
+        const response = await fetch(
+            `/admin/place-orders/${orderId}/remark`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': adminCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ remark: value })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Remark update failed.');
+        }
+
+        if (input && explicitValue !== null) {
+            input.value = data.data.remark || '';
+        }
+
+        const saved = document.getElementById(
+            `admin-remark-saved-${orderId}`
+        );
+
+        if (saved) {
+            saved.classList.remove('d-none');
+
+            setTimeout(() => {
+                saved.classList.add('d-none');
+            }, 1400);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function openAdminStatusManager(orderId = null) {
+    adminStatusTargetOrderId = orderId;
+
+    const modal = new bootstrap.Modal(
+        document.getElementById('placeOrderStatusManager')
+    );
+
+    renderAdminStatusManagerList();
+    modal.show();
+}
+
+function renderAdminStatusManagerList() {
+    const container = document.getElementById(
+        'admin-status-definition-list'
+    );
+
+    if (!container) return;
+
+    container.innerHTML = adminPlaceOrderStatuses.map(status => `
+        <div class="admin-status-definition-row">
+            <input
+                type="text"
+                id="admin-status-name-${status.id}"
+                value="${escapeAdminHtml(status.name)}"
+                ${status.custom ? '' : 'readonly'}
+            >
+
+            <input
+                type="color"
+                id="admin-status-color-${status.id}"
+                value="${status.color}"
+            >
+
+            <button
+                type="button"
+                class="save"
+                onclick="saveAdminStatusDefinition(${status.id})"
+            >
+                Save
+            </button>
+
+            ${
+                status.custom
+                    ? `
+                        <button
+                            type="button"
+                            class="delete"
+                            onclick="deleteAdminStatusDefinition(${status.id})"
+                        >
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `
+                    : '<span></span>'
+            }
+        </div>
+    `).join('');
+}
+
+async function createAdminPlaceOrderStatus() {
+    const name = document.getElementById(
+        'admin-new-status-name'
+    )?.value.trim();
+
+    const color = document.getElementById(
+        'admin-new-status-color'
+    )?.value || '#7c3aed';
+
+    if (!name) return;
+
+    try {
+        const response = await fetch(
+            '/admin/place-orders/statuses',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': adminCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ name, color })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not create status.');
+        }
+
+        document.getElementById('admin-new-status-name').value = '';
+
+        await loadAdminPlaceOrderStatuses();
+
+        if (adminStatusTargetOrderId && data.data?.value) {
+            await changeAdminPlaceOrderStatus(
+                adminStatusTargetOrderId,
+                data.data.value
+            );
+        }
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function saveAdminStatusDefinition(id) {
+    const name = document.getElementById(
+        `admin-status-name-${id}`
+    )?.value.trim();
+
+    const color = document.getElementById(
+        `admin-status-color-${id}`
+    )?.value;
+
+    if (!name || !color) return;
+
+    try {
+        const response = await fetch(
+            `/admin/place-orders/statuses/${id}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': adminCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ name, color })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not update status.');
+        }
+
+        await loadAdminPlaceOrderStatuses();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function deleteAdminStatusDefinition(id) {
+    if (!confirm('Delete this custom status?')) return;
+
+    try {
+        const response = await fetch(
+            `/admin/place-orders/statuses/${id}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': adminCsrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Could not delete status.');
+        }
+
+        await loadAdminPlaceOrderStatuses();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function toggleModalAdminStatusMenu(event) {
+    event.stopPropagation();
+
+    document
+        .getElementById('modal-status-menu')
+        ?.classList.toggle('d-none');
+}
+
+function renderModalAdminStatus(explicitValue = null) {
+    if (!window.currentPlaceOrderId) return;
+
+    const tableTrigger = document.querySelector(
+        `.admin-po-status-wrap[data-order-id="${window.currentPlaceOrderId}"] .admin-po-status-trigger`
+    );
+
+    const value = explicitValue ||
+        tableTrigger?.dataset.value ||
+        'pending';
+
+    const status = adminStatusByValue(value);
+    const color = status?.color || '#667085';
+    const name = status?.name ||
+        String(value)
+            .replace(/[-_]+/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+
+    const trigger = document.getElementById('modal-status-trigger');
+    const label = document.getElementById('modal-status-label');
+    const dot = document.getElementById('modal-status-dot');
+    const options = document.getElementById('modal-status-options');
+
+    if (trigger) {
+        trigger.style.color = color;
+        trigger.style.backgroundColor = hexToRgbaAdmin(color, .12);
+        trigger.style.borderColor = hexToRgbaAdmin(color, .28);
+    }
+
+    if (label) label.textContent = name;
+    if (dot) dot.style.backgroundColor = color;
+
+    if (options) {
+        options.innerHTML = adminPlaceOrderStatuses.map(item => `
+            <button
+                type="button"
+                class="admin-po-status-option"
+                onclick="changeAdminPlaceOrderStatus(${Number(window.currentPlaceOrderId)}, '${item.value}')"
+            >
+                <span
+                    class="admin-po-status-dot"
+                    style="background:${item.color}"
+                ></span>
+                ${escapeAdminHtml(item.name)}
+            </button>
+        `).join('');
+    }
+}
+
+document.addEventListener('click', function () {
+    document.querySelectorAll('.admin-po-status-menu').forEach(menu => {
+        menu.classList.add('d-none');
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadAdminPlaceOrderStatuses();
+
+    /*
+     * When existing View button opens the modal, keep status/remark synced.
+     * The existing file already fills modal data from button data-*.
+     */
+    document.querySelectorAll('.view-order-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            window.currentPlaceOrderId = Number(this.dataset.id);
+
+            setTimeout(() => {
+                const remark = this.dataset.remark || '';
+                const modalRemark = document.getElementById(
+                    'modal-placeorder-remark'
+                );
+
+                if (modalRemark) {
+                    modalRemark.value = remark;
+                }
+
+                renderModalAdminStatus(this.dataset.status || 'pending');
+            }, 0);
+        });
+    });
+
+    /*
+     * LIVE SYNC:
+     * CRM changes are stored in this same Prosix database.
+     * Every 5 seconds we read only id/status/remark and update the
+     * visible admin table + open modal without reloading the page.
+     */
+    setInterval(async function () {
+        try {
+            const response = await fetch(
+                '/admin/place-orders/sync-data',
+                {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+
+            if (!response.ok) return;
+
+            const payload = await response.json();
+            const rows = Array.isArray(payload.data)
+                ? payload.data
+                : [];
+
+            rows.forEach(order => {
+                styleAdminStatusTrigger(
+                    order.id,
+                    order.status || 'pending'
+                );
+
+                const remarkInput = document.getElementById(
+                    `admin-remark-${order.id}`
+                );
+
+                /*
+                 * Do not overwrite while admin is actively typing.
+                 */
+                if (
+                    remarkInput &&
+                    document.activeElement !== remarkInput
+                ) {
+                    remarkInput.value = order.remark || '';
+                }
+
+                if (
+                    Number(window.currentPlaceOrderId) ===
+                    Number(order.id)
+                ) {
+                    renderModalAdminStatus(
+                        order.status || 'pending'
+                    );
+
+                    const modalRemark =
+                        document.getElementById(
+                            'modal-placeorder-remark'
+                        );
+
+                    if (
+                        modalRemark &&
+                        document.activeElement !== modalRemark
+                    ) {
+                        modalRemark.value =
+                            order.remark || '';
+                    }
+                }
+            });
+
+            /*
+             * Also pick up custom status additions/color/name edits
+             * made from CRM.
+             */
+            await loadAdminPlaceOrderStatuses();
+        } catch (error) {
+            console.error(
+                'PlaceOrder live sync error:',
+                error
+            );
+        }
+    }, 5000);
+});
 </script>
 
 @endsection

@@ -218,9 +218,35 @@ Route::prefix('crm/place-orders')->group(function () {
         [PlaceOrderController::class, 'crmUnreadCount']
     );
 
+    // Status definitions MUST stay before /{id}
+    Route::get(
+        '/statuses',
+        [PlaceOrderController::class, 'crmStatuses']
+    );
+
+    Route::post(
+        '/statuses',
+        [PlaceOrderController::class, 'crmStoreStatus']
+    );
+
+    Route::put(
+        '/statuses/{id}',
+        [PlaceOrderController::class, 'crmUpdateStatusDefinition']
+    );
+
+    Route::delete(
+        '/statuses/{id}',
+        [PlaceOrderController::class, 'crmDestroyStatus']
+    );
+
     Route::post(
         '/{id}/mark-read',
         [PlaceOrderController::class, 'crmMarkRead']
+    );
+
+    Route::put(
+        '/{id}',
+        [PlaceOrderController::class, 'crmUpdate']
     );
 });
 

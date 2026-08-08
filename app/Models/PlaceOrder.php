@@ -17,6 +17,7 @@ class PlaceOrder extends Model
         'sales_rep',
         'team_colors',
         'notes',
+        'remark',
         'mockup_files',
         'roster_files',
         'quote_files',
@@ -27,16 +28,17 @@ class PlaceOrder extends Model
     protected $casts = [
         'mockup_files' => 'array',
         'roster_files' => 'array',
-        'quote_files'  => 'array',
-        'is_read'      => 'boolean',
+        'quote_files' => 'array',
+        'is_read' => 'boolean',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function reads()
-{
-    return $this->hasMany(PlaceOrderRead::class);
-}
+    {
+        return $this->hasMany(PlaceOrderRead::class);
+    }
 }

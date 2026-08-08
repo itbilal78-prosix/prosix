@@ -6,6 +6,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\PlaceOrder;
 use App\Models\PlaceOrderRead;
+use App\Models\PlaceOrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;   // ← YEH NAYA HAI
@@ -104,7 +105,7 @@ $userId = $request->user()->id;
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled'
+            'status' => 'required|string|max:100'
         ]);
 
         $order = PlaceOrder::findOrFail($id);
@@ -333,6 +334,7 @@ public function trackOrder(Request $request)
                     'sales_rep'     => $order->sales_rep,
                     'team_colors'   => $order->team_colors,
                     'notes'         => $order->notes,
+                    'remark'        => $order->remark,
                     'status'        => $order->status,
 
                     /*
@@ -456,6 +458,543 @@ public function trackOrder(Request $request)
                 'is_read' => true,
             ],
         ]);
+    }
+
+    /**
+     * CRM: update status / remark on original Prosix PlaceOrder.
+     */
+    public function crmUpdate(Request $request, int $id)
+    {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        $role = strtolower(
+            trim((string) $request->header('X-CRM-User-Role'))
+        );
+
+        $canEditStatus = in_array(
+            $role,
+            ['super_admin', 'admin', 'member', 'designer'],
+            true
+        );
+
+        $canEditRemark = in_array(
+            $role,
+            ['super_admin', 'admin'],
+            true
+        );
+
+        $validated = $request->validate([
+            'status' => 'sometimes|required|string|max:100',
+            'remark' => 'sometimes|nullable|string|max:5000',
+        ]);
+
+        if (array_key_exists('status', $validated) && !$canEditStatus) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to change status.',
+            ], 403);
+        }
+
+        if (array_key_exists('remark', $validated) && !$canEditRemark) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only admin can edit remarks.',
+            ], 403);
+        }
+
+        $order = PlaceOrder::findOrFail($id);
+        $oldStatus = $order->status;
+
+        if (array_key_exists('status', $validated)) {
+            $statusValue = $this->statusValue($validated['status']);
+
+            if (!PlaceOrderStatus::where('value', $statusValue)->exists()) {
+                PlaceOrderStatus::create([
+                    'value' => $statusValue,
+                    'name' => $this->statusName($validated['status']),
+                    'color' => '#667085',
+                    'is_custom' => true,
+                    'sort_order' => (
+                        (int) PlaceOrderStatus::max('sort_order')
+                    ) + 10,
+                ]);
+            }
+
+            $order->status = $statusValue;
+        }
+
+        if (array_key_exists('remark', $validated)) {
+            $order->remark = $validated['remark'];
+        }
+
+        $order->save();
+        $order->refresh();
+
+        /*
+         * Customer email only when STATUS changes.
+         * Remark is internal and never emailed.
+         */
+        if (
+            array_key_exists('status', $validated) &&
+            $oldStatus !== $order->status
+        ) {
+            try {
+                $this->sendStatusEmail($order);
+            } catch (\Throwable $exception) {
+                \Log::error(
+                    'CRM PlaceOrder status email error: ' .
+                    $exception->getMessage()
+                );
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Place Order updated successfully.',
+            'data' => [
+                'id' => $order->id,
+                'status' => $order->status,
+                'remark' => $order->remark,
+                'updated_at' => optional(
+                    $order->updated_at
+                )->toISOString(),
+            ],
+        ]);
+    }
+
+    /**
+     * CRM/Admin shared status definitions.
+     */
+    public function crmStatuses(Request $request)
+    {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->statusDefinitions(),
+        ]);
+    }
+
+    public function crmStoreStatus(Request $request)
+    {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        $this->ensureCrmStatusPermission($request);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'color' => [
+                'required',
+                'regex:/^#[0-9A-Fa-f]{6}$/',
+            ],
+        ]);
+
+        $value = $this->statusValue($validated['name']);
+
+        if (PlaceOrderStatus::where('value', $value)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This status already exists.',
+            ], 422);
+        }
+
+        $status = PlaceOrderStatus::create([
+            'value' => $value,
+            'name' => trim($validated['name']),
+            'color' => strtoupper($validated['color']),
+            'is_custom' => true,
+            'sort_order' => (
+                (int) PlaceOrderStatus::max('sort_order')
+            ) + 10,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->statusResource($status),
+        ], 201);
+    }
+
+    public function crmUpdateStatusDefinition(
+        Request $request,
+        int $id
+    ) {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        $this->ensureCrmStatusPermission($request);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'color' => [
+                'required',
+                'regex:/^#[0-9A-Fa-f]{6}$/',
+            ],
+        ]);
+
+        $status = PlaceOrderStatus::findOrFail($id);
+
+        $oldValue = $status->value;
+        $newValue = $status->is_custom
+            ? $this->statusValue($validated['name'])
+            : $oldValue;
+
+        if (
+            $newValue !== $oldValue &&
+            PlaceOrderStatus::where('value', $newValue)
+                ->where('id', '!=', $status->id)
+                ->exists()
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Another status already uses this name.',
+            ], 422);
+        }
+
+        /*
+         * Custom status rename => existing orders follow it.
+         */
+        if ($status->is_custom && $newValue !== $oldValue) {
+            PlaceOrder::where('status', $oldValue)
+                ->update(['status' => $newValue]);
+        }
+
+        $status->update([
+            'value' => $newValue,
+            'name' => trim($validated['name']),
+            'color' => strtoupper($validated['color']),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->statusResource($status->fresh()),
+        ]);
+    }
+
+    public function crmDestroyStatus(Request $request, int $id)
+    {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        $this->ensureCrmStatusPermission($request);
+
+        $status = PlaceOrderStatus::findOrFail($id);
+
+        if (!$status->is_custom) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Default status cannot be deleted.',
+            ], 422);
+        }
+
+        if (
+            PlaceOrder::where('status', $status->value)->exists()
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' =>
+                    'This status is being used by orders. ' .
+                    'Change those orders first.',
+            ], 422);
+        }
+
+        $status->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status deleted.',
+        ]);
+    }
+
+    /**
+     * Prosix admin page: update PlaceOrder status.
+     */
+    public function adminUpdateStatus(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|max:100',
+        ]);
+
+        $order = PlaceOrder::findOrFail($id);
+        $oldStatus = $order->status;
+        $value = $this->statusValue($validated['status']);
+
+        if (!PlaceOrderStatus::where('value', $value)->exists()) {
+            PlaceOrderStatus::create([
+                'value' => $value,
+                'name' => $this->statusName($validated['status']),
+                'color' => '#667085',
+                'is_custom' => true,
+                'sort_order' => (
+                    (int) PlaceOrderStatus::max('sort_order')
+                ) + 10,
+            ]);
+        }
+
+        $order->update(['status' => $value]);
+
+        if ($oldStatus !== $value) {
+            try {
+                $this->sendStatusEmail($order->fresh());
+            } catch (\Throwable $exception) {
+                \Log::error(
+                    'Admin PlaceOrder status email error: ' .
+                    $exception->getMessage()
+                );
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $order->id,
+                'status' => $order->fresh()->status,
+                'remark' => $order->fresh()->remark,
+            ],
+        ]);
+    }
+
+    /**
+     * Prosix admin page: remark is internal.
+     */
+    public function adminUpdateRemark(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'remark' => 'nullable|string|max:5000',
+        ]);
+
+        $order = PlaceOrder::findOrFail($id);
+
+        $order->update([
+            'remark' => $validated['remark'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $order->id,
+                'status' => $order->status,
+                'remark' => $order->remark,
+            ],
+        ]);
+    }
+
+    public function adminSyncData()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => PlaceOrder::query()
+                ->select([
+                    'id',
+                    'status',
+                    'remark',
+                    'updated_at',
+                ])
+                ->latest()
+                ->get()
+                ->map(fn (PlaceOrder $order) => [
+                    'id' => $order->id,
+                    'status' => $order->status,
+                    'remark' => $order->remark,
+                    'updated_at' => optional(
+                        $order->updated_at
+                    )->toISOString(),
+                ]),
+        ]);
+    }
+
+    public function adminStatuses()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->statusDefinitions(),
+        ]);
+    }
+
+    public function adminStoreStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'color' => [
+                'required',
+                'regex:/^#[0-9A-Fa-f]{6}$/',
+            ],
+        ]);
+
+        $value = $this->statusValue($validated['name']);
+
+        if (PlaceOrderStatus::where('value', $value)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This status already exists.',
+            ], 422);
+        }
+
+        $status = PlaceOrderStatus::create([
+            'value' => $value,
+            'name' => trim($validated['name']),
+            'color' => strtoupper($validated['color']),
+            'is_custom' => true,
+            'sort_order' => (
+                (int) PlaceOrderStatus::max('sort_order')
+            ) + 10,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->statusResource($status),
+        ], 201);
+    }
+
+    public function adminUpdateStatusDefinition(
+        Request $request,
+        int $id
+    ) {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'color' => [
+                'required',
+                'regex:/^#[0-9A-Fa-f]{6}$/',
+            ],
+        ]);
+
+        $status = PlaceOrderStatus::findOrFail($id);
+        $oldValue = $status->value;
+
+        $newValue = $status->is_custom
+            ? $this->statusValue($validated['name'])
+            : $oldValue;
+
+        if ($status->is_custom && $newValue !== $oldValue) {
+            if (
+                PlaceOrderStatus::where('value', $newValue)
+                    ->where('id', '!=', $status->id)
+                    ->exists()
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Status name already exists.',
+                ], 422);
+            }
+
+            PlaceOrder::where('status', $oldValue)
+                ->update(['status' => $newValue]);
+        }
+
+        $status->update([
+            'value' => $newValue,
+            'name' => trim($validated['name']),
+            'color' => strtoupper($validated['color']),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->statusResource($status->fresh()),
+        ]);
+    }
+
+    public function adminDestroyStatus(int $id)
+    {
+        $status = PlaceOrderStatus::findOrFail($id);
+
+        if (!$status->is_custom) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Default status cannot be deleted.',
+            ], 422);
+        }
+
+        if (PlaceOrder::where('status', $status->value)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' =>
+                    'Status is in use. Change those orders first.',
+            ], 422);
+        }
+
+        $status->delete();
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
+
+    private function ensureCrmStatusPermission(Request $request): void
+    {
+        $role = strtolower(
+            trim((string) $request->header('X-CRM-User-Role'))
+        );
+
+        abort_unless(
+            in_array(
+                $role,
+                ['super_admin', 'admin', 'member', 'designer'],
+                true
+            ),
+            403,
+            'You do not have permission to manage statuses.'
+        );
+    }
+
+    private function statusDefinitions(): array
+    {
+        return PlaceOrderStatus::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (PlaceOrderStatus $status) =>
+                $this->statusResource($status)
+            )
+            ->all();
+    }
+
+    private function statusResource(PlaceOrderStatus $status): array
+    {
+        return [
+            'id' => $status->id,
+            'value' => $status->value,
+            'name' => $status->name,
+            'color' => $status->color,
+            'custom' => (bool) $status->is_custom,
+            'sort_order' => (int) $status->sort_order,
+        ];
+    }
+
+    private function statusValue(string $value): string
+    {
+        $value = Str::slug(trim($value), '-');
+
+        return $value !== '' ? $value : 'pending';
+    }
+
+    private function statusName(string $value): string
+    {
+        return Str::of($value)
+            ->replace(['-', '_'], ' ')
+            ->title()
+            ->toString();
     }
 
     /**
