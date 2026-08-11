@@ -279,6 +279,30 @@ Route::prefix('crm/teamstore-orders')->group(function () {
     );
 
 });
+
+
+// -----------------------------------------------
+// CRM ARTWORK REQUESTS API
+// -----------------------------------------------
+Route::prefix('crm/artwork-requests')->group(function () {
+
+    Route::get(
+        '/',
+        [ArtworkRequestController::class, 'crmIndex']
+    );
+
+    Route::get(
+        '/unread-count',
+        [ArtworkRequestController::class, 'crmUnreadCount']
+    );
+
+    Route::post(
+        '/{id}/mark-read',
+        [ArtworkRequestController::class, 'crmMarkRead']
+    );
+
+});
+
 // -----------------------------------------------
 // FALLBACK
 // -----------------------------------------------
