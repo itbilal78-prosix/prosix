@@ -170,36 +170,116 @@
               </div>
             </div>
           </div>
-
           <!-- Team Roster -->
           <div class="po-upload-card">
             <h6 class="po-upload-title">Upload Your Team Roster</h6>
-            <div class="po-dropzone" @click="$refs.rosterInput.click()" @dragover.prevent @drop.prevent="handleDrop($event, 'roster')">
+
+            <button
+              type="button"
+              class="roster-online-btn"
+              @click="openRosterForm"
+            >
+              <span class="roster-online-icon">▦</span>
+              <span>
+                <strong>Fill Roster Online</strong>
+                <small>Open Uniforms Order Form</small>
+              </span>
+            </button>
+
+            <div class="roster-or"><span>OR</span></div>
+
+            <div
+              class="po-dropzone"
+              @click="$refs.rosterInput.click()"
+              @dragover.prevent
+              @drop.prevent="handleDrop($event, 'roster')"
+            >
               <div class="po-cloud-icon">
-                <svg viewBox="0 0 64 48" fill="none"><path d="M32 36V16M32 16l-8 8M32 16l8 8" stroke="#555" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 36a12 12 0 1 1 3.5-23.4A14 14 0 1 1 46 28H16" stroke="#555" stroke-width="2.5" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 64 48" fill="none">
+                  <path d="M32 36V16M32 16l-8 8M32 16l8 8" stroke="#555" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 36a12 12 0 1 1 3.5-23.4A14 14 0 1 1 46 28H16" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
               </div>
               <p class="po-browse-text">Browse file to upload</p>
             </div>
-            <input ref="rosterInput" type="file" multiple accept="image/*,application/pdf,.xlsx,.xls,.doc,.docx" hidden @change="handleFiles($event, 'roster')" />
+
+            <input
+              ref="rosterInput"
+              type="file"
+              multiple
+              accept="image/*,application/pdf,.xlsx,.xls,.doc,.docx,.csv"
+              hidden
+              @change="handleFiles($event, 'roster')"
+            />
+
             <div class="po-file-list">
-              <div v-for="(f, i) in rosterFiles" :key="i" class="po-file-item">
+              <div
+                v-for="(f, i) in rosterFiles"
+                :key="i"
+                class="po-file-item"
+              >
                 <div class="po-file-thumb">
-                  <img v-if="f.preview" :src="f.preview" class="po-thumb-img" />
-                  <div v-else class="po-file-type-icon" :class="getFileTypeClass(f.name)">{{ getFileExt(f.name) }}</div>
+                  <img
+                    v-if="f.preview"
+                    :src="f.preview"
+                    class="po-thumb-img"
+                  />
+
+                  <div
+                    v-else
+                    class="po-file-type-icon"
+                    :class="getFileTypeClass(f.name)"
+                  >
+                    {{ getFileExt(f.name) }}
+                  </div>
                 </div>
+
                 <div class="po-file-info">
                   <span class="po-file-name">{{ f.name }}</span>
                   <span class="po-file-size">{{ formatSize(f.size) }}</span>
-                  <div v-if="f.progress < 100" class="po-progress-bar"><div class="po-progress-fill" :style="{ width: f.progress + '%' }"></div></div>
+
+                  <div
+                    v-if="f.progress < 100"
+                    class="po-progress-bar"
+                  >
+                    <div
+                      class="po-progress-fill"
+                      :style="{ width: f.progress + '%' }"
+                    ></div>
+                  </div>
                 </div>
+
                 <div class="po-file-status">
-                  <span v-if="f.progress < 100" class="po-pct">{{ f.progress }}%</span>
-                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" class="po-check"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span
+                    v-if="f.progress < 100"
+                    class="po-pct"
+                  >
+                    {{ f.progress }}%
+                  </span>
+
+                  <svg
+                    v-else
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#333"
+                    stroke-width="2.5"
+                    class="po-check"
+                  >
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
                 </div>
-                <button type="button" class="po-file-remove" @click="removeFile('roster', i)">×</button>
+
+                <button
+                  type="button"
+                  class="po-file-remove"
+                  @click="removeFile('roster', i)"
+                >
+                  ×
+                </button>
               </div>
             </div>
           </div>
+
 
           <!-- Quote/Invoice -->
           <div class="po-upload-card">
@@ -268,6 +348,112 @@
 
   </div>
   <!-- END po-page -->
+
+
+  <!-- Uniforms Order Form - Top Slide Popup -->
+  <transition name="roster-slide">
+    <div
+      v-if="rosterFormOpen"
+      class="roster-drawer-backdrop"
+      @click.self="closeRosterForm"
+    >
+      <div class="roster-drawer">
+        <div class="roster-drawer-head">
+          <div>
+            <small>PROSIX SPORTS</small>
+            <h3>Uniforms Order Form</h3>
+            <p>Fill player names, numbers and uniform sizes.</p>
+          </div>
+
+          <div class="roster-drawer-actions">
+            <button
+              type="button"
+              class="roster-light-btn"
+              @click="clearRosterForm"
+            >
+              Clear
+            </button>
+
+            <button
+              type="button"
+              class="roster-light-btn"
+              @click="downloadRosterCsv"
+            >
+              Download CSV
+            </button>
+
+            <button
+              type="button"
+              class="roster-use-btn"
+              @click="useRosterForm"
+            >
+              Use This Roster
+            </button>
+
+            <button
+              type="button"
+              class="roster-close-btn"
+              @click="closeRosterForm"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div class="roster-sheet-wrap">
+          <div class="roster-brand-row">
+            <div class="roster-brand-mark">P6</div>
+            <div class="roster-brand-divider"></div>
+            <div class="roster-brand-text">prosix</div>
+          </div>
+
+          <div class="roster-sheet-title">
+            Uniforms Order Form
+          </div>
+
+          <div class="roster-table-scroll">
+            <table class="roster-sheet-table">
+              <thead>
+                <tr>
+                  <th class="roster-sr">Sr.No</th>
+                  <th>Jersey Name</th>
+                  <th>Jersey Size</th>
+                  <th>Jersey Number</th>
+                  <th>Pant Size</th>
+                  <th>Compression Shirts</th>
+                  <th>Shorts Size</th>
+                  <th>Gloves Size</th>
+                  <th>Bag</th>
+                  <th>Arm Sleeves</th>
+                  <th>Spats Covers</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr
+                  v-for="(row, index) in rosterRows"
+                  :key="index"
+                >
+                  <td class="roster-sr">{{ index + 1 }}</td>
+
+                  <td><input v-model="row.jerseyName" type="text" /></td>
+                  <td><input v-model="row.jerseySize" type="text" /></td>
+                  <td><input v-model="row.jerseyNumber" type="text" /></td>
+                  <td><input v-model="row.pantSize" type="text" /></td>
+                  <td><input v-model="row.compressionShirts" type="text" /></td>
+                  <td><input v-model="row.shortsSize" type="text" /></td>
+                  <td><input v-model="row.glovesSize" type="text" /></td>
+                  <td><input v-model="row.bag" type="text" /></td>
+                  <td><input v-model="row.armSleeves" type="text" /></td>
+                  <td><input v-model="row.spatsCovers" type="text" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
 
   <!-- Color Picker Popup -->
   <div v-if="colorPickerOpen" class="po-color-backdrop" @click.self="closeColorPicker">
@@ -349,6 +535,21 @@ const orderNum = `P6S-${year}-${Math.floor(1000 + Math.random() * 9000)}`;
         notes: '',
       },
       mockupFiles: [], rosterFiles: [], quoteFiles: [],
+
+      rosterFormOpen: false,
+
+      rosterRows: Array.from({ length: 200 }, () => ({
+        jerseyName: '',
+        jerseySize: '',
+        jerseyNumber: '',
+        pantSize: '',
+        compressionShirts: '',
+        shortsSize: '',
+        glovesSize: '',
+        bag: '',
+        armSleeves: '',
+        spatsCovers: ''
+      })),
       colorPickerOpen: false, allColors: [], colorsLoading: false,
       isSubmitting: false, showSuccess: false,
       noteFormat: { bold: false, italic: false, underline: false },
@@ -362,6 +563,135 @@ const orderNum = `P6S-${year}-${Math.floor(1000 + Math.random() * 9000)}`;
   },
 
   methods: {
+    openRosterForm() {
+      this.rosterFormOpen = true
+      document.body.style.overflow = 'hidden'
+    },
+
+    closeRosterForm() {
+      this.rosterFormOpen = false
+      document.body.style.overflow = ''
+    },
+
+    clearRosterForm() {
+      if (!confirm('Clear all roster rows?')) return
+
+      this.rosterRows = Array.from({ length: 200 }, () => ({
+        jerseyName: '',
+        jerseySize: '',
+        jerseyNumber: '',
+        pantSize: '',
+        compressionShirts: '',
+        shortsSize: '',
+        glovesSize: '',
+        bag: '',
+        armSleeves: '',
+        spatsCovers: ''
+      }))
+    },
+
+    rosterCsvContent() {
+      const headers = [
+        'Sr.No',
+        'Jersey Name',
+        'Jersey Size',
+        'Jersey Number',
+        'Pant Size',
+        'Compression Shirts',
+        'Shorts Size',
+        'Gloves Size',
+        'Bag',
+        'Arm Sleeves',
+        'Spats Covers'
+      ]
+
+      const escapeCsv = value => {
+        const str = String(value ?? '')
+        return `"${str.replace(/"/g, '""')}"`
+      }
+
+      const rows = this.rosterRows
+        .map((row, index) => [
+          index + 1,
+          row.jerseyName,
+          row.jerseySize,
+          row.jerseyNumber,
+          row.pantSize,
+          row.compressionShirts,
+          row.shortsSize,
+          row.glovesSize,
+          row.bag,
+          row.armSleeves,
+          row.spatsCovers
+        ])
+        .filter(row =>
+          row
+            .slice(1)
+            .some(value => String(value || '').trim() !== '')
+        )
+
+      return [
+        headers.map(escapeCsv).join(','),
+        ...rows.map(row => row.map(escapeCsv).join(','))
+      ].join('\\n')
+    },
+
+    downloadRosterCsv() {
+      const csv = this.rosterCsvContent()
+
+      const blob = new Blob(
+        [csv],
+        { type: 'text/csv;charset=utf-8;' }
+      )
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+
+      link.href = url
+      link.download = `${this.orderNumber}-uniform-roster.csv`
+
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+      URL.revokeObjectURL(url)
+    },
+
+    useRosterForm() {
+      const hasData = this.rosterRows.some(row =>
+        Object.values(row).some(
+          value => String(value || '').trim() !== ''
+        )
+      )
+
+      if (!hasData) {
+        alert('Please fill at least one roster row.')
+        return
+      }
+
+      const csv = this.rosterCsvContent()
+
+      const file = new File(
+        [csv],
+        `${this.orderNumber}-uniform-roster.csv`,
+        { type: 'text/csv' }
+      )
+
+      this.rosterFiles = this.rosterFiles.filter(
+        item => item.name !== file.name
+      )
+
+      this.rosterFiles.push({
+        name: file.name,
+        size: file.size,
+        progress: 100,
+        file,
+        preview: null
+      })
+
+      this.closeRosterForm()
+    },
+
     applyCustomColor() {
       this.form.selectedColors.push({ id: Date.now(), name: "Custom", code: this.tempCustomColor });
       this.showCustomPicker = false;
@@ -442,6 +772,7 @@ const orderNum = `P6S-${year}-${Math.floor(1000 + Math.random() * 9000)}`;
       if (ext === 'pdf') return 'type-pdf';
       if (['xlsx','xls'].includes(ext)) return 'type-xls';
       if (['doc','docx'].includes(ext)) return 'type-doc';
+      if (ext === 'csv') return 'type-csv';
       return 'type-other';
     },
 
@@ -615,4 +946,322 @@ this.orderNumber = `P6S-${today.getFullYear()}-${Math.floor(1000 + Math.random()
 @media (max-width: 900px){ .how-to-sidebar { display: none; } .po-container { padding: 20px; } }
 @media (max-width: 768px){ .po-top-row { grid-template-columns: 1fr 1fr; } .po-mid-row { grid-template-columns: 1fr; } .po-color-grid { grid-template-columns: repeat(3,1fr); } }
 @media (max-width: 480px){ .po-top-row { grid-template-columns: 1fr; } }
+
+
+/* =========================================================
+   ONLINE UNIFORMS ROSTER POPUP
+   ========================================================= */
+
+.roster-online-btn {
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: #111;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.roster-online-btn:hover { background: #252525; }
+
+.roster-online-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #111;
+  border-radius: 7px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.roster-online-btn strong,
+.roster-online-btn small { display: block; }
+
+.roster-online-btn strong { font-size: 12px; }
+
+.roster-online-btn small {
+  margin-top: 3px;
+  color: #aaa;
+  font-size: 10px;
+}
+
+.roster-or {
+  position: relative;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.roster-or::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #ececec;
+}
+
+.roster-or span {
+  position: relative;
+  padding: 0 8px;
+  background: #fff;
+  color: #aaa;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.type-csv {
+  background: #ecfdf3;
+  color: #16803d;
+}
+
+.roster-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgba(0,0,0,.58);
+  overflow: hidden;
+}
+
+.roster-drawer {
+  width: min(1480px, 97vw);
+  height: 92vh;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  background: #f4f5f7;
+  border-radius: 14px;
+  box-shadow: 0 28px 80px rgba(0,0,0,.32);
+  overflow: hidden;
+}
+
+.roster-drawer-head {
+  min-height: 72px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #111;
+  color: #fff;
+}
+
+.roster-drawer-head small {
+  color: #a8b0ba;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+.roster-drawer-head h3 {
+  margin: 3px 0 1px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.roster-drawer-head p {
+  margin: 0;
+  color: #a8b0ba;
+  font-size: 10px;
+}
+
+.roster-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.roster-light-btn,
+.roster-use-btn,
+.roster-close-btn {
+  min-height: 34px;
+  border: 0;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.roster-light-btn {
+  padding: 0 12px;
+  background: #272727;
+  color: #fff;
+  border: 1px solid #404040;
+}
+
+.roster-use-btn {
+  padding: 0 14px;
+  background: #fff;
+  color: #111;
+}
+
+.roster-close-btn {
+  width: 34px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 18px;
+}
+
+.roster-sheet-wrap {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+}
+
+.roster-brand-row {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  border-bottom: 1px solid #eee;
+}
+
+.roster-brand-mark {
+  color: #111;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.roster-brand-divider {
+  width: 2px;
+  height: 34px;
+  background: #111;
+}
+
+.roster-brand-text {
+  padding: 3px 11px;
+  color: #111;
+  border: 4px solid #111;
+  border-radius: 7px;
+  font-size: 27px;
+  line-height: 1;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -.04em;
+}
+
+.roster-sheet-title {
+  padding: 7px;
+  color: #1535b5;
+  text-align: center;
+  font-family: Georgia, serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.roster-table-scroll {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #111;
+  overflow: auto;
+}
+
+.roster-sheet-table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.roster-sheet-table th,
+.roster-sheet-table td {
+  height: 29px;
+  padding: 0;
+  border: 1px solid #111;
+  background: #fff;
+}
+
+.roster-sheet-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 5px 4px;
+  background: #fff;
+  color: #111;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.roster-sheet-table .roster-sr {
+  width: 48px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.roster-sheet-table input {
+  width: 100%;
+  height: 28px;
+  padding: 0 6px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-size: 10px;
+}
+
+.roster-sheet-table input:focus {
+  background: #fffbe7;
+  box-shadow: inset 0 0 0 2px #3b82f6;
+}
+
+.roster-slide-enter-active,
+.roster-slide-leave-active {
+  transition: opacity .22s ease;
+}
+
+.roster-slide-enter-active .roster-drawer,
+.roster-slide-leave-active .roster-drawer {
+  transition: transform .28s ease, opacity .28s ease;
+}
+
+.roster-slide-enter-from,
+.roster-slide-leave-to { opacity: 0; }
+
+.roster-slide-enter-from .roster-drawer,
+.roster-slide-leave-to .roster-drawer {
+  transform: translateY(-60px);
+  opacity: 0;
+}
+
+@media (max-width: 780px) {
+  .roster-drawer {
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .roster-drawer-head {
+    align-items: flex-start;
+  }
+
+  .roster-drawer-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .roster-sheet-wrap {
+    padding: 8px;
+  }
+}
+
 </style>
