@@ -403,18 +403,18 @@
         <div class="roster-sheet-wrap">
           <div class="roster-brand-row">
             <img
-              src="/assets/images/P LOGO BLACK.png"
-              alt="Prosix P Logo"
-              class="roster-brand-p-logo"
-            />
+  :src="'/assets/images/P LOGO BLACK.png'"
+  alt="Prosix P Logo"
+  class="roster-brand-p-logo"
+/>
 
-            <div class="roster-brand-divider"></div>
+<div class="roster-brand-divider"></div>
 
-            <img
-              src="/assets/images/PROSIX SPORTS LOGO PNG BLACK.png"
-              alt="Prosix Sports"
-              class="roster-brand-prosix-logo"
-            />
+<img
+  :src="'/assets/images/PROSIX SPORTS LOGO PNG BLACK.png'"
+  alt="Prosix Sports"
+  class="roster-brand-prosix-logo"
+/>
           </div>
 
           <div class="roster-sheet-title">
