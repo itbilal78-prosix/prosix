@@ -402,9 +402,19 @@
 
         <div class="roster-sheet-wrap">
           <div class="roster-brand-row">
-            <div class="roster-brand-mark">P6</div>
+            <img
+              src="/assets/images/P LOGO BLACK.png"
+              alt="Prosix P Logo"
+              class="roster-brand-p-logo"
+            />
+
             <div class="roster-brand-divider"></div>
-            <div class="roster-brand-text">prosix</div>
+
+            <img
+              src="/assets/images/PROSIX SPORTS LOGO PNG BLACK.png"
+              alt="Prosix Sports"
+              class="roster-brand-prosix-logo"
+            />
           </div>
 
           <div class="roster-sheet-title">
@@ -554,6 +564,18 @@ const orderNum = `P6S-${year}-${Math.floor(1000 + Math.random() * 9000)}`;
       isSubmitting: false, showSuccess: false,
       noteFormat: { bold: false, italic: false, underline: false },
     };
+  },
+
+  mounted() {
+    // Open the uniforms roster popup automatically
+    // whenever the Place Order page is opened.
+    this.rosterFormOpen = true
+    document.body.style.overflow = 'hidden'
+  },
+
+  beforeUnmount() {
+    // Always restore page scrolling when leaving this page.
+    document.body.style.overflow = ''
   },
 
   computed: {
@@ -1261,6 +1283,212 @@ this.orderNumber = `P6S-${today.getFullYear()}-${Math.floor(1000 + Math.random()
 
   .roster-sheet-wrap {
     padding: 8px;
+  }
+}
+
+
+
+/* =========================================================
+   ROSTER POPUP FINAL VISUAL UPDATE
+   - Real Prosix logos
+   - Bigger readable fonts
+   - Opens automatically on page load
+   ========================================================= */
+
+.roster-drawer {
+  width: min(1520px, 97vw) !important;
+  height: 94vh !important;
+}
+
+.roster-drawer-head {
+  min-height: 88px !important;
+  padding: 16px 20px !important;
+}
+
+.roster-drawer-head small {
+  font-size: 10px !important;
+  letter-spacing: .16em !important;
+}
+
+.roster-drawer-head h3 {
+  margin: 4px 0 3px !important;
+  font-size: 24px !important;
+  line-height: 1.1 !important;
+}
+
+.roster-drawer-head p {
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+
+.roster-drawer-actions {
+  gap: 9px !important;
+}
+
+.roster-light-btn,
+.roster-use-btn,
+.roster-close-btn {
+  min-height: 42px !important;
+  font-size: 12px !important;
+}
+
+.roster-light-btn,
+.roster-use-btn {
+  padding: 0 17px !important;
+}
+
+.roster-close-btn {
+  width: 42px !important;
+  font-size: 22px !important;
+}
+
+/* REAL LOGOS */
+.roster-brand-row {
+  min-height: 105px !important;
+  gap: 25px !important;
+  padding: 12px 20px !important;
+}
+
+.roster-brand-p-logo {
+  width: auto !important;
+  height: 72px !important;
+  max-width: 130px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+.roster-brand-divider {
+  width: 3px !important;
+  height: 55px !important;
+  background: #111 !important;
+}
+
+.roster-brand-prosix-logo {
+  width: auto !important;
+  height: 62px !important;
+  max-width: 260px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+/* Hide old fake brand text styles if any remain */
+.roster-brand-mark,
+.roster-brand-text {
+  display: none !important;
+}
+
+.roster-sheet-title {
+  padding: 10px 8px !important;
+  font-size: 19px !important;
+  line-height: 1.2 !important;
+}
+
+.roster-sheet-wrap {
+  padding: 18px !important;
+}
+
+.roster-sheet-table {
+  min-width: 1280px !important;
+}
+
+.roster-sheet-table th,
+.roster-sheet-table td {
+  height: 40px !important;
+}
+
+.roster-sheet-table th {
+  padding: 8px 7px !important;
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+}
+
+.roster-sheet-table .roster-sr {
+  width: 58px !important;
+  font-size: 13px !important;
+}
+
+.roster-sheet-table input {
+  height: 39px !important;
+  padding: 0 9px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* Team roster card button also larger/readable */
+.roster-online-btn {
+  min-height: 72px !important;
+  padding: 12px 14px !important;
+}
+
+.roster-online-icon {
+  width: 44px !important;
+  height: 44px !important;
+  flex-basis: 44px !important;
+  font-size: 23px !important;
+}
+
+.roster-online-btn strong {
+  font-size: 14px !important;
+}
+
+.roster-online-btn small {
+  font-size: 11px !important;
+}
+
+/* Laptop */
+@media (max-height: 850px) and (min-width: 781px) {
+  .roster-drawer {
+    height: 96vh !important;
+    margin-top: 8px !important;
+  }
+
+  .roster-brand-row {
+    min-height: 86px !important;
+  }
+
+  .roster-brand-p-logo {
+    height: 58px !important;
+  }
+
+  .roster-brand-prosix-logo {
+    height: 50px !important;
+  }
+
+  .roster-sheet-table th,
+  .roster-sheet-table td {
+    height: 36px !important;
+  }
+
+  .roster-sheet-table input {
+    height: 35px !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .roster-brand-row {
+    min-height: 80px !important;
+    gap: 14px !important;
+  }
+
+  .roster-brand-p-logo {
+    height: 50px !important;
+  }
+
+  .roster-brand-prosix-logo {
+    height: 42px !important;
+    max-width: 190px !important;
+  }
+
+  .roster-drawer-head h3 {
+    font-size: 20px !important;
+  }
+
+  .roster-sheet-table th {
+    font-size: 12px !important;
+  }
+
+  .roster-sheet-table input {
+    font-size: 13px !important;
   }
 }
 
