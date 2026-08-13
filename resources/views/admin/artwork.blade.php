@@ -25,6 +25,7 @@
                         <th>Products</th>
                         <th>Qty</th>
                         <th>Images</th>
+                        <th>Status</th>
                         <th>Date</th>
                         <th>Actions</th>
                     </tr>
@@ -53,6 +54,16 @@
                                     <span class="text-muted">0</span>
                                 @endif
                             </td>
+                            <td>
+                                @php
+                                    $status = strtolower($req->status ?? 'pending');
+                                @endphp
+
+                                <span class="artwork-status-badge status-{{ $status }}">
+                                    {{ ucfirst($status) }}
+                                </span>
+                            </td>
+
                             <td>{{ $req->created_at->format('d M Y') }}</td>
                            <td>
 <button type="button" class="btn btn-sm btn-dark view-artwork-btn"
@@ -72,6 +83,7 @@
     data-sports="{{ is_array($req->sports) ? implode(', ', $req->sports) : $req->sports }}"
     data-details="{{ $req->mockup_details }}"
     data-source="{{ $req->how_heard }}"
+    data-status="{{ strtolower($req->status ?? 'pending') }}"
     data-submitted="{{ $req->created_at->format('d M Y') }}"
     data-images='@json($images)'>
         <i class="bi bi-eye"></i> View
@@ -94,7 +106,7 @@
 
                         </tr>
                     @empty
-                        <tr><td colspan="10" class="text-center text-muted py-4">No Artwork Requests Found</td></tr>
+                        <tr><td colspan="11" class="text-center text-muted py-4">No Artwork Requests Found</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -137,6 +149,7 @@
                     <tr><td class="modal-label">Sport(s)</td>          <td class="modal-value" id="aw-sports"></td></tr>
                     <tr><td class="modal-label">Mockup Details</td>    <td class="modal-value" id="aw-details"></td></tr>
                     <tr><td class="modal-label">How Heard</td>         <td class="modal-value" id="aw-source"></td></tr>
+                    <tr><td class="modal-label">Status</td>            <td class="modal-value"><span id="aw-status" class="artwork-status-badge"></span></td></tr>
                     <tr><td class="modal-label">Submitted On</td>      <td class="modal-value" id="aw-submitted"></td></tr>
                 </table>
 
@@ -190,6 +203,44 @@
     font-size: 12px; text-decoration: none;
 }
 .img-dl-btn:hover { background: rgba(0,0,0,0.9); color: white; }
+
+.artwork-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 86px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: capitalize;
+    border: 1px solid transparent;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.status-processing {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.status-completed {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.status-cancelled,
+.status-canceled {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
 </style>
 
 <script>
@@ -217,6 +268,17 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('aw-sports').textContent    = d.sports    || '—';
             document.getElementById('aw-details').textContent   = d.details   || '—';
             document.getElementById('aw-source').textContent    = d.source    || '—';
+
+            const statusEl = document.getElementById('aw-status');
+            const statusValue = (d.status || 'pending').toLowerCase();
+
+            statusEl.textContent =
+                statusValue.charAt(0).toUpperCase() +
+                statusValue.slice(1);
+
+            statusEl.className =
+                'artwork-status-badge status-' + statusValue;
+
             document.getElementById('aw-submitted').textContent = d.submitted || '—';
 
             // Images
