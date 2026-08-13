@@ -10,14 +10,29 @@ class ArtworkRequest extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'user_id',
-        'full_name', 'email', 'phone', 'instagram', 'address',
-        'team_name', 'role', 'quantity', 'team_color', 'home_away',
-        'design_style', 'material', 'products', 'additional', 'source',
-        'artwork_file',
-        'is_read',
-    ];
+   protected $fillable = [
+    'user_id',
+    'full_name',
+    'email',
+    'phone',
+    'instagram',
+    'address',
+    'team_name',
+    'role',
+    'quantity',
+    'team_color',
+    'home_away',
+    'design_style',
+    'material',
+    'products',
+    'additional',
+    'source',
+    'artwork_file',
+    'is_read',
+
+    // IMPORTANT
+    'status',
+];
 
     protected $casts = [
         'products' => 'array',
