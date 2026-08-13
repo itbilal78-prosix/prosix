@@ -301,6 +301,11 @@ Route::prefix('crm/artwork-requests')->group(function () {
         [ArtworkRequestController::class, 'crmMarkRead']
     );
 
+    Route::patch(
+        '/{id}/status',
+        [ArtworkRequestController::class, 'crmUpdateStatus']
+    );
+
 });
 
 // -----------------------------------------------

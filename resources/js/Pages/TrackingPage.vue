@@ -678,7 +678,6 @@ const formatDate = (d) => {
   line-height: 1.7;
   margin: 0;
 }
-
 /* ── Mobile ── */
 @media(max-width: 600px) {
   .track-title { font-size: 32px; }

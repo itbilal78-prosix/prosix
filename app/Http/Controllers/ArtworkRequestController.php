@@ -6,6 +6,7 @@ use App\Models\ArtworkRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class ArtworkRequestController extends Controller
 {
@@ -83,6 +84,7 @@ class ArtworkRequestController extends Controller
             'source'       => $request->source ?? null,
             'artwork_file' => json_encode($imagePaths),
             'is_read'      => false,
+            'status'       => 'pending',
         ]);
 
         try {
@@ -351,6 +353,54 @@ class ArtworkRequestController extends Controller
             'data' => [
                 'id' => $artwork->id,
                 'is_read' => true,
+            ],
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CRM API - UPDATE ARTWORK STATUS
+    |--------------------------------------------------------------------------
+    */
+    public function crmUpdateStatus(
+        Request $request,
+        int $id
+    ) {
+        if (!$this->crmAuthorized($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized CRM request.',
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'status' => [
+                'required',
+                'string',
+                Rule::in([
+                    'pending',
+                    'processing',
+                    'completed',
+                    'cancelled',
+                ]),
+            ],
+        ]);
+
+        $artwork = ArtworkRequest::findOrFail($id);
+
+        $artwork->update([
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Artwork Request status updated successfully.',
+            'data' => [
+                'id' => $artwork->id,
+                'status' => $artwork->status,
+                'updated_at' => optional(
+                    $artwork->updated_at
+                )->toISOString(),
             ],
         ]);
     }

@@ -3184,11 +3184,9 @@ export default {
   font-size: 24px;
 }
 
-
 .order-sheet-file-info {
   min-width: 0;
 }
-
 
 .order-sheet-file-info strong {
   display: block;
@@ -3207,8 +3205,6 @@ export default {
   font-size: 11px;
   margin-top: 4px;
 }
-
-
 .order-sheet-actions {
   display: flex;
   align-items: center;
@@ -3238,10 +3234,10 @@ export default {
 }
 
 
+
 .order-sheet-cancel:hover {
   background: #ddd;
 }
-
 
 .order-sheet-download {
   flex: 1.6;
@@ -3252,7 +3248,6 @@ export default {
   justify-content: center;
   gap: 8px;
 }
-
 
 .order-sheet-download:hover {
   background: #222;

@@ -795,13 +795,11 @@ const submitReview=()=>{
 const startEdit=(r)=>{editingReviewId.value=r.id;newReview.value={stars:r.stars,name:r.name,title:r.title||'',text:r.text};nextTick(()=>tabsRef.value?.scrollIntoView({behavior:'smooth',block:'start'}))}
 const cancelEdit=()=>{editingReviewId.value=null;newReview.value={stars:0,name:'',title:'',text:''};hoverStar.value=0}
 const deleteReview=(id)=>{if(!confirm('Delete?')) return;allReviews.value=allReviews.value.filter(r=>r.id!==id);saveReviews();showToast('🗑️ Review deleted.')}
-
 const relatedItems=ref([]),relatedLoading=ref(false),relatedPage=ref(0),perPage=5,previewProductId=ref(null)
 const paginatedRelated=computed(()=>relatedItems.value.slice(relatedPage.value*perPage,relatedPage.value*perPage+perPage))
 const totalPages=computed(()=>Math.ceil(relatedItems.value.length/perPage))
 const prevSlide=()=>{if(relatedPage.value>0) relatedPage.value--}
 const nextSlide=()=>{if(relatedPage.value<totalPages.value-1) relatedPage.value++}
-
 const toastVisible=ref(false),toastText=ref('')
 let toastTimer
 const showToast=(msg)=>{toastText.value=msg;toastVisible.value=true;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toastVisible.value=false},2800)}
@@ -825,7 +823,6 @@ const loadProduct=async()=>{
     }catch(err){console.error('Product load error:',err)}
   }
 }
-
 const fetchRelated = async () => {
   relatedLoading.value = true
   relatedItems.value = []
@@ -899,8 +896,6 @@ const fetchRelated = async () => {
     relatedLoading.value = false
   }
 }
-
-
 const toggleLike = () => {
   const key = 'favorite_designs'
   let saved = JSON.parse(localStorage.getItem(key) || '[]')
@@ -1028,6 +1023,7 @@ watch(()=>route.params.id,async(newId)=>{
   transition: .2s;
   color: #555;
 }
+
 .notes-toggle-btn:hover,
 .notes-toggle-btn.active {
   background: #000;
