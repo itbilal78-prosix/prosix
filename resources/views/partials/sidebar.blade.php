@@ -26,7 +26,15 @@
             </a>
 
             <ul class="collapse list-unstyled ps-4" id="websiteSubmenu">
-                <li><a class="nav-link text-light py-1" href="#">Website Info</a></li>
+<li>
+    <a
+        class="nav-link text-light py-1"
+        href="{{ route('admin.website-info.edit') }}"
+    >
+        <i class="bi bi-info-circle me-1"></i>
+        Website Info
+    </a>
+</li>
                 <li><a class="nav-link text-light py-1" href="#">Pages</a></li>
                 <li><a class="nav-link text-light py-1" href="{{ route('banners.index') }}">Banner</a></li>
                 <li><a class="nav-link text-light py-1" href="{{ route('admin.flipbooks.index') }}">Flip Books</a></li>
@@ -348,7 +356,7 @@
 #sidebar ul ul .nav-link.active::before {
     content: "";
     position: absolute;
-    left: 0;   
+    left: 0;
     top: 0;
     width: 4px;
     height: 100%;

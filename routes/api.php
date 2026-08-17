@@ -2,9 +2,11 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\Pattern;
-use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+
+use App\Models\Pattern;
+
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NavigationController;
@@ -16,7 +18,6 @@ use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\CustomizerModelController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\MembershipRequestController;
-use App\Http\Controllers\Api\StripeController;
 use App\Http\Controllers\ArtworkRequestController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\FlipbookController;
@@ -25,7 +26,17 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\PlaceOrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserCustomizationController;
+
+use App\Http\Controllers\Api\StripeController;
 use App\Http\Controllers\Api\CRMTeamStoreController;
+
+/*
+|--------------------------------------------------------------------------
+| WEBSITE SETTINGS
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Admin\WebsiteSettingController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -33,128 +44,327 @@ use App\Http\Controllers\Api\CRMTeamStoreController;
 |--------------------------------------------------------------------------
 */
 
+
 // -----------------------------------------------
 // HEALTH CHECK
 // -----------------------------------------------
 Route::get('/health', function () {
+
     return response()->json([
         'status'    => 'ok',
-        'timestamp' => now()->toISOString()
+        'timestamp' => now()->toISOString(),
     ]);
+
 });
+
+
+// -----------------------------------------------
+// WEBSITE INFO / FOOTER SETTINGS
+// Public API
+// -----------------------------------------------
+Route::get('/website-info', [
+    WebsiteSettingController::class,
+    'publicInfo',
+]);
+
 
 // -----------------------------------------------
 // PATTERNS (Public)
 // -----------------------------------------------
 Route::get('/patterns', function () {
+
     return Pattern::all()->map(function ($p) {
+
         return [
             'id'      => $p->id,
             'name'    => $p->name,
             'svg_url' => asset('storage/' . $p->svg_path),
         ];
+
     });
+
 });
-////// order////
+
+
+// -----------------------------------------------
+// USER ORDERS
+// -----------------------------------------------
 Route::middleware('auth:sanctum')->get('/user/orders', function () {
+
     return response()->json([
-        'data' => \App\Models\Order::where('user_id', auth()->id())
+        'data' => \App\Models\Order::where(
+            'user_id',
+            auth()->id()
+        )
             ->latest()
-            ->get()
+            ->get(),
     ]);
+
 });
+
+
 // -----------------------------------------------
 // USER AUTH (Public)
 // -----------------------------------------------
-Route::post('/user/register',   [UserController::class, 'register']);
-Route::post('/user/login',      [UserController::class, 'login']);
-Route::post('/user/verify-otp', [UserController::class, 'verifyOtp']);
-Route::post('/user/resend-otp', [UserController::class, 'resendOtp']);
+Route::post(
+    '/user/register',
+    [UserController::class, 'register']
+);
+
+Route::post(
+    '/user/login',
+    [UserController::class, 'login']
+);
+
+Route::post(
+    '/user/verify-otp',
+    [UserController::class, 'verifyOtp']
+);
+
+Route::post(
+    '/user/resend-otp',
+    [UserController::class, 'resendOtp']
+);
+
+
 // -----------------------------------------------
 // EMAIL VERIFICATION
 // -----------------------------------------------
-Route::middleware('auth:sanctum')->get('/email/verify', function () {
-    return response()->json(['message' => 'Please verify your email']);
-})->name('verification.notice');
+Route::middleware('auth:sanctum')->get(
+    '/email/verify',
+    function () {
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return response()->json([
-        'status'  => true,
-        'message' => 'Email verified successfully'
-    ]);
-})->middleware('signed')->name('verification.verify');
+        return response()->json([
+            'message' => 'Please verify your email',
+        ]);
+
+    }
+)->name('verification.notice');
+
+
+Route::get(
+    '/email/verify/{id}/{hash}',
+    function (EmailVerificationRequest $request) {
+
+        $request->fulfill();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Email verified successfully',
+        ]);
+
+    }
+)
+    ->middleware('signed')
+    ->name('verification.verify');
+
 
 // -----------------------------------------------
 // BANNERS, CATEGORIES, NAVIGATIONS (Public)
 // -----------------------------------------------
-Route::get('/banners',                    [BannerController::class,    'apiIndex']);
-Route::get('/categories',                 [CategoryController::class,  'apiIndex']);
-Route::get('/navigations',                [NavigationController::class,'apiIndex']);
-Route::get('/categories-by-navigation',   [CategoryController::class,  'apiCategoriesByNavigation']);
-Route::get('/highlighted',                [CategoryController::class,  'apiHighlighted']);
-Route::get('/menu-categories/{slug}',     [CategoryController::class,  'apiMenuCategories']);
-Route::get('/category-products/{slug}',   [ProductController::class,   'categoryProducts']);
-Route::get('/category/{id}/products',     [ProductController::class,   'apiCategoryProducts']);
-Route::get('/category/{id}',              [CategoryController::class,  'products']);
+Route::get(
+    '/banners',
+    [BannerController::class, 'apiIndex']
+);
 
+Route::get(
+    '/categories',
+    [CategoryController::class, 'apiIndex']
+);
+
+Route::get(
+    '/navigations',
+    [NavigationController::class, 'apiIndex']
+);
+
+Route::get(
+    '/categories-by-navigation',
+    [CategoryController::class, 'apiCategoriesByNavigation']
+);
+
+Route::get(
+    '/highlighted',
+    [CategoryController::class, 'apiHighlighted']
+);
+
+Route::get(
+    '/menu-categories/{slug}',
+    [CategoryController::class, 'apiMenuCategories']
+);
+
+Route::get(
+    '/category-products/{slug}',
+    [ProductController::class, 'categoryProducts']
+);
+
+Route::get(
+    '/category/{id}/products',
+    [ProductController::class, 'apiCategoryProducts']
+);
+
+Route::get(
+    '/category/{id}',
+    [CategoryController::class, 'products']
+);
+
+
+// -----------------------------------------------
+// CATEGORY SUBCATEGORIES
+// -----------------------------------------------
 Route::prefix('categories')->group(function () {
-    Route::get('/{id}/subcategories', [CategoryController::class, 'subcategories']);
+
+    Route::get(
+        '/{id}/subcategories',
+        [CategoryController::class, 'subcategories']
+    );
+
 });
 
-Route::post('/categories/{id}/verify-password', [CategoryController::class, 'verifyCategoryPassword']);
+
+// -----------------------------------------------
+// CATEGORY PASSWORD VERIFY
+// -----------------------------------------------
+Route::post(
+    '/categories/{id}/verify-password',
+    [CategoryController::class, 'verifyCategoryPassword']
+);
+
 
 // -----------------------------------------------
 // PRODUCTS (Public)
 // -----------------------------------------------
-Route::get('/featured-products', [ProductController::class, 'apiFeaturedProducts']);
-Route::get('/apparel-products',  [ProductController::class, 'apiApparelProducts']);
-Route::get('/products',          [ProductController::class, 'indexApi']);
-Route::get('/products/{id}',     [ProductController::class, 'showApi']);
-Route::get('/products/{id}/related', [ProductController::class, 'relatedProducts']);
+Route::get(
+    '/featured-products',
+    [ProductController::class, 'apiFeaturedProducts']
+);
+
+Route::get(
+    '/apparel-products',
+    [ProductController::class, 'apiApparelProducts']
+);
+
+Route::get(
+    '/products',
+    [ProductController::class, 'indexApi']
+);
+
+Route::get(
+    '/products/{id}',
+    [ProductController::class, 'showApi']
+);
+
+Route::get(
+    '/products/{id}/related',
+    [ProductController::class, 'relatedProducts']
+);
+
 
 // -----------------------------------------------
 // DEALS, VIDEOS, BLOGS (Public)
 // -----------------------------------------------
-Route::get('/latest-deal', [DealController::class, 'apiLatestDeal']);
-Route::get('/videos',      [VideoController::class, 'apiIndex']);
-Route::get('/blogs',       [BlogController::class,  'apiIndex']);
-Route::get('/blogs/{slug}',[BlogController::class,  'apiShow']);
+Route::get(
+    '/latest-deal',
+    [DealController::class, 'apiLatestDeal']
+);
+
+Route::get(
+    '/videos',
+    [VideoController::class, 'apiIndex']
+);
+
+Route::get(
+    '/blogs',
+    [BlogController::class, 'apiIndex']
+);
+
+Route::get(
+    '/blogs/{slug}',
+    [BlogController::class, 'apiShow']
+);
+
 
 // -----------------------------------------------
 // TESTIMONIALS (Public)
 // -----------------------------------------------
-Route::get('/testimonials', [TestimonialController::class, 'apiIndex']);
+Route::get(
+    '/testimonials',
+    [TestimonialController::class, 'apiIndex']
+);
+
 
 // -----------------------------------------------
 // FLIPBOOKS (Public)
 // -----------------------------------------------
-Route::get('/flipbooks',      [FlipbookController::class, 'apiIndex']);
-Route::get('/flipbooks/{id}', [FlipbookController::class, 'apiShow']);
+Route::get(
+    '/flipbooks',
+    [FlipbookController::class, 'apiIndex']
+);
+
+Route::get(
+    '/flipbooks/{id}',
+    [FlipbookController::class, 'apiShow']
+);
+
 
 // -----------------------------------------------
 // COLORS (Public)
 // -----------------------------------------------
-Route::get('/colors', [ColorController::class, 'apiIndex']);
+Route::get(
+    '/colors',
+    [ColorController::class, 'apiIndex']
+);
+
 
 // -----------------------------------------------
 // CUSTOMIZER MODELS (Public)
 // -----------------------------------------------
-Route::get('/subcategories/{id}/models', [CustomizerModelController::class, 'modelsBySubcategory']);
-Route::get('/categories/{id}/models',    [CustomizerModelController::class, 'modelsByCategory']);
-Route::get('/models/{id}/product', [CustomizerModelController::class, 'showApi']);
+Route::get(
+    '/subcategories/{id}/models',
+    [CustomizerModelController::class, 'modelsBySubcategory']
+);
+
+Route::get(
+    '/categories/{id}/models',
+    [CustomizerModelController::class, 'modelsByCategory']
+);
+
+Route::get(
+    '/models/{id}/product',
+    [CustomizerModelController::class, 'showApi']
+);
+
+
 // -----------------------------------------------
 // TEMPLATES (Public)
 // -----------------------------------------------
-Route::post('/mascot-templates', [TemplateController::class, 'saveFromCustomizer']);
+Route::post(
+    '/mascot-templates',
+    [TemplateController::class, 'saveFromCustomizer']
+);
+
 
 // -----------------------------------------------
-// ORDERS (Public store + Auth index/show)
+// ORDERS
+// Public store + Auth index/show
 // -----------------------------------------------
-Route::post('/orders', [OrderController::class, 'store']);
+Route::post(
+    '/orders',
+    [OrderController::class, 'store']
+);
+
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/orders',      [OrderController::class, 'index']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
+
+    Route::get(
+        '/orders',
+        [OrderController::class, 'index']
+    );
+
+    Route::get(
+        '/orders/{id}',
+        [OrderController::class, 'show']
+    );
+
 });
 
 
@@ -174,82 +384,186 @@ Route::middleware('auth:sanctum')->group(function () {
     );
 
 });
+
+
 // -----------------------------------------------
 // MEMBERSHIP & ARTWORK (Public)
 // -----------------------------------------------
-Route::post('/membership-request', [MembershipRequestController::class, 'store']);
-Route::post('/artwork-request',    [ArtworkRequestController::class,    'store']);
+Route::post(
+    '/membership-request',
+    [MembershipRequestController::class, 'store']
+);
+
+Route::post(
+    '/artwork-request',
+    [ArtworkRequestController::class, 'store']
+);
+
 
 // -----------------------------------------------
 // STRIPE (Public)
 // -----------------------------------------------
-Route::post('/create-payment-intent', [StripeController::class, 'createPaymentIntent']);
+Route::post(
+    '/create-payment-intent',
+    [StripeController::class, 'createPaymentIntent']
+);
+
 
 // -----------------------------------------------
-// USER DASHBOARD (Protected - Auth Required)
+// USER DASHBOARD
+// Protected - Auth Required
 // -----------------------------------------------
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/user/logout',            [UserController::class,               'logout']);
-    Route::get('/user/profile',            [UserController::class,               'profile']);
-    Route::put('/profile',                 [UserController::class,               'updateProfile']);
-    Route::post('/user/change-password',   [UserController::class,               'changePassword']);
-    Route::get('/user/my-requests',        [UserRequestController::class,        'index']);
-    Route::get('/place-order/my-orders',   [PlaceOrderController::class,         'myOrders']);
 
-    // ✅ YEH ADD KARO
-    Route::post('/user/save-design/{id}',     [UserCustomizationController::class, 'store']);
-    Route::post('/user/save-thumbnail/{id}',  [UserCustomizationController::class, 'saveThumbnail']);
-    Route::get('/user/designs',               [UserCustomizationController::class, 'designs']);
+    Route::post(
+        '/user/logout',
+        [UserController::class, 'logout']
+    );
+
+    Route::get(
+        '/user/profile',
+        [UserController::class, 'profile']
+    );
+
+    Route::put(
+        '/profile',
+        [UserController::class, 'updateProfile']
+    );
+
+    Route::post(
+        '/user/change-password',
+        [UserController::class, 'changePassword']
+    );
+
+    Route::get(
+        '/user/my-requests',
+        [UserRequestController::class, 'index']
+    );
+
+    Route::get(
+        '/place-order/my-orders',
+        [PlaceOrderController::class, 'myOrders']
+    );
+
+
+    // -------------------------------------------
+    // USER CUSTOM DESIGNS
+    // -------------------------------------------
+    Route::post(
+        '/user/save-design/{id}',
+        [UserCustomizationController::class, 'store']
+    );
+
+    Route::post(
+        '/user/save-thumbnail/{id}',
+        [UserCustomizationController::class, 'saveThumbnail']
+    );
+
+    Route::get(
+        '/user/designs',
+        [UserCustomizationController::class, 'designs']
+    );
+
+    Route::delete(
+        '/user/designs/{id}',
+        [UserCustomizationController::class, 'destroy']
+    );
+
 });
 
+
+// -----------------------------------------------
+// DASHBOARD OVERVIEW
+// -----------------------------------------------
+Route::middleware('auth:sanctum')->get(
+    '/dashboard/stats',
+    [DashboardController::class, 'dashboardStats']
+);
+
+
+// -----------------------------------------------
+// TRACK ORDERS
+// -----------------------------------------------
+Route::get(
+    '/track-order',
+    [OrderController::class, 'trackOrder']
+);
+
+Route::get(
+    '/track-place-order',
+    [PlaceOrderController::class, 'trackOrder']
+);
+
+
+// -----------------------------------------------
+// PLACE ORDER STATUS
+// -----------------------------------------------
+Route::post(
+    '/place-order/{id}/status',
+    [PlaceOrderController::class, 'updateStatus']
+);
 
 
 // -----------------------------------------------
 // CRM PLACE ORDERS API
 // -----------------------------------------------
 Route::prefix('crm/place-orders')->group(function () {
+
     Route::get(
         '/',
         [PlaceOrderController::class, 'crmIndex']
     );
+
 
     Route::get(
         '/unread-count',
         [PlaceOrderController::class, 'crmUnreadCount']
     );
 
-    // Status definitions MUST stay before /{id}
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS DEFINITIONS
+    |--------------------------------------------------------------------------
+    | These MUST stay before /{id}
+    */
+
     Route::get(
         '/statuses',
         [PlaceOrderController::class, 'crmStatuses']
     );
+
 
     Route::post(
         '/statuses',
         [PlaceOrderController::class, 'crmStoreStatus']
     );
 
+
     Route::put(
         '/statuses/{id}',
         [PlaceOrderController::class, 'crmUpdateStatusDefinition']
     );
+
 
     Route::delete(
         '/statuses/{id}',
         [PlaceOrderController::class, 'crmDestroyStatus']
     );
 
+
     Route::post(
         '/{id}/mark-read',
         [PlaceOrderController::class, 'crmMarkRead']
     );
 
+
     Route::put(
         '/{id}',
         [PlaceOrderController::class, 'crmUpdate']
     );
-});
 
+});
 
 
 // -----------------------------------------------
@@ -262,17 +576,20 @@ Route::prefix('crm/teamstore-orders')->group(function () {
         [CRMTeamStoreController::class, 'index']
     );
 
+
     Route::get(
         '/unread-count',
         [CRMTeamStoreController::class, 'unreadCount']
     );
+
 
     Route::post(
         '/{order}/mark-read',
         [CRMTeamStoreController::class, 'markRead']
     );
 
-    // ✅ CRM se status + remark + tracking update
+
+    // CRM se status + remark + tracking update
     Route::put(
         '/{order}',
         [CRMTeamStoreController::class, 'update']
@@ -291,15 +608,18 @@ Route::prefix('crm/artwork-requests')->group(function () {
         [ArtworkRequestController::class, 'crmIndex']
     );
 
+
     Route::get(
         '/unread-count',
         [ArtworkRequestController::class, 'crmUnreadCount']
     );
 
+
     Route::post(
         '/{id}/mark-read',
         [ArtworkRequestController::class, 'crmMarkRead']
     );
+
 
     Route::patch(
         '/{id}/status',
@@ -308,29 +628,15 @@ Route::prefix('crm/artwork-requests')->group(function () {
 
 });
 
+
 // -----------------------------------------------
 // FALLBACK
+// IMPORTANT: MUST STAY AT VERY END
 // -----------------------------------------------
 Route::fallback(function () {
-    return response()->json(['error' => 'API endpoint not found'], 404);
+
+    return response()->json([
+        'error' => 'API endpoint not found',
+    ], 404);
+
 });
-// -------------
-// dashbord overview
-// --------------
-Route::middleware('auth:sanctum')->get(
-    '/dashboard/stats',
-    [DashboardController::class, 'dashboardStats']
-);
-
-Route::get('/track-order', [OrderController::class, 'trackOrder']);
-Route::get('/track-place-order', [PlaceOrderController::class, 'trackOrder']);
-
-Route::middleware('auth:sanctum')->delete('/user/designs/{id}', [UserCustomizationController::class, 'destroy']);
-
-// Yeh route add karo api.php mein
-Route::post('/place-order/{id}/status', [PlaceOrderController::class, 'updateStatus']);
-
-Route::middleware('auth:sanctum')->get(
-    '/user/designs',
-    [UserCustomizationController::class, 'designs']
-);

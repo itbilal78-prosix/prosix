@@ -25,6 +25,7 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserCustomizationController;
 use App\Http\Controllers\RecycleBinController;
+use App\Http\Controllers\Admin\WebsiteSettingController;
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -571,6 +572,22 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
         ->name('activity-logs.index');
 });
 
+
+
+// -----------------------------------------------
+// WEBSITE INFO / FOOTER SETTINGS
+// -----------------------------------------------
+Route::middleware(['auth:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get('/website-info', [WebsiteSettingController::class, 'edit'])
+            ->name('website-info.edit');
+
+        Route::put('/website-info', [WebsiteSettingController::class, 'update'])
+            ->name('website-info.update');
+    });
 
 Route::get('/{any}', function () {
     return view('welcome');

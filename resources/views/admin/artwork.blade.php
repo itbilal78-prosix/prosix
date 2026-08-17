@@ -368,6 +368,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <script>
+    
 document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(async () => {
         await fetch('/admin/artwork-mark-read', {
