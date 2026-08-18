@@ -75,7 +75,48 @@
             <span class="prog-label">{{ label }}</span>
           </div>
           <div v-if="idx < steps.length-1" :class="['prog-line', { filled: currentStep > idx+1 }]"></div>
-        </template>
+
+    <!-- CUSTOM ORDER TERMS MODAL -->
+    <transition name="terms-fade">
+      <div v-if="showTerms" class="terms-overlay" @click.self="showTerms = false">
+        <div class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+          <div class="terms-modal-head">
+            <div>
+              <span class="terms-kicker">PROSIX SPORTS</span>
+              <h2 id="terms-title">Custom Order Terms & Conditions</h2>
+              <p>Please read these terms carefully before placing your order.</p>
+            </div>
+            <button type="button" class="terms-close" @click="showTerms = false" aria-label="Close">×</button>
+          </div>
+
+          <div class="terms-modal-body">
+            <div class="terms-alert">
+              <strong>Important — Custom Made Products</strong>
+              <p>Our custom uniforms are prepared specifically for your team and may require artwork, material purchasing, printing, cutting, sewing, names, numbers, logos and other production work.</p>
+            </div>
+
+            <section class="term-section"><span class="term-number">01</span><div><h3>Order & Design Approval</h3><p>By placing your order, you confirm that the submitted design, colors, logos, names, numbers, quantities, sizes and other order details are correct. Please review all information carefully before approval.</p></div></section>
+            <section class="term-section"><span class="term-number">02</span><div><h3>Custom Production</h3><p>Once your design is approved, materials may be purchased and production may begin. Custom products are manufactured specifically for your order and may not be suitable for resale to another customer.</p></div></section>
+            <section class="term-section"><span class="term-number">03</span><div><h3>Cancellation Policy</h3><p>Before design approval and material purchase, a cancellation request may be reviewed. After design approval, material purchase, printing, sublimation, embroidery, cutting, sewing, numbering or other production work begins, the order may not be cancelled and amounts committed to custom production may be non-refundable, except where required by applicable law.</p></div></section>
+            <section class="term-section"><span class="term-number">04</span><div><h3>Changes After Approval</h3><p>Changes requested after approval may result in additional charges and a revised delivery timeline. The customer is responsible for costs related to materials or work already completed that cannot be reused.</p></div></section>
+            <section class="term-section"><span class="term-number">05</span><div><h3>Sizing, Names & Order Details</h3><p>The customer is responsible for reviewing sizes, player names, numbers, spelling, quantities and shipping details. Please check every roster entry before placing the order.</p></div></section>
+            <section class="term-section"><span class="term-number">06</span><div><h3>Production Errors</h3><p>If an item materially differs from the final approved specifications because of a verified Prosix Sports production error, we will review the issue and provide an appropriate remedy. These terms do not limit rights that cannot legally be waived.</p></div></section>
+          </div>
+
+          <div class="terms-modal-foot">
+            <p>By selecting “I Agree”, you confirm that you have read and accepted these Custom Order Terms & Conditions.</p>
+            <div class="terms-modal-actions">
+              <button type="button" class="terms-cancel" @click="showTerms = false">Close</button>
+              <button type="button" class="terms-accept" @click="acceptTerms">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                I Agree
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+</template>
       </div>
 
       <!-- MAIN GRID -->
@@ -264,12 +305,35 @@
                 </transition>
               </div>
 
-              <div class="panel-footer">
+              <!-- TERMS & CONDITIONS AGREEMENT -->
+            <div class="terms-agreement">
+              <label class="terms-check-row">
+                <input v-model="termsAccepted" type="checkbox" class="terms-checkbox" />
+                <span class="custom-check">
+                  <svg v-if="termsAccepted" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span class="terms-copy">
+                  I have read and agree to the
+<a
+  href="/pdf/Prosix_Sports_Terms_and_Conditions.pdf"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="terms-link"
+>
+  Custom Order Terms & Conditions
+</a>
+                </span>
+              </label>
+              <p class="terms-note">Custom uniforms are made specifically for your order. Please review our production and cancellation policy.</p>
+              <p v-if="termsError" class="terms-error">{{ termsError }}</p>
+            </div>
+
+            <div class="panel-footer">
                 <button class="btn-ghost" @click="currentStep = 2">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                   Back
                 </button>
-                <button class="btn-place" :disabled="activeGroup !== 'card' || loading" @click="placeOrder">
+                <button class="btn-place" :disabled="activeGroup !== 'card' || loading || !termsAccepted" @click="placeOrder">
                   <svg v-if="!loading" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   <span v-if="loading" class="spin"></span>
                   {{ loading ? 'Processing...' : `Place Order — $${totalAmount}` }}
@@ -328,7 +392,7 @@
               </div>
               <div class="trust-item">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-                60-Day Free Returns
+                Custom Order Policy
               </div>
               <div class="trust-item">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -363,6 +427,9 @@ const currentStep       = ref(1)
 const activeGroup       = ref('card')
 const stripeError       = ref('')
 const detectedCardBrand = ref('')
+const showTerms         = ref(false)
+const termsAccepted     = ref(false)
+const termsError        = ref('')
 
 let stripe     = null
 let cardNumber = null
@@ -378,6 +445,12 @@ const form = ref({
   paymentMethod: 'stripe',
 })
 const errors = ref({ name: '', phone: '', address: '', city: '' })
+
+const acceptTerms = () => {
+  termsAccepted.value = true
+  termsError.value = ''
+  showTerms.value = false
+}
 
 // ✅ Copy order number
 const copyOrderNumber = async () => {
@@ -530,6 +603,13 @@ const removeItem = (item) => {
 
 const placeOrder = async () => {
   stripeError.value = ''
+  termsError.value = ''
+
+  if (!termsAccepted.value) {
+    termsError.value = 'Please read and accept the Custom Order Terms & Conditions before placing your order.'
+    showTerms.value = true
+    return
+  }
   if (activeGroup.value !== 'card') {
     stripeError.value = 'Please select Card payment to place order.'
     return
@@ -567,6 +647,8 @@ const placeOrder = async () => {
         stripeToken:   paymentMethod.id,
         total:         totalAmount.value,
         shipping:      shipping.value,
+        termsAccepted: true,
+        termsAcceptedAt: new Date().toISOString(),
       }
     }
 
@@ -797,5 +879,24 @@ const placeOrder = async () => {
 .trust-list { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1.5px solid #F2F2F7; }
 .trust-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #8E8E93; }
 .trust-item svg { color: #C7C7CC; flex-shrink: 0; }
-</style>
 
+/* ===== PROSIX CUSTOM ORDER TERMS ===== */
+.terms-agreement{margin:0 28px 18px;padding:16px 18px;background:#FAFAFA;border:1.5px solid #E5E5EA;border-radius:14px}
+.terms-check-row{display:flex;align-items:flex-start;gap:11px;cursor:pointer}.terms-checkbox{position:absolute;opacity:0;pointer-events:none}
+.custom-check{width:21px;height:21px;flex:0 0 21px;margin-top:1px;border:1.5px solid #C7C7CC;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;transition:.18s}
+.terms-checkbox:checked+.custom-check{background:#111;border-color:#111}.terms-copy{font-size:15.5px;line-height:1.65;color:#444;font-weight:500}
+.terms-link{padding:0;border:0;background:transparent;color:#111;font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.terms-note{margin:8px 0 0 32px;font-size:20.5px;line-height:1.55;color:#8E8E93}.terms-error{margin:8px 0 0 32px;color:#FF3B30;font-size:11px;font-weight:600}
+.terms-overlay{position:fixed;inset:0;z-index:99999;padding:24px;background:rgba(0,0,0,.58);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center}
+.terms-modal{width:min(760px,100%);max-height:min(820px,92vh);background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 28px 90px rgba(0,0,0,.28);display:flex;flex-direction:column}
+.terms-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:24px 26px 20px;border-bottom:1px solid #ECECEF}
+.terms-kicker{display:block;margin-bottom:5px;font-size:9px;letter-spacing:2px;font-weight:800;color:#8E8E93}.terms-modal-head h2{font-size:21px;line-height:1.25;letter-spacing:-.5px;margin:0 0 5px}.terms-modal-head p{margin:0;color:#8E8E93;font-size:11.5px}
+.terms-close{width:36px;height:36px;flex:0 0 36px;border:1px solid #E5E5EA;background:#F7F7F8;border-radius:10px;color:#555;font-size:24px;line-height:1;cursor:pointer}.terms-close:hover{background:#111;color:#fff;border-color:#111}
+.terms-modal-body{padding:20px 26px;overflow-y:auto}.terms-alert{padding:15px 17px;margin-bottom:8px;border-radius:12px;background:#F5F5F7;border-left:4px solid #111}.terms-alert strong{display:block;font-size:12.5px;margin-bottom:4px}.terms-alert p{font-size:11px;line-height:1.65;color:#666;margin:0}
+.term-section{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:15px 0;border-bottom:1px solid #EFEFF1}.term-section:last-child{border-bottom:0}.term-number{width:36px;height:36px;border-radius:10px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;font-weight:700}.term-section h3{margin:1px 0 5px;font-size:12.5px;font-weight:800}.term-section p{margin:0;font-size:11px;line-height:1.7;color:#666}
+.terms-modal-foot{padding:16px 26px;border-top:1px solid #ECECEF;background:#FAFAFA;display:flex;align-items:center;justify-content:space-between;gap:18px}.terms-modal-foot>p{max-width:430px;margin:0;font-size:10px;line-height:1.55;color:#8E8E93}.terms-modal-actions{display:flex;gap:8px;flex-shrink:0}
+.terms-cancel,.terms-accept{height:42px;padding:0 17px;border-radius:10px;font-family:'Sora',sans-serif;font-size:11.5px;font-weight:700;cursor:pointer}.terms-cancel{background:#fff;color:#555;border:1.5px solid #E5E5EA}.terms-accept{border:1.5px solid #111;background:#111;color:#fff;display:inline-flex;align-items:center;gap:7px}.terms-accept:hover{background:#2B2B2B}
+.terms-fade-enter-active,.terms-fade-leave-active{transition:opacity .2s ease}.terms-fade-enter-from,.terms-fade-leave-to{opacity:0}
+@media(max-width:640px){.terms-overlay{padding:10px;align-items:flex-end}.terms-modal{max-height:94vh;border-radius:20px 20px 12px 12px}.terms-modal-head,.terms-modal-body,.terms-modal-foot{padding-left:18px;padding-right:18px}.terms-modal-head h2{font-size:18px}.terms-modal-foot{align-items:stretch;flex-direction:column}.terms-modal-actions{width:100%}.terms-cancel,.terms-accept{flex:1;justify-content:center}.terms-agreement{margin-left:18px;margin-right:18px}}
+
+</style>
