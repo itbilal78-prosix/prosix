@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
+
+        // Order
         'order_number',
         'user_id',
         'total',
         'status',
+
+        // Payment
         'payment_status',
         'payment_method',
         'currency',
@@ -19,6 +23,8 @@ class Order extends Model
         'stripe_session_id',
         'paid_amount',
         'transaction_date',
+
+        // Shipping
         'shipping_name',
         'shipping_phone',
         'shipping_email',
@@ -27,59 +33,131 @@ class Order extends Model
         'shipping_province',
         'shipping_postal_code',
         'delivery_days',
+
+        // Items
         'items',
+
+        // Tracking
         'tracking_number',
         'courier_name',
         'dispatch_date',
         'delivered_date',
+
+        // Admin
         'admin_notes',
         'remark',
-            'is_read',
+        'is_read',
 
+        // ============================================
+        // AGREEMENT / TERMS RECORD
+        // ============================================
+
+        'terms_accepted',
+        'terms_accepted_at',
+
+        'agreement_pdf',
+        'agreement_version',
+
+        // Customer IP address
+        'agreement_ip',
+
+        // Browser / device
+        'agreement_user_agent',
+
+        // website_checkout etc.
+        'agreement_acceptance_source',
     ];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Casts
+    |--------------------------------------------------------------------------
+    */
 
     protected $casts = [
-        'items'            => 'array',
+
+        'items' => 'array',
+
         'transaction_date' => 'datetime',
-        'dispatch_date'    => 'datetime',
-        'delivered_date'   => 'datetime',
+
+        'dispatch_date' => 'datetime',
+
+        'delivered_date' => 'datetime',
+
+        // Agreement
+        'terms_accepted' => 'boolean',
+
+        'terms_accepted_at' => 'datetime',
+
+        'is_read' => 'boolean',
     ];
 
-    /**
-     * ✅ Order create hote waqt auto order_number generate karo
-     * Format: P6S-2026-XXXX (e.g. P6S-2026-4821)
-     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Boot
+    |--------------------------------------------------------------------------
+    |
+    | Order create hote waqt automatic order number generate hota hai.
+    |
+    | Example:
+    | P6S-2026-4821
+    |
+    */
+
     protected static function booted(): void
     {
         static::creating(function ($order) {
+
             if (empty($order->order_number)) {
                 $order->order_number = static::generateOrderNumber();
             }
         });
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Order Number
+    |--------------------------------------------------------------------------
+    */
+
     public static function generateOrderNumber(): string
     {
         do {
-            $year   = date('Y');
+
+            $year = date('Y');
+
             $random = rand(1000, 9999);
+
             $number = "P6S-{$year}-{$random}";
-        } while (static::where('order_number', $number)->exists());
+
+        } while (
+            static::where('order_number', $number)->exists()
+        );
 
         return $number;
     }
 
-    // ─── Relationships ───────────────────────────────────────
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+
     public function payments()
     {
         return $this->hasMany(Payment::class);
     }
+
 
     public function statusLogs()
     {
@@ -87,8 +165,10 @@ class Order extends Model
     }
 
 
-public function teamStoreReads()
-{
-    return $this->hasMany(\App\Models\TeamStoreOrderRead::class);
-}
+    public function teamStoreReads()
+    {
+        return $this->hasMany(
+            \App\Models\TeamStoreOrderRead::class
+        );
+    }
 }

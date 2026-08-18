@@ -36,6 +36,7 @@ class OrderController extends Controller
                 'checkout.country'        => 'nullable|string',
                 'checkout.deliveryDays'   => 'required|string',
                 'checkout.paymentMethod'  => 'required|string|in:stripe',
+                'checkout.termsAccepted'   => 'required|accepted',
             ]);
 
             $subtotal = collect($request->cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
@@ -85,6 +86,15 @@ class OrderController extends Controller
                 'shipping_postal_code'     => $request->checkout['postalCode'],
                 'delivery_days'            => $request->checkout['deliveryDays'],
                 'items'                    => $request->cart,
+
+                // Agreement / Terms audit record
+                'terms_accepted'            => true,
+                'terms_accepted_at'         => now(),
+                'agreement_pdf'             => '/pdf/Prosix_Sports_Terms_and_Conditions.pdf',
+                'agreement_version'         => '2026-08-18',
+                'agreement_ip'              => $request->ip(),
+                'agreement_user_agent'      => $request->userAgent(),
+                'agreement_acceptance_source' => 'website_checkout',
             ]);
 
             if ($stripePaymentIntentId) {
@@ -170,6 +180,10 @@ class OrderController extends Controller
             'dispatch_date'    => $order->dispatch_date,
             'delivered_date'   => $order->delivered_date,
             'admin_notes'      => $order->admin_notes,
+            'terms_accepted'   => (bool) $order->terms_accepted,
+            'terms_accepted_at'=> $order->terms_accepted_at,
+            'agreement_pdf'    => $order->agreement_pdf,
+            'agreement_version'=> $order->agreement_version,
             'created_at'       => $order->created_at,
         ]);
     }
