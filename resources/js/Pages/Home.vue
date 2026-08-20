@@ -261,6 +261,43 @@
         </div>
       </section>
 
+
+      <!-- STATIC FULLSCREEN SHOWCASE VIDEO -->
+ <!-- STATIC FULLSCREEN SHOWCASE VIDEO -->
+<section class="home-showcase-video-section">
+  <div class="home-showcase-video-wrap">
+
+    <video
+      class="home-showcase-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+    >
+      <source
+        src="/public/videos/prosix-showcase.mp4"
+        type="video/mp4"
+      />
+
+      Your browser does not support HTML5 video.
+    </video>
+
+    <div class="home-showcase-video-overlay"></div>
+
+    <div class="home-showcase-video-content">
+      <span class="home-showcase-kicker">BUILT FOR THE GAME</span>
+
+      <h2>Play Hard. Look Different.</h2>
+
+      <p>
+        Premium custom sportswear designed for teams that want to stand out.
+      </p>
+    </div>
+
+  </div>
+</section>
+
       <!-- RECENT BLOG -->
       <section class="recent-blog-section py-5">
         <div class="full-container">
@@ -1207,4 +1244,160 @@ img { max-width: 100%; height: auto; }
   }
 
 }
+
+/* ===========================================================
+   STATIC FULLSCREEN SHOWCASE VIDEO
+   Testimonials ke niche, Blogs ke upar
+   =========================================================== */
+.home-showcase-video-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  height: 100svh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+
+.home-showcase-video-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.home-showcase-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center center;
+  background: #000;
+  z-index: 0;
+}
+
+.home-showcase-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.70) 0%,
+      rgba(0, 0, 0, 0.38) 34%,
+      rgba(0, 0, 0, 0.12) 65%,
+      rgba(0, 0, 0, 0.14) 100%
+    );
+}
+
+.home-showcase-video-content {
+  position: absolute;
+  left: clamp(22px, 6vw, 110px);
+  bottom: clamp(45px, 10vh, 120px);
+  z-index: 2;
+  width: min(700px, calc(100% - 44px));
+  color: #fff;
+}
+
+.home-showcase-kicker {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.home-showcase-video-content h2 {
+  margin: 0 0 18px;
+  color: #fff;
+  font-size: clamp(3rem, 5.8vw, 6.6rem);
+  font-weight: 900;
+  line-height: 0.94;
+  letter-spacing: -2.5px;
+  text-transform: uppercase;
+}
+
+.home-showcase-video-content p {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(255,255,255,0.92);
+  font-size: clamp(1rem, 1.35vw, 1.24rem);
+  line-height: 1.65;
+}
+
+@media (max-width: 991px) {
+  .home-showcase-video-section {
+    height: 100vh;
+    min-height: 100vh;
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  .home-showcase-video-overlay {
+    background:
+      linear-gradient(
+        0deg,
+        rgba(0,0,0,0.82) 0%,
+        rgba(0,0,0,0.45) 42%,
+        rgba(0,0,0,0.10) 76%,
+        rgba(0,0,0,0.08) 100%
+      );
+  }
+
+  .home-showcase-video-content {
+    left: 28px;
+    right: 28px;
+    bottom: 55px;
+    width: auto;
+  }
+}
+
+@media (max-width: 575px) {
+  .home-showcase-video-section {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    height: 100svh !important;
+    min-height: 100svh !important;
+  }
+
+  .home-showcase-video {
+    object-position: center center;
+  }
+
+  .home-showcase-video-content {
+    left: 18px;
+    right: 18px;
+    bottom: 34px;
+  }
+
+  .home-showcase-kicker {
+    margin-bottom: 10px;
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+  }
+
+  .home-showcase-video-content h2 {
+    margin-bottom: 12px;
+    font-size: clamp(2.35rem, 12vw, 3.6rem);
+    line-height: 0.98;
+    letter-spacing: -1.2px;
+  }
+
+  .home-showcase-video-content p {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+}
+
 </style>

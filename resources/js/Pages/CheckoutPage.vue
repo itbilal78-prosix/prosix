@@ -1787,7 +1787,6 @@ const placeOrder = async () => {
 
 .trust-item svg { color: #C7C7CC; flex-shrink: 0; }
 
-
 .terms-agreement{margin:0 28px 18px;padding:16px 18px;background:#FAFAFA;border:1.5px solid #E5E5EA;border-radius:14px}
 
 .terms-check-row{display:flex;align-items:flex-start;gap:11px;cursor:pointer}.terms-checkbox{position:absolute;opacity:0;pointer-events:none}
