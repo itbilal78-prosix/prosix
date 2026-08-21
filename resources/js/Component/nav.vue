@@ -473,17 +473,105 @@ const pendingRoute       = ref(null)
 const selectedCategoryId = ref(null)
 
 const handleCategoryClickInNav = (item) => {
-  if (item?.password) {
-    selectedCategoryId.value = item.id
-    pendingRoute.value = item.subcategories?.length > 0
-      ? { name: 'Subcategories', params: { id: item.id } }
-      : { name: 'CategoryProducts', params: { id: item.id } }
-    showPasswordModal.value = true
-  } else {
-    router.push(item.subcategories?.length > 0
-      ? { name: 'Subcategories', params: { id: item.id } }
-      : { name: 'CategoryProducts', params: { id: item.id } })
+
+  if (!item) return
+
+
+  // ==========================================
+  // SPECIAL SUPPORT PAGES
+  // ==========================================
+
+  const itemName = String(item.name || '')
+    .trim()
+    .toLowerCase()
+
+  const itemSlug = String(item.slug || '')
+    .trim()
+    .toLowerCase()
+
+
+  // CONTACT US
+  if (
+    itemName === 'contact us' ||
+    itemSlug === 'contact-us' ||
+    itemSlug === 'contact'
+  ) {
+
+    router.push('/contact-us')
+
+    return
   }
+
+
+  // TRACKING / ORDER STATUS
+  if (
+    itemName === 'order status' ||
+    itemSlug === 'order-status'
+  ) {
+
+    router.push('/track')
+
+    return
+  }
+
+
+  // ==========================================
+  // NORMAL CATEGORY PASSWORD
+  // ==========================================
+
+  if (item.password) {
+
+    selectedCategoryId.value = item.id
+
+
+    pendingRoute.value =
+      item.subcategories?.length > 0
+
+        ? {
+            name: 'Subcategories',
+            params: {
+              id: item.id
+            }
+          }
+
+        : {
+            name: 'CategoryProducts',
+            params: {
+              id: item.id
+            }
+          }
+
+
+    showPasswordModal.value = true
+
+    return
+  }
+
+
+  // ==========================================
+  // NORMAL CATEGORY
+  // ==========================================
+
+  router.push(
+
+    item.subcategories?.length > 0
+
+      ? {
+          name: 'Subcategories',
+          params: {
+            id: item.id
+          }
+        }
+
+      : {
+          name: 'CategoryProducts',
+          params: {
+            id: item.id
+          }
+        }
+
+  )
+
 }
 const submitPassword = async () => {
   if (!enteredPassword.value.trim()) {
