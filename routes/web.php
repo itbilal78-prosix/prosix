@@ -26,6 +26,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserCustomizationController;
 use App\Http\Controllers\RecycleBinController;
 use App\Http\Controllers\Admin\WebsiteSettingController;
+use App\Http\Controllers\Admin\ContactMessageController;
 // Login routes
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -587,6 +588,38 @@ Route::middleware(['auth:admin'])
 
         Route::put('/website-info', [WebsiteSettingController::class, 'update'])
             ->name('website-info.update');
+    });
+
+
+
+// -----------------------------------------------
+// CONTACT US DATA - ADMIN
+// -----------------------------------------------
+Route::middleware(['auth:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get(
+            '/contact-messages',
+            [ContactMessageController::class, 'index']
+        )->name('contact-messages.index');
+
+        Route::get(
+            '/contact-messages-unread-count',
+            [ContactMessageController::class, 'unreadCount']
+        )->name('contact-messages.unreadCount');
+
+        Route::get(
+            '/contact-messages/{contactMessage}',
+            [ContactMessageController::class, 'show']
+        )->name('contact-messages.show');
+
+        Route::delete(
+            '/contact-messages/{contactMessage}',
+            [ContactMessageController::class, 'destroy']
+        )->name('contact-messages.destroy');
+
     });
 
 Route::get('/{any}', function () {

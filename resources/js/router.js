@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
+
   {
     path: '/',
     name: 'Home',
@@ -171,7 +172,6 @@ const routes = [
     }
   },
 
-  // ✅ NEW WEBSITE REQUEST PAGE
   {
     path: '/website-request',
     name: 'WebsiteRequest',
@@ -181,7 +181,20 @@ const routes = [
       title: 'Website Request',
       breadcrumb: 'Website Request'
     }
+  },
+
+  // CONTACT US PAGE
+  {
+    path: '/contact-us',
+    name: 'ContactUs',
+    component: () => import('@/Pages/ContactUs.vue'),
+    meta: {
+      public: true,
+      title: 'Contact Us',
+      breadcrumb: 'Contact Us'
+    }
   }
+
 ]
 
 const router = createRouter({
@@ -197,6 +210,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+
   // URL se token mile to localStorage mein save karo
   const urlToken = to.query.token
 

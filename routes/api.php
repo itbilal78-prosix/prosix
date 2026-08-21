@@ -29,12 +29,15 @@ use App\Http\Controllers\UserCustomizationController;
 
 use App\Http\Controllers\Api\StripeController;
 use App\Http\Controllers\Api\CRMTeamStoreController;
+use App\Http\Controllers\ContactController;
+
 
 /*
 |--------------------------------------------------------------------------
 | WEBSITE SETTINGS
 |--------------------------------------------------------------------------
 */
+
 use App\Http\Controllers\Admin\WebsiteSettingController;
 
 
@@ -48,6 +51,7 @@ use App\Http\Controllers\Admin\WebsiteSettingController;
 // -----------------------------------------------
 // HEALTH CHECK
 // -----------------------------------------------
+
 Route::get('/health', function () {
 
     return response()->json([
@@ -62,6 +66,7 @@ Route::get('/health', function () {
 // WEBSITE INFO / FOOTER SETTINGS
 // Public API
 // -----------------------------------------------
+
 Route::get('/website-info', [
     WebsiteSettingController::class,
     'publicInfo',
@@ -69,8 +74,25 @@ Route::get('/website-info', [
 
 
 // -----------------------------------------------
+// CONTACT US
+// Public API
+// -----------------------------------------------
+
+Route::get(
+    '/contact-info',
+    [ContactController::class, 'info']
+);
+
+Route::post(
+    '/contact-message',
+    [ContactController::class, 'store']
+);
+
+
+// -----------------------------------------------
 // PATTERNS (Public)
 // -----------------------------------------------
+
 Route::get('/patterns', function () {
 
     return Pattern::all()->map(function ($p) {
@@ -89,6 +111,7 @@ Route::get('/patterns', function () {
 // -----------------------------------------------
 // USER ORDERS
 // -----------------------------------------------
+
 Route::middleware('auth:sanctum')->get('/user/orders', function () {
 
     return response()->json([
@@ -106,6 +129,7 @@ Route::middleware('auth:sanctum')->get('/user/orders', function () {
 // -----------------------------------------------
 // USER AUTH (Public)
 // -----------------------------------------------
+
 Route::post(
     '/user/register',
     [UserController::class, 'register']
@@ -130,6 +154,7 @@ Route::post(
 // -----------------------------------------------
 // EMAIL VERIFICATION
 // -----------------------------------------------
+
 Route::middleware('auth:sanctum')->get(
     '/email/verify',
     function () {
@@ -162,6 +187,7 @@ Route::get(
 // -----------------------------------------------
 // BANNERS, CATEGORIES, NAVIGATIONS (Public)
 // -----------------------------------------------
+
 Route::get(
     '/banners',
     [BannerController::class, 'apiIndex']
@@ -211,6 +237,7 @@ Route::get(
 // -----------------------------------------------
 // CATEGORY SUBCATEGORIES
 // -----------------------------------------------
+
 Route::prefix('categories')->group(function () {
 
     Route::get(
@@ -224,6 +251,7 @@ Route::prefix('categories')->group(function () {
 // -----------------------------------------------
 // CATEGORY PASSWORD VERIFY
 // -----------------------------------------------
+
 Route::post(
     '/categories/{id}/verify-password',
     [CategoryController::class, 'verifyCategoryPassword']
@@ -233,6 +261,7 @@ Route::post(
 // -----------------------------------------------
 // PRODUCTS (Public)
 // -----------------------------------------------
+
 Route::get(
     '/featured-products',
     [ProductController::class, 'apiFeaturedProducts']
@@ -262,6 +291,7 @@ Route::get(
 // -----------------------------------------------
 // DEALS, VIDEOS, BLOGS (Public)
 // -----------------------------------------------
+
 Route::get(
     '/latest-deal',
     [DealController::class, 'apiLatestDeal']
@@ -286,6 +316,7 @@ Route::get(
 // -----------------------------------------------
 // TESTIMONIALS (Public)
 // -----------------------------------------------
+
 Route::get(
     '/testimonials',
     [TestimonialController::class, 'apiIndex']
@@ -295,6 +326,7 @@ Route::get(
 // -----------------------------------------------
 // FLIPBOOKS (Public)
 // -----------------------------------------------
+
 Route::get(
     '/flipbooks',
     [FlipbookController::class, 'apiIndex']
@@ -309,6 +341,7 @@ Route::get(
 // -----------------------------------------------
 // COLORS (Public)
 // -----------------------------------------------
+
 Route::get(
     '/colors',
     [ColorController::class, 'apiIndex']
@@ -318,6 +351,7 @@ Route::get(
 // -----------------------------------------------
 // CUSTOMIZER MODELS (Public)
 // -----------------------------------------------
+
 Route::get(
     '/subcategories/{id}/models',
     [CustomizerModelController::class, 'modelsBySubcategory']
@@ -337,6 +371,7 @@ Route::get(
 // -----------------------------------------------
 // TEMPLATES (Public)
 // -----------------------------------------------
+
 Route::post(
     '/mascot-templates',
     [TemplateController::class, 'saveFromCustomizer']
@@ -347,6 +382,7 @@ Route::post(
 // ORDERS
 // Public store + Auth index/show
 // -----------------------------------------------
+
 Route::post(
     '/orders',
     [OrderController::class, 'store']
@@ -371,6 +407,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // -----------------------------------------------
 // PLACE ORDER
 // -----------------------------------------------
+
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post(
@@ -389,6 +426,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // -----------------------------------------------
 // MEMBERSHIP & ARTWORK (Public)
 // -----------------------------------------------
+
 Route::post(
     '/membership-request',
     [MembershipRequestController::class, 'store']
@@ -403,6 +441,7 @@ Route::post(
 // -----------------------------------------------
 // STRIPE (Public)
 // -----------------------------------------------
+
 Route::post(
     '/create-payment-intent',
     [StripeController::class, 'createPaymentIntent']
@@ -413,6 +452,7 @@ Route::post(
 // USER DASHBOARD
 // Protected - Auth Required
 // -----------------------------------------------
+
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post(
@@ -449,6 +489,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // -------------------------------------------
     // USER CUSTOM DESIGNS
     // -------------------------------------------
+
     Route::post(
         '/user/save-design/{id}',
         [UserCustomizationController::class, 'store']
@@ -475,6 +516,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // -----------------------------------------------
 // DASHBOARD OVERVIEW
 // -----------------------------------------------
+
 Route::middleware('auth:sanctum')->get(
     '/dashboard/stats',
     [DashboardController::class, 'dashboardStats']
@@ -484,6 +526,7 @@ Route::middleware('auth:sanctum')->get(
 // -----------------------------------------------
 // TRACK ORDERS
 // -----------------------------------------------
+
 Route::get(
     '/track-order',
     [OrderController::class, 'trackOrder']
@@ -498,6 +541,7 @@ Route::get(
 // -----------------------------------------------
 // PLACE ORDER STATUS
 // -----------------------------------------------
+
 Route::post(
     '/place-order/{id}/status',
     [PlaceOrderController::class, 'updateStatus']
@@ -507,6 +551,7 @@ Route::post(
 // -----------------------------------------------
 // CRM PLACE ORDERS API
 // -----------------------------------------------
+
 Route::prefix('crm/place-orders')->group(function () {
 
     Route::get(
@@ -569,6 +614,7 @@ Route::prefix('crm/place-orders')->group(function () {
 // -----------------------------------------------
 // CRM TEAMSTORE ORDERS API
 // -----------------------------------------------
+
 Route::prefix('crm/teamstore-orders')->group(function () {
 
     Route::get(
@@ -601,6 +647,7 @@ Route::prefix('crm/teamstore-orders')->group(function () {
 // -----------------------------------------------
 // CRM ARTWORK REQUESTS API
 // -----------------------------------------------
+
 Route::prefix('crm/artwork-requests')->group(function () {
 
     Route::get(
@@ -633,6 +680,7 @@ Route::prefix('crm/artwork-requests')->group(function () {
 // FALLBACK
 // IMPORTANT: MUST STAY AT VERY END
 // -----------------------------------------------
+
 Route::fallback(function () {
 
     return response()->json([

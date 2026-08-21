@@ -760,7 +760,6 @@ body, html { font-family: 'Poppins', sans-serif; background: white; color: #000;
 .icon-circle { width: 110px; height: 110px; display: flex; align-items: center; justify-content: center; background: black; border-radius: 50%; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; }
 .icon-circle::after { content: ''; position: absolute; inset: 0; border: 3px dotted #fff; border-radius: 50%; opacity: 0; transition: opacity 0.35s, transform 0.35s; transform: scale(0.92); pointer-events: none; }
 @keyframes rotateDotted { from { transform: scale(0.92) rotate(0deg); } to { transform: scale(0.92) rotate(360deg); } }
-
 .left-ribbon { position: relative; display: inline-flex; align-items: center; justify-content: center; background: #000; color: #fff; padding: 10px 40px 10px 30px; font-weight: 800; font-size: 2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; text-align: center; }
 .left-ribbon span { position: relative; z-index: 2; display: block; text-align: center; }
 .left2-ribbon { position: relative; display: inline-block; background: #ffffff; color: #000000; padding: 10px 12px; font-weight: 800; font-size: 1.2rem; margin-left: -80px; letter-spacing: 1px; margin-bottom: 40px; border-radius: 0px 25px 25px 0px; }
