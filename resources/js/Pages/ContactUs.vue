@@ -10,11 +10,15 @@
 
     <nav-component />
 
-    <breadcrumb-component />
-
     <!-- CONTACT PAGE BANNER -->
 
     <section class="contact-banner" aria-label="Contact Us">
+
+      <div class="contact-breadcrumb-overlay">
+
+        <breadcrumb-component />
+
+      </div>
 
       <img
 
@@ -71,6 +75,10 @@
               our team is ready to help.
 
             </p>
+
+
+
+
 
 
 
@@ -136,6 +144,10 @@
 
 
 
+
+
+
+
                 <div class="info-content">
 
                   <span class="info-label">
@@ -190,6 +202,10 @@
 
 
 
+
+
+
+
               <!-- EMAIL -->
 
               <div class="info-item">
@@ -231,6 +247,10 @@
                   </svg>
 
                 </div>
+
+
+
+
 
 
 
@@ -290,6 +310,10 @@
 
 
 
+
+
+
+
               <!-- ADDRESS -->
 
               <div class="info-item">
@@ -333,6 +357,10 @@
                   </svg>
 
                 </div>
+
+
+
+
 
 
 
@@ -392,6 +420,10 @@
 
 
 
+
+
+
+
             <!-- EXTRA INFO BOX -->
 
             <div class="response-box">
@@ -438,6 +470,10 @@
 
 
 
+
+
+
+
           <!-- ===========================
 
                RIGHT FORM
@@ -471,6 +507,10 @@
                 </p>
 
               </div>
+
+
+
+
 
 
 
@@ -511,6 +551,10 @@
               </div>
 
             </div>
+
+
+
+
 
 
 
@@ -568,6 +612,10 @@
 
 
 
+
+
+
+
                 <div class="field-group">
 
                   <label>
@@ -589,6 +637,10 @@
                 </div>
 
               </div>
+
+
+
+
 
 
 
@@ -636,6 +688,10 @@
 
 
 
+
+
+
+
                 <div class="field-group">
 
                   <label>
@@ -671,6 +727,10 @@
                 </div>
 
               </div>
+
+
+
+
 
 
 
@@ -728,6 +788,10 @@
 
 
 
+
+
+
+
               <!-- SUCCESS -->
 
               <div
@@ -767,6 +831,10 @@
                 </span>
 
               </div>
+
+
+
+
 
 
 
@@ -818,6 +886,10 @@
 
 
 
+
+
+
+
               <!-- BUTTON -->
 
               <div class="form-action">
@@ -844,11 +916,19 @@
 
 
 
+
+
+
+
                   <span>
 
                     {{ submitting ? 'Sending Message...' : 'Send Message' }}
 
                   </span>
+
+
+
+
 
 
 
@@ -880,6 +960,10 @@
 
 
 
+
+
+
+
                 <p>
 
                   By submitting this form you agree to be contacted
@@ -899,6 +983,10 @@
       </div>
 
     </section>
+
+
+
+
 
 
 
@@ -933,6 +1021,10 @@
             </h2>
 
           </div>
+
+
+
+
 
 
 
@@ -978,6 +1070,10 @@
 
 
 
+
+
+
+
     <!-- ===============================
 
          GLOBAL FOOTER
@@ -989,6 +1085,10 @@
   </div>
 
 </template>
+
+
+
+
 
 
 
@@ -1012,11 +1112,15 @@ import axios from 'axios'
 
 
 
+
+
+
+
 /* =========================================================
 
    CONTACT INFO
 
-\\========================================================= */
+\\\\========================================================= */
 
 const contact = reactive({
 
@@ -1034,11 +1138,15 @@ const contactLoading = ref(true)
 
 
 
+
+
+
+
 /* =========================================================
 
    FORM
 
-\\========================================================= */
+\\\\========================================================= */
 
 const form = reactive({
 
@@ -1066,11 +1174,15 @@ const errorMessage = ref('')
 
 
 
+
+
+
+
 /* =========================================================
 
    LOAD CONTACT INFORMATION
 
-\\========================================================= */
+\\\\========================================================= */
 
 const getContactInfo = async () => {
 
@@ -1120,11 +1232,15 @@ const getContactInfo = async () => {
 
 
 
+
+
+
+
 /* =========================================================
 
    SUBMIT CONTACT FORM
 
-\\========================================================= */
+\\\\========================================================= */
 
 const submitForm = async () => {
 
@@ -1141,6 +1257,10 @@ const submitForm = async () => {
   successMessage.value = ''
 
   errorMessage.value = ''
+
+
+
+
 
 
 
@@ -1184,6 +1304,10 @@ const submitForm = async () => {
 
 
 
+
+
+
+
     if (response.data?.success) {
 
       successMessage.value =
@@ -1191,6 +1315,10 @@ const submitForm = async () => {
         response.data.message ||
 
         'Your message has been sent successfully.'
+
+
+
+
 
 
 
@@ -1222,6 +1350,10 @@ const submitForm = async () => {
 
 
 
+
+
+
+
     if (
 
       error.response?.status === 422
@@ -1231,6 +1363,10 @@ const submitForm = async () => {
       errors.value =
 
         error.response?.data?.errors || {}
+
+
+
+
 
 
 
@@ -1264,11 +1400,15 @@ const submitForm = async () => {
 
 
 
+
+
+
+
 /* =========================================================
 
    INIT
 
-\\========================================================= */
+\\\\========================================================= */
 
 onMounted(() => {
 
@@ -1282,9 +1422,17 @@ onMounted(() => {
 
 
 
+
+
+
+
 <style scoped>
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+
+
+
+
 
 
 
@@ -1294,13 +1442,17 @@ onMounted(() => {
 
    RESET
 
-\\========================================================= */
+\\\\========================================================= */
 
 * {
 
   box-sizing: border-box;
 
 }
+
+
+
+
 
 
 
@@ -1330,6 +1482,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .contact-container {
 
   width:
@@ -1350,16 +1506,47 @@ onMounted(() => {
 
    CONTACT BANNER
 
-\========================================================= */
+\\========================================================= */
 
 .contact-banner {
 
+  position: relative;
+
   width: 100%;
 
+  margin: 0;
 
-  overflow: visible;
+  padding: 0;
 
-  background: #03101f;
+
+
+  overflow: hidden;
+
+  line-height: 0;
+
+  background: #ffffff;
+
+}
+
+.contact-breadcrumb-overlay {
+
+  position: absolute;
+
+  top: 24px;
+
+  left: 30px;
+
+  right: 30px;
+
+  z-index: 5;
+
+  line-height: normal;
+
+}
+
+.contact-breadcrumb-overlay :deep(*) {
+
+  background: transparent !important;
 
 }
 
@@ -1375,7 +1562,15 @@ onMounted(() => {
 
   object-position: center;
 
+  margin: 0;
+
+  padding: 0;
+
 }
+
+
+
+
 
 
 
@@ -1385,7 +1580,7 @@ onMounted(() => {
 
    HERO
 
-\\========================================================= */
+\\\\========================================================= */
 
 .contact-hero {
 
@@ -1406,6 +1601,10 @@ onMounted(() => {
   color: #ffffff;
 
 }
+
+
+
+
 
 
 
@@ -1449,6 +1648,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .contact-hero::after {
 
   content: '';
@@ -1487,6 +1690,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .hero-grid {
 
   position: relative;
@@ -1506,6 +1713,10 @@ onMounted(() => {
   align-items: flex-end;
 
 }
+
+
+
+
 
 
 
@@ -1533,6 +1744,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .hero-dot {
 
   width: 8px;
@@ -1544,6 +1759,10 @@ onMounted(() => {
   border-radius: 50%;
 
 }
+
+
+
+
 
 
 
@@ -1593,6 +1812,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .hero-content h1 > span {
 
   display: block;
@@ -1633,6 +1856,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .hero-content p {
 
   max-width: 680px;
@@ -1663,6 +1890,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .hero-side {
 
   display: flex;
@@ -1674,6 +1905,10 @@ onMounted(() => {
   padding-bottom: 8px;
 
 }
+
+
+
+
 
 
 
@@ -1713,6 +1948,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .hero-side-text {
 
   color:
@@ -1743,11 +1982,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    CONTACT SECTION
 
-\\========================================================= */
+\\\\========================================================= */
 
 .contact-section {
 
@@ -1762,6 +2005,10 @@ onMounted(() => {
   background: #f7f7f5;
 
 }
+
+
+
+
 
 
 
@@ -1787,11 +2034,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    SECTION TEXT
 
-\\========================================================= */
+\\\\========================================================= */
 
 .section-kicker {
 
@@ -1806,6 +2057,10 @@ onMounted(() => {
   letter-spacing: 2px;
 
 }
+
+
+
+
 
 
 
@@ -1843,6 +2098,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .info-description {
 
   max-width: 520px;
@@ -1867,11 +2126,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    CONTACT ITEMS
 
-\\========================================================= */
+\\\\========================================================= */
 
 .contact-items {
 
@@ -1882,6 +2145,10 @@ onMounted(() => {
   gap: 8px;
 
 }
+
+
+
+
 
 
 
@@ -1908,6 +2175,10 @@ onMounted(() => {
     #deded9;
 
 }
+
+
+
+
 
 
 
@@ -1943,6 +2214,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .info-icon svg {
 
   width: 24px;
@@ -1950,6 +2225,10 @@ onMounted(() => {
   height: 24px;
 
 }
+
+
+
+
 
 
 
@@ -1971,6 +2250,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .info-label {
 
   color: #777;
@@ -1984,6 +2267,10 @@ onMounted(() => {
   letter-spacing: 1px;
 
 }
+
+
+
+
 
 
 
@@ -2009,6 +2296,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .info-value:hover {
 
   opacity: 0.55;
@@ -2019,11 +2310,19 @@ onMounted(() => {
 
 
 
+
+
+
+
 .address-value {
 
   max-width: 360px;
 
 }
+
+
+
+
 
 
 
@@ -2043,11 +2342,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    RESPONSE BOX
 
-\\========================================================= */
+\\\\========================================================= */
 
 .response-box {
 
@@ -2070,6 +2373,10 @@ onMounted(() => {
   background: #ffffff;
 
 }
+
+
+
+
 
 
 
@@ -2101,6 +2408,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .response-icon svg {
 
   width: 20px;
@@ -2108,6 +2419,10 @@ onMounted(() => {
   height: 20px;
 
 }
+
+
+
+
 
 
 
@@ -2122,6 +2437,10 @@ onMounted(() => {
   font-size: 16px;
 
 }
+
+
+
+
 
 
 
@@ -2143,11 +2462,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    FORM CARD
 
-\\========================================================= */
+\\\\========================================================= */
 
 .contact-form-card {
 
@@ -2164,6 +2487,10 @@ onMounted(() => {
   background: #ffffff;
 
 }
+
+
+
+
 
 
 
@@ -2190,6 +2517,10 @@ onMounted(() => {
     #ebebe7;
 
 }
+
+
+
+
 
 
 
@@ -2225,6 +2556,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .form-top p {
 
   max-width: 500px;
@@ -2238,6 +2573,10 @@ onMounted(() => {
   line-height: 1.7;
 
 }
+
+
+
+
 
 
 
@@ -2269,6 +2608,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .form-mail-icon svg {
 
   width: 24px;
@@ -2281,17 +2624,25 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    FORM
 
-\\========================================================= */
+\\\\========================================================= */
 
 .contact-form {
 
   width: 100%;
 
 }
+
+
+
+
 
 
 
@@ -2319,11 +2670,19 @@ onMounted(() => {
 
 
 
+
+
+
+
 .field-group {
 
   margin-bottom: 22px;
 
 }
+
+
+
+
 
 
 
@@ -2347,11 +2706,19 @@ onMounted(() => {
 
 
 
+
+
+
+
 .field-group label span {
 
   color: #c90000;
 
 }
+
+
+
+
 
 
 
@@ -2399,6 +2766,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .field-group input {
 
   height: 58px;
@@ -2410,6 +2781,10 @@ onMounted(() => {
     17px;
 
 }
+
+
+
+
 
 
 
@@ -2431,6 +2806,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .field-group input::placeholder,
 
 .field-group textarea::placeholder {
@@ -2438,6 +2817,10 @@ onMounted(() => {
   color: #aaa;
 
 }
+
+
+
+
 
 
 
@@ -2479,11 +2862,19 @@ onMounted(() => {
 
 
 
+
+
+
+
 .field-group .input-error {
 
   border-color: #d94242;
 
 }
+
+
+
+
 
 
 
@@ -2498,6 +2889,10 @@ onMounted(() => {
   font-size: 13px;
 
 }
+
+
+
+
 
 
 
@@ -2519,6 +2914,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .char-count {
 
   margin-left: auto;
@@ -2535,11 +2934,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    ALERTS
 
-\\========================================================= */
+\\\\========================================================= */
 
 .alert-box {
 
@@ -2569,6 +2972,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .alert-icon {
 
   width: 22px;
@@ -2583,6 +2990,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .alert-icon svg {
 
   width: 100%;
@@ -2590,6 +3001,10 @@ onMounted(() => {
   height: 100%;
 
 }
+
+
+
+
 
 
 
@@ -2613,6 +3028,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .error-box {
 
   border:
@@ -2631,11 +3050,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    BUTTON
 
-\\========================================================= */
+\\\\========================================================= */
 
 .form-action {
 
@@ -2646,6 +3069,10 @@ onMounted(() => {
   gap: 22px;
 
 }
+
+
+
+
 
 
 
@@ -2703,6 +3130,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .submit-btn svg {
 
   width: 19px;
@@ -2710,6 +3141,10 @@ onMounted(() => {
   height: 19px;
 
 }
+
+
+
+
 
 
 
@@ -2729,6 +3164,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .submit-btn:disabled {
 
   opacity: 0.65;
@@ -2736,6 +3175,10 @@ onMounted(() => {
   cursor: not-allowed;
 
 }
+
+
+
+
 
 
 
@@ -2754,6 +3197,10 @@ onMounted(() => {
   line-height: 1.6;
 
 }
+
+
+
+
 
 
 
@@ -2801,6 +3248,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 @keyframes spin {
 
   to {
@@ -2817,11 +3268,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    BOTTOM CTA
 
-\\========================================================= */
+\\\\========================================================= */
 
 .contact-bottom {
 
@@ -2834,6 +3289,10 @@ onMounted(() => {
   background: #ffffff;
 
 }
+
+
+
+
 
 
 
@@ -2855,6 +3314,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .bottom-small {
 
   display: block;
@@ -2870,6 +3333,10 @@ onMounted(() => {
   letter-spacing: 2px;
 
 }
+
+
+
+
 
 
 
@@ -2913,11 +3380,19 @@ onMounted(() => {
 
 
 
+
+
+
+
 .bottom-inner h2 span {
 
   color: #999;
 
 }
+
+
+
+
 
 
 
@@ -2969,6 +3444,10 @@ onMounted(() => {
 
 
 
+
+
+
+
 .bottom-button svg {
 
   width: 18px;
@@ -2976,6 +3455,10 @@ onMounted(() => {
   height: 18px;
 
 }
+
+
+
+
 
 
 
@@ -2997,11 +3480,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    TABLET
 
-\\========================================================= */
+\\\\========================================================= */
 
 @media (
 
@@ -3009,11 +3496,25 @@ onMounted(() => {
 
 ) {
 
+  .contact-breadcrumb-overlay {
+
+    top: 14px;
+
+    left: 15px;
+
+    right: 15px;
+
+  }
+
   .hero-side {
 
     display: none;
 
   }
+
+
+
+
 
 
 
@@ -3031,6 +3532,10 @@ onMounted(() => {
 
 
 
+
+
+
+
   .contact-info {
 
     max-width: 700px;
@@ -3043,11 +3548,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    MOBILE
 
-\\========================================================= */
+\\\\========================================================= */
 
 @media (
 
@@ -3085,6 +3594,10 @@ onMounted(() => {
 
 
 
+
+
+
+
   .contact-hero {
 
     padding:
@@ -3096,6 +3609,10 @@ onMounted(() => {
       70px;
 
   }
+
+
+
+
 
 
 
@@ -3113,11 +3630,19 @@ onMounted(() => {
 
 
 
+
+
+
+
   .hero-content p {
 
     font-size: 16px;
 
   }
+
+
+
+
 
 
 
@@ -3139,6 +3664,10 @@ onMounted(() => {
 
 
 
+
+
+
+
   .info-heading {
 
     font-size: 34px;
@@ -3149,11 +3678,19 @@ onMounted(() => {
 
 
 
+
+
+
+
   .info-description {
 
     font-size: 16px;
 
   }
+
+
+
+
 
 
 
@@ -3175,6 +3712,10 @@ onMounted(() => {
 
 
 
+
+
+
+
   .form-top {
 
     gap: 15px;
@@ -3185,11 +3726,19 @@ onMounted(() => {
 
 
 
+
+
+
+
   .form-top h2 {
 
     font-size: 32px;
 
   }
+
+
+
+
 
 
 
@@ -3207,6 +3756,10 @@ onMounted(() => {
 
 
 
+
+
+
+
   .form-row {
 
     grid-template-columns: 1fr;
@@ -3219,11 +3772,19 @@ onMounted(() => {
 
 
 
+
+
+
+
   .field-group input {
 
     height: 56px;
 
   }
+
+
+
+
 
 
 
@@ -3241,11 +3802,19 @@ onMounted(() => {
 
 
 
+
+
+
+
   .submit-btn {
 
     width: 100%;
 
   }
+
+
+
+
 
 
 
@@ -3263,6 +3832,10 @@ onMounted(() => {
 
 
 
+
+
+
+
   .bottom-inner {
 
     flex-direction: column;
@@ -3270,6 +3843,10 @@ onMounted(() => {
     align-items: flex-start;
 
   }
+
+
+
+
 
 
 
@@ -3287,11 +3864,15 @@ onMounted(() => {
 
 
 
+
+
+
+
 /* =========================================================
 
    SMALL MOBILE
 
-\\========================================================= */
+\\\\========================================================= */
 
 @media (
 
@@ -3309,11 +3890,19 @@ onMounted(() => {
 
 
 
+
+
+
+
   .hero-tag {
 
     font-size: 11px;
 
   }
+
+
+
+
 
 
 
@@ -3329,6 +3918,10 @@ onMounted(() => {
 
 
 
+
+
+
+
   .info-icon {
 
     width: 52px;
@@ -3336,6 +3929,10 @@ onMounted(() => {
     height: 52px;
 
   }
+
+
+
+
 
 
 
