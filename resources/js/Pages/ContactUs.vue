@@ -1,65 +1,37 @@
 <template>
+
   <div class="contact-page">
 
     <!-- ===============================
+
          GLOBAL HEADER / NAVBAR
+
     ================================ -->
+
     <nav-component />
 
     <breadcrumb-component />
 
-    <!-- ===============================
-         CONTACT HERO
-    ================================ -->
-    <section class="contact-hero">
-      <div class="contact-container">
+    <!-- CONTACT PAGE BANNER -->
 
-        <div class="hero-grid">
+    <section class="contact-banner" aria-label="Contact Us">
 
-          <div class="hero-content">
+      <img
 
-            <div class="hero-tag">
-              <span class="hero-dot"></span>
-              WE'RE HERE TO HELP
-            </div>
+        src="/public/assets/images/contact-banner.png"
 
-            <h1>
-              Let's Start a
-              <span>Conversation.</span>
-            </h1>
+        alt="Contact Prosix Sports by email, phone or message"
 
-            <p>
-              Have a question about custom uniforms, team orders,
-              artwork or anything else? Send us a message and our
-              team will get back to you.
-            </p>
+      >
 
-          </div>
-
-
-          <div class="hero-side">
-
-            <div class="hero-number">
-              01
-            </div>
-
-            <div class="hero-side-text">
-              CONTACT
-              <br>
-              PROSIX SPORTS
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
     </section>
 
-
     <!-- ===============================
+
          MAIN CONTACT SECTION
+
     ================================ -->
+
     <section class="contact-section">
 
       <div class="contact-container">
@@ -67,147 +39,247 @@
         <div class="contact-grid">
 
           <!-- ===========================
+
                LEFT CONTACT INFO
+
           ============================ -->
+
           <div class="contact-info">
 
             <div class="section-kicker">
+
               CONTACT INFORMATION
+
             </div>
 
             <h2 class="info-heading">
+
               Need more information?
+
               <br>
+
               Get in touch with us.
+
             </h2>
 
             <p class="info-description">
+
               Whether you need help with an existing order, want to
+
               discuss custom team uniforms, or simply have a question,
+
               our team is ready to help.
+
             </p>
+
+
+
 
 
             <div class="contact-items">
 
               <!-- PHONE -->
+
               <div class="info-item">
 
                 <div class="info-icon">
 
                   <svg
+
                     viewBox="0 0 24 24"
+
                     fill="none"
+
                     stroke="currentColor"
+
                     stroke-width="1.8"
+
                     stroke-linecap="round"
+
                     stroke-linejoin="round"
+
                   >
+
                     <path
+
                       d="M22 16.92v3a2 2 0 0 1-2.18 2
+
                       19.79 19.79 0 0 1-8.63-3.07
+
                       19.5 19.5 0 0 1-6-6
+
                       19.79 19.79 0 0 1-3.07-8.67
+
                       A2 2 0 0 1 4.11 2h3
+
                       a2 2 0 0 1 2 1.72
+
                       c.12.9.33 1.78.62 2.63
+
                       a2 2 0 0 1-.45 2.11L8 9.73
+
                       a16 16 0 0 0 6 6l1.27-1.27
+
                       a2 2 0 0 1 2.11-.45
+
                       c.85.29 1.73.5 2.63.62
+
                       A2 2 0 0 1 22 16.92z"
+
                     />
+
                   </svg>
 
                 </div>
 
 
+
+
+
                 <div class="info-content">
 
                   <span class="info-label">
+
                     Phone Number
+
                   </span>
 
                   <a
+
                     v-if="contact.phone"
+
                     :href="`tel:${contact.phone}`"
+
                     class="info-value"
+
                   >
+
                     {{ contact.phone }}
+
                   </a>
 
                   <span
+
                     v-else-if="contactLoading"
+
                     class="info-loading"
+
                   >
+
                     Loading...
+
                   </span>
 
                   <span
+
                     v-else
+
                     class="info-empty"
+
                   >
+
                     Not available
+
                   </span>
 
                 </div>
 
               </div>
+
+
+
 
 
               <!-- EMAIL -->
+
               <div class="info-item">
 
                 <div class="info-icon">
 
                   <svg
+
                     viewBox="0 0 24 24"
+
                     fill="none"
+
                     stroke="currentColor"
+
                     stroke-width="1.8"
+
                     stroke-linecap="round"
+
                     stroke-linejoin="round"
+
                   >
+
                     <rect
+
                       x="3"
+
                       y="5"
+
                       width="18"
+
                       height="14"
+
                       rx="2"
+
                     />
 
                     <path d="m3 7 9 6 9-6" />
+
                   </svg>
 
                 </div>
 
 
+
+
+
                 <div class="info-content">
 
                   <span class="info-label">
+
                     Email Address
+
                   </span>
 
                   <a
+
                     v-if="contact.email"
+
                     :href="`mailto:${contact.email}`"
+
                     class="info-value"
+
                   >
+
                     {{ contact.email }}
+
                   </a>
 
                   <span
+
                     v-else-if="contactLoading"
+
                     class="info-loading"
+
                   >
+
                     Loading...
+
                   </span>
 
                   <span
+
                     v-else
+
                     class="info-empty"
+
                   >
+
                     Not available
+
                   </span>
 
                 </div>
@@ -215,59 +287,99 @@
               </div>
 
 
+
+
+
               <!-- ADDRESS -->
+
               <div class="info-item">
 
                 <div class="info-icon">
 
                   <svg
+
                     viewBox="0 0 24 24"
+
                     fill="none"
+
                     stroke="currentColor"
+
                     stroke-width="1.8"
+
                     stroke-linecap="round"
+
                     stroke-linejoin="round"
+
                   >
+
                     <path
+
                       d="M21 10c0 7-9 12-9 12S3 17 3 10
+
                       a9 9 0 1 1 18 0z"
+
                     />
 
                     <circle
+
                       cx="12"
+
                       cy="10"
+
                       r="3"
+
                     />
+
                   </svg>
 
                 </div>
 
 
+
+
+
                 <div class="info-content">
 
                   <span class="info-label">
+
                     Our Location
+
                   </span>
 
                   <span
+
                     v-if="contact.address"
+
                     class="info-value address-value"
+
                   >
+
                     {{ contact.address }}
+
                   </span>
 
                   <span
+
                     v-else-if="contactLoading"
+
                     class="info-loading"
+
                   >
+
                     Loading...
+
                   </span>
 
                   <span
+
                     v-else
+
                     class="info-empty"
+
                   >
+
                     Not available
+
                   </span>
 
                 </div>
@@ -277,27 +389,45 @@
             </div>
 
 
+
+
+
             <!-- EXTRA INFO BOX -->
+
             <div class="response-box">
 
               <div class="response-icon">
+
                 <svg
+
                   viewBox="0 0 24 24"
+
                   fill="none"
+
                   stroke="currentColor"
+
                   stroke-width="1.8"
+
                 >
+
                   <circle cx="12" cy="12" r="9" />
+
                   <path d="M12 7v5l3 2" />
+
                 </svg>
+
               </div>
 
               <div>
+
                 <strong>Quick Response</strong>
 
                 <p>
+
                   Our team usually responds to inquiries as soon as possible.
+
                 </p>
+
               </div>
 
             </div>
@@ -305,9 +435,15 @@
           </div>
 
 
+
+
+
           <!-- ===========================
+
                RIGHT FORM
+
           ============================ -->
+
           <div class="contact-form-card">
 
             <div class="form-top">
@@ -315,38 +451,61 @@
               <div>
 
                 <div class="section-kicker">
+
                   SEND A MESSAGE
+
                 </div>
 
                 <h2>
+
                   How can we help?
+
                 </h2>
 
                 <p>
+
                   Fill out the form and tell us what you need.
+
                   We'll get back to you shortly.
+
                 </p>
 
               </div>
 
 
+
+
+
               <div class="form-mail-icon">
 
                 <svg
+
                   viewBox="0 0 24 24"
+
                   fill="none"
+
                   stroke="currentColor"
+
                   stroke-width="1.8"
+
                 >
+
                   <rect
+
                     x="3"
+
                     y="5"
+
                     width="18"
+
                     height="14"
+
                     rx="2"
+
                   />
 
                   <path d="m3 7 9 6 9-6" />
+
                 </svg>
 
               </div>
@@ -354,99 +513,159 @@
             </div>
 
 
+
+
+
             <form
+
               class="contact-form"
+
               @submit.prevent="submitForm"
+
             >
 
               <!-- NAME -->
+
               <div class="form-row">
 
                 <div class="field-group">
 
                   <label>
+
                     First Name
+
                     <span>*</span>
+
                   </label>
 
                   <input
+
                     v-model="form.first_name"
+
                     type="text"
+
                     placeholder="Enter your first name"
+
                     :class="{ 'input-error': errors.first_name }"
+
                   >
 
                   <div
+
                     v-if="errors.first_name"
+
                     class="field-error"
+
                   >
+
                     {{ errors.first_name[0] }}
+
                   </div>
 
                 </div>
 
 
+
+
+
                 <div class="field-group">
 
                   <label>
+
                     Last Name
+
                   </label>
 
                   <input
+
                     v-model="form.last_name"
+
                     type="text"
+
                     placeholder="Enter your last name"
+
                   >
 
                 </div>
 
               </div>
+
+
+
 
 
               <!-- CONTACT -->
+
               <div class="form-row">
 
                 <div class="field-group">
 
                   <label>
+
                     Email Address
+
                   </label>
 
                   <input
+
                     v-model="form.email"
+
                     type="email"
+
                     placeholder="example@email.com"
+
                     :class="{ 'input-error': errors.email }"
+
                   >
 
                   <div
+
                     v-if="errors.email"
+
                     class="field-error"
+
                   >
+
                     {{ errors.email[0] }}
+
                   </div>
 
                 </div>
 
 
+
+
+
                 <div class="field-group">
 
                   <label>
+
                     Phone Number
+
                   </label>
 
                   <input
+
                     v-model="form.phone"
+
                     type="text"
+
                     placeholder="+1 000 000 0000"
+
                     :class="{ 'input-error': errors.phone }"
+
                   >
 
                   <div
+
                     v-if="errors.phone"
+
                     class="field-error"
+
                   >
+
                     {{ errors.phone[0] }}
+
                   </div>
 
                 </div>
@@ -454,131 +673,219 @@
               </div>
 
 
+
+
+
               <!-- MESSAGE -->
+
               <div class="field-group">
 
                 <label>
+
                   Your Message
+
                   <span>*</span>
+
                 </label>
 
                 <textarea
+
                   v-model="form.message"
+
                   rows="7"
+
                   placeholder="Tell us how we can help you..."
+
                   :class="{ 'input-error': errors.message }"
+
                 ></textarea>
 
                 <div class="textarea-footer">
 
                   <div
+
                     v-if="errors.message"
+
                     class="field-error"
+
                   >
+
                     {{ errors.message[0] }}
+
                   </div>
 
                   <span class="char-count">
+
                     {{ form.message.length }} / 5000
+
                   </span>
 
                 </div>
 
               </div>
+
+
+
 
 
               <!-- SUCCESS -->
+
               <div
+
                 v-if="successMessage"
+
                 class="alert-box success-box"
+
               >
 
                 <div class="alert-icon">
 
                   <svg
+
                     viewBox="0 0 24 24"
+
                     fill="none"
+
                     stroke="currentColor"
+
                     stroke-width="2"
+
                   >
+
                     <circle cx="12" cy="12" r="9" />
+
                     <path d="m8 12 2.5 2.5L16 9" />
+
                   </svg>
 
                 </div>
 
                 <span>
+
                   {{ successMessage }}
+
                 </span>
 
               </div>
+
+
+
 
 
               <!-- ERROR -->
+
               <div
+
                 v-if="errorMessage"
+
                 class="alert-box error-box"
+
               >
 
                 <div class="alert-icon">
 
                   <svg
+
                     viewBox="0 0 24 24"
+
                     fill="none"
+
                     stroke="currentColor"
+
                     stroke-width="2"
+
                   >
+
                     <circle cx="12" cy="12" r="9" />
+
                     <path d="M12 8v5" />
+
                     <path d="M12 16h.01" />
+
                   </svg>
 
                 </div>
 
                 <span>
+
                   {{ errorMessage }}
+
                 </span>
 
               </div>
 
 
+
+
+
               <!-- BUTTON -->
+
               <div class="form-action">
 
                 <button
+
                   type="submit"
+
                   class="submit-btn"
+
                   :disabled="submitting"
+
                 >
 
                   <span
+
                     v-if="submitting"
+
                     class="button-loader"
+
                   ></span>
 
 
+
+
+
                   <span>
+
                     {{ submitting ? 'Sending Message...' : 'Send Message' }}
+
                   </span>
 
 
+
+
+
                   <svg
+
                     v-if="!submitting"
+
                     viewBox="0 0 24 24"
+
                     fill="none"
+
                     stroke="currentColor"
+
                     stroke-width="2"
+
                   >
+
                     <path d="M5 12h14" />
+
                     <path d="m13 6 6 6-6 6" />
+
                   </svg>
 
                 </button>
 
 
+
+
+
                 <p>
+
                   By submitting this form you agree to be contacted
+
                   regarding your inquiry.
+
                 </p>
 
               </div>
@@ -594,9 +901,15 @@
     </section>
 
 
+
+
+
     <!-- ===============================
+
          BOTTOM CTA
+
     ================================ -->
+
     <section class="contact-bottom">
 
       <div class="contact-container">
@@ -606,31 +919,51 @@
           <div>
 
             <span class="bottom-small">
+
               READY TO GET STARTED?
+
             </span>
 
             <h2>
+
               Let's create something
+
               <span>great together.</span>
+
             </h2>
 
           </div>
 
 
+
+
+
           <router-link
+
             to="/placeorder"
+
             class="bottom-button"
+
           >
+
             Place an Order
 
             <svg
+
               viewBox="0 0 24 24"
+
               fill="none"
+
               stroke="currentColor"
+
               stroke-width="2"
+
             >
+
               <path d="M5 12h14" />
+
               <path d="m13 6 6 6-6 6" />
+
             </svg>
 
           </router-link>
@@ -642,49 +975,83 @@
     </section>
 
 
+
+
+
     <!-- ===============================
+
          GLOBAL FOOTER
+
     ================================ -->
+
     <footer-component />
 
   </div>
+
 </template>
+
+
+
 
 
 <script setup>
 
 import {
+
   onMounted,
+
   reactive,
+
   ref
+
 } from 'vue'
 
 import axios from 'axios'
 
 
+
+
+
 /* =========================================================
+
    CONTACT INFO
-========================================================= */
+
+\\========================================================= */
 
 const contact = reactive({
+
   phone: '',
+
   email: '',
+
   address: ''
+
 })
 
 const contactLoading = ref(true)
 
 
+
+
+
 /* =========================================================
+
    FORM
-========================================================= */
+
+\\========================================================= */
 
 const form = reactive({
+
   first_name: '',
+
   last_name: '',
+
   email: '',
+
   phone: '',
+
   message: ''
+
 })
 
 const errors = ref({})
@@ -696,9 +1063,14 @@ const successMessage = ref('')
 const errorMessage = ref('')
 
 
+
+
+
 /* =========================================================
+
    LOAD CONTACT INFORMATION
-========================================================= */
+
+\\========================================================= */
 
 const getContactInfo = async () => {
 
@@ -707,17 +1079,21 @@ const getContactInfo = async () => {
   try {
 
     const response =
+
       await axios.get('/api/contact-info')
 
     if (response.data?.success) {
 
       contact.phone =
+
         response.data.contact?.phone || ''
 
       contact.email =
+
         response.data.contact?.email || ''
 
       contact.address =
+
         response.data.contact?.address || ''
 
     }
@@ -725,8 +1101,11 @@ const getContactInfo = async () => {
   } catch (error) {
 
     console.error(
+
       'Contact information error:',
+
       error
+
     )
 
   } finally {
@@ -738,14 +1117,21 @@ const getContactInfo = async () => {
 }
 
 
+
+
+
 /* =========================================================
+
    SUBMIT CONTACT FORM
-========================================================= */
+
+\\========================================================= */
 
 const submitForm = async () => {
 
   if (submitting.value) {
+
     return
+
   }
 
   submitting.value = true
@@ -757,35 +1143,57 @@ const submitForm = async () => {
   errorMessage.value = ''
 
 
+
+
+
   try {
 
     const response =
+
       await axios.post(
+
         '/api/contact-message',
+
         {
+
           first_name:
+
             form.first_name,
 
           last_name:
+
             form.last_name,
 
           email:
+
             form.email,
 
           phone:
+
             form.phone,
 
           message:
+
             form.message
+
         }
+
       )
+
+
+
 
 
     if (response.data?.success) {
 
       successMessage.value =
+
         response.data.message ||
+
         'Your message has been sent successfully.'
+
+
+
 
 
       form.first_name = ''
@@ -803,27 +1211,43 @@ const submitForm = async () => {
   } catch (error) {
 
     console.error(
+
       'Contact form error:',
+
       error
+
     )
 
 
+
+
+
     if (
+
       error.response?.status === 422
+
     ) {
 
       errors.value =
+
         error.response?.data?.errors || {}
 
 
+
+
+
       errorMessage.value =
+
         error.response?.data?.message ||
+
         'Please check the information entered above.'
 
     } else {
 
       errorMessage.value =
+
         error.response?.data?.message ||
+
         'Something went wrong. Please try again.'
 
     }
@@ -837,9 +1261,14 @@ const submitForm = async () => {
 }
 
 
+
+
+
 /* =========================================================
+
    INIT
-========================================================= */
+
+\\========================================================= */
 
 onMounted(() => {
 
@@ -850,18 +1279,31 @@ onMounted(() => {
 </script>
 
 
+
+
+
 <style scoped>
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
 
 
+
+
+
 /* =========================================================
+
    RESET
-========================================================= */
+
+\\========================================================= */
 
 * {
+
   box-sizing: border-box;
+
 }
+
+
+
 
 
 .contact-page {
@@ -875,29 +1317,75 @@ onMounted(() => {
   color: #0a0a0a;
 
   font-family:
+
     'DM Sans',
+
     Arial,
+
     sans-serif;
 
 }
 
 
+
+
+
 .contact-container {
 
   width:
+
     min(
+
       1240px,
+
       calc(100% - 60px)
+
     );
 
   margin: 0 auto;
 
 }
 
+/* =========================================================
+
+   CONTACT BANNER
+
+\========================================================= */
+
+.contact-banner {
+
+  width: 100%;
+
+
+  overflow: visible;
+
+  background: #03101f;
+
+}
+
+.contact-banner img {
+
+  display: block;
+
+  width: 100%;
+
+  height: auto;
+
+  object-fit: contain;
+
+  object-position: center;
+
+}
+
+
+
+
 
 /* =========================================================
+
    HERO
-========================================================= */
+
+\\========================================================= */
 
 .contact-hero {
 
@@ -908,13 +1396,19 @@ onMounted(() => {
   background: #080808;
 
   padding:
+
     90px
+
     0
+
     100px;
 
   color: #ffffff;
 
 }
+
+
+
 
 
 .contact-hero::before {
@@ -934,16 +1428,25 @@ onMounted(() => {
   border:
 
     1px solid
+
     rgba(
+
       255,
+
       255,
+
       255,
+
       0.07
+
     );
 
   border-radius: 50%;
 
 }
+
+
+
 
 
 .contact-hero::after {
@@ -963,16 +1466,25 @@ onMounted(() => {
   border:
 
     1px solid
+
     rgba(
+
       255,
+
       255,
+
       255,
+
       0.05
+
     );
 
   border-radius: 50%;
 
 }
+
+
+
 
 
 .hero-grid {
@@ -984,7 +1496,9 @@ onMounted(() => {
   display: grid;
 
   grid-template-columns:
+
     minmax(0, 1fr)
+
     auto;
 
   gap: 80px;
@@ -992,6 +1506,9 @@ onMounted(() => {
   align-items: flex-end;
 
 }
+
+
+
 
 
 .hero-tag {
@@ -1013,6 +1530,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .hero-dot {
 
   width: 8px;
@@ -1026,48 +1546,91 @@ onMounted(() => {
 }
 
 
+
+
+
 .hero-content h1 {
 
   max-width: 800px;
 
   margin:
+
     0
+
     0
+
     24px;
 
   font-family:
+
     'Syne',
+
     sans-serif;
 
   font-size:
+
     clamp(
+
       52px,
+
       6vw,
+
       82px
+
     );
 
   line-height: 0.98;
 
   font-weight: 800;
 
-  letter-spacing: -4px;
+  letter-spacing: -1.5px;
+
+  word-spacing: 0.12em;
 
 }
 
 
-.hero-content h1 span {
+
+
+
+.hero-content h1 > span {
 
   display: block;
 
+  margin-top: 8px;
+
+  font-family: 'Syne', sans-serif !important;
+
+  font-size: 1em !important;
+
+  font-weight: 800 !important;
+
+  line-height: 1.05 !important;
+
+  letter-spacing: -1px !important;
+
+  word-spacing: normal !important;
+
+  text-transform: none !important;
+
   color:
+
     rgba(
+
       255,
+
       255,
+
       255,
+
       0.48
+
     );
 
 }
+
+
+
 
 
 .hero-content p {
@@ -1077,11 +1640,17 @@ onMounted(() => {
   margin: 0;
 
   color:
+
     rgba(
+
       255,
+
       255,
+
       255,
+
       0.65
+
     );
 
   font-size: 18px;
@@ -1089,6 +1658,9 @@ onMounted(() => {
   line-height: 1.75;
 
 }
+
+
+
 
 
 .hero-side {
@@ -1104,10 +1676,15 @@ onMounted(() => {
 }
 
 
+
+
+
 .hero-number {
 
   font-family:
+
     'Syne',
+
     sans-serif;
 
   font-size: 64px;
@@ -1117,24 +1694,39 @@ onMounted(() => {
   font-weight: 800;
 
   color:
+
     rgba(
+
       255,
+
       255,
+
       255,
+
       0.14
+
     );
 
 }
 
 
+
+
+
 .hero-side-text {
 
   color:
+
     rgba(
+
       255,
+
       255,
+
       255,
+
       0.6
+
     );
 
   font-size: 12px;
@@ -1148,15 +1740,23 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    CONTACT SECTION
-========================================================= */
+
+\\========================================================= */
 
 .contact-section {
 
   padding:
+
     100px
+
     0
+
     110px;
 
   background: #f7f7f5;
@@ -1164,12 +1764,17 @@ onMounted(() => {
 }
 
 
+
+
+
 .contact-grid {
 
   display: grid;
 
   grid-template-columns:
+
     minmax(0, 0.82fr)
+
     minmax(0, 1.18fr);
 
   gap: 90px;
@@ -1179,9 +1784,14 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    SECTION TEXT
-========================================================= */
+
+\\========================================================= */
 
 .section-kicker {
 
@@ -1198,15 +1808,23 @@ onMounted(() => {
 }
 
 
+
+
+
 .info-heading {
 
   margin:
+
     0
+
     0
+
     22px;
 
   font-family:
+
     'Syne',
+
     sans-serif;
 
   font-size: 42px;
@@ -1215,9 +1833,14 @@ onMounted(() => {
 
   font-weight: 800;
 
-  letter-spacing: -1.8px;
+  letter-spacing: -0.6px;
+
+  word-spacing: 0.08em;
 
 }
+
+
+
 
 
 .info-description {
@@ -1225,8 +1848,11 @@ onMounted(() => {
   max-width: 520px;
 
   margin:
+
     0
+
     0
+
     45px;
 
   color: #696969;
@@ -1238,9 +1864,14 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    CONTACT ITEMS
-========================================================= */
+
+\\========================================================= */
 
 .contact-items {
 
@@ -1253,6 +1884,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .info-item {
 
   display: flex;
@@ -1262,14 +1896,21 @@ onMounted(() => {
   gap: 20px;
 
   padding:
+
     19px
+
     0;
 
   border-bottom:
+
     1px solid
+
     #deded9;
 
 }
+
+
+
 
 
 .info-icon {
@@ -1289,6 +1930,7 @@ onMounted(() => {
   border:
 
     1px solid
+
     #deded9;
 
   border-radius: 50%;
@@ -1298,6 +1940,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .info-icon svg {
 
   width: 24px;
@@ -1305,6 +1950,9 @@ onMounted(() => {
   height: 24px;
 
 }
+
+
+
 
 
 .info-content {
@@ -1320,6 +1968,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .info-label {
 
   color: #777;
@@ -1333,6 +1984,9 @@ onMounted(() => {
   letter-spacing: 1px;
 
 }
+
+
+
 
 
 .info-value {
@@ -1352,9 +2006,17 @@ onMounted(() => {
 }
 
 
+
+
+
 .info-value:hover {
+
   opacity: 0.55;
+
 }
+
+
+
 
 
 .address-value {
@@ -1364,7 +2026,11 @@ onMounted(() => {
 }
 
 
+
+
+
 .info-loading,
+
 .info-empty {
 
   color: #999;
@@ -1374,9 +2040,14 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    RESPONSE BOX
-========================================================= */
+
+\\========================================================= */
 
 .response-box {
 
@@ -1389,7 +2060,9 @@ onMounted(() => {
   padding: 22px;
 
   border:
+
     1px solid
+
     #dfdfdb;
 
   border-radius: 14px;
@@ -1397,6 +2070,9 @@ onMounted(() => {
   background: #ffffff;
 
 }
+
+
+
 
 
 .response-icon {
@@ -1422,6 +2098,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .response-icon svg {
 
   width: 20px;
@@ -1429,6 +2108,9 @@ onMounted(() => {
   height: 20px;
 
 }
+
+
+
 
 
 .response-box strong {
@@ -1440,6 +2122,9 @@ onMounted(() => {
   font-size: 16px;
 
 }
+
+
+
 
 
 .response-box p {
@@ -1455,9 +2140,14 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    FORM CARD
-========================================================= */
+
+\\========================================================= */
 
 .contact-form-card {
 
@@ -1466,6 +2156,7 @@ onMounted(() => {
   border:
 
     1px solid
+
     #deded9;
 
   border-radius: 20px;
@@ -1473,6 +2164,9 @@ onMounted(() => {
   background: #ffffff;
 
 }
+
+
+
 
 
 .form-top {
@@ -1490,30 +2184,45 @@ onMounted(() => {
   margin-bottom: 32px;
 
   border-bottom:
+
     1px solid
+
     #ebebe7;
 
 }
 
 
+
+
+
 .form-top h2 {
 
   margin:
+
     0
+
     0
+
     10px;
 
   font-family:
+
     'Syne',
+
     sans-serif;
 
   font-size: 38px;
 
   font-weight: 800;
 
-  letter-spacing: -1.5px;
+  letter-spacing: -0.4px;
+
+  word-spacing: 0.08em;
 
 }
+
+
+
 
 
 .form-top p {
@@ -1529,6 +2238,9 @@ onMounted(() => {
   line-height: 1.7;
 
 }
+
+
+
 
 
 .form-mail-icon {
@@ -1554,6 +2266,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .form-mail-icon svg {
 
   width: 24px;
@@ -1563,9 +2278,14 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    FORM
-========================================================= */
+
+\\========================================================= */
 
 .contact-form {
 
@@ -1574,14 +2294,21 @@ onMounted(() => {
 }
 
 
+
+
+
 .form-row {
 
   display: grid;
 
   grid-template-columns:
+
     repeat(
+
       2,
+
       minmax(0, 1fr)
+
     );
 
   gap: 18px;
@@ -1589,11 +2316,17 @@ onMounted(() => {
 }
 
 
+
+
+
 .field-group {
 
   margin-bottom: 22px;
 
 }
+
+
+
 
 
 .field-group label {
@@ -1611,6 +2344,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .field-group label span {
 
   color: #c90000;
@@ -1618,13 +2354,19 @@ onMounted(() => {
 }
 
 
+
+
+
 .field-group input,
+
 .field-group textarea {
 
   width: 100%;
 
   border:
+
     1px solid
+
     #d8d8d3;
 
   border-radius: 10px;
@@ -1636,17 +2378,25 @@ onMounted(() => {
   color: #111;
 
   font-family:
+
     'DM Sans',
+
     sans-serif;
 
   font-size: 16px;
 
   transition:
+
     border-color 0.2s ease,
+
     background 0.2s ease,
+
     box-shadow 0.2s ease;
 
 }
+
+
+
 
 
 .field-group input {
@@ -1654,10 +2404,15 @@ onMounted(() => {
   height: 58px;
 
   padding:
+
     0
+
     17px;
 
 }
+
+
+
 
 
 .field-group textarea {
@@ -1673,7 +2428,11 @@ onMounted(() => {
 }
 
 
+
+
+
 .field-group input::placeholder,
+
 .field-group textarea::placeholder {
 
   color: #aaa;
@@ -1681,7 +2440,11 @@ onMounted(() => {
 }
 
 
+
+
+
 .field-group input:focus,
+
 .field-group textarea:focus {
 
   border-color: #111;
@@ -1689,18 +2452,31 @@ onMounted(() => {
   background: #fff;
 
   box-shadow:
+
     0
+
     0
+
     0
+
     3px
+
     rgba(
+
       0,
+
       0,
+
       0,
+
       0.04
+
     );
 
 }
+
+
+
 
 
 .field-group .input-error {
@@ -1708,6 +2484,9 @@ onMounted(() => {
   border-color: #d94242;
 
 }
+
+
+
 
 
 .field-error {
@@ -1719,6 +2498,9 @@ onMounted(() => {
   font-size: 13px;
 
 }
+
+
+
 
 
 .textarea-footer {
@@ -1734,6 +2516,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .char-count {
 
   margin-left: auto;
@@ -1747,9 +2532,14 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    ALERTS
-========================================================= */
+
+\\========================================================= */
 
 .alert-box {
 
@@ -1762,7 +2552,9 @@ onMounted(() => {
   margin-bottom: 22px;
 
   padding:
+
     15px
+
     17px;
 
   border-radius: 10px;
@@ -1772,6 +2564,9 @@ onMounted(() => {
   line-height: 1.5;
 
 }
+
+
+
 
 
 .alert-icon {
@@ -1785,6 +2580,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .alert-icon svg {
 
   width: 100%;
@@ -1794,10 +2592,15 @@ onMounted(() => {
 }
 
 
+
+
+
 .success-box {
 
   border:
+
     1px solid
+
     #b9dfc2;
 
   background: #f3fbf5;
@@ -1807,10 +2610,15 @@ onMounted(() => {
 }
 
 
+
+
+
 .error-box {
 
   border:
+
     1px solid
+
     #efbcbc;
 
   background: #fff5f5;
@@ -1820,9 +2628,14 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    BUTTON
-========================================================= */
+
+\\========================================================= */
 
 .form-action {
 
@@ -1835,6 +2648,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .submit-btn {
 
   min-width: 190px;
@@ -1842,7 +2658,9 @@ onMounted(() => {
   height: 58px;
 
   padding:
+
     0
+
     25px;
 
   border: none;
@@ -1864,7 +2682,9 @@ onMounted(() => {
   gap: 11px;
 
   font-family:
+
     'DM Sans',
+
     sans-serif;
 
   font-size: 15px;
@@ -1872,10 +2692,15 @@ onMounted(() => {
   font-weight: 700;
 
   transition:
+
     background 0.2s ease,
+
     transform 0.2s ease;
 
 }
+
+
+
 
 
 .submit-btn svg {
@@ -1887,14 +2712,21 @@ onMounted(() => {
 }
 
 
+
+
+
 .submit-btn:hover:not(:disabled) {
 
   background: #292929;
 
   transform:
+
     translateY(-1px);
 
 }
+
+
+
 
 
 .submit-btn:disabled {
@@ -1904,6 +2736,9 @@ onMounted(() => {
   cursor: not-allowed;
 
 }
+
+
+
 
 
 .form-action p {
@@ -1921,6 +2756,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .button-loader {
 
   width: 18px;
@@ -1930,11 +2768,17 @@ onMounted(() => {
   border:
 
     2px solid
+
     rgba(
+
       255,
+
       255,
+
       255,
+
       0.3
+
     );
 
   border-top-color: #ffffff;
@@ -1942,37 +2786,57 @@ onMounted(() => {
   border-radius: 50%;
 
   animation:
+
     spin
+
     0.7s
+
     linear
+
     infinite;
 
 }
 
 
+
+
+
 @keyframes spin {
 
   to {
+
     transform:
+
       rotate(360deg);
+
   }
 
 }
 
 
+
+
+
 /* =========================================================
+
    BOTTOM CTA
-========================================================= */
+
+\\========================================================= */
 
 .contact-bottom {
 
   padding:
+
     75px
+
     0;
 
   background: #ffffff;
 
 }
+
+
+
 
 
 .bottom-inner {
@@ -1986,6 +2850,9 @@ onMounted(() => {
   gap: 50px;
 
 }
+
+
+
 
 
 .bottom-small {
@@ -2005,6 +2872,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .bottom-inner h2 {
 
   max-width: 680px;
@@ -2012,23 +2882,35 @@ onMounted(() => {
   margin: 0;
 
   font-family:
+
     'Syne',
+
     sans-serif;
 
   font-size:
+
     clamp(
+
       34px,
+
       4vw,
+
       52px
+
     );
 
   line-height: 1.08;
 
   font-weight: 800;
 
-  letter-spacing: -2px;
+  letter-spacing: -0.6px;
+
+  word-spacing: 0.08em;
 
 }
+
+
+
 
 
 .bottom-inner h2 span {
@@ -2038,6 +2920,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .bottom-button {
 
   min-width: 190px;
@@ -2045,7 +2930,9 @@ onMounted(() => {
   height: 58px;
 
   padding:
+
     0
+
     24px;
 
   display: inline-flex;
@@ -2071,10 +2958,15 @@ onMounted(() => {
   font-weight: 700;
 
   transition:
+
     background 0.2s ease,
+
     transform 0.2s ease;
 
 }
+
+
+
 
 
 .bottom-button svg {
@@ -2086,6 +2978,9 @@ onMounted(() => {
 }
 
 
+
+
+
 .bottom-button:hover {
 
   background: #333;
@@ -2093,22 +2988,35 @@ onMounted(() => {
   color: #fff;
 
   transform:
+
     translateY(-2px);
 
 }
 
 
+
+
+
 /* =========================================================
+
    TABLET
-========================================================= */
+
+\\========================================================= */
 
 @media (
+
   max-width: 1000px
+
 ) {
 
   .hero-side {
+
     display: none;
+
   }
+
+
+
 
 
   .contact-grid {
@@ -2120,6 +3028,9 @@ onMounted(() => {
   }
 
 
+
+
+
   .contact-info {
 
     max-width: 700px;
@@ -2129,42 +3040,77 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    MOBILE
-========================================================= */
+
+\\========================================================= */
 
 @media (
+
   max-width: 700px
+
 ) {
+
+  .contact-banner {
+
+    height: auto;
+
+  }
+
+  .contact-banner img {
+
+    object-position: center;
+
+  }
 
   .contact-container {
 
     width:
+
       min(
+
         100% - 30px,
+
         1240px
+
       );
 
   }
 
 
+
+
+
   .contact-hero {
 
     padding:
+
       65px
+
       0
+
       70px;
 
   }
+
+
+
 
 
   .hero-content h1 {
 
     font-size: 48px;
 
-    letter-spacing: -2.5px;
+    letter-spacing: -0.8px;
 
   }
+
+
+
 
 
   .hero-content p {
@@ -2174,14 +3120,23 @@ onMounted(() => {
   }
 
 
+
+
+
   .contact-section {
 
     padding:
+
       65px
+
       0
+
       70px;
 
   }
+
+
+
 
 
   .info-heading {
@@ -2191,6 +3146,9 @@ onMounted(() => {
   }
 
 
+
+
+
   .info-description {
 
     font-size: 16px;
@@ -2198,15 +3156,23 @@ onMounted(() => {
   }
 
 
+
+
+
   .contact-form-card {
 
     padding:
+
       28px
+
       20px;
 
     border-radius: 14px;
 
   }
+
+
+
 
 
   .form-top {
@@ -2216,11 +3182,17 @@ onMounted(() => {
   }
 
 
+
+
+
   .form-top h2 {
 
     font-size: 32px;
 
   }
+
+
+
 
 
   .form-mail-icon {
@@ -2232,6 +3204,9 @@ onMounted(() => {
   }
 
 
+
+
+
   .form-row {
 
     grid-template-columns: 1fr;
@@ -2241,11 +3216,17 @@ onMounted(() => {
   }
 
 
+
+
+
   .field-group input {
 
     height: 56px;
 
   }
+
+
+
 
 
   .form-action {
@@ -2257,11 +3238,17 @@ onMounted(() => {
   }
 
 
+
+
+
   .submit-btn {
 
     width: 100%;
 
   }
+
+
+
 
 
   .form-action p {
@@ -2273,6 +3260,9 @@ onMounted(() => {
   }
 
 
+
+
+
   .bottom-inner {
 
     flex-direction: column;
@@ -2280,6 +3270,9 @@ onMounted(() => {
     align-items: flex-start;
 
   }
+
+
+
 
 
   .bottom-button {
@@ -2291,12 +3284,19 @@ onMounted(() => {
 }
 
 
+
+
+
 /* =========================================================
+
    SMALL MOBILE
-========================================================= */
+
+\\========================================================= */
 
 @media (
+
   max-width: 420px
+
 ) {
 
   .hero-content h1 {
@@ -2306,11 +3306,17 @@ onMounted(() => {
   }
 
 
+
+
+
   .hero-tag {
 
     font-size: 11px;
 
   }
+
+
+
 
 
   .info-item {
@@ -2320,6 +3326,9 @@ onMounted(() => {
   }
 
 
+
+
+
   .info-icon {
 
     width: 52px;
@@ -2327,6 +3336,9 @@ onMounted(() => {
     height: 52px;
 
   }
+
+
+
 
 
   .info-value {
